@@ -27,12 +27,15 @@ import * as Sentry from '@sentry/browser';
 import {AbstractClipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {main} from './main';
+import {installDefaultMethodChannel, MethodChannel} from './method_channel';
 import {VpnApi} from './outline_server_repository/vpn';
 import {CordovaVpnApi} from './outline_server_repository/vpn.cordova';
 import {OutlinePlatform} from './platform';
-import {OUTLINE_PLUGIN_NAME, pluginExec} from './plugin.cordova';
-import {ResourceFetcher} from './resource_fetcher';
-import {CordovaResourceFetcher} from './resource_fetcher.cordova';
+import {
+  OUTLINE_PLUGIN_NAME,
+  pluginExec,
+  pluginExecWithErrorCode,
+} from './plugin.cordova';
 import {AbstractUpdater} from './updater';
 import * as interceptors from './url_interceptor';
 import {NoOpVpnInstaller, VpnInstaller} from './vpn_installer';
@@ -68,6 +71,12 @@ class CordovaErrorReporter extends SentryErrorReporter {
     // Sends previously captured logs and events to the error reporting framework.
     // Associates the report to the provided unique identifier.
     await pluginExec<void>('reportEvents', Sentry.lastEventId() || '');
+  }
+}
+
+class CordovaMethodChannel implements MethodChannel {
+  invokeMethod(methodName: string, params: string): Promise<string> {
+    return pluginExecWithErrorCode('invokeMethod', methodName, params);
   }
 }
 
@@ -117,10 +126,6 @@ class CordovaPlatform implements OutlinePlatform {
     return new NoOpVpnInstaller();
   }
 
-  getResourceFetcher(): ResourceFetcher {
-    return new CordovaResourceFetcher();
-  }
-
   quitApplication() {
     // Only used in macOS because menu bar apps provide no alternative way of quitting.
     cordova.exec(
@@ -148,5 +153,6 @@ window.handleOpenURL = (url: string) => {
 };
 
 onceDeviceReady.then(() => {
+  installDefaultMethodChannel(new CordovaMethodChannel());
   main(new CordovaPlatform());
 });

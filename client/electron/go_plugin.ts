@@ -18,14 +18,12 @@ import koffi from 'koffi';
 
 import {pathToBackendLibrary} from './app_paths';
 
-let invokeGoAPIFunc: Function | undefined;
-
-export type GoApiName = 'FetchResource';
+let invokeMethodFunc: Function | undefined;
 
 /**
- * Calls a Go function by invoking the `InvokeGoAPI` function in the native backend library.
+ * Calls a Go function by invoking the `InvokeMethod` function in the native backend library.
  *
- * @param api The name of the Go API to invoke.
+ * @param method The name of the Go method to invoke.
  * @param input The input string to pass to the API.
  * @returns A Promise that resolves to the output string returned by the API.
  * @throws An Error containing PlatformError details if the API call fails.
@@ -34,11 +32,11 @@ export type GoApiName = 'FetchResource';
  * Ensure that the function signature and data structures are consistent with the C definitions
  * in `./client/go/outline/electron/go_plugin.go`.
  */
-export async function invokeGoApi(
-  api: GoApiName,
+export async function invokeMethod(
+  method: string,
   input: string
 ): Promise<string> {
-  if (!invokeGoAPIFunc) {
+  if (!invokeMethodFunc) {
     const backendLib = koffi.load(pathToBackendLibrary());
 
     // Define C strings and setup auto release
@@ -48,19 +46,19 @@ export async function invokeGoApi(
       backendLib.func('FreeCGoString', 'void', ['str'])
     );
 
-    // Define InvokeGoAPI data structures and function
-    const invokeGoApiResult = koffi.struct('InvokeGoAPIResult', {
+    // Define InvokeMethod data structures and function
+    const invokeMethodResult = koffi.struct('InvokeMethodResult', {
       Output: cgoString,
       ErrorJson: cgoString,
     });
-    invokeGoAPIFunc = promisify(
-      backendLib.func('InvokeGoAPI', invokeGoApiResult, ['str', 'str']).async
+    invokeMethodFunc = promisify(
+      backendLib.func('InvokeMethod', invokeMethodResult, ['str', 'str']).async
     );
   }
 
-  console.debug('[Backend] - calling InvokeGoAPI ...');
-  const result = await invokeGoAPIFunc(api, input);
-  console.debug('[Backend] - InvokeGoAPI returned', result);
+  console.debug('[Backend] - calling InvokeMethod ...');
+  const result = await invokeMethodFunc(method, input);
+  console.debug('[Backend] - InvokeMethod returned', result);
   if (result.ErrorJson) {
     throw Error(result.ErrorJson);
   }

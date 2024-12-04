@@ -21,7 +21,6 @@ import {TunnelStatus, VpnApi} from './vpn';
 import * as errors from '../../model/errors';
 import * as events from '../../model/events';
 import {ServerRepository} from '../../model/server';
-import {ResourceFetcher} from '../resource_fetcher';
 
 // DEPRECATED: V0 server persistence format.
 interface ServersStorageV0Config {
@@ -71,8 +70,7 @@ export class OutlineServerRepository implements ServerRepository {
     private vpnApi: VpnApi,
     private eventQueue: events.EventQueue,
     private storage: Storage,
-    private localize: Localizer,
-    readonly urlFetcher: ResourceFetcher
+    private localize: Localizer
   ) {
     console.debug('OutlineServerRepository is initializing');
     this.loadServers();
@@ -273,13 +271,6 @@ export class OutlineServerRepository implements ServerRepository {
     accessKey: string,
     name?: string
   ): OutlineServer {
-    return new OutlineServer(
-      this.vpnApi,
-      this.urlFetcher,
-      id,
-      name,
-      accessKey,
-      this.localize
-    );
+    return new OutlineServer(this.vpnApi, id, name, accessKey, this.localize);
   }
 }

@@ -26,7 +26,7 @@ import {StartRequestJson, VpnApi} from './vpn';
 import * as errors from '../../model/errors';
 import {PlatformError} from '../../model/platform_error';
 import {Server, ServerType} from '../../model/server';
-import {ResourceFetcher} from '../resource_fetcher';
+import {getDefaultMethodChannel} from '../method_channel';
 
 // PLEASE DON'T use this class outside of this `outline_server_repository` folder!
 
@@ -39,7 +39,6 @@ export class OutlineServer implements Server {
 
   constructor(
     private vpnApi: VpnApi,
-    readonly urlFetcher: ResourceFetcher,
     readonly id: string,
     public name: string,
     readonly accessKey: string,
@@ -88,10 +87,7 @@ export class OutlineServer implements Server {
   async connect() {
     let tunnelConfig: TunnelConfigJson;
     if (this.type === ServerType.DYNAMIC_CONNECTION) {
-      tunnelConfig = await fetchTunnelConfig(
-        this.urlFetcher,
-        this.tunnelConfigLocation
-      );
+      tunnelConfig = await fetchTunnelConfig(this.tunnelConfigLocation);
       this.displayAddress = net.joinHostPort(
         tunnelConfig.firstHop.host,
         tunnelConfig.firstHop.port.toString()
@@ -147,11 +143,13 @@ export class OutlineServer implements Server {
 /** fetchTunnelConfig fetches information from a dynamic access key and attempts to parse it. */
 // TODO(daniellacosse): unit tests
 async function fetchTunnelConfig(
-  urlFetcher: ResourceFetcher,
   configLocation: URL
 ): Promise<TunnelConfigJson> {
   const responseBody = (
-    await urlFetcher.fetch(configLocation.toString())
+    await getDefaultMethodChannel().invokeMethod(
+      'FetchResource',
+      configLocation.toString()
+    )
   ).trim();
   if (!responseBody) {
     throw new errors.ServerAccessKeyInvalid(
