@@ -30,7 +30,7 @@ func TestFetchResource(t *testing.T) {
 	}))
 	defer server.Close()
 
-	result := FetchResource(server.URL)
+	result := fetchResource(server.URL)
 	require.Nil(t, result.Error)
 	require.Equal(t, "{\"name\": \"my-test-key\"}\n", result.Content)
 }
@@ -55,7 +55,7 @@ func TestFetchResource_Redirection(t *testing.T) {
 		}))
 		defer redirSvr.Close()
 
-		result := FetchResource(redirSvr.URL)
+		result := fetchResource(redirSvr.URL)
 		require.Nil(t, result.Error)
 		require.Equal(t, "ss://my-url-format-test-key\n", result.Content)
 	}
@@ -78,7 +78,7 @@ func TestFetchResource_HTTPStatusError(t *testing.T) {
 		}))
 		defer server.Close()
 
-		result := FetchResource(server.URL)
+		result := fetchResource(server.URL)
 		require.Error(t, result.Error)
 		require.Equal(t, platerrors.FetchConfigFailed, result.Error.Code)
 		require.Error(t, result.Error.Cause)
@@ -91,7 +91,7 @@ func TestFetchResource_BodyReadError(t *testing.T) {
 	}))
 	defer server.Close()
 
-	result := FetchResource(server.URL)
+	result := fetchResource(server.URL)
 	require.Error(t, result.Error)
 	require.Equal(t, platerrors.FetchConfigFailed, result.Error.Code)
 	require.Error(t, result.Error.Cause)

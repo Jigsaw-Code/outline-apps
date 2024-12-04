@@ -12,14 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {pluginExecWithErrorCode} from './plugin.cordova';
-import {ResourceFetcher} from './resource_fetcher';
+export interface MethodChannel {
+  invokeMethod(methodName: string, params: string): Promise<string>;
+}
 
-/**
- * Fetches resources using Cordova plugin.
- */
-export class CordovaResourceFetcher implements ResourceFetcher {
-  fetch(url: string): Promise<string> {
-    return pluginExecWithErrorCode<string>('fetchResource', url);
+let defaultMethodChannel: MethodChannel;
+
+export function installDefaultMethodChannel(
+  methodChannel: MethodChannel
+): void {
+  defaultMethodChannel = methodChannel;
+}
+
+export function getDefaultMethodChannel(): MethodChannel {
+  if (!defaultMethodChannel) {
+    throw new Error('default MethodChannel not installed');
   }
+  return defaultMethodChannel;
 }

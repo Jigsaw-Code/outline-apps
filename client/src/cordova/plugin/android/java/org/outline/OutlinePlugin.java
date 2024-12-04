@@ -43,7 +43,7 @@ import org.outline.vpn.Errors;
 import org.outline.vpn.VpnServiceStarter;
 import org.outline.vpn.VpnTunnelService;
 import outline.Outline;
-import outline.FetchResourceResult;
+import outline.InvokeMethodResult;
 import platerrors.Platerrors;
 import platerrors.PlatformError;
 
@@ -55,11 +55,11 @@ public class OutlinePlugin extends CordovaPlugin {
 
   // Actions supported by this plugin.
   public enum Action {
+    INVOKE_METHOD("invokeMethod"),
     START("start"),
     STOP("stop"),
     ON_STATUS_CHANGE("onStatusChange"),
     IS_RUNNING("isRunning"),
-    FETCH_RESOURCE("fetchResource"),
     INIT_ERROR_REPORTING("initializeErrorReporting"),
     REPORT_EVENTS("reportEvents"),
     QUIT("quitApplication");
@@ -191,8 +191,21 @@ public class OutlinePlugin extends CordovaPlugin {
       final String action, final JSONArray args, final CallbackContext callback) {
     cordova.getThreadPool().execute(() -> {
       try {
+        if (Action.INVOKE_METHOD.is(action)) {
+          final String methodName = args.getString(0);
+          final String input = args.getString(1);
+          LOG.fine(String.format(Locale.ROOT, "Calling InvokeMethod(%s, %s)", methodName, input));
+          final InvokeMethodResult result = Outline.invokeMethod(methodName, input);
+          if (result.getError() != null) {
+            LOG.warning(String.format(Locale.ROOT, "InvokeMethod(%s) failed: %s", methodName, result.getError()));
+            sendActionResult(callback, result.getError());
+          } else {
+            LOG.fine(String.format(Locale.ROOT, "InvokeMethod(%s) result: %s", methodName, result.getValue()));
+            callback.success(result.getValue());
+          }
+
         // Tunnel instance actions: tunnel ID is always the first argument.
-        if (Action.START.is(action)) {
+        } else if (Action.START.is(action)) {
           final String tunnelId = args.getString(0);
           final String serverName = args.getString(1);
           final String transportConfig = args.getString(2);
@@ -205,17 +218,6 @@ public class OutlinePlugin extends CordovaPlugin {
           final String tunnelId = args.getString(0);
           boolean isActive = isTunnelActive(tunnelId);
           callback.sendPluginResult(new PluginResult(PluginResult.Status.OK, isActive));
-        } else if (Action.FETCH_RESOURCE.is(action)) {
-          final String url = args.getString(0);
-          LOG.fine(String.format(Locale.ROOT, "Fetching resource at %s ...", url));
-          final FetchResourceResult result = Outline.fetchResource(url);
-          if (result.getError() != null) {
-            LOG.warning(String.format(Locale.ROOT, "Fetch resource failed: %s", result.getError()));
-            sendActionResult(callback, result.getError());
-          } else {
-            LOG.info(String.format(Locale.ROOT, "Fetch resource result: %s", result.getContent()));
-            callback.success(result.getContent());
-          }
 
           // Static actions
         } else if (Action.INIT_ERROR_REPORTING.is(action)) {

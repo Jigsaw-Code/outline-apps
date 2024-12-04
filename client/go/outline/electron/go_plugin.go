@@ -17,8 +17,8 @@ package main
 /*
 #include <stdlib.h>  // for C.free
 
-// InvokeGoAPIResult is a struct used to pass result from Go to TypeScript boundary.
-typedef struct InvokeGoAPIResult_t
+// InvokeMethodResult is a struct used to pass result from Go to TypeScript boundary.
+typedef struct InvokeMethodResult_t
 {
 	// A string representing the result of the Go function call.
 	// This may be a raw string or a JSON string depending on the API call.
@@ -28,7 +28,7 @@ typedef struct InvokeGoAPIResult_t
 	// Go function call, or NULL if no error occurred.
 	// This error can be parsed by the PlatformError in TypeScript.
 	const char *ErrorJson;
-} InvokeGoAPIResult;
+} InvokeMethodResult;
 */
 import "C"
 import (
@@ -41,14 +41,8 @@ import (
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 )
 
-// API name constants
+// Electron specific APIs
 const (
-	// FetchResourceAPI fetches a resource located at a given URL.
-	//
-	//  - Input: the URL string of the resource to fetch
-	//  - Output: the content in raw string of the fetched resource
-	FetchResourceAPI = "FetchResource"
-
 	// EstablishVPNAPI initiates a VPN connection and directs all network traffic through Outline.
 	//
 	//  - Input: a JSON string of [VPNConfig].
@@ -63,25 +57,18 @@ const (
 	CloseVPNAPI = "CloseVPN"
 )
 
-// InvokeGoAPI is the unified entry point for TypeScript to invoke various Go functions.
+// InvokeMethod is the unified entry point for TypeScript to invoke various Go functions.
 //
 // The input and output are all defined as string, but they may represent either a raw string,
 // or a JSON string depending on the API call.
 //
 // Check the API name constants comment for more details about the input and output format.
 //
-//export InvokeGoAPI
-func InvokeGoAPI(api *C.char, input *C.char) C.InvokeGoAPIResult {
-	apiName := C.GoString(api)
-	switch apiName {
-
-	case FetchResourceAPI:
-		res := outline.FetchResource(C.GoString(input))
-		return C.InvokeGoAPIResult{
-			Output:    newCGoString(res.Content),
-			ErrorJson: marshalCGoErrorJson(platerrors.ToPlatformError(res.Error)),
-		}
-
+//export InvokeMethod
+func InvokeMethod(method *C.char, input *C.char) C.InvokeMethodResult {
+	methodName := C.GoString(method)
+	switch methodName {
+	// Electron specific APIs
 	case EstablishVPNAPI:
 		res, err := EstablishVPN(C.GoString(input))
 		return C.InvokeGoAPIResult{
@@ -93,12 +80,13 @@ func InvokeGoAPI(api *C.char, input *C.char) C.InvokeGoAPIResult {
 		err := CloseVPN()
 		return C.InvokeGoAPIResult{ErrorJson: marshalCGoErrorJson(err)}
 
+	// Common APIs
 	default:
-		err := &platerrors.PlatformError{
-			Code:    platerrors.InternalError,
-			Message: fmt.Sprintf("unsupported Go API: %s", apiName),
+		result := outline.InvokeMethod(methodName, C.GoString(input))
+		return C.InvokeMethodResult{
+			Output:    newCGoString(result.Value),
+			ErrorJson: marshalCGoErrorJson(result.Error),
 		}
-		return C.InvokeGoAPIResult{ErrorJson: marshalCGoErrorJson(err)}
 	}
 }
 
