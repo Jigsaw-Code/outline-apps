@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {invokeGoApi} from './go_plugin';
+import {invokeMethod} from './go_plugin';
 import {
   StartRequestJson,
   TunnelStatus,
@@ -38,23 +38,19 @@ export async function establishVpn(request: StartRequestJson) {
     id: currentRequestId,
     interfaceName: 'outline-tun0',
     ipAddress: '10.0.85.5',
-    dnsServers: ['8.8.4.4'],
+    dnsServers: ['9.9.9.9'],
     routingTableId: 7113,
     routingPriority: 28958,
     protectionMark: 0x711e,
     transport: JSON.stringify(request.config.transport),
   };
-  const connectionJson = await invokeGoApi(
-    'EstablishVPN',
-    JSON.stringify(config)
-  );
-  console.info(JSON.parse(connectionJson));
+  await invokeMethod('EstablishVPN', JSON.stringify(config));
   statusCb?.(currentRequestId, TunnelStatus.CONNECTED);
 }
 
 export async function closeVpn(): Promise<void> {
   statusCb?.(currentRequestId!, TunnelStatus.DISCONNECTING);
-  await invokeGoApi('CloseVPN', '');
+  await invokeMethod('CloseVPN', '');
   statusCb?.(currentRequestId!, TunnelStatus.DISCONNECTED);
 }
 

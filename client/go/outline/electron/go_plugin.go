@@ -45,8 +45,8 @@ import (
 const (
 	// EstablishVPNAPI initiates a VPN connection and directs all network traffic through Outline.
 	//
-	//  - Input: a JSON string of [VPNConfig].
-	//  - Output: a JSON string of [VPNConnection].
+	//  - Input: a JSON string of vpnConfigJSON.
+	//  - Output: a JSON string of vpnConnectionJSON.
 	EstablishVPNAPI = "EstablishVPN"
 
 	// CloseVPNAPI closes an existing VPN connection and restores network traffic to the default
@@ -71,14 +71,14 @@ func InvokeMethod(method *C.char, input *C.char) C.InvokeMethodResult {
 	// Electron specific APIs
 	case EstablishVPNAPI:
 		res, err := EstablishVPN(C.GoString(input))
-		return C.InvokeGoAPIResult{
+		return C.InvokeMethodResult{
 			Output:    newCGoString(res),
 			ErrorJson: marshalCGoErrorJson(err),
 		}
 
 	case CloseVPNAPI:
 		err := CloseVPN()
-		return C.InvokeGoAPIResult{ErrorJson: marshalCGoErrorJson(err)}
+		return C.InvokeMethodResult{ErrorJson: marshalCGoErrorJson(err)}
 
 	// Common APIs
 	default:
