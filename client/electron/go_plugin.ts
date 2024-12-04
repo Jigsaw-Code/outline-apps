@@ -32,7 +32,10 @@ let invokeMethodFunc: Function | undefined;
  * Ensure that the function signature and data structures are consistent with the C definitions
  * in `./client/go/outline/electron/go_plugin.go`.
  */
-export async function invokeMethod(method: string, input: string): Promise<string> {
+export async function invokeMethod(
+  method: string,
+  input: string
+): Promise<string> {
   if (!invokeMethodFunc) {
     const backendLib = koffi.load(pathToBackendLibrary());
 
