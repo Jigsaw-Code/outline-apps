@@ -12,9 +12,9 @@ Have an invitation to connect to an Outline server? Follow these instructions to
 |Download|  |
 | ------------- | ------------- |
 | [Android ›](https://play.google.com/store/apps/details?id=org.outline.android.client) | If Google Play is not accessible, [get it here](https://s3.amazonaws.com/outline-releases/client/android/stable/Outline-Client.apk). |
-| [iOS ›](https://itunes.apple.com/app/outline-app/id1356177741) | Get Outline on the App Store |
+| [iOS ›](https://apps.apple.com/app/outline-app/id1356177741) | Get Outline on the App Store |
 | [Windows ›](https://s3.amazonaws.com/outline-releases/client/windows/stable/Outline-Client.exe) | Download Outline.exe and double click to launch. |
-| [macOS ›](https://itunes.apple.com/app/outline-app/id1356178125) | Download outline.dmg, double click to install. Add Outline to your applications folder, double click to launch. |
+| [macOS ›](https://apps.apple.com/app/outline-app/id1356178125) | Get Outline on the Mac App Store |
 | [Linux ›](https://s3.amazonaws.com/outline-releases/client/linux/stable/Outline-Client.AppImage) | Download Outline.AppImage, [make it executable](https://docs.appimage.org/introduction/quickstart.html), then double click to launch. |
 
 ## 3. Add server and connect
