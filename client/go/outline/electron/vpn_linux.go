@@ -26,9 +26,8 @@ import (
 )
 
 type linuxVPNConn struct {
-	id       string
-	status   VPNStatus
-	routeUDP *bool
+	id     string
+	status VPNStatus
 
 	fwmark      uint32
 	tunName     string
@@ -91,7 +90,7 @@ func newVPNConnection(conf *vpnConfigJSON) (_ *linuxVPNConn, perr *perrs.Platfor
 
 func (c *linuxVPNConn) ID() string        { return c.id }
 func (c *linuxVPNConn) Status() VPNStatus { return c.status }
-func (c *linuxVPNConn) RouteUDP() *bool   { return c.routeUDP }
+func (c *linuxVPNConn) RouteUDP() *bool   { return c.outline.RouteUDP() }
 
 func (c *linuxVPNConn) Establish() (perr *perrs.PlatformError) {
 	c.wgEst.Add(1)

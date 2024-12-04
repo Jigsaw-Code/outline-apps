@@ -27,8 +27,9 @@ import (
 type outlineDevice struct {
 	network.IPDevice
 
-	c   *outline.Client
-	pkt network.DelegatePacketProxy
+	c        *outline.Client
+	pkt      network.DelegatePacketProxy
+	routeUDP *bool
 
 	remote, fallback network.PacketProxy
 }
@@ -73,7 +74,22 @@ func (d *outlineDevice) Close() (err error) {
 
 func (d *outlineDevice) RefreshConnectivity() (perr *perrs.PlatformError) {
 	var err error
-	proxy := d.remote
+	result := outline.CheckTCPAndUDPConnectivity(d.c)
+	if result.TCPError != nil {
+		return result.TCPError
+	}
+
+	var proxy network.PacketProxy
+	canHandleUDP := false
+	if result.UDPError != nil {
+		slog.Warn("[OutlineNetDev] server cannot handle UDP traffic", "err", result.UDPError)
+		proxy = d.fallback
+	} else {
+		slog.Info("[OutlineNetDev] server can handle UDP traffic")
+		proxy = d.remote
+		canHandleUDP = true
+	}
+
 	if d.pkt == nil {
 		if d.pkt, err = network.NewDelegatePacketProxy(proxy); err != nil {
 			return errSetupHandler("failed to create combined datagram handler", err)
@@ -83,8 +99,13 @@ func (d *outlineDevice) RefreshConnectivity() (perr *perrs.PlatformError) {
 			return errSetupHandler("failed to update combined datagram handler", err)
 		}
 	}
-	slog.Debug("[OutlineNetDev] UDP handler refreshed")
+	d.routeUDP = &canHandleUDP
+	slog.Info("[OutlineNetDev] UDP handler refreshed", "routeUDP", canHandleUDP)
 	return nil
+}
+
+func (d *outlineDevice) RouteUDP() *bool {
+	return d.routeUDP
 }
 
 func errSetupHandler(msg string, cause error) *perrs.PlatformError {
