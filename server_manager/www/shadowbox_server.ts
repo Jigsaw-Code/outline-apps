@@ -149,16 +149,34 @@ export class ShadowboxServer implements server.Server {
     await this.api.request<void>(`access-keys/${keyId}/data-limit`, 'DELETE');
   }
 
-  async getDataUsage(): Promise<server.BytesByAccessKey> {
-    const jsonResponse =
-      await this.api.request<DataUsageByAccessKeyJson>('metrics/transfer');
-    const usageMap = new Map<server.AccessKeyId, number>();
-    for (const [accessKeyId, bytes] of Object.entries(
-      jsonResponse.bytesTransferredByUserId
-    )) {
-      usageMap.set(accessKeyId, bytes ?? 0);
+  async getServerMetrics(): Promise<server.ServerMetricsJson> {
+    try {
+      const result = await this.api.request<server.ServerMetricsJson>(
+        'experimental/server/metrics'
+      );
+
+      return result;
+    } catch (e) {
+      // fallback to metrics/transfer endpoint
+      const result: server.ServerMetricsJson = {
+        servers: [],
+        accessKeys: [],
+      };
+
+      const jsonResponse =
+        await this.api.request<DataUsageByAccessKeyJson>('metrics/transfer');
+
+      for (const [accessKeyId, bytes] of Object.entries(
+        jsonResponse.bytesTransferredByUserId
+      )) {
+        result.accessKeys.push({
+          accessKeyId: Number(accessKeyId),
+          dataTransferred: {bytes},
+        });
+      }
+
+      return result;
     }
-    return usageMap;
   }
 
   getName(): string {
