@@ -81,7 +81,6 @@ func TestFetchResource_HTTPStatusError(t *testing.T) {
 		var perr platerrors.PlatformError
 		content, err := fetchResource(server.URL)
 		require.Empty(t, content)
-		require.Error(t, err)
 		require.ErrorAs(t, err, &perr)
 		require.Equal(t, platerrors.FetchConfigFailed, perr.Code)
 		require.Error(t, perr.Cause)
@@ -97,7 +96,6 @@ func TestFetchResource_BodyReadError(t *testing.T) {
 	var perr platerrors.PlatformError
 	content, err := fetchResource(server.URL)
 	require.Empty(t, content)
-	require.Error(t, err)
 	require.ErrorAs(t, err, &perr)
 	require.Equal(t, platerrors.FetchConfigFailed, perr.Code)
 	require.Error(t, perr.Cause)
