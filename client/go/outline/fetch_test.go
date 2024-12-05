@@ -30,9 +30,9 @@ func TestFetchResource(t *testing.T) {
 	}))
 	defer server.Close()
 
-	result := fetchResource(server.URL)
-	require.Nil(t, result.Error)
-	require.Equal(t, "{\"name\": \"my-test-key\"}\n", result.Content)
+	content, err := fetchResource(server.URL)
+	require.Nil(t, err)
+	require.Equal(t, "{\"name\": \"my-test-key\"}\n", content)
 }
 
 func TestFetchResource_Redirection(t *testing.T) {
@@ -55,9 +55,9 @@ func TestFetchResource_Redirection(t *testing.T) {
 		}))
 		defer redirSvr.Close()
 
-		result := fetchResource(redirSvr.URL)
-		require.Nil(t, result.Error)
-		require.Equal(t, "ss://my-url-format-test-key\n", result.Content)
+		content, err := fetchResource(redirSvr.URL)
+		require.Nil(t, err)
+		require.Equal(t, "ss://my-url-format-test-key\n", content)
 	}
 }
 
@@ -78,10 +78,13 @@ func TestFetchResource_HTTPStatusError(t *testing.T) {
 		}))
 		defer server.Close()
 
-		result := fetchResource(server.URL)
-		require.Error(t, result.Error)
-		require.Equal(t, platerrors.FetchConfigFailed, result.Error.Code)
-		require.Error(t, result.Error.Cause)
+		var perr platerrors.PlatformError
+		content, err := fetchResource(server.URL)
+		require.Empty(t, content)
+		require.Error(t, err)
+		require.ErrorAs(t, err, &perr)
+		require.Equal(t, platerrors.FetchConfigFailed, perr.Code)
+		require.Error(t, perr.Cause)
 	}
 }
 
@@ -91,8 +94,11 @@ func TestFetchResource_BodyReadError(t *testing.T) {
 	}))
 	defer server.Close()
 
-	result := fetchResource(server.URL)
-	require.Error(t, result.Error)
-	require.Equal(t, platerrors.FetchConfigFailed, result.Error.Code)
-	require.Error(t, result.Error.Cause)
+	var perr platerrors.PlatformError
+	content, err := fetchResource(server.URL)
+	require.Empty(t, content)
+	require.Error(t, err)
+	require.ErrorAs(t, err, &perr)
+	require.Equal(t, platerrors.FetchConfigFailed, perr.Code)
+	require.Error(t, perr.Cause)
 }
