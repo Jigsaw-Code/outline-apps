@@ -80,6 +80,7 @@ namespace OutlineService
         private static string[] IPV4_RESERVED_SUBNETS = {
             "0.0.0.0/8",
             "10.0.0.0/8",
+            "127.0.0.0/8",
             "100.64.0.0/10",
             "169.254.0.0/16",
             "172.16.0.0/12",
@@ -103,6 +104,7 @@ namespace OutlineService
         private EventLog eventLog;
         private NamedPipeServerStream pipe;
         private string proxyIp;
+        private String[] excludedIPs;
         private string gatewayIp;
         private int gatewayInterfaceIndex;
 
@@ -332,15 +334,55 @@ namespace OutlineService
             switch (request.action)
             {
                 case ACTION_CONFIGURE_ROUTING:
-                    ConfigureRouting(request.parameters[PARAM_PROXY_IP], Boolean.Parse(request.parameters[PARAM_AUTO_CONNECT]));
+                    ConfigureRouting(request.parameters[PARAM_PROXY_IP],request.excludedIPs, Boolean.Parse(request.parameters[PARAM_AUTO_CONNECT]));
                     break;
                 case ACTION_RESET_ROUTING:
-                    ResetRouting(proxyIp, gatewayInterfaceIndex);
+                    ResetRouting(proxyIp,excludedIPs, gatewayInterfaceIndex);
                     break;
                 default:
                     eventLog.WriteEntry($"Received invalid request: {request.action}", EventLogEntryType.Error);
                     break;
             }
+        }
+
+         private  Boolean ThisNetworkContains(String rawIP)
+
+        {
+
+           
+
+            IPAddress IPReal = IPAddress.Parse(rawIP);
+
+            foreach (var network in IPV4_RESERVED_SUBNETS)
+
+            {
+
+
+
+      
+
+
+
+                IPNetwork2 iPnetwork = IPNetwork2.Parse(network);
+
+                if (iPnetwork.Contains(IPReal))
+
+                {
+
+                    return true;
+
+                }
+
+
+
+
+
+            }
+
+
+
+            return false;
+
         }
 
         // Routes all traffic *except that destined for the proxy server*
@@ -390,7 +432,7 @@ namespace OutlineService
         // TODO: The client needs to handle certain autoconnect failures better,
         //       e.g. if IPv4 redirect fails then the client is not really in
         //       the reconnecting state; the system is leaking traffic.
-        public void ConfigureRouting(string proxyIp, bool isAutoConnect)
+        public void ConfigureRouting(string proxyIp, String[] excluded, bool isAutoConnect)
         {
             try
             {
@@ -409,10 +451,31 @@ namespace OutlineService
                 eventLog.WriteEntry($"connecting via gateway at {gatewayIp} on interface {gatewayInterfaceIndex}");
 
                 // Set the proxy escape route first to prevent a routing loop when capturing all IPv4 traffic.
+                
                 try
                 {
                     AddOrUpdateProxyRoute(proxyIp, gatewayIp, gatewayInterfaceIndex);
                     eventLog.WriteEntry($"created route to proxy");
+
+                    if (excluded != null)
+
+                    {
+
+                        eventLog.WriteEntry("extra IP exclude");
+
+                        foreach (string excludedIp in excluded)
+
+                        {
+
+                            AddOrUpdateProxyRoute(excludedIp, gatewayIp, gatewayInterfaceIndex);
+
+                            eventLog.WriteEntry($"created extra IP route to proxy excluded {excludedIp}");
+
+                        }
+
+                        this.excludedIPs = excluded;
+
+                    }
                 }
                 catch (Exception e)
                 {
@@ -473,7 +536,7 @@ namespace OutlineService
         //    function is called while Outline is not connected. This route is
         //    mostly harmless because it only affects traffic to the proxy and
         //    if/when the user reconnects to it the route will be updated.
-        public void ResetRouting(string proxyIp, int gatewayInterfaceIndex)
+        public void ResetRouting(string proxyIp, String[] excluded, int gatewayInterfaceIndex)
         {
             try
             {
@@ -500,6 +563,48 @@ namespace OutlineService
             catch (Exception e)
             {
                 eventLog.WriteEntry($"failed to unblock IPv6: {e.Message}", EventLogEntryType.Error);
+            }
+
+            if (excluded != null)
+
+            {
+
+
+
+                eventLog.WriteEntry("extra IP to exclude");
+
+                foreach (var excludedIP in excluded)
+
+                {
+
+                   
+
+                    try
+
+                    {
+
+                        DeleteProxyRoute(excludedIP);
+
+                        eventLog.WriteEntry($"deleted extra IP route to proxy {excludedIP}");
+
+                    }
+
+                    catch (Exception e)
+
+                    {
+
+                        eventLog.WriteEntry($"failed to delete route to proxy: {e.Message}", EventLogEntryType.Error);
+
+                    }
+
+                }
+
+               
+
+
+
+                this.excludedIPs = null;
+
             }
 
             if (proxyIp != null)
@@ -629,6 +734,16 @@ namespace OutlineService
 
         private void AddOrUpdateProxyRoute(string proxyIp, string gatewayIp, int gatewayInterfaceIndex)
         {
+
+            //check if proxy IP belongs to local network then do nothing
+            if (ThisNetworkContains(proxyIp))
+
+            {
+
+                return;
+
+            }
+
             // "netsh interface ipv4 set route" does *not* work for us here
             // because it can only be used to change a route's *metric*.
             try
@@ -643,6 +758,14 @@ namespace OutlineService
 
         private void DeleteProxyRoute(string proxyIp)
         {
+            //check if proxy IP belongs to local network then do nothing
+            if (ThisNetworkContains(proxyIp))
+
+            {
+
+                return ;
+
+            }
             // "route" doesn't need to know on which interface or through which
             // gateway the route was created.
             RunCommand(CMD_ROUTE, $"delete {proxyIp}");
@@ -1072,6 +1195,9 @@ namespace OutlineService
         internal string action;
         [DataMember]
         internal Dictionary<string, string> parameters;
+        [DataMember]
+
+        internal String[] excludedIPs;
     }
 
     [DataContract]
