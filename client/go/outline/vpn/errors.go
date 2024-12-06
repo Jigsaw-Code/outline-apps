@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package vpnlinux
+package vpn
 
 import (
 	"log/slog"
@@ -21,22 +21,27 @@ import (
 )
 
 const (
-	ioLogPfx = "[IO] "
-	nlLogPfx = "[NetLink] "
-	nmLogPfx = "[NetworkManager] "
+	ioLogPfx  = "[IO] "
+	nmLogPfx  = "[NMDBus] "
+	vpnLogPfx = "[VPN] "
 )
 
-func errSetupVPN(pfx, msg string, cause error, params ...any) *perrs.PlatformError {
+func errIllegalConfig(msg string, params ...any) error {
+	return errPlatError(perrs.IllegalConfig, msg, nil, params...)
+}
+
+func errSetupVPN(pfx, msg string, cause error, params ...any) error {
 	return errPlatError(perrs.SetupSystemVPNFailed, pfx+msg, cause, params...)
 }
 
-func errCloseVPN(pfx, msg string, cause error, params ...any) *perrs.PlatformError {
+func errCloseVPN(pfx, msg string, cause error, params ...any) error {
 	return errPlatError(perrs.DisconnectSystemVPNFailed, pfx+msg, cause, params...)
 }
 
-func errPlatError(code perrs.ErrorCode, msg string, cause error, params ...any) *perrs.PlatformError {
+func errPlatError(code perrs.ErrorCode, msg string, cause error, params ...any) error {
 	logParams := append(params, "err", cause)
 	slog.Error(msg, logParams...)
+	// time.Sleep(60 * time.Second)
 
 	details := perrs.ErrorDetails{}
 	for i := 1; i < len(params); i += 2 {
@@ -44,7 +49,7 @@ func errPlatError(code perrs.ErrorCode, msg string, cause error, params ...any) 
 			details[key] = params[i]
 		}
 	}
-	return &perrs.PlatformError{
+	return perrs.PlatformError{
 		Code:    code,
 		Message: msg,
 		Details: details,

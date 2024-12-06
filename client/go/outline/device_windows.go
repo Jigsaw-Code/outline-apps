@@ -12,12 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package outline
 
-import (
-	perrs "github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
-)
+import "errors"
 
-func newOutlineDevice(transport string, fwmark uint32) (_ *outlineDevice, perr *perrs.PlatformError) {
-	return nil, perrs.NewPlatformError(perrs.InternalError, "not implemented yet")
+func createWithOpts(transport string, opts *DeviceOptions) (_ *Device, err error) {
+	return nil, errors.ErrUnsupported
 }

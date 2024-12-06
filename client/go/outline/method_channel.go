@@ -26,7 +26,34 @@ const (
 	//  - Input: the URL string of the resource to fetch
 	//  - Output: the content in raw string of the fetched resource
 	MethodFetchResource = "FetchResource"
+
+	// EstablishVPN initiates a VPN connection and directs all network traffic through Outline.
+	//
+	//  - Input: a JSON string of vpn.configJSON.
+	//  - Output: a JSON string of vpn.connectionJSON.
+	MethodEstablishVPN = "EstablishVPN"
+
+	// CloseVPN closes an existing VPN connection and restores network traffic to the default
+	// network interface.
+	//
+	//  - Input: null
+	//  - Output: null
+	MethodCloseVPN = "CloseVPN"
 )
+
+// Handler is an interface that defines a method for handling requests from TypeScript.
+type Handler func(string) (string, error)
+
+// handlers is a map of registered handlers.
+var handlers map[string]Handler
+
+// RegisterMethodHandler registers a native function handler for the given method.
+//
+// Instead of having [InvokeMethod] directly depend on other packages, we use dependency inversion
+// pattern here. This breaks Go's dependency cycle and makes the code more flexible.
+func RegisterMethodHandler(method string, handler Handler) {
+	handlers[method] = handler
+}
 
 // InvokeMethodResult represents the result of an InvokeMethod call.
 //
@@ -48,6 +75,14 @@ func InvokeMethod(method string, input string) *InvokeMethodResult {
 		}
 
 	default:
+		if h, ok := handlers[method]; ok {
+			val, err := h(input)
+			return &InvokeMethodResult{
+				Value: val,
+				Error: platerrors.ToPlatformError(err),
+			}
+		}
+
 		return &InvokeMethodResult{Error: &platerrors.PlatformError{
 			Code:    platerrors.InternalError,
 			Message: fmt.Sprintf("unsupported Go method: %s", method),

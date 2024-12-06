@@ -12,17 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package vpnlinux
+package vpn
 
-import (
-	"net"
-	"syscall"
-)
+import "github.com/Jigsaw-Code/outline-apps/client/go/outline"
 
-func ProtectSocket(d *net.Dialer, fwmark uint32) {
-	d.Control = func(network, address string, c syscall.RawConn) error {
-		return c.Control(func(fd uintptr) {
-			syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, syscall.SO_MARK, int(fwmark))
-		})
-	}
+func RegisterMethodHandlers() {
+	outline.RegisterMethodHandler(outline.MethodEstablishVPN, EstablishVPN)
+	outline.RegisterMethodHandler(outline.MethodCloseVPN, func(string) (string, error) {
+		return "", CloseVPN()
+	})
 }

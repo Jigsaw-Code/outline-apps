@@ -12,43 +12,58 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package outline
 
 import (
 	"log/slog"
 
-	"github.com/Jigsaw-Code/outline-apps/client/go/outline"
 	perrs "github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/Jigsaw-Code/outline-sdk/network"
 	"github.com/Jigsaw-Code/outline-sdk/network/dnstruncate"
 	"github.com/Jigsaw-Code/outline-sdk/network/lwip2transport"
 )
 
-type outlineDevice struct {
+type Device struct {
 	network.IPDevice
 
-	c        *outline.Client
-	pkt      network.DelegatePacketProxy
-	routeUDP *bool
+	c           *Client
+	pkt         network.DelegatePacketProxy
+	supportsUDP *bool
 
 	remote, fallback network.PacketProxy
 }
 
-func (d *outlineDevice) Connect() (perr *perrs.PlatformError) {
-	var err error
+type LinuxOptions struct {
+	FWMark uint32
+}
 
+type DeviceOptions struct {
+	LinuxOpts *LinuxOptions
+}
+
+func NewDevice(transportConfig string, opts *DeviceOptions) (*Device, error) {
+	if opts == nil || opts.LinuxOpts == nil {
+		return nil, perrs.PlatformError{
+			Code:    perrs.InternalError,
+			Message: "must provide at least one platform specific Option",
+		}
+	}
+	return createWithOpts(transportConfig, opts)
+}
+
+func (d *Device) Connect() (err error) {
 	d.remote, err = network.NewPacketProxyFromPacketListener(d.c.PacketListener)
 	if err != nil {
 		return errSetupHandler("failed to create datagram handler", err)
 	}
-	slog.Debug("[OutlineNetDev] remote UDP handler created")
+	slog.Debug("[Outline] remote UDP handler created")
 
 	if d.fallback, err = dnstruncate.NewPacketProxy(); err != nil {
 		return errSetupHandler("failed to create datagram handler for DNS fallback", err)
 	}
-	slog.Debug("[OutlineNetDev] local DNS-fallback UDP handler created")
+	slog.Debug("[Outline] local DNS-fallback UDP handler created")
 
-	if perr = d.RefreshConnectivity(); perr != nil {
+	if err = d.RefreshConnectivity(); err != nil {
 		return
 	}
 
@@ -56,23 +71,22 @@ func (d *outlineDevice) Connect() (perr *perrs.PlatformError) {
 	if err != nil {
 		return errSetupHandler("failed to configure Outline network stack", err)
 	}
-	slog.Debug("[OutlineNetDev] lwIP network stack configured")
+	slog.Debug("[Outline] lwIP network stack configured")
 
-	slog.Info("[VPN] successfully connected to Outline server")
+	slog.Info("[Outline] successfully connected to Outline server")
 	return nil
 }
 
-func (d *outlineDevice) Close() (err error) {
+func (d *Device) Close() (err error) {
 	if d.IPDevice != nil {
 		err = d.IPDevice.Close()
 	}
-	slog.Info("[VPN] successfully disconnected from Outline server")
+	slog.Info("[Outline] successfully disconnected from Outline server")
 	return
 }
 
-func (d *outlineDevice) RefreshConnectivity() (perr *perrs.PlatformError) {
-	var err error
-	result := outline.CheckTCPAndUDPConnectivity(d.c)
+func (d *Device) RefreshConnectivity() (err error) {
+	result := CheckTCPAndUDPConnectivity(d.c)
 	if result.TCPError != nil {
 		return result.TCPError
 	}
@@ -80,10 +94,10 @@ func (d *outlineDevice) RefreshConnectivity() (perr *perrs.PlatformError) {
 	var proxy network.PacketProxy
 	canHandleUDP := false
 	if result.UDPError != nil {
-		slog.Warn("[OutlineNetDev] server cannot handle UDP traffic", "err", result.UDPError)
+		slog.Warn("[Outline] server cannot handle UDP traffic", "err", result.UDPError)
 		proxy = d.fallback
 	} else {
-		slog.Info("[OutlineNetDev] server can handle UDP traffic")
+		slog.Info("[Outline] server can handle UDP traffic")
 		proxy = d.remote
 		canHandleUDP = true
 	}
@@ -97,18 +111,18 @@ func (d *outlineDevice) RefreshConnectivity() (perr *perrs.PlatformError) {
 			return errSetupHandler("failed to update combined datagram handler", err)
 		}
 	}
-	d.routeUDP = &canHandleUDP
-	slog.Info("[OutlineNetDev] UDP handler refreshed", "routeUDP", canHandleUDP)
+	d.supportsUDP = &canHandleUDP
+	slog.Info("[OutlineNetDev] UDP handler refreshed", "supportsUDP", canHandleUDP)
 	return nil
 }
 
-func (d *outlineDevice) RouteUDP() *bool {
-	return d.routeUDP
+func (d *Device) SupportsUDP() *bool {
+	return d.supportsUDP
 }
 
-func errSetupHandler(msg string, cause error) *perrs.PlatformError {
-	slog.Error("[OutlineNetDev] "+msg, "err", cause)
-	return &perrs.PlatformError{
+func errSetupHandler(msg string, cause error) error {
+	slog.Error("[Outline] "+msg, "err", cause)
+	return perrs.PlatformError{
 		Code:    perrs.SetupTrafficHandlerFailed,
 		Message: msg,
 		Cause:   perrs.ToPlatformError(cause),

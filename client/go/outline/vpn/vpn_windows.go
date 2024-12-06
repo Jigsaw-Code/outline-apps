@@ -12,12 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package vpn
 
-import (
-	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
-)
+import "errors"
 
-func newVPNConnection(conf *vpnConfigJSON) (VPNConnection, *platerrors.PlatformError) {
-	return nil, platerrors.NewPlatformError(platerrors.InternalError, "not implemented yet")
+func newVPNConnection(conf *configJSON) (VPNConnection, error) {
+	return nil, errors.ErrUnsupported
 }

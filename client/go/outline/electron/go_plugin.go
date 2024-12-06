@@ -39,23 +39,25 @@ import (
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/vpn"
 )
 
-// Electron specific APIs
-const (
-	// EstablishVPNAPI initiates a VPN connection and directs all network traffic through Outline.
-	//
-	//  - Input: a JSON string of vpnConfigJSON.
-	//  - Output: a JSON string of vpnConnectionJSON.
-	EstablishVPNAPI = "EstablishVPN"
+// init initializes the backend module.
+// It sets up a default logger based on the OUTLINE_DEBUG environment variable.
+func init() {
+	opts := slog.HandlerOptions{Level: slog.LevelInfo}
 
-	// CloseVPNAPI closes an existing VPN connection and restores network traffic to the default
-	// network interface.
-	//
-	//  - Input: null
-	//  - Output: null
-	CloseVPNAPI = "CloseVPN"
-)
+	dbg := os.Getenv("OUTLINE_DEBUG")
+	if dbg != "" && dbg != "false" && dbg != "0" {
+		opts.Level = slog.LevelDebug
+	}
+
+	logger := slog.New(slog.NewTextHandler(os.Stderr, &opts))
+	slog.SetDefault(logger)
+
+	// Register VPN handlers for desktop environments
+	vpn.RegisterMethodHandlers()
+}
 
 // InvokeMethod is the unified entry point for TypeScript to invoke various Go functions.
 //
@@ -66,27 +68,10 @@ const (
 //
 //export InvokeMethod
 func InvokeMethod(method *C.char, input *C.char) C.InvokeMethodResult {
-	methodName := C.GoString(method)
-	switch methodName {
-	// Electron specific APIs
-	case EstablishVPNAPI:
-		res, err := EstablishVPN(C.GoString(input))
-		return C.InvokeMethodResult{
-			Output:    newCGoString(res),
-			ErrorJson: marshalCGoErrorJson(err),
-		}
-
-	case CloseVPNAPI:
-		err := CloseVPN()
-		return C.InvokeMethodResult{ErrorJson: marshalCGoErrorJson(err)}
-
-	// Common APIs
-	default:
-		result := outline.InvokeMethod(methodName, C.GoString(input))
-		return C.InvokeMethodResult{
-			Output:    newCGoString(result.Value),
-			ErrorJson: marshalCGoErrorJson(result.Error),
-		}
+	result := outline.InvokeMethod(C.GoString(method), C.GoString(input))
+	return C.InvokeMethodResult{
+		Output:    newCGoString(result.Value),
+		ErrorJson: marshalCGoErrorJson(result.Error),
 	}
 }
 
@@ -123,18 +108,4 @@ func marshalCGoErrorJson(e *platerrors.PlatformError) *C.char {
 		return newCGoString(fmt.Sprintf("%s, failed to retrieve details due to: %s", e.Code, err.Error()))
 	}
 	return newCGoString(json)
-}
-
-// init initializes the backend module.
-// It sets up a default logger based on the OUTLINE_DEBUG environment variable.
-func init() {
-	opts := slog.HandlerOptions{Level: slog.LevelInfo}
-
-	dbg := os.Getenv("OUTLINE_DEBUG")
-	if dbg != "" && dbg != "false" && dbg != "0" {
-		opts.Level = slog.LevelDebug
-	}
-
-	logger := slog.New(slog.NewTextHandler(os.Stderr, &opts))
-	slog.SetDefault(logger)
 }

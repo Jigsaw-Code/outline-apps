@@ -18,9 +18,11 @@ import {
   TunnelStatus,
 } from '../src/www/app/outline_server_repository/vpn';
 
+// TODO: Separate this config into LinuxVpnConfig and WindowsVpnConfig. Some fields may share.
 interface VpnConfig {
   id: string;
   interfaceName: string;
+  connectionName: string;
   ipAddress: string;
   dnsServers: string[];
   routingTableId: number;
@@ -34,16 +36,35 @@ let currentRequestId: string | undefined = undefined;
 export async function establishVpn(request: StartRequestJson) {
   currentRequestId = request.id;
   statusCb?.(currentRequestId, TunnelStatus.RECONNECTING);
+
   const config: VpnConfig = {
     id: currentRequestId,
+
+    // TUN device name, compatible with old code:
+    // https://github.com/Jigsaw-Code/outline-apps/blob/client/linux/v1.14.0/client/electron/linux_proxy_controller/outline_proxy_controller.h#L203
     interfaceName: 'outline-tun0',
-    ipAddress: '10.0.85.5',
+
+    // Network Manager connection name, Use "TUN Connection" instead of "VPN Connection"
+    // because Network Manager has a dedicated "VPN Connection" concept that we did not implement
+    connectionName: 'Outline TUN Connection',
+
+    // TUN IP, compatible with old code:
+    // https://github.com/Jigsaw-Code/outline-apps/blob/client/linux/v1.14.0/client/electron/linux_proxy_controller/outline_proxy_controller.h#L204
+    ipAddress: '10.0.85.1',
+
+    // DNS server list, compatible with old code:
+    // https://github.com/Jigsaw-Code/outline-apps/blob/client/linux/v1.14.0/client/electron/linux_proxy_controller/outline_proxy_controller.h#L207
     dnsServers: ['9.9.9.9'],
+
+    // Outline magic numbers, 7113 and 0x711E visually resembles "T L I E" in "ouTLInE"
     routingTableId: 7113,
-    routingPriority: 28958,
+    routingPriority: 0x711e,
     protectionMark: 0x711e,
+
+    // The actual transport config
     transport: JSON.stringify(request.config.transport),
   };
+
   await invokeMethod('EstablishVPN', JSON.stringify(config));
   statusCb?.(currentRequestId, TunnelStatus.CONNECTED);
 }

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package vpn
 
 import (
 	"encoding/json"
@@ -22,49 +22,50 @@ import (
 	perrs "github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 )
 
-type vpnConfigJSON struct {
+type configJSON struct {
 	ID              string   `json:"id"`
 	InterfaceName   string   `json:"interfaceName"`
 	IPAddress       string   `json:"ipAddress"`
 	DNSServers      []string `json:"dnsServers"`
-	RoutingTableId  int      `json:"routingTableId"`
-	RoutingPriority int      `json:"routingPriority"`
+	ConnectionName  string   `json:"connectionName"`
+	RoutingTableId  uint32   `json:"routingTableId"`
+	RoutingPriority uint32   `json:"routingPriority"`
 	ProtectionMark  uint32   `json:"protectionMark"`
 	TransportConfig string   `json:"transport"`
 }
 
-type vpnConnectionJSON struct {
+type connectionJSON struct {
 	ID       string `json:"id"`
 	Status   string `json:"status"`
-	RouteUDP *bool  `json:"routeUDP"`
+	RouteUDP *bool  `json:"supportsUDP"`
 }
 
-type VPNStatus string
+type Status string
 
 const (
-	VPNConnected     VPNStatus = "Connected"
-	VPNDisconnected  VPNStatus = "Disconnected"
-	VPNConnecting    VPNStatus = "Connecting"
-	VPNDisconnecting VPNStatus = "Disconnecting"
+	Unknown       Status = "Unknown"
+	Connected     Status = "Connected"
+	Disconnected  Status = "Disconnected"
+	Connecting    Status = "Connecting"
+	Disconnecting Status = "Disconnecting"
 )
 
 type VPNConnection interface {
 	ID() string
-	Status() VPNStatus
-	RouteUDP() *bool
+	Status() Status
+	SupportsUDP() *bool
 
-	Establish() *perrs.PlatformError
-	Close() *perrs.PlatformError
+	Establish() error
+	Close() error
 }
 
 var mu sync.Mutex
 var conn VPNConnection
 
-func EstablishVPN(configStr string) (_ string, perr *perrs.PlatformError) {
-	var conf vpnConfigJSON
-	err := json.Unmarshal([]byte(configStr), &conf)
-	if err != nil {
-		return "", &perrs.PlatformError{
+func EstablishVPN(configStr string) (_ string, err error) {
+	var conf configJSON
+	if err = json.Unmarshal([]byte(configStr), &conf); err != nil {
+		return "", perrs.PlatformError{
 			Code:    perrs.IllegalConfig,
 			Message: "invalid VPN config format",
 			Cause:   perrs.ToPlatformError(err),
@@ -72,23 +73,23 @@ func EstablishVPN(configStr string) (_ string, perr *perrs.PlatformError) {
 	}
 
 	var c VPNConnection
-	if c, perr = newVPNConnection(&conf); perr != nil {
+	if c, err = newVPNConnection(&conf); err != nil {
 		return
 	}
-	if perr = atomicReplaceVPNConn(c); perr != nil {
+	if err = atomicReplaceVPNConn(c); err != nil {
 		c.Close()
 		return
 	}
-	slog.Debug("[VPN] Establishing VPN connection ...", "id", c.ID())
-	if perr = c.Establish(); perr != nil {
+	slog.Debug(vpnLogPfx+"Establishing VPN connection ...", "id", c.ID())
+	if err = c.Establish(); err != nil {
 		// No need to call c.Close() cuz it's tracked in the global conn already
 		return
 	}
-	slog.Info("[VPN] VPN connection established", "id", c.ID())
+	slog.Info(vpnLogPfx+"VPN connection established", "id", c.ID())
 
-	connJson, err := json.Marshal(vpnConnectionJSON{c.ID(), string(c.Status()), c.RouteUDP()})
+	connJson, err := json.Marshal(connectionJSON{c.ID(), string(c.Status()), c.SupportsUDP()})
 	if err != nil {
-		return "", &perrs.PlatformError{
+		return "", perrs.PlatformError{
 			Code:    perrs.InternalError,
 			Message: "failed to return VPN connection as JSON",
 			Cause:   perrs.ToPlatformError(err),
@@ -97,31 +98,31 @@ func EstablishVPN(configStr string) (_ string, perr *perrs.PlatformError) {
 	return string(connJson), nil
 }
 
-func CloseVPN() *perrs.PlatformError {
+func CloseVPN() error {
 	mu.Lock()
 	defer mu.Unlock()
 	return closeVPNNoLock()
 }
 
-func atomicReplaceVPNConn(newConn VPNConnection) *perrs.PlatformError {
+func atomicReplaceVPNConn(newConn VPNConnection) error {
 	mu.Lock()
 	defer mu.Unlock()
-	slog.Debug("[VPN] Creating VPN Connection ...", "id", newConn.ID())
+	slog.Debug(vpnLogPfx+"Creating VPN Connection ...", "id", newConn.ID())
 	if err := closeVPNNoLock(); err != nil {
 		return err
 	}
 	conn = newConn
-	slog.Info("[VPN] VPN Connection created", "id", newConn.ID())
+	slog.Info(vpnLogPfx+"VPN Connection created", "id", newConn.ID())
 	return nil
 }
 
-func closeVPNNoLock() (perr *perrs.PlatformError) {
+func closeVPNNoLock() (err error) {
 	if conn == nil {
 		return nil
 	}
-	slog.Debug("[VPN] Closing existing VPN Connection ...", "id", conn.ID())
-	if perr = conn.Close(); perr == nil {
-		slog.Info("[VPN] VPN Connection closed", "id", conn.ID())
+	slog.Debug(vpnLogPfx+"Closing existing VPN Connection ...", "id", conn.ID())
+	if err = conn.Close(); err == nil {
+		slog.Info(vpnLogPfx+"VPN Connection closed", "id", conn.ID())
 		conn = nil
 	}
 	return
