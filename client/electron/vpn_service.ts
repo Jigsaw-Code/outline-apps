@@ -19,7 +19,7 @@ import {
 } from '../src/www/app/outline_server_repository/vpn';
 
 // TODO: Separate this config into LinuxVpnConfig and WindowsVpnConfig. Some fields may share.
-interface EstablishVpnConfig {
+interface EstablishVpnRequest {
   id: string;
   interfaceName: string;
   connectionName: string;
@@ -37,7 +37,7 @@ export async function establishVpn(request: StartRequestJson) {
   currentRequestId = request.id;
   statusCb?.(currentRequestId, TunnelStatus.RECONNECTING);
 
-  const config: EstablishVpnConfig = {
+  const config: EstablishVpnRequest = {
     id: currentRequestId,
 
     // TUN device name, compatible with old code:
