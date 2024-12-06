@@ -18,7 +18,6 @@ import {OperationTimedOut} from '@outline/infrastructure/timeout_promise';
 import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import {localizeErrorCode} from './error_localizer';
-import {OutlineServerRepository} from './outline_server_repository';
 import * as config from './outline_server_repository/config';
 import {Settings, SettingsKey} from './settings';
 import {Updater} from './updater';
@@ -30,7 +29,7 @@ import {
   PlatformError,
   ROUTING_SERVICE_NOT_RUNNING,
 } from '../model/platform_error';
-import {Server} from '../model/server';
+import {Server, ServerRepository} from '../model/server';
 import {OutlineErrorReporter} from '../shared/error_reporter';
 import {ServerConnectionState, ServerListItem} from '../views/servers_view';
 import {SERVER_CONNECTION_INDICATOR_DURATION_MS} from '../views/servers_view/server_connection_indicator';
@@ -94,7 +93,7 @@ export class App {
 
   constructor(
     private eventQueue: events.EventQueue,
-    private serverRepo: OutlineServerRepository,
+    private serverRepo: ServerRepository,
     private rootEl: polymer.Base,
     private debugMode: boolean,
     urlInterceptor: UrlInterceptor | undefined,
@@ -227,9 +226,11 @@ export class App {
 
     this.eventQueue.startPublishing();
 
-    this.rootEl.$.addServerView.isValidAccessKey = (accessKey: string) => {
+    this.rootEl.$.addServerView.validateAccessKey = async (
+      accessKey: string
+    ): Promise<boolean> => {
       try {
-        config.parseAccessKey(accessKey);
+        await config.parseAccessKey(accessKey);
         return true;
       } catch {
         return false;
@@ -444,14 +445,15 @@ export class App {
   }
 
   private requestAddServer(event: CustomEvent) {
-    try {
-      this.serverRepo.add(event.detail.accessKey);
-    } catch (err) {
-      this.changeToDefaultPage();
-      this.showLocalizedError(err);
-    } finally {
-      this.rootEl.$.addServerView.open = false;
-    }
+    this.serverRepo
+      .add(event.detail.accessKey)
+      .catch(err => {
+        this.changeToDefaultPage();
+        this.showLocalizedError(err);
+      })
+      .finally(() => {
+        this.rootEl.$.addServerView.open = false;
+      });
   }
 
   private requestAddServerConfirmation(event: CustomEvent) {

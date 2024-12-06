@@ -15,6 +15,7 @@
 package outline
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
@@ -26,6 +27,11 @@ const (
 	//  - Input: the URL string of the resource to fetch
 	//  - Output: the content in raw string of the fetched resource
 	MethodFetchResource = "FetchResource"
+
+	// GetFirstHop validates a transport config and returns the first hop.
+	//  - Input: the transport config text
+	//  - Output: the host:port address of the first hop, if applicable.
+	MethodGetFirstHop = "GetFirstHop"
 )
 
 // InvokeMethodResult represents the result of an InvokeMethod call.
@@ -45,6 +51,11 @@ func InvokeMethod(method string, input string) *InvokeMethodResult {
 		return &InvokeMethodResult{
 			Value: content,
 			Error: platerrors.ToPlatformError(err),
+		}
+
+	case MethodGetFirstHop:
+		return &InvokeMethodResult{
+			Error: platerrors.ToPlatformError(errors.ErrUnsupported),
 		}
 
 	default:

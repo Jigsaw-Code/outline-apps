@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {SHADOWSOCKS_URI} from 'ShadowsocksConfig';
+import * as method_channel from '@outline/client/src/www/app/method_channel';
 
 import * as errors from '../../model/errors';
 
@@ -49,21 +49,15 @@ export class DynamicServiceConfig {
   ) {}
 }
 
-/** EndpointAddress represents the address of a TCP/UDP endpoint. */
-class EndpointAddress {
-  readonly host: string;
-  readonly port: number | undefined;
-}
-
 /**
  * TunnelConfigJson represents the configuration to set up a tunnel.
  * This is where VPN-layer parameters would go (e.g. interface IP, routes, dns, etc.).
  */
 export interface TunnelConfigJson {
-  firstHop: EndpointAddress | undefined;
+  firstHop: string;
   /** transport describes how to establish connections to the destinations.
    * See https://github.com/Jigsaw-Code/outline-apps/blob/master/client/go/outline/config.go for format. */
-  transport: TransportConfigJson;
+  transport: string;
 }
 
 /**
@@ -71,21 +65,6 @@ export interface TunnelConfigJson {
  * Application code should treat it as opaque, as it's handled by the networking layer.
  */
 export type TransportConfigJson = object;
-
-/**
- * getAddressFromTransportConfig returns the address of the tunnel server, if there's a meaningful one.
- * This is used to show the server address in the UI when connected.
- */
-function getAddressFromTransportConfig(
-  transport: TransportConfigJson
-): EndpointAddress | undefined {
-  const hostConfig: {host?: string; port?: number} = transport;
-  if (hostConfig.host) {
-    return {host: hostConfig.host, port: hostConfig?.port};
-  } else {
-    return undefined;
-  }
-}
 
 /**
  * setTransportConfigHost returns a new TransportConfigJson with the given host as the tunnel server.
@@ -103,73 +82,90 @@ export function setTransportConfigHost(
   return {...transport, host: newHost};
 }
 
+// getAddressFromTransportConfig validates the transport config and returns the address of the first hop.
+async function getAddressFromTransportConfig(
+  tunnelConfigText: string
+): Promise<string> {
+  const firstHop = await method_channel
+    .getDefaultMethodChannel()
+    .invokeMethod('GetFirstHop', tunnelConfigText);
+  return firstHop;
+}
+
 /**
  * parseTunnelConfig parses the given tunnel config as text and returns a new TunnelConfigJson.
  * The config text may be a "ss://" link or a JSON object.
  * This is used by the server to parse the config fetched from the dynamic key, and to parse
  * static keys as tunnel configs (which may be present in the dynamic config).
  */
-export function parseTunnelConfig(
+export async function parseTunnelConfig(
   tunnelConfigText: string
-): TunnelConfigJson | null {
-  // const firstHop = validateTunnelConfig(tunnelConfigText)
-  // return {firstHop: firstHop, tunnelConfig: tunnelConfigText}
-  tunnelConfigText = tunnelConfigText.trim();
-  if (tunnelConfigText.startsWith('ss://')) {
-    return staticKeyToTunnelConfig(tunnelConfigText);
-  }
-
-  const responseJson = JSON.parse(tunnelConfigText);
-
-  if ('error' in responseJson) {
-    throw new errors.SessionProviderError(
-      responseJson.error.message,
-      responseJson.error.details
-    );
-  }
-
-  // TODO(fortuna): stop converting to the Go format. Let the Go code convert.
-  // We don't validate the method because that's already done in the Go code as
-  // part of the Dynamic Key connection flow.
-  const transport: TransportConfigJson = {
-    host: responseJson.server,
-    port: responseJson.server_port,
-    method: responseJson.method,
-    password: responseJson.password,
-  };
-  if (responseJson.prefix) {
-    (transport as {prefix?: string}).prefix = responseJson.prefix;
-  }
+): Promise<TunnelConfigJson | null> {
   return {
-    transport,
-    firstHop: getAddressFromTransportConfig(transport),
+    firstHop: await getAddressFromTransportConfig(tunnelConfigText),
+    transport: tunnelConfigText,
   };
+
+  // // const firstHop = validateTunnelConfig(tunnelConfigText)
+  // // return {firstHop: firstHop, tunnelConfig: tunnelConfigText}
+  // tunnelConfigText = tunnelConfigText.trim();
+  // if (tunnelConfigText.startsWith('ss://')) {
+  //   return staticKeyToTunnelConfig(tunnelConfigText);
+  // }
+
+  // const responseJson = JSON.parse(tunnelConfigText);
+
+  // if ('error' in responseJson) {
+  //   throw new errors.SessionProviderError(
+  //     responseJson.error.message,
+  //     responseJson.error.details
+  //   );
+  // }
+
+  // // TODO(fortuna): stop converting to the Go format. Let the Go code convert.
+  // // We don't validate the method because that's already done in the Go code as
+  // // part of the Dynamic Key connection flow.
+  // const transport: TransportConfigJson = {
+  //   host: responseJson.server,
+  //   port: responseJson.server_port,
+  //   method: responseJson.method,
+  //   password: responseJson.password,
+  // };
+  // if (responseJson.prefix) {
+  //   (transport as {prefix?: string}).prefix = responseJson.prefix;
+  // }
+  // return {
+  //   transport,
+  //   firstHop: getAddressFromTransportConfig(transport),
+  // };
 }
 
 /** Parses an access key string into a TunnelConfig object. */
-function staticKeyToTunnelConfig(staticKey: string): TunnelConfigJson {
-  const config = SHADOWSOCKS_URI.parse(staticKey);
-  if (!isShadowsocksCipherSupported(config.method.data)) {
-    throw new errors.ShadowsocksUnsupportedCipher(
-      config.method.data || 'unknown'
-    );
-  }
-  const transport: TransportConfigJson = {
-    host: config.host.data,
-    port: config.port.data,
-    method: config.method.data,
-    password: config.password.data,
-  };
-  if (config.extra?.['prefix']) {
-    (transport as {prefix?: string}).prefix = config.extra?.['prefix'];
-  }
-  return {
-    transport,
-    firstHop: getAddressFromTransportConfig(transport),
-  };
-}
+// function staticKeyToTunnelConfig(staticKey: string): TunnelConfigJson {
+//   const config = SHADOWSOCKS_URI.parse(staticKey);
+//   if (!isShadowsocksCipherSupported(config.method.data)) {
+//     throw new errors.ShadowsocksUnsupportedCipher(
+//       config.method.data || 'unknown'
+//     );
+//   }
+//   const transport: TransportConfigJson = {
+//     host: config.host.data,
+//     port: config.port.data,
+//     method: config.method.data,
+//     password: config.password.data,
+//   };
+//   if (config.extra?.['prefix']) {
+//     (transport as {prefix?: string}).prefix = config.extra?.['prefix'];
+//   }
+//   return {
+//     transport,
+//     firstHop: getAddressFromTransportConfig(transport),
+//   };
+// }
 
-export function parseAccessKey(accessKey: string): ServiceConfig {
+export async function parseAccessKey(
+  accessKey: string
+): Promise<ServiceConfig> {
   try {
     accessKey = accessKey.trim();
 
@@ -178,7 +174,7 @@ export function parseAccessKey(accessKey: string): ServiceConfig {
 
     // Static ss:// keys. It encodes the full service config.
     if (accessKey.startsWith('ss://')) {
-      return new StaticServiceConfig(name, parseTunnelConfig(accessKey));
+      return new StaticServiceConfig(name, await parseTunnelConfig(accessKey));
     }
 
     // Dynamic ssconf:// keys. It encodes the location of the service config.
@@ -203,21 +199,21 @@ export function parseAccessKey(accessKey: string): ServiceConfig {
 }
 
 export function validateAccessKey(accessKey: string) {
-  parseAccessKey(accessKey);
+  getAddressFromTransportConfig(accessKey);
 }
 
-// We only support AEAD ciphers for Shadowsocks.
-// See https://shadowsocks.org/en/spec/AEAD-Ciphers.html
-const SUPPORTED_SHADOWSOCKS_CIPHERS = [
-  'chacha20-ietf-poly1305',
-  'aes-128-gcm',
-  'aes-192-gcm',
-  'aes-256-gcm',
-];
+// // We only support AEAD ciphers for Shadowsocks.
+// // See https://shadowsocks.org/en/spec/AEAD-Ciphers.html
+// const SUPPORTED_SHADOWSOCKS_CIPHERS = [
+//   'chacha20-ietf-poly1305',
+//   'aes-128-gcm',
+//   'aes-192-gcm',
+//   'aes-256-gcm',
+// ];
 
-function isShadowsocksCipherSupported(cipher?: string): boolean {
-  return SUPPORTED_SHADOWSOCKS_CIPHERS.includes(cipher);
-}
+// function isShadowsocksCipherSupported(cipher?: string): boolean {
+//   return SUPPORTED_SHADOWSOCKS_CIPHERS.includes(cipher);
+// }
 
 /**
  * serviceNameFromAccessKey extracts the service name from the access key.
