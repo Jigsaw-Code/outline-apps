@@ -51,8 +51,8 @@ func newVPNConnection(conf *configJSON) (_ *linuxVPNConn, err error) {
 		nmOpts: &nmConnectionOptions{
 			Name:            conf.ConnectionName,
 			TUNName:         conf.InterfaceName,
-			TUNAddr:         net.ParseIP(conf.IPAddress),
-			DNSServers:      make([]net.IP, 0, 2),
+			TUNAddr4:        net.ParseIP(conf.IPAddress).To4(),
+			DNSServers4:     make([]net.IP, 0, 2),
 			FWMark:          conf.ProtectionMark,
 			RoutingTable:    conf.RoutingTableId,
 			RoutingPriority: conf.RoutingPriority,
@@ -65,15 +65,15 @@ func newVPNConnection(conf *configJSON) (_ *linuxVPNConn, err error) {
 	if c.nmOpts.TUNName == "" {
 		return nil, errIllegalConfig("must provide a valid TUN interface name")
 	}
-	if c.nmOpts.TUNAddr == nil {
-		return nil, errIllegalConfig("must provide a valid TUN interface IP")
+	if c.nmOpts.TUNAddr4 == nil {
+		return nil, errIllegalConfig("must provide a valid TUN interface IP(v4)")
 	}
 	for _, dns := range conf.DNSServers {
-		dnsIP := net.ParseIP(dns)
+		dnsIP := net.ParseIP(dns).To4()
 		if dnsIP == nil {
-			return nil, errIllegalConfig("DNS server must be a valid IP", "dns", dns)
+			return nil, errIllegalConfig("DNS server must be a valid IP(v4)", "dns", dns)
 		}
-		c.nmOpts.DNSServers = append(c.nmOpts.DNSServers, dnsIP)
+		c.nmOpts.DNSServers4 = append(c.nmOpts.DNSServers4, dnsIP)
 	}
 	if conf.TransportConfig == "" {
 		return nil, errIllegalConfig("must provide a transport config")

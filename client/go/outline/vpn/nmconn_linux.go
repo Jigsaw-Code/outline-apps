@@ -27,8 +27,8 @@ import (
 type nmConnectionOptions struct {
 	Name            string
 	TUNName         string
-	TUNAddr         net.IP
-	DNSServers      []net.IP
+	TUNAddr4        net.IP
+	DNSServers4     []net.IP
 	FWMark          uint32
 	RoutingTable    uint32
 	RoutingPriority uint32
@@ -125,52 +125,54 @@ func configureTUNProps(props map[string]map[string]interface{}) {
 func configureIPv4Props(props map[string]map[string]interface{}, opts *nmConnectionOptions) {
 	props["ipv4"] = map[string]interface{}{
 		"method": "manual",
+
+		// Array of IPv4 addresses. Each address dictionary contains at least 'address' and 'prefix' entries,
+		// containing the IP address as a string, and the prefix length as a uint32.
+		"address-data": []map[string]interface{}{{
+			"address": opts.TUNAddr4.String(),
+			"prefix":  uint32(32),
+		}},
+
+		// A lower value has a higher priority.
+		// Negative values will exclude other configurations with a greater value.
+		"dns-priority": -99,
+
+		// routing domain to exclude all other DNS resolvers
+		// https://manpages.ubuntu.com/manpages/jammy/man5/resolved.conf.5.html
+		"dns-search": []string{"~."},
+
+		// NetworkManager will add these routing entries:
+		//   - default via 10.0.85.5 dev outline-tun0 table 13579 proto static metric 450
+		//   - 10.0.85.5 dev outline-tun0 table 13579 proto static scope link metric 450
+		"route-data": []map[string]interface{}{{
+			"dest":     "0.0.0.0",
+			"prefix":   uint32(0),
+			"next-hop": opts.TUNAddr4.String(),
+			"table":    opts.RoutingTable,
+		}},
+
+		// Array of dictionaries for routing rules. Each routing rule supports the following options:
+		// action (y), dport-end (q), dport-start (q), family (i), from (s), from-len (y), fwmark (u), fwmask (u),
+		// iifname (s), invert (b), ipproto (s), oifname (s), priority (u), sport-end (q), sport-start (q),
+		// supress-prefixlength (i), table (u), to (s), tos (y), to-len (y), range-end (u), range-start (u).
+		//
+		//   - not fwmark "0x711E" table "113" priority "456"
+		"routing-rules": []map[string]interface{}{{
+			"family":   unix.AF_INET,
+			"priority": opts.RoutingPriority,
+			"fwmark":   opts.FWMark,
+			"fwmask":   uint32(0xFFFFFFFF),
+			"invert":   true,
+			"table":    opts.RoutingTable,
+		}},
 	}
 
-	// Array of IPv4 addresses. Each address dictionary contains at least 'address' and 'prefix' entries,
-	// containing the IP address as a string, and the prefix length as a uint32.
-	addr := make(map[string]interface{})
-	addr["address"] = opts.TUNAddr.To4().String()
-	addr["prefix"] = uint32(32)
-	addrs := make([]map[string]interface{}, 0)
-	addrs = append(addrs, addr)
+	dnsList := make([]uint32, 0, len(opts.DNSServers4))
+	for _, dns := range opts.DNSServers4 {
+		// net.IP is already BigEndian, if we use BigEndian.Uint32, it will be reversed back to LittleEndian.
+		dnsList = append(dnsList, binary.NativeEndian.Uint32(dns))
+	}
 
-	props["ipv4"]["address-data"] = addrs
-
-	// net.IP is already BigEndian, if we use BigEndian.Uint32, it will be reversed back to LittleEndian.
-	dnsIPv4 := binary.NativeEndian.Uint32(opts.DNSServers[0].To4())
-	props["ipv4"]["dns"] = []uint32{dnsIPv4}
-
-	// A lower value has a higher priority.
-	// Negative values will exclude other configurations with a greater value.
-	props["ipv4"]["dns-priority"] = -99
-
-	// routing domain to exclude all other DNS resolvers
-	// https://manpages.ubuntu.com/manpages/jammy/man5/resolved.conf.5.html
-	props["ipv4"]["dns-search"] = []string{"~."}
-
-	// NetworkManager will add these routing entries:
-	//   - default via 10.0.85.5 dev outline-tun0 table 13579 proto static metric 450
-	//   - 10.0.85.5 dev outline-tun0 table 13579 proto static scope link metric 450
-	props["ipv4"]["route-data"] = []map[string]interface{}{{
-		"dest":     "0.0.0.0",
-		"prefix":   uint32(0),
-		"next-hop": opts.TUNAddr.To4().String(),
-		"table":    opts.RoutingTable,
-	}}
-
-	// Array of dictionaries for routing rules. Each routing rule supports the following options:
-	// action (y), dport-end (q), dport-start (q), family (i), from (s), from-len (y), fwmark (u), fwmask (u),
-	// iifname (s), invert (b), ipproto (s), oifname (s), priority (u), sport-end (q), sport-start (q),
-	// supress-prefixlength (i), table (u), to (s), tos (y), to-len (y), range-end (u), range-start (u).
-	//
-	//   - not fwmark "0x711E" table "113" priority "456"
-	props["ipv4"]["routing-rules"] = []map[string]interface{}{{
-		"family":   unix.AF_INET,
-		"priority": opts.RoutingPriority,
-		"fwmark":   opts.FWMark,
-		"fwmask":   uint32(0xFFFFFFFF),
-		"invert":   true,
-		"table":    opts.RoutingTable,
-	}}
+	// Array of IP addresses of DNS servers (as network-byte-order integers)
+	props["ipv4"]["dns"] = dnsList
 }
