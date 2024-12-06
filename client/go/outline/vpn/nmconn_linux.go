@@ -18,6 +18,7 @@ import (
 	"encoding/binary"
 	"log/slog"
 	"net"
+	"time"
 
 	gonm "github.com/Wifx/gonetworkmanager/v2"
 	"golang.org/x/sys/unix"
@@ -45,7 +46,7 @@ func (c *linuxVPNConn) establishNMConnection() (err error) {
 	}
 	slog.Debug(nmLogPfx + "connected")
 
-	dev, err := c.nm.GetDeviceByIpIface(c.nmOpts.TUNName)
+	dev, err := c.waitForDeviceToBeAvailable()
 	if err != nil {
 		return errSetupVPN(nmLogPfx, "failed to find TUN device", err, "tun", c.nmOpts.TUNName)
 	}
@@ -94,6 +95,18 @@ func (c *linuxVPNConn) closeNMConnection() error {
 	return nil
 }
 
+func (c *linuxVPNConn) waitForDeviceToBeAvailable() (dev gonm.Device, err error) {
+	for retries := 20; retries > 0; retries-- {
+		dev, err = c.nm.GetDeviceByIpIface(c.nmOpts.TUNName)
+		if dev != nil && err == nil {
+			return
+		}
+		slog.Warn(nmLogPfx+"waiting for TUN device to be available", "err", err)
+		time.Sleep(50 * time.Millisecond)
+	}
+	return nil, errSetupVPN(nmLogPfx, "failed to find TUN device", err, "tun", c.nmOpts.TUNName)
+}
+
 func configureCommonProps(props map[string]map[string]interface{}, opts *nmConnectionOptions) {
 	props["connection"] = map[string]interface{}{
 		"id":             opts.Name,
@@ -102,20 +115,20 @@ func configureCommonProps(props map[string]map[string]interface{}, opts *nmConne
 }
 
 func configureTUNProps(props map[string]map[string]interface{}) {
-	props["tun"] = make(map[string]interface{})
-
-	// The operating mode of the virtual device.
-	// Allowed values are 1 (tun) to create a layer 3 device and 2 (tap) to create an Ethernet-like layer 2 one.
-	props["tun"]["mode"] = uint32(1)
+	props["tun"] = map[string]interface{}{
+		// The operating mode of the virtual device.
+		// Allowed values are 1 (tun) to create a layer 3 device and 2 (tap) to create an Ethernet-like layer 2 one.
+		"mode": uint32(1),
+	}
 }
 
 func configureIPv4Props(props map[string]map[string]interface{}, opts *nmConnectionOptions) {
-	props["ipv4"] = make(map[string]interface{})
-	props["ipv4"]["method"] = "manual"
+	props["ipv4"] = map[string]interface{}{
+		"method": "manual",
+	}
 
 	// Array of IPv4 addresses. Each address dictionary contains at least 'address' and 'prefix' entries,
 	// containing the IP address as a string, and the prefix length as a uint32.
-
 	addr := make(map[string]interface{})
 	addr["address"] = opts.TUNAddr.To4().String()
 	addr["prefix"] = uint32(32)

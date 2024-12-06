@@ -86,8 +86,10 @@ func (d *Device) Close() (err error) {
 }
 
 func (d *Device) RefreshConnectivity() (err error) {
+	slog.Debug("[Outine] Testing connectivity of Outline server ...")
 	result := CheckTCPAndUDPConnectivity(d.c)
 	if result.TCPError != nil {
+		slog.Warn("[Outline] Outline server connectivity test failed", "err", result.TCPError)
 		return result.TCPError
 	}
 
@@ -97,7 +99,7 @@ func (d *Device) RefreshConnectivity() (err error) {
 		slog.Warn("[Outline] server cannot handle UDP traffic", "err", result.UDPError)
 		proxy = d.fallback
 	} else {
-		slog.Info("[Outline] server can handle UDP traffic")
+		slog.Debug("[Outline] server can handle UDP traffic")
 		proxy = d.remote
 		canHandleUDP = true
 	}
@@ -112,7 +114,7 @@ func (d *Device) RefreshConnectivity() (err error) {
 		}
 	}
 	d.supportsUDP = &canHandleUDP
-	slog.Info("[OutlineNetDev] UDP handler refreshed", "supportsUDP", canHandleUDP)
+	slog.Info("[Outline] Outline server connectivity test done", "supportsUDP", canHandleUDP)
 	return nil
 }
 

@@ -45,7 +45,7 @@ const (
 type Handler func(string) (string, error)
 
 // handlers is a map of registered handlers.
-var handlers map[string]Handler
+var handlers = make(map[string]Handler)
 
 // RegisterMethodHandler registers a native function handler for the given method.
 //

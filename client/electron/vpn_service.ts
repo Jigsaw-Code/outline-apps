@@ -40,7 +40,7 @@ export async function establishVpn(request: StartRequestJson) {
   const config: EstablishVpnRequest = {
     id: currentRequestId,
 
-    // TUN device name, compatible with old code:
+    // TUN device name, being compatible with old code:
     // https://github.com/Jigsaw-Code/outline-apps/blob/client/linux/v1.14.0/client/electron/linux_proxy_controller/outline_proxy_controller.h#L203
     interfaceName: 'outline-tun0',
 
@@ -48,11 +48,11 @@ export async function establishVpn(request: StartRequestJson) {
     // because Network Manager has a dedicated "VPN Connection" concept that we did not implement
     connectionName: 'Outline TUN Connection',
 
-    // TUN IP, compatible with old code:
+    // TUN IP, being compatible with old code:
     // https://github.com/Jigsaw-Code/outline-apps/blob/client/linux/v1.14.0/client/electron/linux_proxy_controller/outline_proxy_controller.h#L204
     ipAddress: '10.0.85.1',
 
-    // DNS server list, compatible with old code:
+    // DNS server list, being compatible with old code:
     // https://github.com/Jigsaw-Code/outline-apps/blob/client/linux/v1.14.0/client/electron/linux_proxy_controller/outline_proxy_controller.h#L207
     dnsServers: ['9.9.9.9'],
 
