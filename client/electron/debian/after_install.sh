@@ -34,4 +34,6 @@ set -eux
 #   > The SUID sandbox helper binary was found, but is not configured correctly.
 #   > Rather than run without sandboxing I'm aborting now. You need to make sure
 #   > that /opt/Outline/chrome-sandbox is owned by root and has mode 4755.
+#
+# https://github.com/electron/electron/issues/42510
 /usr/bin/chmod 4755 /opt/Outline/chrome-sandbox
