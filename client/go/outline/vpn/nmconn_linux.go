@@ -63,7 +63,16 @@ func (c *linuxVPNConn) establishNMConnection() (err error) {
 	configureIPv4Props(props, c.nmOpts)
 	slog.Debug(nmLogPfx+"populated NetworkManager connection settings", "settings", props)
 
-	c.ac, err = c.nm.AddAndActivateConnection(props, dev)
+	// The previous SetPropertyManaged call needs some time to take effect
+	for retries := 10; retries > 0; retries-- {
+		slog.Debug(nmLogPfx+"trying to create connection for TUN device ...", "dev", dev.GetPath())
+		c.ac, err = c.nm.AddAndActivateConnection(props, dev)
+		if err == nil {
+			break
+		}
+		slog.Debug(nmLogPfx+"waiting for TUN device being managed", "err", err)
+		time.Sleep(50 * time.Millisecond)
+	}
 	if err != nil {
 		return errSetupVPN(nmLogPfx, "failed to create new connection for device", err, "dev", dev.GetPath())
 	}
@@ -97,11 +106,12 @@ func (c *linuxVPNConn) closeNMConnection() error {
 
 func (c *linuxVPNConn) waitForDeviceToBeAvailable() (dev gonm.Device, err error) {
 	for retries := 20; retries > 0; retries-- {
+		slog.Debug(nmLogPfx+"trying to find TUN device ...", "tun", c.nmOpts.TUNName)
 		dev, err = c.nm.GetDeviceByIpIface(c.nmOpts.TUNName)
 		if dev != nil && err == nil {
 			return
 		}
-		slog.Warn(nmLogPfx+"waiting for TUN device to be available", "err", err)
+		slog.Debug(nmLogPfx+"waiting for TUN device to be available", "err", err)
 		time.Sleep(50 * time.Millisecond)
 	}
 	return nil, errSetupVPN(nmLogPfx, "failed to find TUN device", err, "tun", c.nmOpts.TUNName)
