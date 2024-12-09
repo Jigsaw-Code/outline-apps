@@ -15,34 +15,44 @@
 package vpn
 
 import (
+	"fmt"
+	"io"
 	"log/slog"
+	"time"
 
+	gonm "github.com/Wifx/gonetworkmanager/v2"
 	"github.com/songgao/water"
 )
 
-func (c *linuxVPNConn) establishTUNDevice() error {
+// newTUNDevice creates a non-persist layer 3 TUN device with the given name.
+func newTUNDevice(name string) (io.ReadWriteCloser, error) {
 	tun, err := water.New(water.Config{
 		DeviceType: water.TUN,
 		PlatformSpecificParams: water.PlatformSpecificParams{
-			Name:    c.nmOpts.TUNName,
+			Name:    name,
 			Persist: false,
 		},
 	})
 	if err != nil {
-		return errSetupVPN(ioLogPfx, "failed to create TUN device", err, "name", c.nmOpts.TUNName)
+		return nil, err
 	}
-	c.tun = tun
-	slog.Info(vpnLogPfx+"TUN device created", "name", tun.Name())
-	return nil
+	if tun.Name() != name {
+		return nil, fmt.Errorf("TUN device name mismatch: requested `%s`, created `%s`", name, tun.Name())
+	}
+	return tun, nil
 }
 
-func (c *linuxVPNConn) closeTUNDevice() error {
-	if c == nil || c.tun == nil {
-		return nil
+// waitForTUNDeviceToBeAvailable waits for the TUN device with the given name to be available
+// in the specific NetworkManager.
+func waitForTUNDeviceToBeAvailable(nm gonm.NetworkManager, name string) (dev gonm.Device, err error) {
+	for retries := 20; retries > 0; retries-- {
+		slog.Debug(nmLogPfx+"trying to find TUN device ...", "tun", name)
+		dev, err = nm.GetDeviceByIpIface(name)
+		if dev != nil && err == nil {
+			return
+		}
+		slog.Debug(nmLogPfx+"waiting for TUN device to be available", "err", err)
+		time.Sleep(50 * time.Millisecond)
 	}
-	if err := c.tun.Close(); err != nil {
-		return errCloseVPN(vpnLogPfx, "failed to close TUN device", err, "name", c.nmOpts.TUNName)
-	}
-	slog.Info(vpnLogPfx+"closed TUN device", "name", c.nmOpts.TUNName)
-	return nil
+	return nil, errSetupVPN(nmLogPfx, "failed to find TUN device", err, "tun", name)
 }

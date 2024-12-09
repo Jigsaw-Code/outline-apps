@@ -46,7 +46,7 @@ func (c *linuxVPNConn) establishNMConnection() (err error) {
 	}
 	slog.Debug(nmLogPfx + "connected")
 
-	dev, err := c.waitForDeviceToBeAvailable()
+	dev, err := waitForTUNDeviceToBeAvailable(c.nm, c.nmOpts.TUNName)
 	if err != nil {
 		return errSetupVPN(nmLogPfx, "failed to find TUN device", err, "tun", c.nmOpts.TUNName)
 	}
@@ -63,8 +63,8 @@ func (c *linuxVPNConn) establishNMConnection() (err error) {
 	configureIPv4Props(props, c.nmOpts)
 	slog.Debug(nmLogPfx+"populated NetworkManager connection settings", "settings", props)
 
-	// The previous SetPropertyManaged call needs some time to take effect
-	for retries := 10; retries > 0; retries-- {
+	// The previous SetPropertyManaged call needs some time to take effect (typically within 50ms)
+	for retries := 20; retries > 0; retries-- {
 		slog.Debug(nmLogPfx+"trying to create connection for TUN device ...", "dev", dev.GetPath())
 		c.ac, err = c.nm.AddAndActivateConnection(props, dev)
 		if err == nil {
@@ -104,19 +104,6 @@ func (c *linuxVPNConn) closeNMConnection() error {
 	return nil
 }
 
-func (c *linuxVPNConn) waitForDeviceToBeAvailable() (dev gonm.Device, err error) {
-	for retries := 20; retries > 0; retries-- {
-		slog.Debug(nmLogPfx+"trying to find TUN device ...", "tun", c.nmOpts.TUNName)
-		dev, err = c.nm.GetDeviceByIpIface(c.nmOpts.TUNName)
-		if dev != nil && err == nil {
-			return
-		}
-		slog.Debug(nmLogPfx+"waiting for TUN device to be available", "err", err)
-		time.Sleep(50 * time.Millisecond)
-	}
-	return nil, errSetupVPN(nmLogPfx, "failed to find TUN device", err, "tun", c.nmOpts.TUNName)
-}
-
 func configureCommonProps(props map[string]map[string]interface{}, opts *nmConnectionOptions) {
 	props["connection"] = map[string]interface{}{
 		"id":             opts.Name,
@@ -133,6 +120,12 @@ func configureTUNProps(props map[string]map[string]interface{}) {
 }
 
 func configureIPv4Props(props map[string]map[string]interface{}, opts *nmConnectionOptions) {
+	dnsList := make([]uint32, 0, len(opts.DNSServers4))
+	for _, dns := range opts.DNSServers4 {
+		// net.IP is already BigEndian, if we use BigEndian.Uint32, it will be reversed back to LittleEndian.
+		dnsList = append(dnsList, binary.NativeEndian.Uint32(dns))
+	}
+
 	props["ipv4"] = map[string]interface{}{
 		"method": "manual",
 
@@ -142,6 +135,9 @@ func configureIPv4Props(props map[string]map[string]interface{}, opts *nmConnect
 			"address": opts.TUNAddr4.String(),
 			"prefix":  uint32(32),
 		}},
+
+		// Array of IP addresses of DNS servers (as network-byte-order integers)
+		"dns": dnsList,
 
 		// A lower value has a higher priority.
 		// Negative values will exclude other configurations with a greater value.
@@ -176,13 +172,4 @@ func configureIPv4Props(props map[string]map[string]interface{}, opts *nmConnect
 			"table":    opts.RoutingTable,
 		}},
 	}
-
-	dnsList := make([]uint32, 0, len(opts.DNSServers4))
-	for _, dns := range opts.DNSServers4 {
-		// net.IP is already BigEndian, if we use BigEndian.Uint32, it will be reversed back to LittleEndian.
-		dnsList = append(dnsList, binary.NativeEndian.Uint32(dns))
-	}
-
-	// Array of IP addresses of DNS servers (as network-byte-order integers)
-	props["ipv4"]["dns"] = dnsList
 }

@@ -22,6 +22,8 @@ import (
 	perrs "github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 )
 
+// configJSON represents the JSON structure for setting up a VPN connection.
+// This is typically passed from TypeScript.
 type configJSON struct {
 	ID              string   `json:"id"`
 	InterfaceName   string   `json:"interfaceName"`
@@ -34,34 +36,55 @@ type configJSON struct {
 	TransportConfig string   `json:"transport"`
 }
 
+// connectionJSON defines the JSON structure of a [VPNConnection].
+// This is typically returned to TypeScript.
 type connectionJSON struct {
 	ID       string `json:"id"`
 	Status   string `json:"status"`
 	RouteUDP *bool  `json:"supportsUDP"`
 }
 
+// Status defines the possible states of a VPN connection.
 type Status string
 
+// Constants representing the different VPN connection statuses.
 const (
-	Unknown       Status = "Unknown"
-	Connected     Status = "Connected"
-	Disconnected  Status = "Disconnected"
-	Connecting    Status = "Connecting"
-	Disconnecting Status = "Disconnecting"
+	StatusUnknown       Status = "Unknown"
+	StatusConnected     Status = "Connected"
+	StatusDisconnected  Status = "Disconnected"
+	StatusConnecting    Status = "Connecting"
+	StatusDisconnecting Status = "Disconnecting"
 )
 
+// VPNConnection is a platform neutral interface of a VPN connection.
 type VPNConnection interface {
+	// ID returns the unique identifier of this VPNConnection.
+	// Typically it is passed in from the TypeScript through configJson.
 	ID() string
+
+	// Status returns the current Status of the VPNConnection.
 	Status() Status
+
+	// SupportsUDP indicates whether the remote proxy can handle UDP traffic.
+	// nil means unknown.
 	SupportsUDP() *bool
 
+	// Establish tries to connect this VPNConnection.
 	Establish() error
+
+	// Close tries to disconnect this VPNConnection.
 	Close() error
 }
 
+// The global singleton VPN connection.
+// This package allows at most one active VPN connection at the same time.
 var mu sync.Mutex
 var conn VPNConnection
 
+// EstablishVPN establishes a new active [VPNConnection] with the given configuration.
+// It will first close any active [VPNConnection] using [CloseVPN], and then mark the
+// newly created [VPNConnection] as the currently active connection.
+// It returns the connectionJSON as a string, or an error if the connection fails.
 func EstablishVPN(configStr string) (_ string, err error) {
 	var conf configJSON
 	if err = json.Unmarshal([]byte(configStr), &conf); err != nil {
@@ -98,12 +121,14 @@ func EstablishVPN(configStr string) (_ string, err error) {
 	return string(connJson), nil
 }
 
+// CloseVPN closes the currently active [VPNConnection].
 func CloseVPN() error {
 	mu.Lock()
 	defer mu.Unlock()
 	return closeVPNNoLock()
 }
 
+// atomicReplaceVPNConn atomically replaces the global conn with newConn.
 func atomicReplaceVPNConn(newConn VPNConnection) error {
 	mu.Lock()
 	defer mu.Unlock()
@@ -116,6 +141,8 @@ func atomicReplaceVPNConn(newConn VPNConnection) error {
 	return nil
 }
 
+// closeVPNNoLock closes the current VPN connection stored in conn without acquiring
+// the mutex. It is assumed that the caller holds the mutex.
 func closeVPNNoLock() (err error) {
 	if conn == nil {
 		return nil

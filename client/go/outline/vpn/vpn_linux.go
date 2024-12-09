@@ -26,6 +26,7 @@ import (
 	gonm "github.com/Wifx/gonetworkmanager/v2"
 )
 
+// linuxVPNConn implements a [VPNConnection] on Linux platform.
 type linuxVPNConn struct {
 	id     string
 	status Status
@@ -34,8 +35,8 @@ type linuxVPNConn struct {
 	cancel        context.CancelFunc
 	wgEst, wgCopy sync.WaitGroup
 
-	tun     io.ReadWriteCloser
-	outline *outline.Device
+	tun   io.ReadWriteCloser
+	proxy *outline.Device
 
 	nmOpts *nmConnectionOptions
 	nm     gonm.NetworkManager
@@ -44,10 +45,13 @@ type linuxVPNConn struct {
 
 var _ VPNConnection = (*linuxVPNConn)(nil)
 
+// newVPNConnection creates a new Linux specific [VPNConnection].
+// The newly connection will be [StatusDisconnected] initially, you need to call the
+// Establish() in order to make it [StatusConnected].
 func newVPNConnection(conf *configJSON) (_ *linuxVPNConn, err error) {
 	c := &linuxVPNConn{
 		id:     conf.ID,
-		status: Disconnected,
+		status: StatusDisconnected,
 		nmOpts: &nmConnectionOptions{
 			Name:            conf.ConnectionName,
 			TUNName:         conf.InterfaceName,
@@ -79,7 +83,7 @@ func newVPNConnection(conf *configJSON) (_ *linuxVPNConn, err error) {
 		return nil, errIllegalConfig("must provide a transport config")
 	}
 
-	c.outline, err = outline.NewDevice(conf.TransportConfig, &outline.DeviceOptions{
+	c.proxy, err = outline.NewDevice(conf.TransportConfig, &outline.DeviceOptions{
 		LinuxOpts: &outline.LinuxOptions{
 			FWMark: c.nmOpts.FWMark,
 		},
@@ -94,8 +98,9 @@ func newVPNConnection(conf *configJSON) (_ *linuxVPNConn, err error) {
 
 func (c *linuxVPNConn) ID() string         { return c.id }
 func (c *linuxVPNConn) Status() Status     { return c.status }
-func (c *linuxVPNConn) SupportsUDP() *bool { return c.outline.SupportsUDP() }
+func (c *linuxVPNConn) SupportsUDP() *bool { return c.proxy.SupportsUDP() }
 
+// Establish tries to establish this [VPNConnection], and makes it [StatusConnected].
 func (c *linuxVPNConn) Establish() (err error) {
 	c.wgEst.Add(1)
 	defer c.wgEst.Done()
@@ -103,21 +108,22 @@ func (c *linuxVPNConn) Establish() (err error) {
 		return &perrs.PlatformError{Code: perrs.OperationCanceled}
 	}
 
-	c.status = Connecting
+	c.status = StatusConnecting
 	defer func() {
 		if err == nil {
-			c.status = Connected
+			c.status = StatusConnected
 		} else {
-			c.status = Unknown
+			c.status = StatusUnknown
 		}
 	}()
 
-	if err = c.outline.Connect(); err != nil {
+	if err = c.proxy.Connect(); err != nil {
 		return
 	}
-	if err = c.establishTUNDevice(); err != nil {
-		return
+	if c.tun, err = newTUNDevice(c.nmOpts.TUNName); err != nil {
+		return errSetupVPN(ioLogPfx, "failed to create TUN device", err, "name", c.nmOpts.Name)
 	}
+	slog.Info(vpnLogPfx+"TUN device created", "name", c.nmOpts.TUNName)
 	if err = c.establishNMConnection(); err != nil {
 		return
 	}
@@ -126,30 +132,31 @@ func (c *linuxVPNConn) Establish() (err error) {
 	go func() {
 		defer c.wgCopy.Done()
 		slog.Debug(ioLogPfx + "Copying traffic from TUN Device -> OutlineDevice...")
-		n, err := io.Copy(c.outline, c.tun)
+		n, err := io.Copy(c.proxy, c.tun)
 		slog.Debug(ioLogPfx+"TUN Device -> OutlineDevice done", "n", n, "err", err)
 	}()
 	go func() {
 		defer c.wgCopy.Done()
 		slog.Debug(ioLogPfx + "Copying traffic from OutlineDevice -> TUN Device...")
-		n, err := io.Copy(c.tun, c.outline)
+		n, err := io.Copy(c.tun, c.proxy)
 		slog.Debug(ioLogPfx+"OutlineDevice -> TUN Device done", "n", n, "err", err)
 	}()
 
 	return nil
 }
 
+// Close tries to close this [VPNConnection] and make it [StatusDisconnected].
 func (c *linuxVPNConn) Close() (err error) {
 	if c == nil {
 		return nil
 	}
 
-	c.status = Disconnecting
+	c.status = StatusDisconnecting
 	defer func() {
 		if err == nil {
-			c.status = Disconnected
+			c.status = StatusDisconnected
 		} else {
-			c.status = Unknown
+			c.status = StatusUnknown
 		}
 	}()
 
@@ -157,8 +164,15 @@ func (c *linuxVPNConn) Close() (err error) {
 	c.wgEst.Wait()
 
 	c.closeNMConnection()
-	err = c.closeTUNDevice() // this is the only error that matters
-	c.outline.Close()
+	if c.tun != nil {
+		// this is the only error that matters
+		if err = c.tun.Close(); err != nil {
+			err = errCloseVPN(vpnLogPfx, "failed to close TUN device", err, "name", c.nmOpts.TUNName)
+		} else {
+			slog.Info(vpnLogPfx+"closed TUN device", "name", c.nmOpts.TUNName)
+		}
+	}
+	c.proxy.Close()
 
 	// Wait for traffic copy go routines to finish
 	c.wgCopy.Wait()
