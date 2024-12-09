@@ -15,7 +15,6 @@
 package outline
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
@@ -54,8 +53,20 @@ func InvokeMethod(method string, input string) *InvokeMethodResult {
 		}
 
 	case MethodGetFirstHop:
+		result := NewClient(input)
+		if result.Error != nil {
+			return &InvokeMethodResult{
+				Error: result.Error,
+			}
+		}
+		streamFirstHop := result.Client.StreamDialer.ConnectionProviderInfo.FirstHop
+		packetFirstHop := result.Client.StreamDialer.ConnectionProviderInfo.FirstHop
+		firstHop := ""
+		if streamFirstHop == packetFirstHop {
+			firstHop = streamFirstHop
+		}
 		return &InvokeMethodResult{
-			Error: platerrors.ToPlatformError(errors.ErrUnsupported),
+			Value: firstHop,
 		}
 
 	default:

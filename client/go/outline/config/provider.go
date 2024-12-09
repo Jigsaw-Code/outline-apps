@@ -18,6 +18,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
+)
+
+const (
+	// Provider type for nil configs.
+	ProviderTypeNil = "nil"
+)
+
+const (
+	ConfigTypeKey  = "$type"
+	ConfigValueKey = "$value"
 )
 
 type BuildFunc[ObjectType any] func(ctx context.Context, config ConfigNode) (ObjectType, error)
@@ -29,9 +40,7 @@ type TypeRegistry[ObjectType any] interface {
 
 // ExtensibleProvider creates instances of ObjectType in a way that can be extended via its [TypeRegistry] interface.
 type ExtensibleProvider[ObjectType comparable] struct {
-	// Instance to return when config is nil.
-	BaseInstance ObjectType
-	builders     map[string]BuildFunc[ObjectType]
+	builders map[string]BuildFunc[ObjectType]
 }
 
 var (
@@ -39,12 +48,16 @@ var (
 	_ TypeRegistry[any] = (*ExtensibleProvider[any])(nil)
 )
 
-// NewExtensibleProvider creates an [ExtensibleProvider] with the given base instance.
+// NewExtensibleProvider creates an [ExtensibleProvider].
 func NewExtensibleProvider[ObjectType comparable](baseInstance ObjectType) *ExtensibleProvider[ObjectType] {
-	return &ExtensibleProvider[ObjectType]{
-		BaseInstance: baseInstance,
-		builders:     make(map[string]BuildFunc[ObjectType]),
+	p := &ExtensibleProvider[ObjectType]{
+		builders: make(map[string]BuildFunc[ObjectType]),
 	}
+	var zero ObjectType
+	if baseInstance != zero {
+		p.RegisterType(ProviderTypeNil, func(ctx context.Context, config ConfigNode) (ObjectType, error) { return baseInstance, nil })
+	}
+	return p
 }
 
 func (p *ExtensibleProvider[ObjectType]) ensureBuildersMap() map[string]BuildFunc[ObjectType] {
@@ -62,28 +75,49 @@ func (p *ExtensibleProvider[ObjectType]) RegisterType(subtype string, newInstanc
 // NewInstance creates a new instance of ObjectType according to the config.
 func (p *ExtensibleProvider[ObjectType]) NewInstance(ctx context.Context, config ConfigNode) (ObjectType, error) {
 	var zero ObjectType
-	if config == nil {
-		if p.BaseInstance == zero {
-			return zero, errors.New("base instance is not configured")
+	var typeName string
+	var normConfig any
+	switch typed := config.(type) {
+	case nil:
+		typeName = ProviderTypeNil
+		normConfig = nil
+
+	case map[string]any:
+		typeAny, ok := typed[ConfigTypeKey]
+		if !ok {
+			// TODO(fortuna): handle default case. Perhaps a default type setter?
+			return zero, errors.New("subtype missing")
 		}
-		return p.BaseInstance, nil
+		typeName, ok = typeAny.(string)
+		if !ok {
+			return zero, fmt.Errorf("subtype must be a string, found %T", typeAny)
+		}
+
+		// Value is an explicit field: {$type: ..., $value: ...}.
+		normConfig, ok = typed[ConfigValueKey]
+		if ok {
+			break
+		}
+
+		// $type is embedded in the value: {$type: ..., ...}.
+		// Need to copy value and remove the type directive.
+		configCopy := make(map[string]any, len(typed))
+		for k, v := range typed {
+			if len(k) > 0 && k[0] == '$' {
+				continue
+			}
+			configCopy[k] = v
+		}
+		normConfig = configCopy
+
+	default:
+		typeName = reflect.TypeOf(typed).String()
+		normConfig = typed
 	}
 
-	configMap, ok := config.(map[string]any)
+	newInstance, ok := p.ensureBuildersMap()[typeName]
 	if !ok {
-		return zero, fmt.Errorf("config type must be map[string]any, found %T", config)
+		return zero, fmt.Errorf("config subtype '%v' is not registered", typeName)
 	}
-	subtypeAny, ok := configMap["$type"]
-	if !ok {
-		return zero, errors.New("subtype missing")
-	}
-	subtype, ok := subtypeAny.(string)
-	if !ok {
-		return zero, fmt.Errorf("subtype must be a string, found %T", subtypeAny)
-	}
-	newInstance, ok := p.ensureBuildersMap()[subtype]
-	if !ok {
-		return zero, fmt.Errorf("config subtype '%v' is not registered", subtype)
-	}
-	return newInstance(ctx, config)
+	return newInstance(ctx, normConfig)
 }

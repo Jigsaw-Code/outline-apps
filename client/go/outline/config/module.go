@@ -86,6 +86,7 @@ type ProviderContainer struct {
 func NewProviderContainer() *ProviderContainer {
 	defaultStreamDialer := &StreamDialer{ConnectionProviderInfo{ConnTypeDirect, ""}, &transport.TCPDialer{}}
 	defaultPacketDialer := &PacketDialer{ConnectionProviderInfo{ConnTypeDirect, ""}, &transport.UDPDialer{}}
+
 	return &ProviderContainer{
 		StreamDialers:   NewExtensibleProvider(defaultStreamDialer),
 		PacketDialers:   NewExtensibleProvider(defaultPacketDialer),
@@ -98,7 +99,12 @@ func NewProviderContainer() *ProviderContainer {
 // RegisterDefaultProviders registers a set of default providers with the providers in [ProviderContainer].
 func RegisterDefaultProviders(c *ProviderContainer) *ProviderContainer {
 	registerShadowsocksStreamDialer(c.StreamDialers, "ss", c.StreamEndpoints.NewInstance)
+	registerShadowsocksStreamDialer(c.StreamDialers, "string", c.StreamEndpoints.NewInstance)
+
 	registerShadowsocksPacketDialer(c.PacketDialers, "ss", c.PacketEndpoints.NewInstance)
+	registerShadowsocksPacketDialer(c.PacketDialers, "string", c.PacketEndpoints.NewInstance)
+
 	registerShadowsocksPacketListener(c.PacketListeners, "ss", c.PacketEndpoints.NewInstance)
+	registerShadowsocksPacketListener(c.PacketListeners, "string", c.PacketEndpoints.NewInstance)
 	return c
 }

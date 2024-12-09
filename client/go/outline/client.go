@@ -19,15 +19,14 @@ import (
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/config"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
-	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
 // Client provides a transparent container for [transport.StreamDialer] and [transport.PacketListener]
 // that is exportable (as an opaque object) via gobind.
 // It's used by the connectivity test and the tun2socks handlers.
 type Client struct {
-	transport.StreamDialer
-	transport.PacketListener
+	*config.StreamDialer
+	*config.PacketListener
 }
 
 // NewClientResult represents the result of [NewClientAndReturnError].
