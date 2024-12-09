@@ -1054,10 +1054,8 @@ export class App {
       serverView.totalDevices = serverView.totalUserHours / (30 * 24);
 
       let totalInboundBytes = 0;
-      for (const {
-        dataTransferred: {bytes},
-      } of serverMetrics.accessKeys) {
-        totalInboundBytes += bytes;
+      for (const dataTransferred of serverMetrics.accessKeys) {
+        totalInboundBytes += dataTransferred.bytes;
       }
 
       serverView.totalInboundBytes = totalInboundBytes;
