@@ -57,7 +57,7 @@ export class ServerRenameDialog extends LitElement {
       <md-dialog .open=${this.open} @close=${this.handleClose} quick>
         <header slot="headline">${this.localize('server-rename')}</header>
         <!-- 
-          on older versions of iOS, md-textfield triggers itself indefinitely here,
+          On older versions of iOS, md-textfield triggers itself indefinitely here,
           so we must use mwc-textfield
         -->
         <mwc-textfield
