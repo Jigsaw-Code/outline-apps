@@ -36,32 +36,17 @@ type ConnectionProviderInfo struct {
 	FirstHop string
 }
 
-type StreamDialer struct {
-	ConnectionProviderInfo
-	transport.StreamDialer
-}
-
-type PacketDialer struct {
-	ConnectionProviderInfo
-	transport.PacketDialer
-}
-
 type PacketListener struct {
 	ConnectionProviderInfo
 	transport.PacketListener
 }
 
-type GenericDialer[ConnType any] interface {
-	Dial(ctx context.Context, address string) (ConnType, error)
+type DialFunc[ConnType any] func(ctx context.Context, address string) (ConnType, error)
+
+type Dialer[ConnType any] struct {
+	ConnectionProviderInfo
+	Dial DialFunc[ConnType]
 }
-
-type FuncGenericDialer[ConnType any] func(ctx context.Context, address string) (ConnType, error)
-
-func (d FuncGenericDialer[ConnType]) Dial(ctx context.Context, address string) (ConnType, error) {
-	return d(ctx, address)
-}
-
-var _ GenericDialer[any] = (FuncGenericDialer[any])(nil)
 
 type GenericEndpoint[ConnType any] interface {
 	Connect(ctx context.Context) (ConnType, error)
@@ -75,29 +60,31 @@ type Endpoint[ConnType any] struct {
 // ProviderContainer contains providers for the creation of network objects based on a config. The config is
 // extensible by registering providers for different config subtypes.
 type ProviderContainer struct {
-	StreamDialers   *ExtensibleProvider[*StreamDialer]
-	PacketDialers   *ExtensibleProvider[*PacketDialer]
+	StreamDialers   *ExtensibleProvider[*Dialer[transport.StreamConn]]
+	PacketDialers   *ExtensibleProvider[*Dialer[net.Conn]]
 	PacketListeners *ExtensibleProvider[*PacketListener]
-	StreamEndpoints *EndpointProvider[transport.StreamConn]
+	StreamEndpoints *ExtensibleProvider[*Endpoint[transport.StreamConn]]
 	PacketEndpoints *EndpointProvider[net.Conn]
 }
 
 // NewProviderContainer creates a [ProviderContainer] with the base instances properly initialized.
 func NewProviderContainer() *ProviderContainer {
-	defaultStreamDialer := &StreamDialer{ConnectionProviderInfo{ConnTypeDirect, ""}, &transport.TCPDialer{}}
-	defaultPacketDialer := &PacketDialer{ConnectionProviderInfo{ConnTypeDirect, ""}, &transport.UDPDialer{}}
+	defaultStreamDialer := &Dialer[transport.StreamConn]{ConnectionProviderInfo{ConnTypeDirect, ""}, (&transport.TCPDialer{}).DialStream}
+	defaultPacketDialer := &Dialer[net.Conn]{ConnectionProviderInfo{ConnTypeDirect, ""}, (&transport.UDPDialer{}).DialPacket}
 
 	return &ProviderContainer{
 		StreamDialers:   NewExtensibleProvider(defaultStreamDialer),
 		PacketDialers:   NewExtensibleProvider(defaultPacketDialer),
 		PacketListeners: NewExtensibleProvider(&PacketListener{ConnectionProviderInfo{ConnTypeDirect, ""}, &transport.UDPListener{}}),
-		StreamEndpoints: &EndpointProvider[transport.StreamConn]{BaseDialer: FuncGenericDialer[transport.StreamConn](defaultStreamDialer.DialStream)},
-		PacketEndpoints: &EndpointProvider[net.Conn]{BaseDialer: FuncGenericDialer[net.Conn](defaultPacketDialer.DialPacket)},
+		StreamEndpoints: NewExtensibleProvider[*Endpoint[transport.StreamConn]](nil),
+		// PacketEndpoints: &EndpointProvider[net.Conn]{BaseDialer: FuncGenericDialer[net.Conn](defaultPacketDialer.DialPacket)},
 	}
 }
 
 // RegisterDefaultProviders registers a set of default providers with the providers in [ProviderContainer].
 func RegisterDefaultProviders(c *ProviderContainer) *ProviderContainer {
+	registerDirectStreamEndpoint(c.StreamEndpoints, "string", c.StreamDialers.NewInstance)
+
 	registerShadowsocksStreamDialer(c.StreamDialers, "ss", c.StreamEndpoints.NewInstance)
 	registerShadowsocksStreamDialer(c.StreamDialers, "string", c.StreamEndpoints.NewInstance)
 

@@ -24,7 +24,35 @@ import (
 
 type DialEndpointConfig struct {
 	Address string
-	// TODO(fortuna): Add dialer config.
+	Dialer  ConfigNode
+}
+
+// TODO(fortuna): implement Endpoint firstHop.
+func registerDirectStreamEndpoint[ConnType any](r TypeRegistry[*Endpoint[ConnType]], typeID string, newDialer BuildFunc[*Dialer[ConnType]]) {
+	r.RegisterType(typeID, func(ctx context.Context, config ConfigNode) (*Endpoint[ConnType], error) {
+		if config == nil {
+			return nil, errors.New("endpoint config cannot be nil")
+		}
+
+		dialParams, err := parseEndpointConfig(config)
+		if err != nil {
+			return nil, err
+		}
+
+		dialer, err := newDialer(ctx, dialParams.Dialer)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create sub-dialer: %w", err)
+		}
+
+		endpoint := &Endpoint[ConnType]{
+			GenericEndpoint:        &GenericDialerEndpoint[ConnType]{Address: dialParams.Address, Dial: dialer.Dial},
+			ConnectionProviderInfo: dialer.ConnectionProviderInfo,
+		}
+		if dialer.ConnType == ConnTypeDirect {
+			endpoint.ConnectionProviderInfo.FirstHop = dialParams.Address
+		}
+		return endpoint, nil
+	})
 }
 
 func parseEndpointConfig(node ConfigNode) (*DialEndpointConfig, error) {
@@ -72,8 +100,8 @@ func toDialEndpointConfig(node ConfigNode) (*DialEndpointConfig, error) {
 
 // EndpointProvider creates instances of EndpointType in a way that can be extended via its [TypeRegistry] interface.
 type EndpointProvider[ConnType any] struct {
-	BaseDialer GenericDialer[ConnType]
-	builders   map[string]BuildFunc[GenericEndpoint[ConnType]]
+	BaseDial DialFunc[ConnType]
+	builders map[string]BuildFunc[GenericEndpoint[ConnType]]
 }
 
 func (p *EndpointProvider[ConnType]) ensureBuildersMap() map[string]BuildFunc[GenericEndpoint[ConnType]] {
@@ -99,16 +127,15 @@ func (p *EndpointProvider[ConnType]) NewInstance(ctx context.Context, node Confi
 		return nil, err
 	}
 
-	dialer := p.BaseDialer
-	endpoint := &GenericDialerEndpoint[ConnType]{Address: dialParams.Address, Dialer: dialer}
+	endpoint := &GenericDialerEndpoint[ConnType]{Address: dialParams.Address, Dial: p.BaseDial}
 	return &Endpoint[ConnType]{ConnectionProviderInfo{ConnTypeDirect, dialParams.Address}, endpoint}, nil
 }
 
 type GenericDialerEndpoint[ConnType any] struct {
 	Address string
-	Dialer  GenericDialer[ConnType]
+	Dial    func(ctx context.Context, address string) (ConnType, error)
 }
 
 func (e *GenericDialerEndpoint[ConnType]) Connect(ctx context.Context) (ConnType, error) {
-	return e.Dialer.Dial(ctx, e.Address)
+	return e.Dial(ctx, e.Address)
 }

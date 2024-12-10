@@ -43,8 +43,8 @@ type LegacyShadowsocksConfig struct {
 	Prefix      string
 }
 
-func registerShadowsocksStreamDialer(r TypeRegistry[*StreamDialer], typeID string, newSE BuildFunc[*Endpoint[transport.StreamConn]]) {
-	r.RegisterType(typeID, func(ctx context.Context, config ConfigNode) (*StreamDialer, error) {
+func registerShadowsocksStreamDialer(r TypeRegistry[*Dialer[transport.StreamConn]], typeID string, newSE BuildFunc[*Endpoint[transport.StreamConn]]) {
+	r.RegisterType(typeID, func(ctx context.Context, config ConfigNode) (*Dialer[transport.StreamConn], error) {
 		params, err := newShadowsocksParams(config)
 		if err != nil {
 			return nil, err
@@ -60,12 +60,12 @@ func registerShadowsocksStreamDialer(r TypeRegistry[*StreamDialer], typeID strin
 		if params.SaltGenerator != nil {
 			dialer.SaltGenerator = params.SaltGenerator
 		}
-		return &StreamDialer{ConnectionProviderInfo{ConnTypeTunneled, endpoint.FirstHop}, dialer}, nil
+		return &Dialer[transport.StreamConn]{ConnectionProviderInfo{ConnTypeTunneled, endpoint.FirstHop}, dialer.DialStream}, nil
 	})
 }
 
-func registerShadowsocksPacketDialer(r TypeRegistry[*PacketDialer], typeID string, newPE BuildFunc[*Endpoint[net.Conn]]) {
-	r.RegisterType(typeID, func(ctx context.Context, config ConfigNode) (*PacketDialer, error) {
+func registerShadowsocksPacketDialer(r TypeRegistry[*Dialer[net.Conn]], typeID string, newPE BuildFunc[*Endpoint[net.Conn]]) {
+	r.RegisterType(typeID, func(ctx context.Context, config ConfigNode) (*Dialer[net.Conn], error) {
 		params, err := newShadowsocksParams(config)
 		if err != nil {
 			return nil, err
@@ -80,7 +80,7 @@ func registerShadowsocksPacketDialer(r TypeRegistry[*PacketDialer], typeID strin
 		}
 		// TODO: support UDP prefix.
 		dialer := transport.PacketListenerDialer{Listener: pl}
-		return &PacketDialer{ConnectionProviderInfo{ConnTypeTunneled, endpoint.FirstHop}, dialer}, nil
+		return &Dialer[net.Conn]{ConnectionProviderInfo{ConnTypeTunneled, endpoint.FirstHop}, dialer.DialPacket}, nil
 
 	})
 }

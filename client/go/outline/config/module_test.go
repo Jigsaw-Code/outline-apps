@@ -40,7 +40,7 @@ secret: SECRET`)
 	d, err := providers.StreamDialers.NewInstance(context.Background(), node)
 	require.NoError(t, err)
 
-	require.NotNil(t, d.StreamDialer)
+	require.NotNil(t, d.Dial)
 	require.Equal(t, "example.com:1234", d.FirstHop)
 	require.Equal(t, ConnTypeTunneled, d.ConnType)
 }
@@ -54,7 +54,7 @@ func TestRegisterParseURL(t *testing.T) {
 	d, err := providers.StreamDialers.NewInstance(context.Background(), node)
 	require.NoError(t, err)
 
-	require.NotNil(t, d.StreamDialer)
+	require.NotNil(t, d.Dial)
 	require.Equal(t, "example.com:4321", d.FirstHop)
 	require.Equal(t, ConnTypeTunneled, d.ConnType)
 }
