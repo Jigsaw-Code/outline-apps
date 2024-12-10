@@ -36,8 +36,8 @@ export interface Server {
   // Lists the access keys for this server, including the admin.
   listAccessKeys(): Promise<AccessKey[]>;
 
-  // Returns stats for bytes transferred across all access keys of this server.
-  getDataUsage(): Promise<BytesByAccessKey>;
+  // Returns server metrics
+  getServerMetrics(): Promise<ServerMetricsJson>;
 
   // Adds a new access key to this server.
   addAccessKey(): Promise<AccessKey>;
@@ -186,10 +186,31 @@ export interface AccessKey {
   dataLimit?: DataLimit;
 }
 
-export type BytesByAccessKey = Map<AccessKeyId, number>;
-
 // Data transfer allowance, measured in bytes.
 // NOTE: Must be kept in sync with the definition in src/shadowbox/access_key.ts.
 export interface DataLimit {
   readonly bytes: number;
 }
+
+export type ServerMetricsJson = {
+  server: {
+    location: string;
+    asn: number;
+    asOrg: string;
+    tunnelTime?: {
+      seconds: number;
+    };
+    dataTransferred?: {
+      bytes: number;
+    };
+  }[];
+  accessKeys: {
+    accessKeyId: number;
+    tunnelTime?: {
+      seconds: number;
+    };
+    dataTransferred?: {
+      bytes: number;
+    };
+  }[];
+};
