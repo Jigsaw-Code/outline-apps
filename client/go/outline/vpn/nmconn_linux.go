@@ -104,6 +104,9 @@ func (c *linuxVPNConn) closeNMConnection() error {
 	return nil
 }
 
+// NetworkManager settings reference:
+//   https://networkmanager.pages.freedesktop.org/NetworkManager/NetworkManager/nm-settings-dbus.html
+
 func configureCommonProps(props map[string]map[string]interface{}, opts *nmConnectionOptions) {
 	props["connection"] = map[string]interface{}{
 		"id":             opts.Name,
@@ -141,6 +144,7 @@ func configureIPv4Props(props map[string]map[string]interface{}, opts *nmConnect
 
 		// A lower value has a higher priority.
 		// Negative values will exclude other configurations with a greater value.
+		// The default value is 50 for VPN connections (and 100 for regular connections).
 		"dns-priority": -99,
 
 		// routing domain to exclude all other DNS resolvers
