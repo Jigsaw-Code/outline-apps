@@ -170,7 +170,7 @@ export class FakeServer implements server.Server {
   }
   getServerMetrics() {
     return Promise.resolve({
-      servers: [
+      server: [
         {
           location: '',
           asn: 0,

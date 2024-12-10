@@ -1043,18 +1043,16 @@ export class App {
       const serverMetrics = await selectedServer.getServerMetrics();
 
       let totalUserHours = 0;
-      for (const {
-        tunnelTime: {seconds},
-      } of serverMetrics.servers) {
+      for (const {tunnelTime} of serverMetrics.server) {
         // convert to hours
-        totalUserHours += seconds / (60 * 60);
+        totalUserHours += tunnelTime.seconds / (60 * 60);
       }
 
       serverView.totalUserHours = totalUserHours;
       serverView.totalDevices = serverView.totalUserHours / (30 * 24);
 
       let totalInboundBytes = 0;
-      for (const dataTransferred of serverMetrics.accessKeys) {
+      for (const {dataTransferred} of serverMetrics.accessKeys) {
         totalInboundBytes += dataTransferred.bytes;
       }
 

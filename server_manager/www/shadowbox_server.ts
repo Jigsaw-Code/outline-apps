@@ -159,7 +159,7 @@ export class ShadowboxServer implements server.Server {
     } catch (e) {
       // fallback to metrics/transfer endpoint
       const result: server.ServerMetricsJson = {
-        servers: [],
+        server: [],
         accessKeys: [],
       };
 

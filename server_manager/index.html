@@ -29,7 +29,10 @@
     />
 
     <style>
-      /* We declare this here to sidestep webpack */
+      /* 
+        TODO: currently webpack wants to relove the `url` link here but doesen't know how.
+        Index.html isn't transformed by webpack, so this sidesteps the issue, but ideally we teach webpack how to handle this filetype.
+      */
       @font-face {
         font-family: 'Material Icons';
         font-style: normal;
