@@ -25,7 +25,7 @@ let package = Package(
         // See https://github.com/CocoaLumberjack/CocoaLumberjack/releases/tag/3.8.0.
         // These cannot be upgraded without also upgrading the entire project.
        .iOS(.v13),
-       .macOS(.v10_15),
+       .macOS(.v12),
     ],
     products: [
         .library(
