@@ -28,7 +28,7 @@ type DialEndpointConfig struct {
 }
 
 // TODO(fortuna): implement Endpoint firstHop.
-func registerDirectStreamEndpoint[ConnType any](r TypeRegistry[*Endpoint[ConnType]], typeID string, newDialer BuildFunc[*Dialer[ConnType]]) {
+func registerDirectDialEndpoint[ConnType any](r TypeRegistry[*Endpoint[ConnType]], typeID string, newDialer BuildFunc[*Dialer[ConnType]]) {
 	r.RegisterType(typeID, func(ctx context.Context, config ConfigNode) (*Endpoint[ConnType], error) {
 		if config == nil {
 			return nil, errors.New("endpoint config cannot be nil")
@@ -45,7 +45,10 @@ func registerDirectStreamEndpoint[ConnType any](r TypeRegistry[*Endpoint[ConnTyp
 		}
 
 		endpoint := &Endpoint[ConnType]{
-			GenericEndpoint:        &GenericDialerEndpoint[ConnType]{Address: dialParams.Address, Dial: dialer.Dial},
+			Connect: func(ctx context.Context) (ConnType, error) {
+				return dialer.Dial(ctx, dialParams.Address)
+
+			},
 			ConnectionProviderInfo: dialer.ConnectionProviderInfo,
 		}
 		if dialer.ConnType == ConnTypeDirect {
@@ -96,46 +99,4 @@ func toDialEndpointConfig(node ConfigNode) (*DialEndpointConfig, error) {
 	default:
 		return nil, fmt.Errorf("endpoint config of type %T is not supported", typed)
 	}
-}
-
-// EndpointProvider creates instances of EndpointType in a way that can be extended via its [TypeRegistry] interface.
-type EndpointProvider[ConnType any] struct {
-	BaseDial DialFunc[ConnType]
-	builders map[string]BuildFunc[GenericEndpoint[ConnType]]
-}
-
-func (p *EndpointProvider[ConnType]) ensureBuildersMap() map[string]BuildFunc[GenericEndpoint[ConnType]] {
-	if p.builders == nil {
-		p.builders = make(map[string]BuildFunc[GenericEndpoint[ConnType]])
-	}
-	return p.builders
-}
-
-// RegisterType will register a factory for the given subtype.
-func (p *EndpointProvider[ConnType]) RegisterType(subtype string, newInstance BuildFunc[GenericEndpoint[ConnType]]) {
-	p.ensureBuildersMap()[subtype] = newInstance
-}
-
-// NewInstance creates a new instance of ObjectType according to the config.
-func (p *EndpointProvider[ConnType]) NewInstance(ctx context.Context, node ConfigNode) (*Endpoint[ConnType], error) {
-	if node == nil {
-		return nil, errors.New("endpoint config cannot be nil")
-	}
-
-	dialParams, err := parseEndpointConfig(node)
-	if err != nil {
-		return nil, err
-	}
-
-	endpoint := &GenericDialerEndpoint[ConnType]{Address: dialParams.Address, Dial: p.BaseDial}
-	return &Endpoint[ConnType]{ConnectionProviderInfo{ConnTypeDirect, dialParams.Address}, endpoint}, nil
-}
-
-type GenericDialerEndpoint[ConnType any] struct {
-	Address string
-	Dial    func(ctx context.Context, address string) (ConnType, error)
-}
-
-func (e *GenericDialerEndpoint[ConnType]) Connect(ctx context.Context) (ConnType, error) {
-	return e.Dial(ctx, e.Address)
 }

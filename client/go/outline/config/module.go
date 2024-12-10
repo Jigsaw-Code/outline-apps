@@ -48,13 +48,11 @@ type Dialer[ConnType any] struct {
 	Dial DialFunc[ConnType]
 }
 
-type GenericEndpoint[ConnType any] interface {
-	Connect(ctx context.Context) (ConnType, error)
-}
+type ConnectFunc[ConnType any] func(ctx context.Context) (ConnType, error)
 
 type Endpoint[ConnType any] struct {
 	ConnectionProviderInfo
-	GenericEndpoint[ConnType]
+	Connect ConnectFunc[ConnType]
 }
 
 // ProviderContainer contains providers for the creation of network objects based on a config. The config is
@@ -64,7 +62,7 @@ type ProviderContainer struct {
 	PacketDialers   *ExtensibleProvider[*Dialer[net.Conn]]
 	PacketListeners *ExtensibleProvider[*PacketListener]
 	StreamEndpoints *ExtensibleProvider[*Endpoint[transport.StreamConn]]
-	PacketEndpoints *EndpointProvider[net.Conn]
+	PacketEndpoints *ExtensibleProvider[*Endpoint[net.Conn]]
 }
 
 // NewProviderContainer creates a [ProviderContainer] with the base instances properly initialized.
@@ -77,13 +75,16 @@ func NewProviderContainer() *ProviderContainer {
 		PacketDialers:   NewExtensibleProvider(defaultPacketDialer),
 		PacketListeners: NewExtensibleProvider(&PacketListener{ConnectionProviderInfo{ConnTypeDirect, ""}, &transport.UDPListener{}}),
 		StreamEndpoints: NewExtensibleProvider[*Endpoint[transport.StreamConn]](nil),
-		// PacketEndpoints: &EndpointProvider[net.Conn]{BaseDialer: FuncGenericDialer[net.Conn](defaultPacketDialer.DialPacket)},
+		PacketEndpoints: NewExtensibleProvider[*Endpoint[net.Conn]](nil),
 	}
 }
 
 // RegisterDefaultProviders registers a set of default providers with the providers in [ProviderContainer].
 func RegisterDefaultProviders(c *ProviderContainer) *ProviderContainer {
-	registerDirectStreamEndpoint(c.StreamEndpoints, "string", c.StreamDialers.NewInstance)
+	registerDirectDialEndpoint(c.StreamEndpoints, "string", c.StreamDialers.NewInstance)
+	registerDirectDialEndpoint(c.StreamEndpoints, "dial", c.StreamDialers.NewInstance)
+	registerDirectDialEndpoint(c.PacketEndpoints, "string", c.PacketDialers.NewInstance)
+	registerDirectDialEndpoint(c.PacketEndpoints, "dial", c.PacketDialers.NewInstance)
 
 	registerShadowsocksStreamDialer(c.StreamDialers, "ss", c.StreamEndpoints.NewInstance)
 	registerShadowsocksStreamDialer(c.StreamDialers, "string", c.StreamEndpoints.NewInstance)

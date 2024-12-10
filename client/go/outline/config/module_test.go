@@ -23,7 +23,6 @@ import (
 
 // TODO:
 // - Backward-compatibility
-//   - Introduce GenericDialer? May need logic specific to dialers, like fallback to Shadowsocks if type is missing.
 // - Port tests to new API
 // - Websocket endpoint POC
 
