@@ -102,7 +102,9 @@ export async function parseTunnelConfig(
   };
 }
 
-export async function parseAccessKey(accessKeyText: string): Promise<ServiceConfig> {
+export async function parseAccessKey(
+  accessKeyText: string
+): Promise<ServiceConfig> {
   try {
     const accessKeyUrl = new URL(accessKeyText.trim());
 

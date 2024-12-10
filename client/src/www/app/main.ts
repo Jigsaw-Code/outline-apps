@@ -28,7 +28,7 @@ import {
 import {OutlinePlatform} from './platform';
 import {Settings} from './settings';
 import {EventQueue} from '../model/events';
-import { ServerRepository } from '../model/server.js';
+import {ServerRepository} from '../model/server.js';
 
 // Used to determine whether to use Polymer functionality on app initialization failure.
 let webComponentsAreReady = false;

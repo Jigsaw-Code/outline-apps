@@ -27,7 +27,6 @@ type DialEndpointConfig struct {
 	Dialer  ConfigNode
 }
 
-// TODO(fortuna): implement Endpoint firstHop.
 func registerDirectDialEndpoint[ConnType any](r TypeRegistry[*Endpoint[ConnType]], typeID string, newDialer BuildFunc[*Dialer[ConnType]]) {
 	r.RegisterType(typeID, func(ctx context.Context, config ConfigNode) (*Endpoint[ConnType], error) {
 		if config == nil {
