@@ -23,6 +23,15 @@ import * as events from '../../model/events';
 import {ServerRepository} from '../../model/server';
 import {Server} from '../../model/server';
 
+// Name by which servers are saved to storage.
+const SERVERS_STORAGE_KEY_V0 = 'servers';
+const SERVERS_STORAGE_KEY = 'servers_v1';
+
+export const TEST_ONLY = {
+  SERVERS_STORAGE_KEY_V0: SERVERS_STORAGE_KEY_V0,
+  SERVERS_STORAGE_KEY: SERVERS_STORAGE_KEY,
+};
+
 // DEPRECATED: V0 server persistence format.
 interface ServersStorageV0Config {
   host?: string;
@@ -31,6 +40,7 @@ interface ServersStorageV0Config {
   method?: string;
   name?: string;
 }
+
 export interface ServersStorageV0 {
   [serverId: string]: ServersStorageV0Config;
 }
@@ -63,12 +73,18 @@ type ServerEntry = {accessKey: string; server: Server};
 
 export async function newOutlineServerRepository(
   vpnApi: VpnApi,
-   eventQueue: events.EventQueue,
-   storage: Storage,
-   localize: Localizer): Promise<ServerRepository> {
+  eventQueue: events.EventQueue,
+  storage: Storage,
+  localize: Localizer
+): Promise<ServerRepository> {
   console.debug('OutlineServerRepository is initializing');
 
-  const repo = new OutlineServerRepository(vpnApi, eventQueue, storage, localize);
+  const repo = new OutlineServerRepository(
+    vpnApi,
+    eventQueue,
+    storage,
+    localize
+  );
   await loadServers(storage, repo);
   console.debug('OutlineServerRepository loaded servers');
 
@@ -104,9 +120,6 @@ export async function newOutlineServerRepository(
 
 // Maintains a persisted set of servers and liaises with the core.
 class OutlineServerRepository implements ServerRepository {
-  // Name by which servers are saved to storage.
-  static readonly SERVERS_STORAGE_KEY_V0 = 'servers';
-  static readonly SERVERS_STORAGE_KEY = 'servers_v1';
   private lastForgottenServer: ServerEntry | null = null;
   private serverById = new Map<string, ServerEntry>();
 
@@ -115,15 +128,14 @@ class OutlineServerRepository implements ServerRepository {
     private eventQueue: events.EventQueue,
     private storage: Storage,
     private localize: Localizer
-  ) {
-  }
+  ) {}
 
   getAll() {
     return Array.from(this.serverById.values()).map(e => e.server);
   }
 
   getById(serverId: string) {
-    return this.serverById.get(serverId).server;
+    return this.serverById.get(serverId)?.server;
   }
 
   async add(accessKey: string) {
@@ -131,7 +143,11 @@ class OutlineServerRepository implements ServerRepository {
     if (alreadyAddedServer) {
       throw new errors.ServerAlreadyAdded(alreadyAddedServer);
     }
-    const server = await this.internalCreateServer(uuidv4(), accessKey, undefined);
+    const server = await this.internalCreateServer(
+      uuidv4(),
+      accessKey,
+      undefined
+    );
 
     this.storeServers();
     this.eventQueue.enqueue(new events.ServerAdded(server));
@@ -204,7 +220,7 @@ class OutlineServerRepository implements ServerRepository {
       });
     }
     const json = JSON.stringify(servers);
-    this.storage.setItem(OutlineServerRepository.SERVERS_STORAGE_KEY, json);
+    this.storage.setItem(SERVERS_STORAGE_KEY, json);
   }
 
   async internalCreateServer(
@@ -224,10 +240,9 @@ class OutlineServerRepository implements ServerRepository {
   }
 }
 
-
 // Loads servers from storage, raising an error if there is any problem loading.
 async function loadServers(storage: Storage, repo: OutlineServerRepository) {
-  if (storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY)) {
+  if (storage.getItem(SERVERS_STORAGE_KEY)) {
     console.debug('server storage migrated to V1');
     await loadServersV1(storage, repo);
     return;
@@ -236,9 +251,7 @@ async function loadServers(storage: Storage, repo: OutlineServerRepository) {
 }
 
 async function loadServersV0(storage: Storage, repo: OutlineServerRepository) {
-  const serversJson = storage.getItem(
-    OutlineServerRepository.SERVERS_STORAGE_KEY_V0
-  );
+  const serversJson = storage.getItem(SERVERS_STORAGE_KEY_V0);
   if (!serversJson) {
     console.debug('no V0 servers found in storage');
     return;
@@ -257,7 +270,7 @@ async function loadServersV0(storage: Storage, repo: OutlineServerRepository) {
         serverId,
         serversStorageV0ConfigToAccessKey(v0Config),
         v0Config.name
-      )
+      );
     } catch (e) {
       // Don't propagate so other stored servers can be created.
       console.error(e);
@@ -266,9 +279,7 @@ async function loadServersV0(storage: Storage, repo: OutlineServerRepository) {
 }
 
 async function loadServersV1(storage: Storage, repo: OutlineServerRepository) {
-  const serversStorageJson = storage.getItem(
-    OutlineServerRepository.SERVERS_STORAGE_KEY
-  );
+  const serversStorageJson = storage.getItem(SERVERS_STORAGE_KEY);
   if (!serversStorageJson) {
     console.debug('no servers found in storage');
     return;

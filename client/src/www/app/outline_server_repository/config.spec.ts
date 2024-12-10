@@ -11,11 +11,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-/*
-import {makeConfig, SIP002_URI} from 'ShadowsocksConfig';
 
 import * as config from './config';
+import * as method_channel from '../method_channel';
 
+/*
 describe('getAddressFromTransport', () => {
   it('extracts address', () => {
     expect(
@@ -146,24 +146,55 @@ describe('parseTunnelConfig', () => {
     });
   });
 });
+*/
 
-describe('serviceNameFromAccessKey', () => {
-  it('extracts name from ss:// key', () => {
-    expect(
-      config.TEST_ONLY.serviceNameFromAccessKey('ss://anything#My%20Server')
-    ).toEqual('My Server');
+describe('parseAccessKey', () => {
+  method_channel.installDefaultMethodChannel({
+    async invokeMethod(methodName: string, params: string): Promise<string> {
+      if (!params) {
+        throw Error('empty transport config');
+      }
+      if (params.indexOf('invalid') > -1) {
+        throw Error('fake invalid config');
+      }
+      return 'first-hop:4321';
+    },
   });
-  it('extracts name from ssconf:// key', () => {
-    expect(
-      config.TEST_ONLY.serviceNameFromAccessKey('ssconf://anything#My%20Server')
-    ).toEqual('My Server');
+
+  it('extracts name from ss:// key', async () => {
+    const transportConfig = `ss://${encodeURIComponent(
+      btoa('chacha20-ietf-poly1305:SECRET')
+    )}@example.com:4321`;
+    const accessKey = `${transportConfig}#My%20Server`;
+    expect(await config.TEST_ONLY.parseAccessKey(accessKey)).toEqual(
+      new config.StaticServiceConfig('My Server', {
+        firstHop: 'first-hop:4321',
+        transport: transportConfig,
+      })
+    );
   });
-  it('ignores parameters', () => {
+
+  it('extracts name from ssconf:// key', async () => {
     expect(
-      config.TEST_ONLY.serviceNameFromAccessKey(
-        'ss://anything#foo=bar&My%20Server&baz=boo'
+      await config.TEST_ONLY.parseAccessKey(
+        'ssconf://example.com:4321/path#My%20Server'
       )
-    ).toEqual('My Server');
+    ).toEqual(
+      new config.DynamicServiceConfig(
+        'My Server',
+        new URL('https://example.com:4321/path')
+      )
+    );
+  });
+
+  it('name extraction ignores parameters', async () => {
+    const transportConfig = 'ss://anything';
+    const accessKey = `${transportConfig}#foo=bar&My%20Server&baz=boo`;
+    expect(await config.TEST_ONLY.parseAccessKey(accessKey)).toEqual(
+      new config.StaticServiceConfig('My Server', {
+        firstHop: 'first-hop:4321',
+        transport: transportConfig,
+      })
+    );
   });
 });
-*/

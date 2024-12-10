@@ -57,3 +57,17 @@ func TestRegisterParseURL(t *testing.T) {
 	require.Equal(t, "example.com:4321", d.FirstHop)
 	require.Equal(t, ConnTypeTunneled, d.ConnType)
 }
+
+func TestRegisterParseURLInQuotes(t *testing.T) {
+	providers := RegisterDefaultProviders(NewProviderContainer())
+
+	node, err := ParseConfigYAML(`"ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpaTXJSMW92ZmRBaEQ@example.com:4321/#My%20Server"`)
+	require.NoError(t, err)
+
+	d, err := providers.StreamDialers.NewInstance(context.Background(), node)
+	require.NoError(t, err)
+
+	require.NotNil(t, d.Dial)
+	require.Equal(t, "example.com:4321", d.FirstHop)
+	require.Equal(t, ConnTypeTunneled, d.ConnType)
+}
