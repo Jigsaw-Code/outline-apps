@@ -89,7 +89,7 @@ tasks:
       # MACOSX_DEPLOYMENT_TARGET must match the version the version set in the XCode project.
       MACOSX_DEPLOYMENT_TARGET: 12.0
       # TARGET_IOS_VERSION must be at least 13.1 for macCatalyst and match the version set in the XCode project.
-      TARGET_IOS_VERSION: 13.1
+      TARGET_IOS_VERSION: 15.5
     cmds:
       - rm -rf "{{.TARGET_DIR}}" && mkdir -p "{{.TARGET_DIR}}"
       - export MACOSX_DEPLOYMENT_TARGET={{.MACOSX_DEPLOYMENT_TARGET}}; {{.GOMOBILE_BIND_CMD}} -target=ios,iossimulator,macos,maccatalyst -iosversion={{.TARGET_IOS_VERSION}} -bundleid org.outline.tun2socks -o '{{.TARGET_DIR}}/Tun2socks.xcframework' '{{.TASKFILE_DIR}}/outline/platerrors' '{{.TASKFILE_DIR}}/outline/tun2socks' '{{.TASKFILE_DIR}}/outline'
