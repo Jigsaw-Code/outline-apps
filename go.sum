@@ -64,6 +64,8 @@ github.com/Jigsaw-Code/outline-sdk v0.0.14-0.20240216220040-f741c57bf854/go.mod 
 github.com/Masterminds/semver/v3 v3.2.1 h1:RN9w6+7QoMeJVGyfmbcgs28Br8cvmnucEXnY0rYXWg0=
 github.com/Masterminds/semver/v3 v3.2.1/go.mod h1:qvl/7zhW3nngYb5+80sSMF+FG2BjYrf8m9wsX0PNOMQ=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
+github.com/Wifx/gonetworkmanager/v2 v2.1.0 h1:2PNs7P6wgOyc57YK7AKMwNxGCLvWU6zFBXoEILV4at8=
+github.com/Wifx/gonetworkmanager/v2 v2.1.0/go.mod h1:fMDb//SHsKWxyDUAwXvCqurV3npbIyyaQWenGpZ/uXg=
 github.com/alcortesm/tgz v0.0.0-20161220082320-9c5fe88206d7 h1:uSoVVbwJiQipAclBbw+8quDsfcvFjOpI5iCf4p/cqCs=
 github.com/alcortesm/tgz v0.0.0-20161220082320-9c5fe88206d7/go.mod h1:6zEj6s6u/ghQa61ZWa/C2Aw3RkjiTBOix7dkqa1VLIs=
 github.com/anmitsu/go-shlex v0.0.0-20161002113705-648efa622239 h1:kFOfPq6dUM1hTo4JG6LR5AXSUEsOjtdm0kw0FtQtMJA=
@@ -128,6 +130,8 @@ github.com/go-task/slim-sprig/v3 v3.0.0 h1:sUs3vkvUymDpBKi3qH1YSqBQk9+9D/8M2mN1v
 github.com/go-task/slim-sprig/v3 v3.0.0/go.mod h1:W848ghGpv3Qj3dhTPRyJypKRiqCdHZiAzKg9hl15HA8=
 github.com/go-task/task/v3 v3.36.0 h1:XVJ5hQ5hdzTAulHpAGzbUMUuYr9MUOEQFOFazI3hUsY=
 github.com/go-task/task/v3 v3.36.0/go.mod h1:XBCIAzuyG/mgZVHMUm3cCznz4+IpsBQRlW1gw7OA5sA=
+github.com/godbus/dbus/v5 v5.1.0 h1:4KLkAxT3aOY8Li4FRJe/KvhoNFFxo0m6fNuFUO8QJUk=
+github.com/godbus/dbus/v5 v5.1.0/go.mod h1:xhWf0FNVPg57R7Z0UbKHbJfkEywrmjJnf7w5xrFpKfA=
 github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b/go.mod h1:SBH7ygxi8pfUlaOkMMuAQtPIUF8ecWP5IEl/CR7VP2Q=
 github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6/go.mod h1:cIg4eruTrX1D+g88fzRXU5OdNfaM+9IcxsU14FzY7Hc=
 github.com/golang/groupcache v0.0.0-20191227052852-215e87163ea7/go.mod h1:cIg4eruTrX1D+g88fzRXU5OdNfaM+9IcxsU14FzY7Hc=
@@ -185,6 +189,8 @@ github.com/google/go-licenses v1.6.0 h1:MM+VCXf0slYkpWO0mECvdYDVCxZXIQNal5wqUIXE
 github.com/google/go-licenses v1.6.0/go.mod h1:Z8jgz2isEhdenOqd/00pq7I4y4k1xVVQJv415otjclo=
 github.com/google/go-replayers/httpreplay v1.1.1 h1:H91sIMlt1NZzN7R+/ASswyouLJfW0WLW7fhyUFvDEkY=
 github.com/google/go-replayers/httpreplay v1.1.1/go.mod h1:gN9GeLIs7l6NUoVaSSnv2RiqK1NiwAmD0MrKeC9IIks=
+github.com/google/gopacket v1.1.19 h1:ves8RnFZPGiFnTS0uPQStjwru6uO6h+nlr9j6fL7kF8=
+github.com/google/gopacket v1.1.19/go.mod h1:iJ8V8n6KS+z2U1A8pUwu8bW5SyEMkXJB8Yo/Vo+TKTo=
 github.com/google/licenseclassifier v0.0.0-20210722185704-3043a050f148 h1:TJsAqW6zLRMDTyGmc9TPosfn9OyVlHs8Hrn3pY6ONSY=
 github.com/google/licenseclassifier v0.0.0-20210722185704-3043a050f148/go.mod h1:rq9F0RSpNKlrefnf6ZYMHKUnEJBCNzf6AcCXMYBeYvE=
 github.com/google/martian v2.1.0+incompatible h1:/CP5g8u/VJHijgedC/Legn3BAbAaWPgecwXBIDzw5no=
