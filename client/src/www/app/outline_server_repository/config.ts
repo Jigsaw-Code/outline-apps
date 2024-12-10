@@ -144,8 +144,8 @@ export async function parseAccessKey(accessKeyText: string): Promise<ServiceConf
   }
 }
 
-export function validateAccessKey(accessKey: string) {
-  getAddressFromTransportConfig(accessKey);
+export async function validateAccessKey(accessKey: string) {
+  await parseAccessKey(accessKey);
 }
 
 /**

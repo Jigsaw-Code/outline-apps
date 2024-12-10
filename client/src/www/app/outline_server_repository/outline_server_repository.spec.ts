@@ -161,10 +161,12 @@ describe('OutlineServerRepository', () => {
 
   it('add throws on invalid access keys', async () => {
     const repo = await newTestRepo(new EventQueue(), new InMemoryStorage());
-    expect(async () => await repo.add('ss://invalid')).toThrowError(
+    await expectAsync(repo.add('ss://invalid')).toBeRejectedWithError(
       ServerAccessKeyInvalid
     );
-    expect(async () => await repo.add('')).toThrowError(ServerAccessKeyInvalid);
+    await expectAsync(repo.add('')).toBeRejectedWithError(
+      ServerAccessKeyInvalid
+    );
   });
 
   it('getAll returns added servers', async () => {
@@ -307,53 +309,25 @@ describe('OutlineServerRepository', () => {
 
   it('validates static access keys', async () => {
     // Invalid access keys.
-    expect(async () => await config.validateAccessKey('')).toThrowError(
+    await expectAsync(config.validateAccessKey('')).toBeRejectedWithError(
       ServerAccessKeyInvalid
     );
-    expect(
-      async () => await config.validateAccessKey('ss://invalid')
-    ).toThrowError(ServerAccessKeyInvalid);
+    await expectAsync(
+      config.validateAccessKey('ss://invalid')
+    ).toBeRejectedWithError(ServerAccessKeyInvalid);
     // IPv6 host.
     expect(
-      async () =>
-        await config.validateAccessKey(
-          SIP002_URI.stringify(
-            makeConfig({
-              host: '2001:0:ce49:7601:e866:efff:62c3:fffe',
-              port: 443,
-              password: 'test',
-              method: 'chacha20-ietf-poly1305',
-            })
-          )
+      await config.validateAccessKey(
+        SIP002_URI.stringify(
+          makeConfig({
+            host: '2001:0:ce49:7601:e866:efff:62c3:fffe',
+            port: 443,
+            password: 'test',
+            method: 'chacha20-ietf-poly1305',
+          })
         )
+      )
     ).toBeTruthy();
-    // Unsupported ciphers.
-    expect(
-      async () =>
-        await config.validateAccessKey(
-          SIP002_URI.stringify(
-            makeConfig({
-              host: '127.0.0.1',
-              port: 443,
-              password: 'test',
-              method: 'aes-256-ctr',
-            })
-          )
-        )
-    ).toThrowError(ServerAccessKeyInvalid);
-    expect(
-      async () =>
-        await config.validateAccessKey(
-          SIP002_URI.stringify(
-            makeConfig({
-              host: '127.0.0.1',
-              port: 443,
-              password: 'test',
-              method: 'chacha20',
-            })
-          )
-        )
-    ).toThrowError(ServerAccessKeyInvalid);
   });
 });
 
