@@ -193,7 +193,7 @@ export interface DataLimit {
 }
 
 export type ServerMetricsJson = {
-  servers: {
+  server: {
     location: string;
     asn: number;
     asOrg: string;
