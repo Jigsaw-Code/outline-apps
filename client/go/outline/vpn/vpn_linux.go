@@ -83,14 +83,11 @@ func newVPNConnection(conf *configJSON) (_ *linuxVPNConn, err error) {
 		return nil, errIllegalConfig("must provide a transport config")
 	}
 
-	c.proxy, err = outline.NewDevice(conf.TransportConfig, &outline.DeviceOptions{
-		LinuxOpts: &outline.LinuxOptions{
-			FWMark: c.nmOpts.FWMark,
-		},
-	})
+	oc, err := outline.NewClientWithFWMark(conf.TransportConfig, c.nmOpts.FWMark)
 	if err != nil {
-		return
+		return nil, err
 	}
+	c.proxy = outline.NewDevice(oc)
 
 	c.ctx, c.cancel = context.WithCancel(context.Background())
 	return c, nil

@@ -41,14 +41,10 @@ type DeviceOptions struct {
 	LinuxOpts *LinuxOptions
 }
 
-func NewDevice(transportConfig string, opts *DeviceOptions) (*Device, error) {
-	if opts == nil || opts.LinuxOpts == nil {
-		return nil, perrs.PlatformError{
-			Code:    perrs.InternalError,
-			Message: "must provide at least one platform specific Option",
-		}
+func NewDevice(c *Client) *Device {
+	return &Device{
+		c: c,
 	}
-	return createWithOpts(transportConfig, opts)
 }
 
 func (d *Device) Connect() (err error) {

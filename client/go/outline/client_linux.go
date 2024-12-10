@@ -1,4 +1,4 @@
-// Copyright 2024 The Outline Authors
+// Copyright 2023 The Outline Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,25 +14,27 @@
 
 package outline
 
-import "syscall"
+import (
+	"net"
+	"syscall"
+)
 
-func createWithOpts(transport string, opts *DeviceOptions) (_ *Device, err error) {
-	d := &Device{}
-
+// NewClient creates a new Outline client from a configuration string.
+func NewClientWithFWMark(transportConfig string, fwmark uint32) (*Client, error) {
 	control := func(network, address string, c syscall.RawConn) error {
 		return c.Control(func(fd uintptr) {
-			syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, syscall.SO_MARK, int(opts.LinuxOpts.FWMark))
+			syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, syscall.SO_MARK, int(fwmark))
 		})
 	}
 
-	tcp := defaultBaseTCPDialer()
-	tcp.Control = control
-
-	udp := defaultBaseUDPDialer()
-	udp.Control = control
-
-	if d.c, err = newClientWithBaseDialers(transport, tcp, udp); err != nil {
-		return nil, err
+	tcp := net.Dialer{
+		Control:   control,
+		KeepAlive: -1,
 	}
-	return d, nil
+
+	udp := net.Dialer{
+		Control: control,
+	}
+
+	return newClientWithBaseDialers(transportConfig, tcp, udp)
 }
