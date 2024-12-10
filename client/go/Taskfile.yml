@@ -87,7 +87,7 @@ tasks:
     vars:
       TARGET_DIR: '{{.OUT_DIR}}/apple'
       # MACOSX_DEPLOYMENT_TARGET must match the version the version set in the XCode project.
-      MACOSX_DEPLOYMENT_TARGET: 10.14
+      MACOSX_DEPLOYMENT_TARGET: 11.0
       # TARGET_IOS_VERSION must be at least 13.1 for macCatalyst and match the version set in the XCode project.
       TARGET_IOS_VERSION: 13.1
     cmds:
