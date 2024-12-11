@@ -16,7 +16,6 @@ package config
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"reflect"
 )
@@ -24,6 +23,8 @@ import (
 const (
 	// Provider type for nil configs.
 	ProviderTypeNil = "nil"
+	// Provider type for when an explicit type is missing.
+	ProviderTypeDefault = ""
 )
 
 const (
@@ -83,17 +84,17 @@ func (p *ExtensibleProvider[ObjectType]) NewInstance(ctx context.Context, config
 		normConfig = nil
 
 	case map[string]any:
-		typeAny, ok := typed[ConfigTypeKey]
-		if !ok {
-			// TODO(fortuna): handle default case. Perhaps a default type setter?
-			return zero, errors.New("subtype missing")
-		}
-		typeName, ok = typeAny.(string)
-		if !ok {
-			return zero, fmt.Errorf("subtype must be a string, found %T", typeAny)
+		if typeAny, ok := typed[ConfigTypeKey]; ok {
+			typeName, ok = typeAny.(string)
+			if !ok {
+				return zero, fmt.Errorf("subtype must be a string, found %T", typeAny)
+			}
+		} else {
+			typeName = ProviderTypeDefault
 		}
 
 		// Value is an explicit field: {$type: ..., $value: ...}.
+		var ok bool
 		normConfig, ok = typed[ConfigValueKey]
 		if ok {
 			break

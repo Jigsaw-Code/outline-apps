@@ -43,7 +43,6 @@ func Test_NewClientFromJSON_Success(t *testing.T) {
 			input:
 `{
 	# Comment
-    $type: ss,
     server: example.com,
     server_port: 4321,
     method: chacha20-ietf-poly1305,
@@ -53,7 +52,6 @@ func Test_NewClientFromJSON_Success(t *testing.T) {
 			name:  "YAML",
 			input:
 `# Comment
-$type: ss
 server: example.com
 server_port: 4321
 method: chacha20-ietf-poly1305

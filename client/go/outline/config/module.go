@@ -86,12 +86,14 @@ func RegisterDefaultProviders(c *ProviderContainer) *ProviderContainer {
 	registerDirectDialEndpoint(c.PacketEndpoints, "string", c.PacketDialers.NewInstance)
 	registerDirectDialEndpoint(c.PacketEndpoints, "dial", c.PacketDialers.NewInstance)
 
+	registerShadowsocksStreamDialer(c.StreamDialers, ProviderTypeDefault, c.StreamEndpoints.NewInstance)
 	registerShadowsocksStreamDialer(c.StreamDialers, "ss", c.StreamEndpoints.NewInstance)
 	registerShadowsocksStreamDialer(c.StreamDialers, "string", c.StreamEndpoints.NewInstance)
 
 	registerShadowsocksPacketDialer(c.PacketDialers, "ss", c.PacketEndpoints.NewInstance)
 	registerShadowsocksPacketDialer(c.PacketDialers, "string", c.PacketEndpoints.NewInstance)
 
+	registerShadowsocksPacketListener(c.PacketListeners, ProviderTypeDefault, c.PacketEndpoints.NewInstance)
 	registerShadowsocksPacketListener(c.PacketListeners, "ss", c.PacketEndpoints.NewInstance)
 	registerShadowsocksPacketListener(c.PacketListeners, "string", c.PacketEndpoints.NewInstance)
 	return c
