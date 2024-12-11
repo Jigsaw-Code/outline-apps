@@ -14,22 +14,10 @@
 
 // TODO: add guidelines for this file
 
-export enum ServerType {
-  // The connection data is static, doesn't change, and isn't deleted on disconnect.
-  STATIC_CONNECTION,
-
-  // The connection data is refetched via the access key on each connection.
-  // and deleted on each disconnection
-  DYNAMIC_CONNECTION,
-}
-
 // TODO(daniellacosse): determine what properties should be controlled only by the Server implementation and make them readonly
 export interface Server {
   // A unique id that identifies this Server.
   readonly id: string;
-
-  // A type specifying the manner in which the Server connects.
-  readonly type: ServerType;
 
   // The name of this server, as given by the user.
   name: string;
@@ -55,7 +43,8 @@ export interface Server {
 }
 
 export interface ServerRepository {
-  add(accessKey: string): void;
+  add(accessKey: string): Promise<void>;
+  rename(serverId: string, name: string): void;
   forget(serverId: string): void;
   undoForget(serverId: string): void;
   getAll(): Server[];

@@ -40,6 +40,7 @@ describe('SupportForm', () => {
       accessKeySource: 'a friend',
       subject: 'Test Subject',
       description: 'Test Description',
+      outreachConsent: false,
     };
     const el = await fixture(html` <support-form .values=${values}></support-form> `);
 

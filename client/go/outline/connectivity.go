@@ -19,6 +19,7 @@ import (
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/connectivity"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
+	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
 const (
@@ -47,7 +48,7 @@ func CheckTCPAndUDPConnectivity(client *Client) *TCPAndUDPConnectivityResult {
 		udpErrChan <- connectivity.CheckUDPConnectivityWithDNS(client, resolverAddr)
 	}()
 
-	tcpErr := connectivity.CheckTCPConnectivityWithHTTP(client, tcpTestWebsite)
+	tcpErr := connectivity.CheckTCPConnectivityWithHTTP(transport.FuncStreamDialer(client.Dialer.Dial), tcpTestWebsite)
 	udpErr := <-udpErrChan
 
 	return &TCPAndUDPConnectivityResult{

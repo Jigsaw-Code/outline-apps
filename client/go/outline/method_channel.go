@@ -26,6 +26,11 @@ const (
 	//  - Input: the URL string of the resource to fetch
 	//  - Output: the content in raw string of the fetched resource
 	MethodFetchResource = "FetchResource"
+
+	// GetFirstHop validates a transport config and returns the first hop.
+	//  - Input: the transport config text
+	//  - Output: the host:port address of the first hop, if applicable.
+	MethodGetFirstHop = "GetFirstHop"
 )
 
 // InvokeMethodResult represents the result of an InvokeMethod call.
@@ -45,6 +50,23 @@ func InvokeMethod(method string, input string) *InvokeMethodResult {
 		return &InvokeMethodResult{
 			Value: content,
 			Error: platerrors.ToPlatformError(err),
+		}
+
+	case MethodGetFirstHop:
+		result := NewClient(input)
+		if result.Error != nil {
+			return &InvokeMethodResult{
+				Error: result.Error,
+			}
+		}
+		streamFirstHop := result.Client.Dialer.ConnectionProviderInfo.FirstHop
+		packetFirstHop := result.Client.PacketListener.ConnectionProviderInfo.FirstHop
+		firstHop := ""
+		if streamFirstHop == packetFirstHop {
+			firstHop = streamFirstHop
+		}
+		return &InvokeMethodResult{
+			Value: firstHop,
 		}
 
 	default:
