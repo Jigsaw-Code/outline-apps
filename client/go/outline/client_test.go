@@ -14,7 +14,78 @@
 
 package outline
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/require"
+)
+
+
+func Test_NewClientFromJSON_Success(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+	}{
+		{
+			name:  "SS URL",
+			input: "ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@example.com:4321/",
+		}, {
+			name:  "Legacy JSON",
+			input: 
+`{
+    "server": "example.com",
+    "server_port": 4321,
+    "method": "chacha20-ietf-poly1305",
+    "password": "SECRET"
+}`,
+        },{
+			name:  "Flexible JSON",
+			input:
+`{
+	# Comment
+    $type: ss,
+    server: example.com,
+    server_port: 4321,
+    method: chacha20-ietf-poly1305,
+    password: SECRET
+}`,
+        },{
+			name:  "YAML",
+			input:
+`# Comment
+$type: ss
+server: example.com
+server_port: 4321
+method: chacha20-ietf-poly1305
+password: SECRET`,
+        },{
+			name:  "Explicit endpoint",
+			input:
+`$type: ss
+endpoint:
+    $type: dial
+    address: canary.getoutline.org:443
+cipher: chacha20-ietf-poly1305
+secret: SECRET`,
+        },{
+			name:  "Explicit endpoint",
+			input:
+`$type: ss
+endpoint:
+    $type: dial
+    address: example.com:4321
+    dialer: ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@example.com:4321/
+cipher: chacha20-ietf-poly1305
+secret: SECRET`,
+        },
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := NewClient(tt.input)
+			require.Nil(t, result.Error)
+		})
+	}
+}
 
 func Test_NewClientFromJSON_Errors(t *testing.T) {
 	tests := []struct {
@@ -76,3 +147,4 @@ func Test_NewClientFromJSON_Errors(t *testing.T) {
 		})
 	}
 }
+
