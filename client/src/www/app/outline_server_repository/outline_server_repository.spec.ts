@@ -309,15 +309,15 @@ describe('OutlineServerRepository', () => {
 
   it('validates static access keys', async () => {
     // Invalid access keys.
-    await expectAsync(config.validateAccessKey('')).toBeRejectedWithError(
+    await expectAsync(config.parseAccessKey('')).toBeRejectedWithError(
       ServerAccessKeyInvalid
     );
     await expectAsync(
-      config.validateAccessKey('ss://invalid')
+      config.parseAccessKey('ss://invalid')
     ).toBeRejectedWithError(ServerAccessKeyInvalid);
     // IPv6 host.
     expect(
-      await config.validateAccessKey(
+      await config.parseAccessKey(
         SIP002_URI.stringify(
           makeConfig({
             host: '2001:0:ce49:7601:e866:efff:62c3:fffe',

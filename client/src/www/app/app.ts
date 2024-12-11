@@ -480,7 +480,7 @@ export class App {
       }
     }
     try {
-      config.validateAccessKey(accessKey);
+      config.parseAccessKey(accessKey);
       addServerView.accessKey = accessKey;
       addServerView.open = true;
     } catch (e) {

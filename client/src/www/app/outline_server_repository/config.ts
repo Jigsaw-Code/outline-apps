@@ -144,10 +144,6 @@ export async function parseAccessKey(accessKeyText: string): Promise<ServiceConf
   }
 }
 
-export async function validateAccessKey(accessKey: string) {
-  await parseAccessKey(accessKey);
-}
-
 /**
  * serviceNameFromAccessKey extracts the service name from the access key.
  * This is done by getting parsing the fragment hash in the URL and returning the
