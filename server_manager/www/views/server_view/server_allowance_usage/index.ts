@@ -22,7 +22,7 @@ export class ServerAllowanceUsage extends LitElement {
   @property({type: String}) message: string;
   @property({type: Number}) allowanceUsed: number;
   @property({type: Number}) allowanceLimit: number;
-  @property({type: String}) allowanceUnit: string = 'terabyte';
+  @property({type: String}) allowanceUnit: 'gigabyte' | 'terabyte' = 'terabyte';
   @property({type: String}) languageCode: string = 'en-US';
 
   static styles = css`
