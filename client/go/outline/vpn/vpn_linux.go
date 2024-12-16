@@ -19,39 +19,26 @@ import (
 	"io"
 	"log/slog"
 	"net"
-	"sync"
 
-	"github.com/Jigsaw-Code/outline-apps/client/go/outline"
 	perrs "github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	gonm "github.com/Wifx/gonetworkmanager/v2"
 )
 
 // linuxVPNConn implements a [VPNConnection] on Linux platform.
 type linuxVPNConn struct {
-	id     string
-	status Status
-
-	ctx           context.Context
-	cancel        context.CancelFunc
-	wgEst, wgCopy sync.WaitGroup
-
-	tun   io.ReadWriteCloser
-	proxy *outline.Device
-
+	tun    io.ReadWriteCloser
 	nmOpts *nmConnectionOptions
 	nm     gonm.NetworkManager
 	ac     gonm.ActiveConnection
 }
 
-var _ VPNConnection = (*linuxVPNConn)(nil)
+var _ platformVPNConn = (*linuxVPNConn)(nil)
 
 // newVPNConnection creates a new Linux specific [VPNConnection].
 // The newly connection will be [StatusDisconnected] initially, you need to call the
 // Establish() in order to make it [StatusConnected].
-func newVPNConnection(conf *configJSON) (_ *linuxVPNConn, err error) {
+func newPlatformVPNConn(conf *Config) (_ platformVPNConn, err error) {
 	c := &linuxVPNConn{
-		id:     conf.ID,
-		status: StatusDisconnected,
 		nmOpts: &nmConnectionOptions{
 			Name:            conf.ConnectionName,
 			TUNName:         conf.InterfaceName,
@@ -79,66 +66,26 @@ func newVPNConnection(conf *configJSON) (_ *linuxVPNConn, err error) {
 		}
 		c.nmOpts.DNSServers4 = append(c.nmOpts.DNSServers4, dnsIP)
 	}
-	if conf.TransportConfig == "" {
-		return nil, errIllegalConfig("must provide a transport config")
-	}
 
-	oc, err := outline.NewClientWithFWMark(conf.TransportConfig, c.nmOpts.FWMark)
-	if err != nil {
-		return nil, err
-	}
-	c.proxy = outline.NewDevice(oc)
-
-	c.ctx, c.cancel = context.WithCancel(context.Background())
 	return c, nil
 }
 
-func (c *linuxVPNConn) ID() string         { return c.id }
-func (c *linuxVPNConn) Status() Status     { return c.status }
-func (c *linuxVPNConn) SupportsUDP() *bool { return c.proxy.SupportsUDP() }
+func (c *linuxVPNConn) TUN() io.ReadWriteCloser { return c.tun }
 
 // Establish tries to establish this [VPNConnection], and makes it [StatusConnected].
-func (c *linuxVPNConn) Establish() (err error) {
-	c.wgEst.Add(1)
-	defer c.wgEst.Done()
-	if c.ctx.Err() != nil {
-		return &perrs.PlatformError{Code: perrs.OperationCanceled}
+func (c *linuxVPNConn) Establish(ctx context.Context) (err error) {
+	if ctx.Err() != nil {
+		return perrs.PlatformError{Code: perrs.OperationCanceled}
 	}
 
-	c.status = StatusConnecting
-	defer func() {
-		if err == nil {
-			c.status = StatusConnected
-		} else {
-			c.status = StatusUnknown
-		}
-	}()
-
-	if err = c.proxy.Connect(); err != nil {
-		return
-	}
-	if c.tun, err = newTUNDevice(c.nmOpts.TUNName); err != nil {
+	if c.tun, err = newTUNDevice(c.nmOpts.Name); err != nil {
 		return errSetupVPN(ioLogPfx, "failed to create TUN device", err, "name", c.nmOpts.Name)
 	}
 	slog.Info(vpnLogPfx+"TUN device created", "name", c.nmOpts.TUNName)
+
 	if err = c.establishNMConnection(); err != nil {
 		return
 	}
-
-	c.wgCopy.Add(2)
-	go func() {
-		defer c.wgCopy.Done()
-		slog.Debug(ioLogPfx + "Copying traffic from TUN Device -> OutlineDevice...")
-		n, err := io.Copy(c.proxy, c.tun)
-		slog.Debug(ioLogPfx+"TUN Device -> OutlineDevice done", "n", n, "err", err)
-	}()
-	go func() {
-		defer c.wgCopy.Done()
-		slog.Debug(ioLogPfx + "Copying traffic from OutlineDevice -> TUN Device...")
-		n, err := io.Copy(c.tun, c.proxy)
-		slog.Debug(ioLogPfx+"OutlineDevice -> TUN Device done", "n", n, "err", err)
-	}()
-
 	return nil
 }
 
@@ -147,18 +94,6 @@ func (c *linuxVPNConn) Close() (err error) {
 	if c == nil {
 		return nil
 	}
-
-	c.status = StatusDisconnecting
-	defer func() {
-		if err == nil {
-			c.status = StatusDisconnected
-		} else {
-			c.status = StatusUnknown
-		}
-	}()
-
-	c.cancel()
-	c.wgEst.Wait()
 
 	c.closeNMConnection()
 	if c.tun != nil {
@@ -169,9 +104,6 @@ func (c *linuxVPNConn) Close() (err error) {
 			slog.Info(vpnLogPfx+"closed TUN device", "name", c.nmOpts.TUNName)
 		}
 	}
-	c.proxy.Close()
 
-	// Wait for traffic copy go routines to finish
-	c.wgCopy.Wait()
 	return
 }

@@ -1,4 +1,4 @@
-// Copyright 2023 The Outline Authors
+// Copyright 2024 The Outline Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,29 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package outline
+package vpn
 
 import (
-	"net"
+	"errors"
 	"syscall"
 )
 
-// NewClient creates a new Outline client from a configuration string.
-func NewClientWithFWMark(transportConfig string, fwmark uint32) (*Client, error) {
-	control := func(network, address string, c syscall.RawConn) error {
+func TCPDialerControl(conf *Config) (ControlFn, error) {
+	if conf == nil {
+		return nil, errors.New("VPN config must be provided")
+	}
+	return func(network, address string, c syscall.RawConn) error {
 		return c.Control(func(fd uintptr) {
-			syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, syscall.SO_MARK, int(fwmark))
+			syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, syscall.SO_MARK, int(conf.ProtectionMark))
 		})
-	}
+	}, nil
+}
 
-	tcp := net.Dialer{
-		Control:   control,
-		KeepAlive: -1,
-	}
-
-	udp := net.Dialer{
-		Control: control,
-	}
-
-	return newClientWithBaseDialers(transportConfig, tcp, udp)
+func UDPDialerControl(conf *Config) (ControlFn, error) {
+	return TCPDialerControl(conf)
 }

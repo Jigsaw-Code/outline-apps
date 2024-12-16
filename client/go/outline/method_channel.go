@@ -41,20 +41,6 @@ const (
 	MethodCloseVPN = "CloseVPN"
 )
 
-// Handler is an interface that defines a method for handling requests from TypeScript.
-type Handler func(string) (string, error)
-
-// handlers is a map of registered handlers.
-var handlers = make(map[string]Handler)
-
-// RegisterMethodHandler registers a native function handler for the given method.
-//
-// Instead of having [InvokeMethod] directly depend on other packages, we use dependency inversion
-// pattern here. This breaks Go's dependency cycle and makes the code more flexible.
-func RegisterMethodHandler(method string, handler Handler) {
-	handlers[method] = handler
-}
-
 // InvokeMethodResult represents the result of an InvokeMethod call.
 //
 // We use a struct instead of a tuple to preserve a strongly typed error that gobind recognizes.
@@ -74,15 +60,20 @@ func InvokeMethod(method string, input string) *InvokeMethodResult {
 			Error: platerrors.ToPlatformError(err),
 		}
 
-	default:
-		if h, ok := handlers[method]; ok {
-			val, err := h(input)
-			return &InvokeMethodResult{
-				Value: val,
-				Error: platerrors.ToPlatformError(err),
-			}
+	case MethodEstablishVPN:
+		conn, err := establishVPN(input)
+		return &InvokeMethodResult{
+			Value: conn,
+			Error: platerrors.ToPlatformError(err),
 		}
 
+	case MethodCloseVPN:
+		err := closeVPN()
+		return &InvokeMethodResult{
+			Error: platerrors.ToPlatformError(err),
+		}
+
+	default:
 		return &InvokeMethodResult{Error: &platerrors.PlatformError{
 			Code:    platerrors.InternalError,
 			Message: fmt.Sprintf("unsupported Go method: %s", method),

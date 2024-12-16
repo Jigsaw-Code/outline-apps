@@ -21,9 +21,10 @@ import (
 )
 
 const (
-	ioLogPfx  = "[IO] "
-	nmLogPfx  = "[NMDBus] "
-	vpnLogPfx = "[VPN] "
+	ioLogPfx    = "[IO] "
+	nmLogPfx    = "[NMDBus] "
+	vpnLogPfx   = "[VPN] "
+	proxyLogPfx = "[Proxy] "
 )
 
 func errIllegalConfig(msg string, params ...any) error {

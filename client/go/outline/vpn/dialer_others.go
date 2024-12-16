@@ -12,13 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//go:build !linux
+
 package vpn
 
-import "github.com/Jigsaw-Code/outline-apps/client/go/outline"
+import "errors"
 
-func RegisterMethodHandlers() {
-	outline.RegisterMethodHandler(outline.MethodEstablishVPN, EstablishVPN)
-	outline.RegisterMethodHandler(outline.MethodCloseVPN, func(string) (string, error) {
-		return "", CloseVPN()
-	})
+func TCPDialerControl(conf *Config) (ControlFn, error) {
+	return nil, errors.ErrUnsupported
+}
+
+func UDPDialerControl(conf *Config) (ControlFn, error) {
+	return nil, errors.ErrUnsupported
 }

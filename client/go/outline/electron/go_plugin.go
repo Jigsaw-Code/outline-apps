@@ -39,25 +39,7 @@ import (
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
-	"github.com/Jigsaw-Code/outline-apps/client/go/outline/vpn"
 )
-
-// init initializes the backend module.
-// It sets up a default logger based on the OUTLINE_DEBUG environment variable.
-func init() {
-	opts := slog.HandlerOptions{Level: slog.LevelInfo}
-
-	dbg := os.Getenv("OUTLINE_DEBUG")
-	if dbg != "" && dbg != "false" && dbg != "0" {
-		opts.Level = slog.LevelDebug
-	}
-
-	logger := slog.New(slog.NewTextHandler(os.Stderr, &opts))
-	slog.SetDefault(logger)
-
-	// Register VPN handlers for desktop environments
-	vpn.RegisterMethodHandlers()
-}
 
 // InvokeMethod is the unified entry point for TypeScript to invoke various Go functions.
 //
@@ -108,4 +90,18 @@ func marshalCGoErrorJson(e *platerrors.PlatformError) *C.char {
 		return newCGoString(fmt.Sprintf("%s, failed to retrieve details due to: %s", e.Code, err.Error()))
 	}
 	return newCGoString(json)
+}
+
+// init initializes the backend module.
+// It sets up a default logger based on the OUTLINE_DEBUG environment variable.
+func init() {
+	opts := slog.HandlerOptions{Level: slog.LevelInfo}
+
+	dbg := os.Getenv("OUTLINE_DEBUG")
+	if dbg != "" && dbg != "false" && dbg != "0" {
+		opts.Level = slog.LevelDebug
+	}
+
+	logger := slog.New(slog.NewTextHandler(os.Stderr, &opts))
+	slog.SetDefault(logger)
 }

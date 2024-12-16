@@ -12,12 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//go:build !linux
-
 package vpn
 
-import "errors"
+import "syscall"
 
-func newPlatformVPNConn(conf *Config) (_ platformVPNConn, err error) {
-	return nil, errors.ErrUnsupported
-}
+type ControlFn = func(network, address string, c syscall.RawConn) error
