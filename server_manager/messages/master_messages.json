@@ -1051,6 +1051,16 @@
     "message": "Access keys",
     "description": "This string appears within the server view as a header of a table column that displays server access keys."
   },
+  "server_access_keys_tab": {
+    "message": "Access keys ($KEY_COUNT$)",
+    "description": "This string is a tab header indicating to the user that they're currently managing their access keys.",
+    "placeholders": {
+      "KEY_COUNT": {
+        "content": "{keyCount}",
+        "example": "12"
+      }
+    }
+  },
   "server_connections": {
     "message": "Connections",
     "description": "This string appears within the server view as a header of the section that displays server information and access keys."
@@ -1098,6 +1108,22 @@
   "server_metrics": {
     "message": "Metrics",
     "description": "This string appears within the server view as a header of the section that displays server metrics."
+  },
+  "server_metrics_data_transferred": {
+    "message": "Data transferred in the last 30 days",
+    "description": "This string indicates to the user that the metric displayed counts how much data was sent through the server over the last 30 days"
+  },
+  "server_metrics_user_hours":  {
+    "message": "User hours spent on the VPN in the last 30 days",
+    "description": "This string indicates to the user that the metric displayed counts how many hours users used the VPN over the last 30 days."
+  },
+  "server_metrics_user_hours_unit": {
+    "message": "hours",
+    "description": "This string indicates to the user that the metric displayed is in hours."
+  },
+  "server_metrics_average_devices": {
+    "message": "Average number of devices used in the last 30 days",
+    "description": "This string indicates to the user that the metric displayed corresponds to the average number of devices that used the VPN over the last 30 days."
   },
   "server_my_access_key": {
     "message": "My access key",
