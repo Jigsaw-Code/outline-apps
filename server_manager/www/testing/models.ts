@@ -168,7 +168,7 @@ export class FakeServer implements server.Server {
   getDataUsage() {
     return Promise.resolve(new Map<server.AccessKeyId, number>());
   }
-  getServerMetrics() {
+  getServerMetrics(): Promise<server.ServerMetricsJson> {
     return Promise.reject(
       new Error('FakeServer.getServerMetrics not implemented')
     );
@@ -250,6 +250,34 @@ export class FakeManualServer
   }
   getCertificateFingerprint() {
     return this.manualServerConfig.certSha256;
+  }
+  getServerMetrics() {
+    return Promise.resolve({
+      server: [
+        {
+          location: '',
+          asn: 0,
+          asOrg: '',
+          tunnelTime: {
+            seconds: 0,
+          },
+          dataTransferred: {
+            bytes: 0,
+          },
+        },
+      ],
+      accessKeys: [
+        {
+          accessKeyId: 0,
+          tunnelTime: {
+            seconds: 0,
+          },
+          dataTransferred: {
+            bytes: 0,
+          },
+        },
+      ],
+    });
   }
 }
 
