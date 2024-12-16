@@ -44,6 +44,8 @@ const DATA_LIMITS_VERSION = '1.1.0';
 const CHANGE_HOSTNAME_VERSION = '1.2.0';
 const KEY_SETTINGS_VERSION = '1.6.0';
 const MAX_ACCESS_KEY_DATA_LIMIT_BYTES = 50 * 10 ** 9; // 50GB
+const HOUR_IN_SECS = 60 * 60;
+const MONTH_IN_HOURS = 30 * 24;
 const CANCELLED_ERROR = new Error('Cancelled');
 export const LAST_DISPLAYED_SERVER_STORAGE_KEY = 'lastDisplayedServer';
 
@@ -1044,12 +1046,11 @@ export class App {
 
       let totalUserHours = 0;
       for (const {tunnelTime} of serverMetrics.server) {
-        // convert to hours
-        totalUserHours += tunnelTime.seconds / (60 * 60);
+        totalUserHours += tunnelTime.seconds / HOUR_IN_SECS;
       }
 
       serverView.totalUserHours = totalUserHours;
-      serverView.totalDevices = serverView.totalUserHours / (30 * 24);
+      serverView.totalDevices = serverView.totalUserHours / MONTH_IN_HOURS;
 
       let totalInboundBytes = 0;
       for (const {dataTransferred} of serverMetrics.accessKeys) {

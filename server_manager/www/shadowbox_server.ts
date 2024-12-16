@@ -57,8 +57,29 @@ function makeAccessKeyModel(apiAccessKey: AccessKeyJson): server.AccessKey {
 export class ShadowboxServer implements server.Server {
   private api: PathApiClient;
   private serverConfig: ServerConfigJson;
+  private supportedEndpoints: {
+    'experimental/server/metrics': boolean;
+  };
 
-  constructor(private readonly id: string) {}
+  constructor(private readonly id: string) {
+    this.id = id;
+
+    this.supportedEndpoints = {
+      'experimental/server/metrics': false,
+    };
+
+    this.api
+      .request<server.ServerMetricsJson>('experimental/server/metrics')
+      .then(
+        () => (this.supportedEndpoints['experimental/server/metrics'] = true)
+      )
+      .catch(error => {
+        // endpoint is not defined, keep set to false
+        if (error.response.status === 404) return;
+
+        this.supportedEndpoints['experimental/server/metrics'] = true;
+      });
+  }
 
   getId(): string {
     return this.id;
@@ -150,33 +171,30 @@ export class ShadowboxServer implements server.Server {
   }
 
   async getServerMetrics(): Promise<server.ServerMetricsJson> {
-    try {
-      const result = await this.api.request<server.ServerMetricsJson>(
+    if (this.supportedEndpoints['experimental/server/metrics']) {
+      return this.api.request<server.ServerMetricsJson>(
         'experimental/server/metrics'
       );
-
-      return result;
-    } catch (e) {
-      // fallback to metrics/transfer endpoint
-      const result: server.ServerMetricsJson = {
-        server: [],
-        accessKeys: [],
-      };
-
-      const jsonResponse =
-        await this.api.request<DataUsageByAccessKeyJson>('metrics/transfer');
-
-      for (const [accessKeyId, bytes] of Object.entries(
-        jsonResponse.bytesTransferredByUserId
-      )) {
-        result.accessKeys.push({
-          accessKeyId: Number(accessKeyId),
-          dataTransferred: {bytes},
-        });
-      }
-
-      return result;
     }
+
+    const result: server.ServerMetricsJson = {
+      server: [],
+      accessKeys: [],
+    };
+
+    const jsonResponse =
+      await this.api.request<DataUsageByAccessKeyJson>('metrics/transfer');
+
+    for (const [accessKeyId, bytes] of Object.entries(
+      jsonResponse.bytesTransferredByUserId
+    )) {
+      result.accessKeys.push({
+        accessKeyId: Number(accessKeyId),
+        dataTransferred: {bytes},
+      });
+    }
+
+    return result;
   }
 
   getName(): string {
