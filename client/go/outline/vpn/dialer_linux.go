@@ -19,6 +19,8 @@ import (
 	"syscall"
 )
 
+// TCPDialerControl returns a ControlFn that sets the SO_MARK socket option on a TCP connection.
+// This is used to exclude traffic targeting the remote proxy server from routing to TUN device.
 func TCPDialerControl(conf *Config) (ControlFn, error) {
 	if conf == nil {
 		return nil, errors.New("VPN config must be provided")
@@ -30,6 +32,8 @@ func TCPDialerControl(conf *Config) (ControlFn, error) {
 	}, nil
 }
 
+// TCPDialerControl returns a ControlFn that sets the SO_MARK socket option on a TCP connection.
+// This is used to exclude traffic targeting the remote proxy server from routing to TUN device.
 func UDPDialerControl(conf *Config) (ControlFn, error) {
 	return TCPDialerControl(conf)
 }

@@ -18,10 +18,12 @@ package vpn
 
 import "errors"
 
+// TCPDialerControl is not supported on this platform.
 func TCPDialerControl(conf *Config) (ControlFn, error) {
 	return nil, errors.ErrUnsupported
 }
 
+// UDPDialerControl is not supported on this platform.
 func UDPDialerControl(conf *Config) (ControlFn, error) {
 	return nil, errors.ErrUnsupported
 }

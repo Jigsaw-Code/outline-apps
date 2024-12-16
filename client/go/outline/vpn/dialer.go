@@ -16,4 +16,5 @@ package vpn
 
 import "syscall"
 
+// ControlFn is an alias to a function type that can be used in net.Dialer.Control.
 type ControlFn = func(network, address string, c syscall.RawConn) error

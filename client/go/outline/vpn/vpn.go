@@ -24,6 +24,7 @@ import (
 	"github.com/Jigsaw-Code/outline-sdk/network"
 )
 
+// Config holds the configuration to establish a system-wide [VPNConnection].
 type Config struct {
 	ID              string   `json:"id"`
 	InterfaceName   string   `json:"interfaceName"`
@@ -35,7 +36,7 @@ type Config struct {
 	ProtectionMark  uint32   `json:"protectionMark"`
 }
 
-// Status defines the possible states of a VPN connection.
+// Status defines the possible states of a [VPNConnection].
 type Status string
 
 // Constants representing the different VPN connection statuses.
@@ -47,20 +48,33 @@ const (
 	StatusDisconnecting Status = "Disconnecting"
 )
 
+// ProxyDevice is an interface representing a remote proxy server device.
 type ProxyDevice interface {
 	network.IPDevice
+
+	// Connect establishes a connection to the proxy device.
 	Connect(ctx context.Context) error
+
+	// SupportsUDP returns true if the proxy device is able to handle UDP traffic.
 	SupportsUDP() bool
+
+	// RefreshConnectivity refreshes the UDP support of the proxy device.
 	RefreshConnectivity(ctx context.Context) error
 }
 
+// platformVPNConn is an interface representing an OS-specific VPN connection.
 type platformVPNConn interface {
+	// Establish creates a TUN device and routes all system traffic to it.
 	Establish(ctx context.Context) error
+
+	// TUN returns a L3 IP tun device associated with the VPN connection.
 	TUN() io.ReadWriteCloser
+
+	// Close terminates the VPN connection and closes the TUN device.
 	Close() error
 }
 
-// VPNConnection is a platform neutral interface of a VPN connection.
+// VPNConnection represents a system-wide VPN connection.
 type VPNConnection struct {
 	ID          string `json:"id"`
 	Status      Status `json:"status"`
@@ -74,10 +88,12 @@ type VPNConnection struct {
 	platform platformVPNConn
 }
 
+// SetStatus sets the status of the VPN connection.
 func (c *VPNConnection) SetStatus(s Status) {
 	c.Status = s
 }
 
+// SetSupportsUDP sets whether the VPN connection supports UDP.
 func (c *VPNConnection) SetSupportsUDP(v bool) {
 	c.SupportsUDP = &v
 }
@@ -87,10 +103,10 @@ func (c *VPNConnection) SetSupportsUDP(v bool) {
 var mu sync.Mutex
 var conn *VPNConnection
 
-// EstablishVPN establishes a new active [VPNConnection] with the given configuration.
-// It will first close any active [VPNConnection] using [CloseVPN], and then mark the
+// EstablishVPN establishes a new active [VPNConnection] with the given [Config].
+// It first closes any active [VPNConnection] using [CloseVPN], and then marks the
 // newly created [VPNConnection] as the currently active connection.
-// It returns the connectionJSON as a string, or an error if the connection fails.
+// It returns the new [VPNConnection], or an error if the connection fails.
 func EstablishVPN(conf *Config, proxy ProxyDevice) (_ *VPNConnection, err error) {
 	if conf == nil {
 		return nil, errors.New("a VPN Config must be provided")
@@ -157,7 +173,7 @@ func EstablishVPN(conf *Config, proxy ProxyDevice) (_ *VPNConnection, err error)
 	return c, nil
 }
 
-// CloseVPN closes the currently active [VPNConnection].
+// CloseVPN terminates the currently active [VPNConnection].
 func CloseVPN() error {
 	mu.Lock()
 	defer mu.Unlock()

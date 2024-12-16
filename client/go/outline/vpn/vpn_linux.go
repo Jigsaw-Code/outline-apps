@@ -24,7 +24,7 @@ import (
 	gonm "github.com/Wifx/gonetworkmanager/v2"
 )
 
-// linuxVPNConn implements a [VPNConnection] on Linux platform.
+// linuxVPNConn implements a platformVPNConn on the Linux platform.
 type linuxVPNConn struct {
 	tun    io.ReadWriteCloser
 	nmOpts *nmConnectionOptions
@@ -34,9 +34,8 @@ type linuxVPNConn struct {
 
 var _ platformVPNConn = (*linuxVPNConn)(nil)
 
-// newVPNConnection creates a new Linux specific [VPNConnection].
-// The newly connection will be [StatusDisconnected] initially, you need to call the
-// Establish() in order to make it [StatusConnected].
+// newPlatformVPNConn creates a new Linux-specific platformVPNConn.
+// You need to call Establish() in order to make it connected.
 func newPlatformVPNConn(conf *Config) (_ platformVPNConn, err error) {
 	c := &linuxVPNConn{
 		nmOpts: &nmConnectionOptions{
@@ -70,9 +69,10 @@ func newPlatformVPNConn(conf *Config) (_ platformVPNConn, err error) {
 	return c, nil
 }
 
+// TUN returns the Linux L3 TUN device.
 func (c *linuxVPNConn) TUN() io.ReadWriteCloser { return c.tun }
 
-// Establish tries to establish this [VPNConnection], and makes it [StatusConnected].
+// Establish tries to create the TUN device and route all traffic to it.
 func (c *linuxVPNConn) Establish(ctx context.Context) (err error) {
 	if ctx.Err() != nil {
 		return perrs.PlatformError{Code: perrs.OperationCanceled}
@@ -89,7 +89,7 @@ func (c *linuxVPNConn) Establish(ctx context.Context) (err error) {
 	return nil
 }
 
-// Close tries to close this [VPNConnection] and make it [StatusDisconnected].
+// Close tries to restore the routing and deletes the TUN device.
 func (c *linuxVPNConn) Close() (err error) {
 	if c == nil {
 		return nil

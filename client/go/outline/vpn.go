@@ -27,6 +27,12 @@ type vpnConfigJSON struct {
 	TransportConfig string     `json:"transport"`
 }
 
+// establishVPN establishes a VPN connection using the given configuration string.
+// The configuration string should be a JSON object containing the VPN configuration
+// and the transport configuration.
+//
+// The function returns a JSON string representing the established VPN connection,
+// or an error if the connection fails.
 func establishVPN(configStr string) (string, error) {
 	var conf vpnConfigJSON
 	if err := json.Unmarshal([]byte(configStr), &conf); err != nil {
@@ -77,6 +83,7 @@ func establishVPN(configStr string) (string, error) {
 	return string(connJson), nil
 }
 
+// closeVPN closes the currently active VPN connection.
 func closeVPN() error {
 	return vpn.CloseVPN()
 }

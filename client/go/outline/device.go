@@ -26,6 +26,8 @@ import (
 	"github.com/Jigsaw-Code/outline-sdk/network/lwip2transport"
 )
 
+// Device is an IPDevice that connects to a remote Outline server.
+// It also implements the vpn.ProxyDevice interface.
 type Device struct {
 	network.IPDevice
 
@@ -38,6 +40,7 @@ type Device struct {
 
 var _ vpn.ProxyDevice = (*Device)(nil)
 
+// NewDevice creates a new [Device] using the given [Client].
 func NewDevice(c *Client) (*Device, error) {
 	if c == nil {
 		return nil, errors.New("Client must be provided")
@@ -45,10 +48,13 @@ func NewDevice(c *Client) (*Device, error) {
 	return &Device{c: c}, nil
 }
 
+// SupportsUDP returns true if the the Outline server forwards UDP traffic.
+// This value will be refreshed after Connect or RefreshConnectivity.
 func (d *Device) SupportsUDP() bool {
 	return d.supportsUDP
 }
 
+// Connect tries to connect to the Outline server.
 func (d *Device) Connect(ctx context.Context) (err error) {
 	if ctx.Err() != nil {
 		return perrs.PlatformError{Code: perrs.OperationCanceled}
@@ -78,6 +84,7 @@ func (d *Device) Connect(ctx context.Context) (err error) {
 	return nil
 }
 
+// Close closes the connection to the Outline server.
 func (d *Device) Close() (err error) {
 	if d.IPDevice != nil {
 		err = d.IPDevice.Close()
@@ -85,6 +92,7 @@ func (d *Device) Close() (err error) {
 	return
 }
 
+// RefreshConnectivity refreshes the connectivity to the Outline server.
 func (d *Device) RefreshConnectivity(ctx context.Context) (err error) {
 	if ctx.Err() != nil {
 		return perrs.PlatformError{Code: perrs.OperationCanceled}
