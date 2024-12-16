@@ -66,6 +66,11 @@ func newPlatformVPNConn(conf *Config) (_ platformVPNConn, err error) {
 		c.nmOpts.DNSServers4 = append(c.nmOpts.DNSServers4, dnsIP)
 	}
 
+	if c.nm, err = gonm.NewNetworkManager(); err != nil {
+		return nil, errSetupVPN(nmLogPfx, "failed to connect", err)
+	}
+	slog.Debug(nmLogPfx + "connected")
+
 	return c, nil
 }
 
@@ -78,14 +83,15 @@ func (c *linuxVPNConn) Establish(ctx context.Context) (err error) {
 		return perrs.PlatformError{Code: perrs.OperationCanceled}
 	}
 
-	if c.tun, err = newTUNDevice(c.nmOpts.Name); err != nil {
+	if c.tun, err = newTUNDevice(c.nmOpts.TUNName); err != nil {
 		return errSetupVPN(ioLogPfx, "failed to create TUN device", err, "name", c.nmOpts.Name)
 	}
 	slog.Info(vpnLogPfx+"TUN device created", "name", c.nmOpts.TUNName)
 
-	if err = c.establishNMConnection(); err != nil {
+	if c.ac, err = establishNMConnection(c.nm, c.nmOpts); err != nil {
 		return
 	}
+	slog.Info(nmLogPfx+"successfully configured NetworkManager connection", "conn", c.ac.GetPath())
 	return nil
 }
 
@@ -95,7 +101,7 @@ func (c *linuxVPNConn) Close() (err error) {
 		return nil
 	}
 
-	c.closeNMConnection()
+	closeNMConnection(c.nm, c.ac)
 	if c.tun != nil {
 		// this is the only error that matters
 		if err = c.tun.Close(); err != nil {

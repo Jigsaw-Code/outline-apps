@@ -98,7 +98,7 @@ func (d *Device) RefreshConnectivity(ctx context.Context) (err error) {
 		return perrs.PlatformError{Code: perrs.OperationCanceled}
 	}
 
-	slog.Debug("[Outine] Testing connectivity of Outline server ...")
+	slog.Debug("[Outline] Testing connectivity of Outline server ...")
 	result := CheckTCPAndUDPConnectivity(d.c)
 	if result.TCPError != nil {
 		slog.Warn("[Outline] Outline server connectivity test failed", "err", result.TCPError)

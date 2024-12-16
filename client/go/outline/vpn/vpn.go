@@ -103,7 +103,8 @@ func (c *VPNConnection) SetSupportsUDP(v bool) {
 var mu sync.Mutex
 var conn *VPNConnection
 
-// EstablishVPN establishes a new active [VPNConnection] with the given [Config].
+// EstablishVPN establishes a new active [VPNConnection] connecting to a [ProxyDevice]
+// with the given VPN [Config].
 // It first closes any active [VPNConnection] using [CloseVPN], and then marks the
 // newly created [VPNConnection] as the currently active connection.
 // It returns the new [VPNConnection], or an error if the connection fails.
@@ -118,6 +119,7 @@ func EstablishVPN(conf *Config, proxy ProxyDevice) (_ *VPNConnection, err error)
 	c := &VPNConnection{
 		ID:     conf.ID,
 		Status: StatusDisconnected,
+		proxy:  proxy,
 	}
 	c.ctx, c.cancel = context.WithCancel(context.Background())
 	if c.platform, err = newPlatformVPNConn(conf); err != nil {
@@ -132,7 +134,7 @@ func EstablishVPN(conf *Config, proxy ProxyDevice) (_ *VPNConnection, err error)
 		return
 	}
 
-	slog.Debug(vpnLogPfx+"Establishing VPN connection ...", "id", c.ID)
+	slog.Debug(vpnLogPfx+"establishing VPN connection ...", "id", c.ID)
 
 	c.SetStatus(StatusConnecting)
 	defer func() {
@@ -144,10 +146,10 @@ func EstablishVPN(conf *Config, proxy ProxyDevice) (_ *VPNConnection, err error)
 	}()
 
 	if err = c.proxy.Connect(c.ctx); err != nil {
-		slog.Error(proxyLogPfx+"Failed to connect to the proxy", "err", err)
+		slog.Error(proxyLogPfx+"failed to connect to the proxy", "err", err)
 		return
 	}
-	slog.Info(proxyLogPfx + "Connected to the proxy")
+	slog.Info(proxyLogPfx + "connected to the proxy")
 	c.SetSupportsUDP(c.proxy.SupportsUDP())
 
 	if err = c.platform.Establish(c.ctx); err != nil {
@@ -158,13 +160,13 @@ func EstablishVPN(conf *Config, proxy ProxyDevice) (_ *VPNConnection, err error)
 	c.wgCopy.Add(2)
 	go func() {
 		defer c.wgCopy.Done()
-		slog.Debug(ioLogPfx + "Copying traffic from TUN Device -> OutlineDevice...")
+		slog.Debug(ioLogPfx + "copying traffic from TUN Device -> OutlineDevice...")
 		n, err := io.Copy(c.proxy, c.platform.TUN())
 		slog.Debug(ioLogPfx+"TUN Device -> OutlineDevice done", "n", n, "err", err)
 	}()
 	go func() {
 		defer c.wgCopy.Done()
-		slog.Debug(ioLogPfx + "Copying traffic from OutlineDevice -> TUN Device...")
+		slog.Debug(ioLogPfx + "copying traffic from OutlineDevice -> TUN Device...")
 		n, err := io.Copy(c.platform.TUN(), c.proxy)
 		slog.Debug(ioLogPfx+"OutlineDevice -> TUN Device done", "n", n, "err", err)
 	}()
@@ -173,7 +175,7 @@ func EstablishVPN(conf *Config, proxy ProxyDevice) (_ *VPNConnection, err error)
 	return c, nil
 }
 
-// CloseVPN terminates the currently active [VPNConnection].
+// CloseVPN terminates the currently active [VPNConnection] and disconnects the proxy.
 func CloseVPN() error {
 	mu.Lock()
 	defer mu.Unlock()
@@ -184,7 +186,7 @@ func CloseVPN() error {
 func atomicReplaceVPNConn(newConn *VPNConnection) error {
 	mu.Lock()
 	defer mu.Unlock()
-	slog.Debug(vpnLogPfx+"Creating VPN Connection ...", "id", newConn.ID)
+	slog.Debug(vpnLogPfx+"creating VPN Connection ...", "id", newConn.ID)
 	if err := closeVPNNoLock(); err != nil {
 		return err
 	}
@@ -203,28 +205,28 @@ func closeVPNNoLock() (err error) {
 	conn.SetStatus(StatusDisconnecting)
 	defer func() {
 		if err == nil {
+			slog.Info(vpnLogPfx+"VPN Connection closed", "id", conn.ID)
 			conn.SetStatus(StatusDisconnected)
+			conn = nil
 		} else {
 			conn.SetStatus(StatusUnknown)
 		}
 	}()
 
-	slog.Debug(vpnLogPfx+"Closing existing VPN Connection ...", "id", conn.ID)
+	slog.Debug(vpnLogPfx+"closing existing VPN Connection ...", "id", conn.ID)
 
 	// Cancel the Establish process and wait
 	conn.cancel()
 	conn.wgEst.Wait()
 
-	if err = conn.platform.Close(); err == nil {
-		slog.Info(vpnLogPfx+"VPN Connection closed", "id", conn.ID)
-		conn = nil
-	}
+	// This is the only error that matters
+	err = conn.platform.Close()
 
 	// We can ignore the following error
 	if err2 := conn.proxy.Close(); err2 != nil {
-		slog.Warn(proxyLogPfx + "Failed to disconnect from the proxy")
+		slog.Warn(proxyLogPfx + "failed to disconnect from the proxy")
 	} else {
-		slog.Info(proxyLogPfx + "Disconnected from the proxy")
+		slog.Info(proxyLogPfx + "disconnected from the proxy")
 	}
 
 	// Wait for traffic copy go routines to finish
