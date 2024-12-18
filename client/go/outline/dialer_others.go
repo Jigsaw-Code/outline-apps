@@ -14,16 +14,19 @@
 
 //go:build !linux
 
-package vpn
+package outline
 
-import "errors"
+import (
+	"errors"
+	"net"
+)
 
-// TCPDialerControl is not supported on this platform.
-func TCPDialerControl(conf *Config) (ControlFn, error) {
-	return nil, errors.ErrUnsupported
+// newFWMarkProtectedTCPDialer is not supported on non-Linux platforms.
+func newFWMarkProtectedTCPDialer(fwmark uint32) (net.Dialer, error) {
+	return net.Dialer{}, errors.ErrUnsupported
 }
 
-// UDPDialerControl is not supported on this platform.
-func UDPDialerControl(conf *Config) (ControlFn, error) {
-	return nil, errors.ErrUnsupported
+// newFWMarkProtectedUDPDialer is not supported on non-Linux platforms.
+func newFWMarkProtectedUDPDialer(fwmark uint32) (net.Dialer, error) {
+	return net.Dialer{}, errors.ErrUnsupported
 }

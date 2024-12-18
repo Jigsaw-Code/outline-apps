@@ -12,9 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package vpn
+package outline
 
-import "syscall"
+import (
+	"net"
+)
 
-// ControlFn is an alias to a function type that can be used in net.Dialer.Control.
-type ControlFn = func(network, address string, c syscall.RawConn) error
+// newTCPDialer creates a default base TCP dialer for [Client].
+func newTCPDialer() net.Dialer {
+	return net.Dialer{KeepAlive: -1}
+}
+
+// newUDPDialer creates a default base UDP dialer for [Client].
+func newUDPDialer() net.Dialer {
+	return net.Dialer{}
+}

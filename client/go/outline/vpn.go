@@ -16,7 +16,6 @@ package outline
 
 import (
 	"encoding/json"
-	"net"
 
 	perrs "github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/vpn"
@@ -44,19 +43,14 @@ func establishVPN(configStr string) (string, error) {
 	}
 
 	// Create Outline Client and Device
-	tcpControl, err := vpn.TCPDialerControl(&conf.VPNConfig)
+	tcp, err := newFWMarkProtectedTCPDialer(conf.VPNConfig.ProtectionMark)
 	if err != nil {
 		return "", err
 	}
-	tcp := net.Dialer{
-		Control:   tcpControl,
-		KeepAlive: -1,
-	}
-	udpControl, err := vpn.UDPDialerControl(&conf.VPNConfig)
+	udp, err := newFWMarkProtectedUDPDialer(conf.VPNConfig.ProtectionMark)
 	if err != nil {
 		return "", err
 	}
-	udp := net.Dialer{Control: udpControl}
 	c, err := newClientWithBaseDialers(conf.TransportConfig, tcp, udp)
 	if err != nil {
 		return "", err
