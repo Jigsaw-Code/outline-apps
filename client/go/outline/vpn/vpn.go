@@ -1,0 +1,236 @@
+// Copyright 2024 The Outline Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package vpn
+
+import (
+	"context"
+	"errors"
+	"io"
+	"log/slog"
+	"sync"
+
+	"github.com/Jigsaw-Code/outline-sdk/network"
+)
+
+// Config holds the configuration to establish a system-wide [VPNConnection].
+type Config struct {
+	ID              string   `json:"id"`
+	InterfaceName   string   `json:"interfaceName"`
+	IPAddress       string   `json:"ipAddress"`
+	DNSServers      []string `json:"dnsServers"`
+	ConnectionName  string   `json:"connectionName"`
+	RoutingTableId  uint32   `json:"routingTableId"`
+	RoutingPriority uint32   `json:"routingPriority"`
+	ProtectionMark  uint32   `json:"protectionMark"`
+}
+
+// Status defines the possible states of a [VPNConnection].
+type Status string
+
+// Constants representing the different VPN connection statuses.
+const (
+	StatusUnknown       Status = "Unknown"
+	StatusConnected     Status = "Connected"
+	StatusDisconnected  Status = "Disconnected"
+	StatusConnecting    Status = "Connecting"
+	StatusDisconnecting Status = "Disconnecting"
+)
+
+// ProxyDevice is an interface representing a remote proxy server device.
+type ProxyDevice interface {
+	network.IPDevice
+
+	// Connect establishes a connection to the proxy device.
+	Connect(ctx context.Context) error
+
+	// SupportsUDP returns true if the proxy device is able to handle UDP traffic.
+	SupportsUDP() bool
+
+	// RefreshConnectivity refreshes the UDP support of the proxy device.
+	RefreshConnectivity(ctx context.Context) error
+}
+
+// platformVPNConn is an interface representing an OS-specific VPN connection.
+type platformVPNConn interface {
+	// Establish creates a TUN device and routes all system traffic to it.
+	Establish(ctx context.Context) error
+
+	// TUN returns a L3 IP tun device associated with the VPN connection.
+	TUN() io.ReadWriteCloser
+
+	// Close terminates the VPN connection and closes the TUN device.
+	Close() error
+}
+
+// VPNConnection represents a system-wide VPN connection.
+type VPNConnection struct {
+	ID          string `json:"id"`
+	Status      Status `json:"status"`
+	SupportsUDP *bool  `json:"supportsUDP"`
+
+	ctx           context.Context
+	cancel        context.CancelFunc
+	wgEst, wgCopy sync.WaitGroup
+
+	proxy    ProxyDevice
+	platform platformVPNConn
+}
+
+// SetStatus sets the status of the VPN connection.
+func (c *VPNConnection) SetStatus(s Status) {
+	c.Status = s
+}
+
+// SetSupportsUDP sets whether the VPN connection supports UDP.
+func (c *VPNConnection) SetSupportsUDP(v bool) {
+	c.SupportsUDP = &v
+}
+
+// The global singleton VPN connection.
+// This package allows at most one active VPN connection at the same time.
+var mu sync.Mutex
+var conn *VPNConnection
+
+// EstablishVPN establishes a new active [VPNConnection] connecting to a [ProxyDevice]
+// with the given VPN [Config].
+// It first closes any active [VPNConnection] using [CloseVPN], and then marks the
+// newly created [VPNConnection] as the currently active connection.
+// It returns the new [VPNConnection], or an error if the connection fails.
+func EstablishVPN(conf *Config, proxy ProxyDevice) (_ *VPNConnection, err error) {
+	if conf == nil {
+		return nil, errors.New("a VPN Config must be provided")
+	}
+	if proxy == nil {
+		return nil, errors.New("a proxy device must be provided")
+	}
+
+	c := &VPNConnection{
+		ID:     conf.ID,
+		Status: StatusDisconnected,
+		proxy:  proxy,
+	}
+	c.ctx, c.cancel = context.WithCancel(context.Background())
+	if c.platform, err = newPlatformVPNConn(conf); err != nil {
+		return
+	}
+
+	c.wgEst.Add(1)
+	defer c.wgEst.Done()
+
+	if err = atomicReplaceVPNConn(c); err != nil {
+		c.platform.Close()
+		return
+	}
+
+	slog.Debug(vpnLogPfx+"establishing VPN connection ...", "id", c.ID)
+
+	c.SetStatus(StatusConnecting)
+	defer func() {
+		if err == nil {
+			c.SetStatus(StatusConnected)
+		} else {
+			c.SetStatus(StatusUnknown)
+		}
+	}()
+
+	if err = c.proxy.Connect(c.ctx); err != nil {
+		slog.Error(proxyLogPfx+"failed to connect to the proxy", "err", err)
+		return
+	}
+	slog.Info(proxyLogPfx + "connected to the proxy")
+	c.SetSupportsUDP(c.proxy.SupportsUDP())
+
+	if err = c.platform.Establish(c.ctx); err != nil {
+		// No need to call c.platform.Close() cuz it's already tracked in the global conn
+		return
+	}
+
+	c.wgCopy.Add(2)
+	go func() {
+		defer c.wgCopy.Done()
+		slog.Debug(ioLogPfx + "copying traffic from TUN Device -> OutlineDevice...")
+		n, err := io.Copy(c.proxy, c.platform.TUN())
+		slog.Debug(ioLogPfx+"TUN Device -> OutlineDevice done", "n", n, "err", err)
+	}()
+	go func() {
+		defer c.wgCopy.Done()
+		slog.Debug(ioLogPfx + "copying traffic from OutlineDevice -> TUN Device...")
+		n, err := io.Copy(c.platform.TUN(), c.proxy)
+		slog.Debug(ioLogPfx+"OutlineDevice -> TUN Device done", "n", n, "err", err)
+	}()
+
+	slog.Info(vpnLogPfx+"VPN connection established", "id", c.ID)
+	return c, nil
+}
+
+// CloseVPN terminates the currently active [VPNConnection] and disconnects the proxy.
+func CloseVPN() error {
+	mu.Lock()
+	defer mu.Unlock()
+	return closeVPNNoLock()
+}
+
+// atomicReplaceVPNConn atomically replaces the global conn with newConn.
+func atomicReplaceVPNConn(newConn *VPNConnection) error {
+	mu.Lock()
+	defer mu.Unlock()
+	slog.Debug(vpnLogPfx+"creating VPN Connection ...", "id", newConn.ID)
+	if err := closeVPNNoLock(); err != nil {
+		return err
+	}
+	conn = newConn
+	slog.Info(vpnLogPfx+"VPN Connection created", "id", newConn.ID)
+	return nil
+}
+
+// closeVPNNoLock closes the current VPN connection stored in conn without acquiring
+// the mutex. It is assumed that the caller holds the mutex.
+func closeVPNNoLock() (err error) {
+	if conn == nil {
+		return nil
+	}
+
+	conn.SetStatus(StatusDisconnecting)
+	defer func() {
+		if err == nil {
+			slog.Info(vpnLogPfx+"VPN Connection closed", "id", conn.ID)
+			conn.SetStatus(StatusDisconnected)
+			conn = nil
+		} else {
+			conn.SetStatus(StatusUnknown)
+		}
+	}()
+
+	slog.Debug(vpnLogPfx+"closing existing VPN Connection ...", "id", conn.ID)
+
+	// Cancel the Establish process and wait
+	conn.cancel()
+	conn.wgEst.Wait()
+
+	// This is the only error that matters
+	err = conn.platform.Close()
+
+	// We can ignore the following error
+	if err2 := conn.proxy.Close(); err2 != nil {
+		slog.Warn(proxyLogPfx + "failed to disconnect from the proxy")
+	} else {
+		slog.Info(proxyLogPfx + "disconnected from the proxy")
+	}
+
+	// Wait for traffic copy go routines to finish
+	conn.wgCopy.Wait()
+
+	return
+}
