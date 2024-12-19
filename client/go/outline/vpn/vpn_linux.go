@@ -67,9 +67,9 @@ func newPlatformVPNConn(conf *Config) (_ platformVPNConn, err error) {
 	}
 
 	if c.nm, err = gonm.NewNetworkManager(); err != nil {
-		return nil, errSetupVPN(nmLogPfx, "failed to connect", err)
+		return nil, errSetupVPN("failed to connect NetworkManager DBus", err)
 	}
-	slog.Debug(nmLogPfx + "connected")
+	slog.Debug("NetworkManager DBus connected")
 
 	return c, nil
 }
@@ -84,14 +84,14 @@ func (c *linuxVPNConn) Establish(ctx context.Context) (err error) {
 	}
 
 	if c.tun, err = newTUNDevice(c.nmOpts.TUNName); err != nil {
-		return errSetupVPN(ioLogPfx, "failed to create TUN device", err, "name", c.nmOpts.Name)
+		return errSetupVPN("failed to create tun device", err, "name", c.nmOpts.Name)
 	}
-	slog.Info(vpnLogPfx+"TUN device created", "name", c.nmOpts.TUNName)
+	slog.Info("tun device created", "name", c.nmOpts.TUNName)
 
 	if c.ac, err = establishNMConnection(c.nm, c.nmOpts); err != nil {
 		return
 	}
-	slog.Info(nmLogPfx+"successfully configured NetworkManager connection", "conn", c.ac.GetPath())
+	slog.Info("successfully configured NetworkManager connection", "conn", c.ac.GetPath())
 	return nil
 }
 
@@ -105,9 +105,9 @@ func (c *linuxVPNConn) Close() (err error) {
 	if c.tun != nil {
 		// this is the only error that matters
 		if err = c.tun.Close(); err != nil {
-			err = errCloseVPN(vpnLogPfx, "failed to close TUN device", err, "name", c.nmOpts.TUNName)
+			err = errCloseVPN("failed to delete tun device", err, "name", c.nmOpts.TUNName)
 		} else {
-			slog.Info(vpnLogPfx+"closed TUN device", "name", c.nmOpts.TUNName)
+			slog.Info("tun device deleted", "name", c.nmOpts.TUNName)
 		}
 	}
 

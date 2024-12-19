@@ -61,9 +61,8 @@ func InvokeMethod(method string, input string) *InvokeMethodResult {
 		}
 
 	case MethodEstablishVPN:
-		conn, err := establishVPN(input)
+		err := establishVPN(input)
 		return &InvokeMethodResult{
-			Value: conn,
 			Error: platerrors.ToPlatformError(err),
 		}
 

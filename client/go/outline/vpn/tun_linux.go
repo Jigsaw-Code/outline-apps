@@ -37,7 +37,7 @@ func newTUNDevice(name string) (io.ReadWriteCloser, error) {
 		return nil, err
 	}
 	if tun.Name() != name {
-		return nil, fmt.Errorf("TUN device name mismatch: requested `%s`, created `%s`", name, tun.Name())
+		return nil, fmt.Errorf("tun device name mismatch: requested `%s`, created `%s`", name, tun.Name())
 	}
 	return tun, nil
 }
@@ -46,13 +46,13 @@ func newTUNDevice(name string) (io.ReadWriteCloser, error) {
 // in the specific NetworkManager.
 func waitForTUNDeviceToBeAvailable(nm gonm.NetworkManager, name string) (dev gonm.Device, err error) {
 	for retries := 20; retries > 0; retries-- {
-		slog.Debug(nmLogPfx+"trying to find TUN device ...", "tun", name)
+		slog.Debug("trying to find tun device in NetworkManager...", "tun", name)
 		dev, err = nm.GetDeviceByIpIface(name)
 		if dev != nil && err == nil {
 			return
 		}
-		slog.Debug(nmLogPfx+"waiting for TUN device to be available", "err", err)
+		slog.Debug("waiting for tun device to be available in NetworkManager", "err", err)
 		time.Sleep(50 * time.Millisecond)
 	}
-	return nil, errSetupVPN(nmLogPfx, "failed to find TUN device", err, "tun", name)
+	return nil, errSetupVPN("failed to find tun device in NetworkManager", err, "tun", name)
 }

@@ -16,7 +16,6 @@ package vpn
 
 import (
 	"encoding/binary"
-	"errors"
 	"log/slog"
 	"net"
 	"time"
@@ -37,7 +36,7 @@ type nmConnectionOptions struct {
 
 func establishNMConnection(nm gonm.NetworkManager, opts *nmConnectionOptions) (ac gonm.ActiveConnection, err error) {
 	if nm == nil {
-		return nil, errors.New("must provide a NetworkManager")
+		panic("a NetworkManager must be provided")
 	}
 	defer func() {
 		if err != nil {
@@ -48,58 +47,58 @@ func establishNMConnection(nm gonm.NetworkManager, opts *nmConnectionOptions) (a
 
 	dev, err := waitForTUNDeviceToBeAvailable(nm, opts.TUNName)
 	if err != nil {
-		return nil, errSetupVPN(nmLogPfx, "failed to find TUN device", err, "tun", opts.TUNName)
+		return nil, errSetupVPN("failed to find tun device", err, "tun", opts.TUNName, "api", "NetworkManager")
 	}
-	slog.Debug(nmLogPfx+"located TUN device", "tun", opts.TUNName, "dev", dev.GetPath())
+	slog.Debug("located tun device in NetworkManager", "tun", opts.TUNName, "dev", dev.GetPath())
 
 	if err = dev.SetPropertyManaged(true); err != nil {
-		return nil, errSetupVPN(nmLogPfx, "failed to set TUN device to be managed", err, "dev", dev.GetPath())
+		return nil, errSetupVPN("failed to manage tun device", err, "dev", dev.GetPath(), "api", "NetworkManager")
 	}
-	slog.Debug(nmLogPfx+"set TUN device to be managed", "dev", dev.GetPath())
+	slog.Debug("NetworkManager now manages the tun device", "dev", dev.GetPath())
 
 	props := make(map[string]map[string]interface{})
 	configureCommonProps(props, opts)
 	configureTUNProps(props)
 	configureIPv4Props(props, opts)
-	slog.Debug(nmLogPfx+"populated NetworkManager connection settings", "settings", props)
+	slog.Debug("populated NetworkManager connection settings", "settings", props)
 
 	// The previous SetPropertyManaged call needs some time to take effect (typically within 50ms)
 	for retries := 20; retries > 0; retries-- {
-		slog.Debug(nmLogPfx+"trying to create connection for TUN device ...", "dev", dev.GetPath())
+		slog.Debug("trying to create NetworkManager connection for tun device...", "dev", dev.GetPath())
 		ac, err = nm.AddAndActivateConnection(props, dev)
 		if err == nil {
 			break
 		}
-		slog.Debug(nmLogPfx+"waiting for TUN device being managed", "err", err)
+		slog.Debug("failed to create NetworkManager connection, will retry later", "err", err)
 		time.Sleep(50 * time.Millisecond)
 	}
 	if err != nil {
-		return ac, errSetupVPN(nmLogPfx, "failed to create new connection for device", err, "dev", dev.GetPath())
+		return ac, errSetupVPN("failed to create connection", err, "dev", dev.GetPath(), "api", "NetworkManager")
 	}
 	return
 }
 
 func closeNMConnection(nm gonm.NetworkManager, ac gonm.ActiveConnection) error {
 	if nm == nil {
-		return errors.New("must provide a NetworkManager")
+		panic("a NetworkManager must be provided")
 	}
 	if ac == nil {
 		return nil
 	}
 
 	if err := nm.DeactivateConnection(ac); err != nil {
-		slog.Warn(nmLogPfx+"not able to deactivate connection", "err", err, "conn", ac.GetPath())
+		slog.Warn("failed to deactivate NetworkManager connection", "err", err, "conn", ac.GetPath())
 	}
-	slog.Debug(nmLogPfx+"deactivated connection", "conn", ac.GetPath())
+	slog.Debug("deactivated NetworkManager connection", "conn", ac.GetPath())
 
 	conn, err := ac.GetPropertyConnection()
 	if err == nil {
 		err = conn.Delete()
 	}
 	if err != nil {
-		return errCloseVPN(nmLogPfx, "failed to delete connection", err, "conn", ac.GetPath())
+		return errCloseVPN("failed to delete NetworkManager connection", err, "conn", ac.GetPath())
 	}
-	slog.Info(nmLogPfx+"connection deleted", "conn", ac.GetPath())
+	slog.Info("NetworkManager connection deleted", "conn", ac.GetPath())
 
 	return nil
 }

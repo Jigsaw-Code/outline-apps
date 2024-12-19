@@ -16,8 +16,6 @@
 
 package vpn
 
-import "errors"
-
 func newPlatformVPNConn(conf *Config) (_ platformVPNConn, err error) {
-	return nil, errors.ErrUnsupported
+	panic("VPN connection not supported on non-Linux OS")
 }

@@ -16,12 +16,11 @@ package vpn
 
 import (
 	"context"
-	"errors"
 	"io"
 	"log/slog"
 	"sync"
 
-	"github.com/Jigsaw-Code/outline-sdk/network"
+	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
 // Config holds the configuration to establish a system-wide [VPNConnection].
@@ -34,32 +33,6 @@ type Config struct {
 	RoutingTableId  uint32   `json:"routingTableId"`
 	RoutingPriority uint32   `json:"routingPriority"`
 	ProtectionMark  uint32   `json:"protectionMark"`
-}
-
-// Status defines the possible states of a [VPNConnection].
-type Status string
-
-// Constants representing the different VPN connection statuses.
-const (
-	StatusUnknown       Status = "Unknown"
-	StatusConnected     Status = "Connected"
-	StatusDisconnected  Status = "Disconnected"
-	StatusConnecting    Status = "Connecting"
-	StatusDisconnecting Status = "Disconnecting"
-)
-
-// ProxyDevice is an interface representing a remote proxy server device.
-type ProxyDevice interface {
-	network.IPDevice
-
-	// Connect establishes a connection to the proxy device.
-	Connect(ctx context.Context) error
-
-	// SupportsUDP returns true if the proxy device is able to handle UDP traffic.
-	SupportsUDP() bool
-
-	// RefreshConnectivity refreshes the UDP support of the proxy device.
-	RefreshConnectivity(ctx context.Context) error
 }
 
 // platformVPNConn is an interface representing an OS-specific VPN connection.
@@ -76,26 +49,13 @@ type platformVPNConn interface {
 
 // VPNConnection represents a system-wide VPN connection.
 type VPNConnection struct {
-	ID          string `json:"id"`
-	Status      Status `json:"status"`
-	SupportsUDP *bool  `json:"supportsUDP"`
+	ID string
 
-	ctx           context.Context
-	cancel        context.CancelFunc
+	cancelEst     context.CancelFunc
 	wgEst, wgCopy sync.WaitGroup
 
-	proxy    ProxyDevice
+	proxy    *RemoteDevice
 	platform platformVPNConn
-}
-
-// SetStatus sets the status of the VPN connection.
-func (c *VPNConnection) SetStatus(s Status) {
-	c.Status = s
-}
-
-// SetSupportsUDP sets whether the VPN connection supports UDP.
-func (c *VPNConnection) SetSupportsUDP(v bool) {
-	c.SupportsUDP = &v
 }
 
 // The global singleton VPN connection.
@@ -108,20 +68,22 @@ var conn *VPNConnection
 // It first closes any active [VPNConnection] using [CloseVPN], and then marks the
 // newly created [VPNConnection] as the currently active connection.
 // It returns the new [VPNConnection], or an error if the connection fails.
-func EstablishVPN(conf *Config, proxy ProxyDevice) (_ *VPNConnection, err error) {
+func EstablishVPN(
+	ctx context.Context, conf *Config, sd transport.StreamDialer, pl transport.PacketListener,
+) (_ *VPNConnection, err error) {
 	if conf == nil {
-		return nil, errors.New("a VPN Config must be provided")
+		panic("a VPN config must be provided")
 	}
-	if proxy == nil {
-		return nil, errors.New("a proxy device must be provided")
+	if sd == nil {
+		panic("a StreamDialer must be provided")
+	}
+	if pl == nil {
+		panic("a PacketListener must be provided")
 	}
 
-	c := &VPNConnection{
-		ID:     conf.ID,
-		Status: StatusDisconnected,
-		proxy:  proxy,
-	}
-	c.ctx, c.cancel = context.WithCancel(context.Background())
+	c := &VPNConnection{ID: conf.ID}
+	ctx, c.cancelEst = context.WithCancel(ctx)
+
 	if c.platform, err = newPlatformVPNConn(conf); err != nil {
 		return
 	}
@@ -134,25 +96,15 @@ func EstablishVPN(conf *Config, proxy ProxyDevice) (_ *VPNConnection, err error)
 		return
 	}
 
-	slog.Debug(vpnLogPfx+"establishing VPN connection ...", "id", c.ID)
+	slog.Debug("establishing vpn connection ...", "id", c.ID)
 
-	c.SetStatus(StatusConnecting)
-	defer func() {
-		if err == nil {
-			c.SetStatus(StatusConnected)
-		} else {
-			c.SetStatus(StatusUnknown)
-		}
-	}()
-
-	if err = c.proxy.Connect(c.ctx); err != nil {
-		slog.Error(proxyLogPfx+"failed to connect to the proxy", "err", err)
+	if c.proxy, err = ConnectRemoteDevice(ctx, sd, pl); err != nil {
+		slog.Error("failed to connect to the remote device", "err", err)
 		return
 	}
-	slog.Info(proxyLogPfx + "connected to the proxy")
-	c.SetSupportsUDP(c.proxy.SupportsUDP())
+	slog.Info("connected to the remote device")
 
-	if err = c.platform.Establish(c.ctx); err != nil {
+	if err = c.platform.Establish(ctx); err != nil {
 		// No need to call c.platform.Close() cuz it's already tracked in the global conn
 		return
 	}
@@ -160,18 +112,18 @@ func EstablishVPN(conf *Config, proxy ProxyDevice) (_ *VPNConnection, err error)
 	c.wgCopy.Add(2)
 	go func() {
 		defer c.wgCopy.Done()
-		slog.Debug(ioLogPfx + "copying traffic from TUN Device -> OutlineDevice...")
+		slog.Debug("copying traffic from tun device -> remote device...")
 		n, err := io.Copy(c.proxy, c.platform.TUN())
-		slog.Debug(ioLogPfx+"TUN Device -> OutlineDevice done", "n", n, "err", err)
+		slog.Debug("tun device -> remote device traffic done", "n", n, "err", err)
 	}()
 	go func() {
 		defer c.wgCopy.Done()
-		slog.Debug(ioLogPfx + "copying traffic from OutlineDevice -> TUN Device...")
+		slog.Debug("copying traffic from remote device -> tun device...")
 		n, err := io.Copy(c.platform.TUN(), c.proxy)
-		slog.Debug(ioLogPfx+"OutlineDevice -> TUN Device done", "n", n, "err", err)
+		slog.Debug("remote device -> tun device traffic done", "n", n, "err", err)
 	}()
 
-	slog.Info(vpnLogPfx+"VPN connection established", "id", c.ID)
+	slog.Info("vpn connection established", "id", c.ID)
 	return c, nil
 }
 
@@ -186,12 +138,12 @@ func CloseVPN() error {
 func atomicReplaceVPNConn(newConn *VPNConnection) error {
 	mu.Lock()
 	defer mu.Unlock()
-	slog.Debug(vpnLogPfx+"creating VPN Connection ...", "id", newConn.ID)
+	slog.Debug("replacing the global vpn connection...", "id", newConn.ID)
 	if err := closeVPNNoLock(); err != nil {
 		return err
 	}
 	conn = newConn
-	slog.Info(vpnLogPfx+"VPN Connection created", "id", newConn.ID)
+	slog.Info("global vpn connection replaced", "id", newConn.ID)
 	return nil
 }
 
@@ -202,21 +154,17 @@ func closeVPNNoLock() (err error) {
 		return nil
 	}
 
-	conn.SetStatus(StatusDisconnecting)
 	defer func() {
 		if err == nil {
-			slog.Info(vpnLogPfx+"VPN Connection closed", "id", conn.ID)
-			conn.SetStatus(StatusDisconnected)
+			slog.Info("vpn connection terminated", "id", conn.ID)
 			conn = nil
-		} else {
-			conn.SetStatus(StatusUnknown)
 		}
 	}()
 
-	slog.Debug(vpnLogPfx+"closing existing VPN Connection ...", "id", conn.ID)
+	slog.Debug("terminating the global vpn connection...", "id", conn.ID)
 
 	// Cancel the Establish process and wait
-	conn.cancel()
+	conn.cancelEst()
 	conn.wgEst.Wait()
 
 	// This is the only error that matters
@@ -224,9 +172,9 @@ func closeVPNNoLock() (err error) {
 
 	// We can ignore the following error
 	if err2 := conn.proxy.Close(); err2 != nil {
-		slog.Warn(proxyLogPfx + "failed to disconnect from the proxy")
+		slog.Warn("failed to disconnect from the remote device")
 	} else {
-		slog.Info(proxyLogPfx + "disconnected from the proxy")
+		slog.Info("disconnected from the remote device")
 	}
 
 	// Wait for traffic copy go routines to finish

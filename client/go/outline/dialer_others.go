@@ -16,17 +16,12 @@
 
 package outline
 
-import (
-	"errors"
-	"net"
-)
+import "net"
 
-// newFWMarkProtectedTCPDialer is not supported on non-Linux platforms.
-func newFWMarkProtectedTCPDialer(fwmark uint32) (net.Dialer, error) {
-	return net.Dialer{}, errors.ErrUnsupported
+func newFWMarkProtectedTCPDialer(fwmark uint32) net.Dialer {
+	panic("SO_MARK socket option is only supported on Linux")
 }
 
-// newFWMarkProtectedUDPDialer is not supported on non-Linux platforms.
-func newFWMarkProtectedUDPDialer(fwmark uint32) (net.Dialer, error) {
-	return net.Dialer{}, errors.ErrUnsupported
+func newFWMarkProtectedUDPDialer(fwmark uint32) net.Dialer {
+	panic("SO_MARK socket option is only supported on Linux")
 }

@@ -21,7 +21,7 @@ import (
 
 // newFWMarkProtectedTCPDialer creates a base TCP dialer for [Client]
 // protected by the specified firewall mark.
-func newFWMarkProtectedTCPDialer(fwmark uint32) (net.Dialer, error) {
+func newFWMarkProtectedTCPDialer(fwmark uint32) net.Dialer {
 	return net.Dialer{
 		KeepAlive: -1,
 		Control: func(network, address string, c syscall.RawConn) error {
@@ -29,17 +29,17 @@ func newFWMarkProtectedTCPDialer(fwmark uint32) (net.Dialer, error) {
 				syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, syscall.SO_MARK, int(fwmark))
 			})
 		},
-	}, nil
+	}
 }
 
 // newFWMarkProtectedUDPDialer creates a new UDP dialer for [Client]
 // protected by the specified firewall mark.
-func newFWMarkProtectedUDPDialer(fwmark uint32) (net.Dialer, error) {
+func newFWMarkProtectedUDPDialer(fwmark uint32) net.Dialer {
 	return net.Dialer{
 		Control: func(network, address string, c syscall.RawConn) error {
 			return c.Control(func(fd uintptr) {
 				syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, syscall.SO_MARK, int(fwmark))
 			})
 		},
-	}, nil
+	}
 }

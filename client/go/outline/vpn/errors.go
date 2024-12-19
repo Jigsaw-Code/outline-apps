@@ -20,29 +20,29 @@ import (
 	perrs "github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 )
 
-const (
-	ioLogPfx    = "[IO] "
-	nmLogPfx    = "[NMDBus] "
-	vpnLogPfx   = "[VPN] "
-	proxyLogPfx = "[Proxy] "
-)
+func errCancelled(cause error) error {
+	slog.Warn("operation was cancelled", "cause", cause)
+	return perrs.PlatformError{
+		Code:  perrs.OperationCanceled,
+		Cause: perrs.ToPlatformError(cause),
+	}
+}
 
 func errIllegalConfig(msg string, params ...any) error {
 	return errPlatError(perrs.IllegalConfig, msg, nil, params...)
 }
 
-func errSetupVPN(pfx, msg string, cause error, params ...any) error {
-	return errPlatError(perrs.SetupSystemVPNFailed, pfx+msg, cause, params...)
+func errSetupVPN(msg string, cause error, params ...any) error {
+	return errPlatError(perrs.SetupSystemVPNFailed, msg, cause, params...)
 }
 
-func errCloseVPN(pfx, msg string, cause error, params ...any) error {
-	return errPlatError(perrs.DisconnectSystemVPNFailed, pfx+msg, cause, params...)
+func errCloseVPN(msg string, cause error, params ...any) error {
+	return errPlatError(perrs.DisconnectSystemVPNFailed, msg, cause, params...)
 }
 
 func errPlatError(code perrs.ErrorCode, msg string, cause error, params ...any) error {
 	logParams := append(params, "err", cause)
 	slog.Error(msg, logParams...)
-	// time.Sleep(60 * time.Second)
 
 	details := perrs.ErrorDetails{}
 	for i := 1; i < len(params); i += 2 {
