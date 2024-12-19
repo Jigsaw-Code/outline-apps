@@ -32,6 +32,31 @@ const (
 	bufferLength        = 512
 )
 
+const (
+	testTCPWebsite    = "http://example.com"
+	testDNSServerIP   = "1.1.1.1"
+	testDNSServerPort = 53
+)
+
+// CheckTCPAndUDPConnectivity checks whether the given `tcp` and `udp` clients can relay traffic.
+//
+// It parallelizes the execution of TCP and UDP checks, and returns a TCP error and a UDP error.
+// A nil error indicates successful connectivity for the corresponding protocol.
+func CheckTCPAndUDPConnectivity(
+	tcp transport.StreamDialer, udp transport.PacketListener,
+) (tcpErr error, udpErr error) {
+	// Start asynchronous UDP support check.
+	udpErrChan := make(chan error)
+	go func() {
+		resolverAddr := &net.UDPAddr{IP: net.ParseIP(testDNSServerIP), Port: testDNSServerPort}
+		udpErrChan <- CheckUDPConnectivityWithDNS(udp, resolverAddr)
+	}()
+
+	tcpErr = CheckTCPConnectivityWithHTTP(tcp, testTCPWebsite)
+	udpErr = <-udpErrChan
+	return
+}
+
 // CheckUDPConnectivityWithDNS determines whether the Outline proxy represented by `client` and
 // the network support UDP traffic by issuing a DNS query though a resolver at `resolverAddr`.
 // Returns nil on success or an error on failure.
