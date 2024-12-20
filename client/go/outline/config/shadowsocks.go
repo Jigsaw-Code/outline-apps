@@ -230,7 +230,7 @@ func parseShadowsocksLegacyBase64URL(url url.URL) (*ShadowsocksConfig, error) {
 		return nil, errors.New("invalid cipher info: no ':' separator")
 	}
 	return &ShadowsocksConfig{
-		Endpoint: DialEndpointConfig{Address: newURL.Host},
+		Endpoint: newURL.Host,
 		Cipher:   cipherName,
 		Secret:   secret,
 		Prefix:   newURL.Query().Get("prefix"),

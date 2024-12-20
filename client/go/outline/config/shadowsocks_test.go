@@ -25,7 +25,7 @@ func TestParseShadowsocksURLFullyEncoded(t *testing.T) {
 	encoded := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString([]byte("aes-256-gcm:1234567@example.com:1234?prefix=HTTP%2F1.1%20"))
 	config, err := parseShadowsocksConfig("ss://" + string(encoded) + "#outline-123")
 	require.NoError(t, err)
-	require.Equal(t, "example.com:1234", config.Endpoint.(DialEndpointConfig).Address)
+	require.Equal(t, "example.com:1234", config.Endpoint)
 	require.Equal(t, "HTTP/1.1 ", config.Prefix)
 }
 
@@ -33,7 +33,7 @@ func TestParseShadowsocksURLUserInfoEncoded(t *testing.T) {
 	encoded := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString([]byte("aes-256-gcm:1234567"))
 	config, err := parseShadowsocksConfig("ss://" + string(encoded) + "@example.com:1234?prefix=HTTP%2F1.1%20" + "#outline-123")
 	require.NoError(t, err)
-	require.Equal(t, "example.com:1234", config.Endpoint.(DialEndpointConfig).Address)
+	require.Equal(t, "example.com:1234", config.Endpoint)
 	require.Equal(t, "HTTP/1.1 ", config.Prefix)
 }
 
@@ -41,7 +41,7 @@ func TestParseShadowsocksURLUserInfoLegacyEncoded(t *testing.T) {
 	encoded := base64.StdEncoding.EncodeToString([]byte("aes-256-gcm:shadowsocks"))
 	config, err := parseShadowsocksConfig("ss://" + string(encoded) + "@example.com:1234?prefix=HTTP%2F1.1%20" + "#outline-123")
 	require.NoError(t, err)
-	require.Equal(t, "example.com:1234", config.Endpoint.(DialEndpointConfig).Address)
+	require.Equal(t, "example.com:1234", config.Endpoint)
 	require.Equal(t, "HTTP/1.1 ", config.Prefix)
 }
 
@@ -49,14 +49,14 @@ func TestLegacyEncodedShadowsocksURL(t *testing.T) {
 	configString := "ss://YWVzLTEyOC1nY206c2hhZG93c29ja3M=@example.com:1234"
 	config, err := parseShadowsocksConfig(configString)
 	require.NoError(t, err)
-	require.Equal(t, "example.com:1234", config.Endpoint.(DialEndpointConfig).Address)
+	require.Equal(t, "example.com:1234", config.Endpoint)
 }
 
 func TestParseShadowsocksURLNoEncoding(t *testing.T) {
 	configString := "ss://aes-256-gcm:1234567@example.com:1234"
 	config, err := parseShadowsocksConfig(configString)
 	require.NoError(t, err)
-	require.Equal(t, "example.com:1234", config.Endpoint.(DialEndpointConfig).Address)
+	require.Equal(t, "example.com:1234", config.Endpoint)
 }
 
 func TestParseShadowsocksURLInvalidCipherInfoFails(t *testing.T) {
@@ -75,6 +75,6 @@ func TestParseShadowsocksLegacyBase64URL(t *testing.T) {
 	encoded := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString([]byte("aes-256-gcm:1234567@example.com:1234?prefix=HTTP%2F1.1%20"))
 	config, err := parseShadowsocksConfig("ss://" + string(encoded) + "#outline-123")
 	require.NoError(t, err)
-	require.Equal(t, "example.com:1234", config.Endpoint.(DialEndpointConfig).Address)
+	require.Equal(t, "example.com:1234", config.Endpoint)
 	require.Equal(t, "HTTP/1.1 ", config.Prefix)
 }

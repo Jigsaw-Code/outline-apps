@@ -20,67 +20,70 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-
 func Test_NewClientFromJSON_Success(t *testing.T) {
 	tests := []struct {
-		name  string
-		input string
+		name     string
+		input    string
+		firstHop string
 	}{
 		{
-			name:  "SS URL",
-			input: "ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@example.com:4321/",
+			name:     "SS URL",
+			input:    "ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@example.com:4321/",
+			firstHop: "example.com:4321",
 		}, {
-			name:  "Legacy JSON",
-			input: 
-`{
+			name: "Legacy JSON",
+			input: `{
     "server": "example.com",
     "server_port": 4321,
     "method": "chacha20-ietf-poly1305",
     "password": "SECRET"
 }`,
-        },{
-			name:  "Flexible JSON",
-			input:
-`{
+			firstHop: "example.com:4321",
+		}, {
+			name: "Flexible JSON",
+			input: `{
 	# Comment
     server: example.com,
     server_port: 4321,
     method: chacha20-ietf-poly1305,
     password: SECRET
 }`,
-        },{
-			name:  "YAML",
-			input:
-`# Comment
+			firstHop: "example.com:4321",
+		}, {
+			name: "YAML",
+			input: `# Comment
 server: example.com
 server_port: 4321
 method: chacha20-ietf-poly1305
 password: SECRET`,
-        },{
-			name:  "Explicit endpoint",
-			input:
-`$type: ss
-endpoint:
-    $type: dial
-    address: canary.getoutline.org:443
-cipher: chacha20-ietf-poly1305
-secret: SECRET`,
-        },{
-			name:  "Explicit endpoint",
-			input:
-`$type: ss
+			firstHop: "example.com:4321",
+		}, {
+			name: "Explicit endpoint",
+			input: `$type: ss
 endpoint:
     $type: dial
     address: example.com:4321
-    dialer: ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@example.com:4321/
 cipher: chacha20-ietf-poly1305
 secret: SECRET`,
-        },
+			firstHop: "example.com:4321",
+		}, {
+			name: "Multi-hop",
+			input: `$type: ss
+endpoint:
+    $type: dial
+    address: exit.example.com:4321
+    dialer: ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@entry.example.com:4321/
+cipher: chacha20-ietf-poly1305
+secret: SECRET`,
+			firstHop: "entry.example.com:4321",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := NewClient(tt.input)
 			require.Nil(t, result.Error)
+			require.Equal(t, tt.firstHop, result.Client.Dialer.FirstHop)
+			require.Equal(t, tt.firstHop, result.Client.PacketListener.FirstHop)
 		})
 	}
 }
@@ -145,4 +148,3 @@ func Test_NewClientFromJSON_Errors(t *testing.T) {
 		})
 	}
 }
-
