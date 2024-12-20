@@ -17,6 +17,7 @@ package vpn
 import (
 	"context"
 	"errors"
+	"io"
 	"log/slog"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/connectivity"
@@ -27,9 +28,9 @@ import (
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
-// RemoteDevice is an IPDevice that connects to a remote Outline server.
+// RemoteDevice is an IO device that connects to a remote Outline server.
 type RemoteDevice struct {
-	network.IPDevice
+	io.ReadWriteCloser
 
 	sd transport.StreamDialer
 	pl transport.PacketListener
@@ -68,7 +69,7 @@ func ConnectRemoteDevice(
 		return
 	}
 
-	dev.IPDevice, err = lwip2transport.ConfigureDevice(sd, dev.pkt)
+	dev.ReadWriteCloser, err = lwip2transport.ConfigureDevice(sd, dev.pkt)
 	if err != nil {
 		return nil, errSetupHandler("remote device failed to configure network stack", err)
 	}
@@ -79,8 +80,8 @@ func ConnectRemoteDevice(
 
 // Close closes the connection to the Outline server.
 func (dev *RemoteDevice) Close() (err error) {
-	if dev.IPDevice != nil {
-		err = dev.IPDevice.Close()
+	if dev.ReadWriteCloser != nil {
+		err = dev.ReadWriteCloser.Close()
 	}
 	return
 }
@@ -91,7 +92,7 @@ func (d *RemoteDevice) RefreshConnectivity(ctx context.Context) (err error) {
 		return errCancelled(ctx.Err())
 	}
 
-	slog.Debug("remote device is testing connectivity of server ...")
+	slog.Debug("remote device is testing connectivity of server...")
 	tcpErr, udpErr := connectivity.CheckTCPAndUDPConnectivity(d.sd, d.pl)
 	if tcpErr != nil {
 		slog.Warn("remote device server connectivity test failed", "err", tcpErr)

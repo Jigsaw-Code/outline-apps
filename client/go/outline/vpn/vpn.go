@@ -168,13 +168,17 @@ func closeVPNNoLock() (err error) {
 	conn.wgEst.Wait()
 
 	// This is the only error that matters
-	err = conn.platform.Close()
+	if conn.platform != nil {
+		err = conn.platform.Close()
+	}
 
 	// We can ignore the following error
-	if err2 := conn.proxy.Close(); err2 != nil {
-		slog.Warn("failed to disconnect from the remote device")
-	} else {
-		slog.Info("disconnected from the remote device")
+	if conn.proxy != nil {
+		if err2 := conn.proxy.Close(); err2 != nil {
+			slog.Warn("failed to disconnect from the remote device")
+		} else {
+			slog.Info("disconnected from the remote device")
+		}
 	}
 
 	// Wait for traffic copy go routines to finish
