@@ -27,6 +27,20 @@
       http-equiv="Content-Security-Policy"
       content="default-src 'self' 'unsafe-inline' outline: data:; connect-src https: 'self'; frame-src https://s3.amazonaws.com/outline-vpn/ ss:"
     />
+
+    <style>
+      /* 
+        TODO: currently webpack wants to relove the `url` link here but doesen't know how.
+        Index.html isn't transformed by webpack, so this sidesteps the issue, but ideally we teach webpack how to handle this filetype.
+      */
+      @font-face {
+        font-family: 'Material Icons';
+        font-style: normal;
+        font-weight: 400;
+        src: url(images/Material-Icons.woff2) format('woff2');
+      }
+    </style>
+
     <title>Outline Manager</title>
   </head>
   <body>

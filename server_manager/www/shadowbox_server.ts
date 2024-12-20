@@ -57,8 +57,17 @@ function makeAccessKeyModel(apiAccessKey: AccessKeyJson): server.AccessKey {
 export class ShadowboxServer implements server.Server {
   private api: PathApiClient;
   private serverConfig: ServerConfigJson;
+  private supportedEndpoints: {
+    'experimental/server/metrics': boolean;
+  };
 
-  constructor(private readonly id: string) {}
+  constructor(private readonly id: string) {
+    this.id = id;
+
+    this.supportedEndpoints = {
+      'experimental/server/metrics': false,
+    };
+  }
 
   getId(): string {
     return this.id;
@@ -149,16 +158,31 @@ export class ShadowboxServer implements server.Server {
     await this.api.request<void>(`access-keys/${keyId}/data-limit`, 'DELETE');
   }
 
-  async getDataUsage(): Promise<server.BytesByAccessKey> {
+  async getServerMetrics(): Promise<server.ServerMetricsJson> {
+    if (this.supportedEndpoints['experimental/server/metrics']) {
+      return this.api.request<server.ServerMetricsJson>(
+        'experimental/server/metrics?since=30d'
+      );
+    }
+
+    const result: server.ServerMetricsJson = {
+      server: [],
+      accessKeys: [],
+    };
+
     const jsonResponse =
       await this.api.request<DataUsageByAccessKeyJson>('metrics/transfer');
-    const usageMap = new Map<server.AccessKeyId, number>();
+
     for (const [accessKeyId, bytes] of Object.entries(
       jsonResponse.bytesTransferredByUserId
     )) {
-      usageMap.set(accessKeyId, bytes ?? 0);
+      result.accessKeys.push({
+        accessKeyId: Number(accessKeyId),
+        dataTransferred: {bytes},
+      });
     }
-    return usageMap;
+
+    return result;
   }
 
   getName(): string {
@@ -262,6 +286,20 @@ export class ShadowboxServer implements server.Server {
 
   protected setManagementApi(api: PathApiClient): void {
     this.api = api;
+
+    this.api
+      .request<server.ServerMetricsJson>(
+        'experimental/server/metrics?since=30d'
+      )
+      .then(
+        () => (this.supportedEndpoints['experimental/server/metrics'] = true)
+      )
+      .catch(error => {
+        // endpoint is not defined, keep set to false
+        if (error.response.status === 404) return;
+
+        this.supportedEndpoints['experimental/server/metrics'] = true;
+      });
   }
 
   getManagementApiUrl(): string {
