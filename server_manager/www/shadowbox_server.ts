@@ -67,18 +67,6 @@ export class ShadowboxServer implements server.Server {
     this.supportedEndpoints = {
       'experimental/server/metrics': false,
     };
-
-    this.api
-      .request<server.ServerMetricsJson>('experimental/server/metrics')
-      .then(
-        () => (this.supportedEndpoints['experimental/server/metrics'] = true)
-      )
-      .catch(error => {
-        // endpoint is not defined, keep set to false
-        if (error.response.status === 404) return;
-
-        this.supportedEndpoints['experimental/server/metrics'] = true;
-      });
   }
 
   getId(): string {
@@ -173,7 +161,7 @@ export class ShadowboxServer implements server.Server {
   async getServerMetrics(): Promise<server.ServerMetricsJson> {
     if (this.supportedEndpoints['experimental/server/metrics']) {
       return this.api.request<server.ServerMetricsJson>(
-        'experimental/server/metrics'
+        'experimental/server/metrics?since=30d'
       );
     }
 
@@ -298,6 +286,20 @@ export class ShadowboxServer implements server.Server {
 
   protected setManagementApi(api: PathApiClient): void {
     this.api = api;
+
+    this.api
+      .request<server.ServerMetricsJson>(
+        'experimental/server/metrics?since=30d'
+      )
+      .then(
+        () => (this.supportedEndpoints['experimental/server/metrics'] = true)
+      )
+      .catch(error => {
+        // endpoint is not defined, keep set to false
+        if (error.response.status === 404) return;
+
+        this.supportedEndpoints['experimental/server/metrics'] = true;
+      });
   }
 
   getManagementApiUrl(): string {
