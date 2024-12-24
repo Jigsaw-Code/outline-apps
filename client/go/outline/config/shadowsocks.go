@@ -97,9 +97,21 @@ func newShadowsocksStreamDialer(ctx context.Context, config ConfigNode, newSE Pa
 }
 
 func newShadowsocksPacketDialer(ctx context.Context, config ConfigNode, newPE ParseFunc[*Endpoint[net.Conn]]) (*Dialer[net.Conn], error) {
+	pl, err := newShadowsocksPacketListener(ctx, config, newPE)
+	if err != nil {
+		return nil, err
+	}
+	pd := transport.PacketListenerDialer{Listener: pl}
+	return &Dialer[net.Conn]{ConnectionProviderInfo{ConnTypeTunneled, pl.FirstHop}, pd.DialPacket}, nil
+}
+
+func newShadowsocksPacketListener(ctx context.Context, config ConfigNode, newPE ParseFunc[*Endpoint[net.Conn]]) (*PacketListener, error) {
 	params, err := newShadowsocksParams(config)
 	if err != nil {
 		return nil, err
+	}
+	if params.SaltGenerator != nil {
+		return nil, fmt.Errorf("prefix is not yet supported for PacketDialers")
 	}
 
 	pe, err := newPE(ctx, params.Endpoint)
@@ -111,9 +123,7 @@ func newShadowsocksPacketDialer(ctx context.Context, config ConfigNode, newPE Pa
 		return nil, err
 	}
 	// TODO: support UDP prefix.
-	pd := transport.PacketListenerDialer{Listener: pl}
-
-	return &Dialer[net.Conn]{ConnectionProviderInfo{ConnTypeTunneled, pe.FirstHop}, pd.DialPacket}, nil
+	return &PacketListener{ConnectionProviderInfo{ConnTypeTunneled, pe.FirstHop}, pl}, nil
 }
 
 type shadowsocksParams struct {

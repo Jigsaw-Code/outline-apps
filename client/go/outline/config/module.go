@@ -16,6 +16,7 @@ package config
 
 import (
 	"context"
+	"errors"
 	"net"
 
 	"github.com/Jigsaw-Code/outline-sdk/transport"
@@ -151,8 +152,21 @@ func NewDefaultTransportProvider() *TypeProvider[*TransportPair] {
 	packetDialers.RegisterParser("shadowsocks", func(ctx context.Context, input map[string]any) (*Dialer[net.Conn], error) {
 		return newShadowsocksPacketDialer(ctx, input, packetEndpoints.NewInstance)
 	})
-	transports.RegisterParser("shadowsocks", func(ctx context.Context, input map[string]any) (*TransportPair, error) {
-		return newShadowsocksTransport(ctx, input, streamEndpoints.NewInstance, packetEndpoints.NewInstance)
+
+	// Websocket support.
+	streamEndpoints.RegisterParser("websocket", func(ctx context.Context, input map[string]any) (*Endpoint[transport.StreamConn], error) {
+		// TODO
+		return nil, errors.ErrUnsupported
 	})
+	packetEndpoints.RegisterParser("websocket", func(ctx context.Context, input map[string]any) (*Endpoint[net.Conn], error) {
+		// TODO
+		return nil, errors.ErrUnsupported
+	})
+
+	// TODO: Introduce explit transport parser.
+	transports.RegisterParser("explicit", func(ctx context.Context, input map[string]any) (*TransportPair, error) {
+		return nil, errors.ErrUnsupported
+	})
+
 	return transports
 }

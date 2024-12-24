@@ -59,7 +59,7 @@ password: SECRET`,
 			firstHop: "example.com:4321",
 		}, {
 			name: "Explicit endpoint",
-			input: `$type: shadowsocks
+			input: `
 endpoint:
     $type: dial
     address: example.com:4321
@@ -68,7 +68,7 @@ secret: SECRET`,
 			firstHop: "example.com:4321",
 		}, {
 			name: "Multi-hop",
-			input: `$type: shadowsocks
+			input: `
 endpoint:
     $type: dial
     address: exit.example.com:4321
