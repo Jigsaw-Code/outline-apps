@@ -47,11 +47,11 @@ func init() {
 // Returns an OutlineTunnel instance that should be used to input packets to the tunnel.
 //
 // `tunWriter` is used to output packets to the TUN (VPN).
-// `client` is the Outline client (created by [outline.NewClient]).
+// `client` is the Outline client (created by [outline.NewTransport]).
 // `isUDPEnabled` indicates whether the tunnel and/or network enable UDP proxying.
 //
 // Sets an error if the tunnel fails to connect.
-func ConnectOutlineTunnel(tunWriter TunWriter, client *outline.Client, isUDPEnabled bool) *ConnectOutlineTunnelResult {
+func ConnectOutlineTunnel(tunWriter TunWriter, client *outline.Transport, isUDPEnabled bool) *ConnectOutlineTunnelResult {
 	if tunWriter == nil {
 		return &ConnectOutlineTunnelResult{Error: &platerrors.PlatformError{
 			Code:    platerrors.InternalError,

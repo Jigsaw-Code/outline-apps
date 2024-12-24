@@ -53,14 +53,14 @@ func InvokeMethod(method string, input string) *InvokeMethodResult {
 		}
 
 	case MethodGetFirstHop:
-		result := NewClient(input)
+		result := NewTransport(input)
 		if result.Error != nil {
 			return &InvokeMethodResult{
 				Error: result.Error,
 			}
 		}
-		streamFirstHop := result.Client.Dialer.ConnectionProviderInfo.FirstHop
-		packetFirstHop := result.Client.PacketListener.ConnectionProviderInfo.FirstHop
+		streamFirstHop := result.Transport.Dialer.ConnectionProviderInfo.FirstHop
+		packetFirstHop := result.Transport.PacketListener.ConnectionProviderInfo.FirstHop
 		firstHop := ""
 		if streamFirstHop == packetFirstHop {
 			firstHop = streamFirstHop

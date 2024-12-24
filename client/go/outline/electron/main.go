@@ -116,11 +116,11 @@ func main() {
 	if len(*args.transportConfig) == 0 {
 		printErrorAndExit(platerrors.PlatformError{Code: platerrors.IllegalConfig, Message: "transport config missing"}, exitCodeFailure)
 	}
-	clientResult := outline.NewClient(*args.transportConfig)
+	clientResult := outline.NewTransport(*args.transportConfig)
 	if clientResult.Error != nil {
 		printErrorAndExit(clientResult.Error, exitCodeFailure)
 	}
-	client := clientResult.Client
+	client := clientResult.Transport
 
 	if *args.checkConnectivity {
 		result := outline.CheckTCPAndUDPConnectivity(client)

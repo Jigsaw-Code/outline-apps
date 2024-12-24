@@ -24,37 +24,35 @@ import (
 
 type DialEndpointConfig struct {
 	Address string
-	Dialer  ConfigNode
+	Dialer  any
 }
 
-func registerDirectDialEndpoint[ConnType any](r TypeRegistry[*Endpoint[ConnType]], typeID string, newDialer BuildFunc[*Dialer[ConnType]]) {
-	r.RegisterType(typeID, func(ctx context.Context, config ConfigNode) (*Endpoint[ConnType], error) {
-		if config == nil {
-			return nil, errors.New("endpoint config cannot be nil")
-		}
+func newDirectDialerEndpoint[ConnType any](ctx context.Context, config any, newDialer ParseFunc[*Dialer[ConnType]]) (*Endpoint[ConnType], error) {
+	if config == nil {
+		return nil, errors.New("endpoint config cannot be nil")
+	}
 
-		dialParams, err := parseEndpointConfig(config)
-		if err != nil {
-			return nil, err
-		}
+	dialParams, err := parseEndpointConfig(config)
+	if err != nil {
+		return nil, err
+	}
 
-		dialer, err := newDialer(ctx, dialParams.Dialer)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create sub-dialer: %w", err)
-		}
+	dialer, err := newDialer(ctx, dialParams.Dialer)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create sub-dialer: %w", err)
+	}
 
-		endpoint := &Endpoint[ConnType]{
-			Connect: func(ctx context.Context) (ConnType, error) {
-				return dialer.Dial(ctx, dialParams.Address)
+	endpoint := &Endpoint[ConnType]{
+		Connect: func(ctx context.Context) (ConnType, error) {
+			return dialer.Dial(ctx, dialParams.Address)
 
-			},
-			ConnectionProviderInfo: dialer.ConnectionProviderInfo,
-		}
-		if dialer.ConnType == ConnTypeDirect {
-			endpoint.ConnectionProviderInfo.FirstHop = dialParams.Address
-		}
-		return endpoint, nil
-	})
+		},
+		ConnectionProviderInfo: dialer.ConnectionProviderInfo,
+	}
+	if dialer.ConnType == ConnTypeDirect {
+		endpoint.ConnectionProviderInfo.FirstHop = dialParams.Address
+	}
+	return endpoint, nil
 }
 
 func parseEndpointConfig(node ConfigNode) (*DialEndpointConfig, error) {

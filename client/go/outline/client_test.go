@@ -59,7 +59,7 @@ password: SECRET`,
 			firstHop: "example.com:4321",
 		}, {
 			name: "Explicit endpoint",
-			input: `$type: ss
+			input: `$type: shadowsocks
 endpoint:
     $type: dial
     address: example.com:4321
@@ -68,7 +68,7 @@ secret: SECRET`,
 			firstHop: "example.com:4321",
 		}, {
 			name: "Multi-hop",
-			input: `$type: ss
+			input: `$type: shadowsocks
 endpoint:
     $type: dial
     address: exit.example.com:4321
@@ -80,10 +80,10 @@ secret: SECRET`,
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := NewClient(tt.input)
-			require.Nil(t, result.Error)
-			require.Equal(t, tt.firstHop, result.Client.Dialer.FirstHop)
-			require.Equal(t, tt.firstHop, result.Client.PacketListener.FirstHop)
+			result := NewTransport(tt.input)
+			require.Nil(t, result.Error, "Got %v", result.Error)
+			require.Equal(t, tt.firstHop, result.Transport.Dialer.FirstHop)
+			require.Equal(t, tt.firstHop, result.Transport.PacketListener.FirstHop)
 		})
 	}
 }
@@ -140,9 +140,9 @@ func Test_NewClientFromJSON_Errors(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewClient(tt.input)
-			if got.Error == nil || got.Client != nil {
-				t.Errorf("NewClientFromJSON() expects an error, got = %v", got.Client)
+			got := NewTransport(tt.input)
+			if got.Error == nil || got.Transport != nil {
+				t.Errorf("NewClientFromJSON() expects an error, got = %v", got.Transport)
 				return
 			}
 		})

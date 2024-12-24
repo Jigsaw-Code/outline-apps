@@ -22,27 +22,27 @@ import (
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
-// Client provides a transparent container for [transport.StreamDialer] and [transport.PacketListener]
+// Transport provides a transparent container for [transport.StreamDialer] and [transport.PacketListener]
 // that is exportable (as an opaque object) via gobind.
 // It's used by the connectivity test and the tun2socks handlers.
-type Client struct {
+type Transport struct {
 	*config.Dialer[transport.StreamConn]
 	*config.PacketListener
 }
 
-// NewClientResult represents the result of [NewClientAndReturnError].
+// NewTransportResult represents the result of [NewClientAndReturnError].
 //
 // We use a struct instead of a tuple to preserve a strongly typed error that gobind recognizes.
-type NewClientResult struct {
-	Client *Client
-	Error  *platerrors.PlatformError
+type NewTransportResult struct {
+	Transport *Transport
+	Error     *platerrors.PlatformError
 }
 
-// NewClient creates a new Outline client from a configuration string.
-func NewClient(transportConfig string) *NewClientResult {
+// NewTransport creates a new Outline client from a configuration string.
+func NewTransport(transportConfig string) *NewTransportResult {
 	transportYAML, err := config.ParseConfigYAML(transportConfig)
 	if err != nil {
-		return &NewClientResult{
+		return &NewTransportResult{
 			Error: &platerrors.PlatformError{
 				Code:    platerrors.IllegalConfig,
 				Message: "config is not valid YAML",
@@ -51,33 +51,18 @@ func NewClient(transportConfig string) *NewClientResult {
 		}
 	}
 
-	providers := config.RegisterDefaultProviders(config.NewProviderContainer())
-
-	streamDialer, err := providers.StreamDialers.NewInstance(context.Background(), transportYAML)
+	transportPair, err := config.NewDefaultTransportProvider().NewInstance(context.Background(), transportYAML)
 	if err != nil {
-		return &NewClientResult{
+		return &NewTransportResult{
 			Error: &platerrors.PlatformError{
 				Code:    platerrors.IllegalConfig,
-				Message: "failed to create TCP handler",
-				Details: platerrors.ErrorDetails{"handler": "tcp"},
+				Message: "failed to create transport",
 				Cause:   platerrors.ToPlatformError(err),
 			},
 		}
 	}
 
-	packetListener, err := providers.PacketListeners.NewInstance(context.Background(), transportYAML)
-	if err != nil {
-		return &NewClientResult{
-			Error: &platerrors.PlatformError{
-				Code:    platerrors.IllegalConfig,
-				Message: "failed to create UDP handler",
-				Details: platerrors.ErrorDetails{"handler": "udp"},
-				Cause:   platerrors.ToPlatformError(err),
-			},
-		}
-	}
-
-	return &NewClientResult{
-		Client: &Client{Dialer: streamDialer, PacketListener: packetListener},
+	return &NewTransportResult{
+		Transport: &Transport{Dialer: transportPair.StreamDialer, PacketListener: transportPair.PacketListener},
 	}
 }

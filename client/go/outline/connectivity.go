@@ -35,12 +35,12 @@ type TCPAndUDPConnectivityResult struct {
 	TCPError, UDPError *platerrors.PlatformError
 }
 
-// CheckTCPAndUDPConnectivity checks if a [Client] can relay TCP and UDP traffic.
+// CheckTCPAndUDPConnectivity checks if a [Transport] can relay TCP and UDP traffic.
 //
 // It parallelizes the execution of TCP and UDP checks, and returns a [TCPAndUDPConnectivityResult]
 // containing a TCP error and a UDP error.
 // If the connectivity check was successful, the corresponding error field will be nil.
-func CheckTCPAndUDPConnectivity(client *Client) *TCPAndUDPConnectivityResult {
+func CheckTCPAndUDPConnectivity(client *Transport) *TCPAndUDPConnectivityResult {
 	// Start asynchronous UDP support check.
 	udpErrChan := make(chan error)
 	go func() {

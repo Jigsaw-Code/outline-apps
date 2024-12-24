@@ -43,65 +43,77 @@ type LegacyShadowsocksConfig struct {
 	Prefix      string
 }
 
-func registerShadowsocksStreamDialer(r TypeRegistry[*Dialer[transport.StreamConn]], typeID string, newSE BuildFunc[*Endpoint[transport.StreamConn]]) {
-	r.RegisterType(typeID, func(ctx context.Context, config ConfigNode) (*Dialer[transport.StreamConn], error) {
-		params, err := newShadowsocksParams(config)
-		if err != nil {
-			return nil, err
-		}
-		endpoint, err := newSE(ctx, params.Endpoint)
-		if err != nil {
-			return nil, err
-		}
-		dialer, err := shadowsocks.NewStreamDialer(transport.FuncStreamEndpoint(endpoint.Connect), params.Key)
-		if err != nil {
-			return nil, err
-		}
-		if params.SaltGenerator != nil {
-			dialer.SaltGenerator = params.SaltGenerator
-		}
-		return &Dialer[transport.StreamConn]{ConnectionProviderInfo{ConnTypeTunneled, endpoint.FirstHop}, dialer.DialStream}, nil
-	})
+func newShadowsocksTransport(ctx context.Context, config ConfigNode, newSE ParseFunc[*Endpoint[transport.StreamConn]], newPE ParseFunc[*Endpoint[net.Conn]]) (*TransportPair, error) {
+	params, err := newShadowsocksParams(config)
+	if err != nil {
+		return nil, err
+	}
+
+	se, err := newSE(ctx, params.Endpoint)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create StreamEndpoint: %w", err)
+	}
+	sd, err := shadowsocks.NewStreamDialer(transport.FuncStreamEndpoint(se.Connect), params.Key)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create StreamDialer: %w", err)
+	}
+	if params.SaltGenerator != nil {
+		sd.SaltGenerator = params.SaltGenerator
+	}
+
+	pe, err := newPE(ctx, params.Endpoint)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create PacketEndpoint: %w", err)
+	}
+	pl, err := shadowsocks.NewPacketListener(transport.FuncPacketEndpoint(pe.Connect), params.Key)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create PacketListener: %w", err)
+	}
+	return &TransportPair{
+		&Dialer[transport.StreamConn]{ConnectionProviderInfo{ConnTypeTunneled, se.FirstHop}, sd.DialStream},
+		&PacketListener{ConnectionProviderInfo{ConnTypeTunneled, pe.FirstHop}, pl},
+	}, nil
 }
 
-func registerShadowsocksPacketDialer(r TypeRegistry[*Dialer[net.Conn]], typeID string, newPE BuildFunc[*Endpoint[net.Conn]]) {
-	r.RegisterType(typeID, func(ctx context.Context, config ConfigNode) (*Dialer[net.Conn], error) {
-		params, err := newShadowsocksParams(config)
-		if err != nil {
-			return nil, err
-		}
-		endpoint, err := newPE(ctx, params.Endpoint)
-		if err != nil {
-			return nil, err
-		}
-		pl, err := shadowsocks.NewPacketListener(transport.FuncPacketEndpoint(endpoint.Connect), params.Key)
-		if err != nil {
-			return nil, err
-		}
-		// TODO: support UDP prefix.
-		dialer := transport.PacketListenerDialer{Listener: pl}
-		return &Dialer[net.Conn]{ConnectionProviderInfo{ConnTypeTunneled, endpoint.FirstHop}, dialer.DialPacket}, nil
+func newShadowsocksStreamDialer(ctx context.Context, config ConfigNode, newSE ParseFunc[*Endpoint[transport.StreamConn]]) (*Dialer[transport.StreamConn], error) {
+	params, err := newShadowsocksParams(config)
+	if err != nil {
+		return nil, err
+	}
 
-	})
+	se, err := newSE(ctx, params.Endpoint)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create StreamEndpoint: %w", err)
+	}
+	sd, err := shadowsocks.NewStreamDialer(transport.FuncStreamEndpoint(se.Connect), params.Key)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create StreamDialer: %w", err)
+	}
+	if params.SaltGenerator != nil {
+		sd.SaltGenerator = params.SaltGenerator
+	}
+
+	return &Dialer[transport.StreamConn]{ConnectionProviderInfo{ConnTypeTunneled, se.FirstHop}, sd.DialStream}, nil
 }
 
-func registerShadowsocksPacketListener(r TypeRegistry[*PacketListener], typeID string, newPE BuildFunc[*Endpoint[net.Conn]]) {
-	r.RegisterType(typeID, func(ctx context.Context, config ConfigNode) (*PacketListener, error) {
-		params, err := newShadowsocksParams(config)
-		if err != nil {
-			return nil, err
-		}
-		endpoint, err := newPE(ctx, params.Endpoint)
-		if err != nil {
-			return nil, err
-		}
-		listener, err := shadowsocks.NewPacketListener(transport.FuncPacketEndpoint(endpoint.Connect), params.Key)
-		if err != nil {
-			return nil, err
-		}
-		// TODO: support UDP prefix.
-		return &PacketListener{ConnectionProviderInfo{ConnTypeTunneled, endpoint.FirstHop}, listener}, nil
-	})
+func newShadowsocksPacketDialer(ctx context.Context, config ConfigNode, newPE ParseFunc[*Endpoint[net.Conn]]) (*Dialer[net.Conn], error) {
+	params, err := newShadowsocksParams(config)
+	if err != nil {
+		return nil, err
+	}
+
+	pe, err := newPE(ctx, params.Endpoint)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create PacketEndpoint: %w", err)
+	}
+	pl, err := shadowsocks.NewPacketListener(transport.FuncPacketEndpoint(pe.Connect), params.Key)
+	if err != nil {
+		return nil, err
+	}
+	// TODO: support UDP prefix.
+	pd := transport.PacketListenerDialer{Listener: pl}
+
+	return &Dialer[net.Conn]{ConnectionProviderInfo{ConnTypeTunneled, pe.FirstHop}, pd.DialPacket}, nil
 }
 
 type shadowsocksParams struct {
