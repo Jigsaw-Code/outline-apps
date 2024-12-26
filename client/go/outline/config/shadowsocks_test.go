@@ -21,60 +21,55 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestParseShadowsocksURLFullyEncoded(t *testing.T) {
-	encoded := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString([]byte("aes-256-gcm:1234567@example.com:1234?prefix=HTTP%2F1.1%20"))
-	config, err := parseShadowsocksConfig("ss://" + string(encoded) + "#outline-123")
-	require.NoError(t, err)
-	require.Equal(t, "example.com:1234", config.Endpoint)
-	require.Equal(t, "HTTP/1.1 ", config.Prefix)
-}
+func TestParseShadowsocksConfig_URL(t *testing.T) {
+	t.Run("Fully Encoded", func(t *testing.T) {
+		encoded := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString([]byte("chacha20-ietf-poly1305:SECRET@example.com:1234?prefix=HTTP%2F1.1%20"))
+		config, err := parseShadowsocksConfig("ss://" + string(encoded) + "#outline-123")
+		require.NoError(t, err)
+		require.Equal(t, "example.com:1234", config.Endpoint)
+		require.Equal(t, "chacha20-ietf-poly1305", config.Cipher)
+		require.Equal(t, "SECRET", config.Secret)
+		require.Equal(t, "HTTP/1.1 ", config.Prefix)
+	})
 
-func TestParseShadowsocksURLUserInfoEncoded(t *testing.T) {
-	encoded := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString([]byte("aes-256-gcm:1234567"))
-	config, err := parseShadowsocksConfig("ss://" + string(encoded) + "@example.com:1234?prefix=HTTP%2F1.1%20" + "#outline-123")
-	require.NoError(t, err)
-	require.Equal(t, "example.com:1234", config.Endpoint)
-	require.Equal(t, "HTTP/1.1 ", config.Prefix)
-}
+	t.Run("User Info Encoded", func(t *testing.T) {
+		encoded := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString([]byte("chacha20-ietf-poly1305:SECRET"))
+		config, err := parseShadowsocksConfig("ss://" + string(encoded) + "@example.com:1234?prefix=HTTP%2F1.1%20" + "#outline-123")
+		require.NoError(t, err)
+		require.Equal(t, "example.com:1234", config.Endpoint)
+		require.Equal(t, "chacha20-ietf-poly1305", config.Cipher)
+		require.Equal(t, "SECRET", config.Secret)
+		require.Equal(t, "HTTP/1.1 ", config.Prefix)
+	})
 
-func TestParseShadowsocksURLUserInfoLegacyEncoded(t *testing.T) {
-	encoded := base64.StdEncoding.EncodeToString([]byte("aes-256-gcm:shadowsocks"))
-	config, err := parseShadowsocksConfig("ss://" + string(encoded) + "@example.com:1234?prefix=HTTP%2F1.1%20" + "#outline-123")
-	require.NoError(t, err)
-	require.Equal(t, "example.com:1234", config.Endpoint)
-	require.Equal(t, "HTTP/1.1 ", config.Prefix)
-}
+	t.Run("User Info Legacy Encoded", func(t *testing.T) {
+		encoded := base64.StdEncoding.EncodeToString([]byte("chacha20-ietf-poly1305:SECRET"))
+		config, err := parseShadowsocksConfig("ss://" + string(encoded) + "@example.com:1234?prefix=HTTP%2F1.1%20" + "#outline-123")
+		require.NoError(t, err)
+		require.Equal(t, "example.com:1234", config.Endpoint)
+		require.Equal(t, "chacha20-ietf-poly1305", config.Cipher)
+		require.Equal(t, "SECRET", config.Secret)
+		require.Equal(t, "HTTP/1.1 ", config.Prefix)
+	})
 
-func TestLegacyEncodedShadowsocksURL(t *testing.T) {
-	configString := "ss://YWVzLTEyOC1nY206c2hhZG93c29ja3M=@example.com:1234"
-	config, err := parseShadowsocksConfig(configString)
-	require.NoError(t, err)
-	require.Equal(t, "example.com:1234", config.Endpoint)
-}
+	t.Run("User Info No Encoding", func(t *testing.T) {
+		configString := "ss://chacha20-ietf-poly1305:SECRET@example.com:1234"
+		config, err := parseShadowsocksConfig(configString)
+		require.NoError(t, err)
+		require.Equal(t, "example.com:1234", config.Endpoint)
+		require.Equal(t, "chacha20-ietf-poly1305", config.Cipher)
+		require.Equal(t, "SECRET", config.Secret)
+	})
 
-func TestParseShadowsocksURLNoEncoding(t *testing.T) {
-	configString := "ss://aes-256-gcm:1234567@example.com:1234"
-	config, err := parseShadowsocksConfig(configString)
-	require.NoError(t, err)
-	require.Equal(t, "example.com:1234", config.Endpoint)
-}
+	t.Run("Invalid Cipher Fails", func(t *testing.T) {
+		configString := "ss://chacha20-ietf-poly13051234567@example.com:1234"
+		_, err := parseShadowsocksParams(configString)
+		require.Error(t, err)
+	})
 
-func TestParseShadowsocksURLInvalidCipherInfoFails(t *testing.T) {
-	configString := "ss://aes-256-gcm1234567@example.com:1234"
-	_, err := parseShadowsocksParams(configString)
-	require.Error(t, err)
-}
-
-func TestParseShadowsocksURLUnsupportedCypherFails(t *testing.T) {
-	configString := "ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwnTpLeTUyN2duU3FEVFB3R0JpQ1RxUnlT@example.com:1234"
-	_, err := parseShadowsocksParams(configString)
-	require.Error(t, err)
-}
-
-func TestParseShadowsocksLegacyBase64URL(t *testing.T) {
-	encoded := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString([]byte("aes-256-gcm:1234567@example.com:1234?prefix=HTTP%2F1.1%20"))
-	config, err := parseShadowsocksConfig("ss://" + string(encoded) + "#outline-123")
-	require.NoError(t, err)
-	require.Equal(t, "example.com:1234", config.Endpoint)
-	require.Equal(t, "HTTP/1.1 ", config.Prefix)
+	t.Run("Unsupported Cipher Fails", func(t *testing.T) {
+		configString := "ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwnTpLeTUyN2duU3FEVFB3R0JpQ1RxUnlT@example.com:1234"
+		_, err := parseShadowsocksParams(configString)
+		require.Error(t, err)
+	})
 }
