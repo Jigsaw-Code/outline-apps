@@ -20,67 +20,94 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_NewTransport_Success(t *testing.T) {
-	tests := []struct {
-		name       string
-		input      string
-		firstHop   string
-		sdFirstHop string
-		plFirstHop string
-	}{
-		{
-			name:     "SS URL",
-			input:    "ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@example.com:4321/",
-			firstHop: "example.com:4321",
-		}, {
-			name: "Legacy JSON",
-			input: `{
+func Test_NewTransport_SS_URL(t *testing.T) {
+	config := "ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@example.com:4321/"
+	firstHop := "example.com:4321"
+
+	result := NewTransport(config)
+	require.Nil(t, result.Error, "Got %v", result.Error)
+	require.Equal(t, firstHop, result.Transport.Dialer.FirstHop)
+	require.Equal(t, firstHop, result.Transport.PacketListener.FirstHop)
+}
+
+func Test_NewTransport_Legacy_JSON(t *testing.T) {
+	config := `{
     "server": "example.com",
     "server_port": 4321,
     "method": "chacha20-ietf-poly1305",
     "password": "SECRET"
-}`,
-			firstHop: "example.com:4321",
-		}, {
-			name: "Flexible JSON",
-			input: `{
-	# Comment
+}`
+	firstHop := "example.com:4321"
+
+	result := NewTransport(config)
+	require.Nil(t, result.Error, "Got %v", result.Error)
+	require.Equal(t, firstHop, result.Transport.Dialer.FirstHop)
+	require.Equal(t, firstHop, result.Transport.PacketListener.FirstHop)
+}
+
+func Test_NewTransport_Flexible_JSON(t *testing.T) {
+	config := `{
+    # Comment
     server: example.com,
     server_port: 4321,
     method: chacha20-ietf-poly1305,
     password: SECRET
-}`,
-			firstHop: "example.com:4321",
-		}, {
-			name: "YAML",
-			input: `# Comment
+}`
+	firstHop := "example.com:4321"
+
+	result := NewTransport(config)
+	require.Nil(t, result.Error, "Got %v", result.Error)
+	require.Equal(t, firstHop, result.Transport.Dialer.FirstHop)
+	require.Equal(t, firstHop, result.Transport.PacketListener.FirstHop)
+}
+
+func Test_NewTransport_YAML(t *testing.T) {
+	config := `# Comment
 server: example.com
 server_port: 4321
 method: chacha20-ietf-poly1305
-password: SECRET`,
-			firstHop: "example.com:4321",
-		}, {
-			name: "Explicit endpoint",
-			input: `
+password: SECRET`
+	firstHop := "example.com:4321"
+
+	result := NewTransport(config)
+	require.Nil(t, result.Error, "Got %v", result.Error)
+	require.Equal(t, firstHop, result.Transport.Dialer.FirstHop)
+	require.Equal(t, firstHop, result.Transport.PacketListener.FirstHop)
+}
+
+func Test_NewTransport_Explicit_endpoint(t *testing.T) {
+	config := `
 endpoint:
     $parser: dial
     address: example.com:4321
 cipher: chacha20-ietf-poly1305
-secret: SECRET`,
-			firstHop: "example.com:4321",
-		}, {
-			name: "Multi-hop URL",
-			input: `
+secret: SECRET`
+	firstHop := "example.com:4321"
+
+	result := NewTransport(config)
+	require.Nil(t, result.Error, "Got %v", result.Error)
+	require.Equal(t, firstHop, result.Transport.Dialer.FirstHop)
+	require.Equal(t, firstHop, result.Transport.PacketListener.FirstHop)
+}
+
+func Test_NewTransport_Multihop_URL(t *testing.T) {
+	config := `
 endpoint:
     $parser: dial
     address: exit.example.com:4321
     dialer: ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@entry.example.com:4321/
 cipher: chacha20-ietf-poly1305
-secret: SECRET`,
-			firstHop: "entry.example.com:4321",
-		}, {
-			name: "Multi-hop Explicit",
-			input: `
+secret: SECRET`
+	firstHop := "entry.example.com:4321"
+
+	result := NewTransport(config)
+	require.Nil(t, result.Error, "Got %v", result.Error)
+	require.Equal(t, firstHop, result.Transport.Dialer.FirstHop)
+	require.Equal(t, firstHop, result.Transport.PacketListener.FirstHop)
+}
+
+func Test_NewTransport_Multihop_Explicit(t *testing.T) {
+	config := `
 endpoint:
     $parser: dial
     address: exit.example.com:4321
@@ -90,11 +117,17 @@ endpoint:
       cipher: chacha20-ietf-poly1305
       secret: ENTRY_SECRET
 cipher: chacha20-ietf-poly1305
-secret: EXIT_SECRET`,
-			firstHop: "entry.example.com:4321",
-		}, {
-			name: "Explicit TCP-UDP",
-			input: `
+secret: EXIT_SECRET`
+	firstHop := "entry.example.com:4321"
+
+	result := NewTransport(config)
+	require.Nil(t, result.Error, "Got %v", result.Error)
+	require.Equal(t, firstHop, result.Transport.Dialer.FirstHop)
+	require.Equal(t, firstHop, result.Transport.PacketListener.FirstHop)
+}
+
+func Test_NewTransport_Explicit_TCPUDP(t *testing.T) {
+	config := `
 $parser: tcpudp
 tcp:
     $parser: shadowsocks
@@ -106,12 +139,16 @@ udp:
     $parser: shadowsocks
     endpoint: example.com:53
     cipher: chacha20-ietf-poly1305
-    secret: SECRET`,
-			sdFirstHop: "example.com:80",
-			plFirstHop: "example.com:53",
-		}, {
-			name: "YAML Reuse",
-			input: `
+    secret: SECRET`
+
+	result := NewTransport(config)
+	require.Nil(t, result.Error, "Got %v", result.Error)
+	require.Equal(t, "example.com:80", result.Transport.Dialer.FirstHop)
+	require.Equal(t, "example.com:53", result.Transport.PacketListener.FirstHop)
+}
+
+func Test_NewTransport_YAML_Reuse(t *testing.T) {
+	config := `
 $parser: tcpudp
 udp: &base
     $parser: shadowsocks
@@ -120,26 +157,34 @@ udp: &base
     secret: SECRET
 tcp:
     <<: *base
-    prefix: "POST "`,
-			firstHop: "example.com:4321",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := NewTransport(tt.input)
-			require.Nil(t, result.Error, "Got %v", result.Error)
-			if tt.firstHop != "" {
-				require.Equal(t, tt.firstHop, result.Transport.Dialer.FirstHop)
-				require.Equal(t, tt.firstHop, result.Transport.PacketListener.FirstHop)
-			}
-			if tt.sdFirstHop != "" {
-				require.Equal(t, tt.sdFirstHop, result.Transport.Dialer.FirstHop)
-			}
-			if tt.plFirstHop != "" {
-				require.Equal(t, tt.plFirstHop, result.Transport.PacketListener.FirstHop)
-			}
-		})
-	}
+    prefix: "POST "`
+	firstHop := "example.com:4321"
+
+	result := NewTransport(config)
+	require.Nil(t, result.Error, "Got %v", result.Error)
+	require.Equal(t, firstHop, result.Transport.Dialer.FirstHop)
+	require.Equal(t, firstHop, result.Transport.PacketListener.FirstHop)
+}
+
+func Test_NewTransport_YAML_Partial_Reuse(t *testing.T) {
+	config := `
+$parser: tcpudp
+tcp:
+    $parser: shadowsocks
+    endpoint: example.com:80
+    <<: &cipher
+      cipher: chacha20-ietf-poly1305
+      secret: SECRET
+    prefix: "POST "
+udp:
+    $parser: shadowsocks
+    endpoint: example.com:53
+    <<: *cipher`
+
+	result := NewTransport(config)
+	require.Nil(t, result.Error, "Got %v", result.Error)
+	require.Equal(t, "example.com:80", result.Transport.Dialer.FirstHop)
+	require.Equal(t, "example.com:53", result.Transport.PacketListener.FirstHop)
 }
 
 func Test_NewClientFromJSON_Errors(t *testing.T) {
