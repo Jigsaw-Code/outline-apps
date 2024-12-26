@@ -20,11 +20,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_NewClientFromJSON_Success(t *testing.T) {
+func Test_NewTransport_Success(t *testing.T) {
 	tests := []struct {
-		name     string
-		input    string
-		firstHop string
+		name       string
+		input      string
+		firstHop   string
+		sdFirstHop string
+		plFirstHop string
 	}{
 		{
 			name:     "SS URL",
@@ -67,7 +69,7 @@ cipher: chacha20-ietf-poly1305
 secret: SECRET`,
 			firstHop: "example.com:4321",
 		}, {
-			name: "Multi-hop",
+			name: "Multi-hop URL",
 			input: `
 endpoint:
     $parser: dial
@@ -76,14 +78,66 @@ endpoint:
 cipher: chacha20-ietf-poly1305
 secret: SECRET`,
 			firstHop: "entry.example.com:4321",
+		}, {
+			name: "Multi-hop Explicit",
+			input: `
+endpoint:
+    $parser: dial
+    address: exit.example.com:4321
+    dialer: 
+      $parser: shadowsocks
+      endpoint: entry.example.com:4321
+      cipher: chacha20-ietf-poly1305
+      secret: ENTRY_SECRET
+cipher: chacha20-ietf-poly1305
+secret: EXIT_SECRET`,
+			firstHop: "entry.example.com:4321",
+		}, {
+			name: "Explicit TCP-UDP",
+			input: `
+$parser: tcpudp
+tcp:
+    $parser: shadowsocks
+    endpoint: example.com:80
+    cipher: chacha20-ietf-poly1305
+    secret: SECRET
+    prefix: "POST "
+udp:
+    $parser: shadowsocks
+    endpoint: example.com:53
+    cipher: chacha20-ietf-poly1305
+    secret: SECRET`,
+			sdFirstHop: "example.com:80",
+			plFirstHop: "example.com:53",
+		}, {
+			name: "YAML Reuse",
+			input: `
+$parser: tcpudp
+udp: &base
+    $parser: shadowsocks
+    endpoint: example.com:4321
+    cipher: chacha20-ietf-poly1305
+    secret: SECRET
+tcp:
+    <<: *base
+    prefix: "POST "`,
+			firstHop: "example.com:4321",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := NewTransport(tt.input)
 			require.Nil(t, result.Error, "Got %v", result.Error)
-			require.Equal(t, tt.firstHop, result.Transport.Dialer.FirstHop)
-			require.Equal(t, tt.firstHop, result.Transport.PacketListener.FirstHop)
+			if tt.firstHop != "" {
+				require.Equal(t, tt.firstHop, result.Transport.Dialer.FirstHop)
+				require.Equal(t, tt.firstHop, result.Transport.PacketListener.FirstHop)
+			}
+			if tt.sdFirstHop != "" {
+				require.Equal(t, tt.sdFirstHop, result.Transport.Dialer.FirstHop)
+			}
+			if tt.plFirstHop != "" {
+				require.Equal(t, tt.plFirstHop, result.Transport.PacketListener.FirstHop)
+			}
 		})
 	}
 }

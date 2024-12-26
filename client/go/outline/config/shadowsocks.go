@@ -43,13 +43,13 @@ type LegacyShadowsocksConfig struct {
 	Prefix      string
 }
 
-func parseShadowsocksTransport(ctx context.Context, config ConfigNode, newSE ParseFunc[*Endpoint[transport.StreamConn]], newPE ParseFunc[*Endpoint[net.Conn]]) (*TransportPair, error) {
+func parseShadowsocksTransport(ctx context.Context, config ConfigNode, parseSE ParseFunc[*Endpoint[transport.StreamConn]], parsePE ParseFunc[*Endpoint[net.Conn]]) (*TransportPair, error) {
 	params, err := parseShadowsocksParams(config)
 	if err != nil {
 		return nil, err
 	}
 
-	se, err := newSE(ctx, params.Endpoint)
+	se, err := parseSE(ctx, params.Endpoint)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create StreamEndpoint: %w", err)
 	}
@@ -61,7 +61,7 @@ func parseShadowsocksTransport(ctx context.Context, config ConfigNode, newSE Par
 		sd.SaltGenerator = params.SaltGenerator
 	}
 
-	pe, err := newPE(ctx, params.Endpoint)
+	pe, err := parsePE(ctx, params.Endpoint)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create PacketEndpoint: %w", err)
 	}
@@ -75,13 +75,13 @@ func parseShadowsocksTransport(ctx context.Context, config ConfigNode, newSE Par
 	}, nil
 }
 
-func parseShadowsocksStreamDialer(ctx context.Context, config ConfigNode, newSE ParseFunc[*Endpoint[transport.StreamConn]]) (*Dialer[transport.StreamConn], error) {
+func parseShadowsocksStreamDialer(ctx context.Context, config ConfigNode, parseSE ParseFunc[*Endpoint[transport.StreamConn]]) (*Dialer[transport.StreamConn], error) {
 	params, err := parseShadowsocksParams(config)
 	if err != nil {
 		return nil, err
 	}
 
-	se, err := newSE(ctx, params.Endpoint)
+	se, err := parseSE(ctx, params.Endpoint)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create StreamEndpoint: %w", err)
 	}
@@ -96,8 +96,8 @@ func parseShadowsocksStreamDialer(ctx context.Context, config ConfigNode, newSE 
 	return &Dialer[transport.StreamConn]{ConnectionProviderInfo{ConnTypeTunneled, se.FirstHop}, sd.DialStream}, nil
 }
 
-func parseShadowsocksPacketDialer(ctx context.Context, config ConfigNode, newPE ParseFunc[*Endpoint[net.Conn]]) (*Dialer[net.Conn], error) {
-	pl, err := newShadowsocksPacketListener(ctx, config, newPE)
+func parseShadowsocksPacketDialer(ctx context.Context, config ConfigNode, parsePE ParseFunc[*Endpoint[net.Conn]]) (*Dialer[net.Conn], error) {
+	pl, err := parseShadowsocksPacketListener(ctx, config, parsePE)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +105,7 @@ func parseShadowsocksPacketDialer(ctx context.Context, config ConfigNode, newPE 
 	return &Dialer[net.Conn]{ConnectionProviderInfo{ConnTypeTunneled, pl.FirstHop}, pd.DialPacket}, nil
 }
 
-func newShadowsocksPacketListener(ctx context.Context, config ConfigNode, newPE ParseFunc[*Endpoint[net.Conn]]) (*PacketListener, error) {
+func parseShadowsocksPacketListener(ctx context.Context, config ConfigNode, parsePE ParseFunc[*Endpoint[net.Conn]]) (*PacketListener, error) {
 	params, err := parseShadowsocksParams(config)
 	if err != nil {
 		return nil, err
@@ -114,7 +114,7 @@ func newShadowsocksPacketListener(ctx context.Context, config ConfigNode, newPE 
 		return nil, fmt.Errorf("prefix is not yet supported for PacketDialers")
 	}
 
-	pe, err := newPE(ctx, params.Endpoint)
+	pe, err := parsePE(ctx, params.Endpoint)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create PacketEndpoint: %w", err)
 	}
