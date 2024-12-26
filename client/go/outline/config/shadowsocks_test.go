@@ -15,9 +15,13 @@
 package config
 
 import (
+	"context"
 	"encoding/base64"
+	"errors"
+	"net"
 	"testing"
 
+	"github.com/Jigsaw-Code/outline-sdk/transport"
 	"github.com/stretchr/testify/require"
 )
 
@@ -70,6 +74,63 @@ func TestParseShadowsocksConfig_URL(t *testing.T) {
 	t.Run("Unsupported Cipher Fails", func(t *testing.T) {
 		configString := "ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwnTpLeTUyN2duU3FEVFB3R0JpQ1RxUnlT@example.com:1234"
 		_, err := parseShadowsocksParams(configString)
+		require.Error(t, err)
+	})
+}
+
+func TestNewShadowsocksTransport(t *testing.T) {
+	streamDialers := NewTypeParser(func(ctx context.Context, input ConfigNode) (*Dialer[transport.StreamConn], error) {
+		if input == nil {
+			return &Dialer[transport.StreamConn]{ConnectionProviderInfo{ConnTypeDirect, ""}, (&transport.TCPDialer{}).DialStream}, nil
+		}
+		return nil, errors.ErrUnsupported
+	})
+
+	packetDialers := NewTypeParser(func(ctx context.Context, input ConfigNode) (*Dialer[net.Conn], error) {
+		if input == nil {
+			return &Dialer[net.Conn]{ConnectionProviderInfo{ConnTypeDirect, ""}, (&transport.UDPDialer{}).DialPacket}, nil
+		}
+		return nil, errors.ErrUnsupported
+	})
+	streamEndpoints := NewTypeParser(func(ctx context.Context, input ConfigNode) (*Endpoint[transport.StreamConn], error) {
+		return parseDirectDialerEndpoint(ctx, input, streamDialers.Parse)
+	})
+	packetEndpoints := NewTypeParser(func(ctx context.Context, input ConfigNode) (*Endpoint[net.Conn], error) {
+		return parseDirectDialerEndpoint(ctx, input, packetDialers.Parse)
+	})
+
+	t.Run("Success", func(t *testing.T) {
+		config := map[string]any{
+			"endpoint": "example.com:1234",
+			"cipher":   "chacha20-ietf-poly1305",
+			"secret":   "SECRET",
+			"prefix":   "outline-123",
+		}
+		transport, err := parseShadowsocksTransport(context.Background(), config, streamEndpoints.Parse, packetEndpoints.Parse)
+		require.NoError(t, err)
+		require.NotNil(t, transport)
+	})
+
+	t.Run("Fail on unsupported cipher", func(t *testing.T) {
+		config := map[string]any{
+			"endpoint": "example.com:1234",
+			"cipher":   "NOT SUPPORTED",
+			"secret":   "SECRET",
+			"prefix":   "outline-123",
+		}
+		_, err := parseShadowsocksTransport(context.Background(), config, streamEndpoints.Parse, packetEndpoints.Parse)
+		require.Error(t, err)
+	})
+
+	t.Run("Fail on extraneous field", func(t *testing.T) {
+		config := map[string]any{
+			"endpoint": "example.com:1234",
+			"cipher":   "chacha20-ietf-poly1305",
+			"secret":   "SECRET",
+			"prefix":   "outline-123",
+			"extra":    "NOT SUPPORTED",
+		}
+		_, err := parseShadowsocksTransport(context.Background(), config, streamEndpoints.Parse, packetEndpoints.Parse)
 		require.Error(t, err)
 	})
 }

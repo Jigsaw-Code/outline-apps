@@ -115,19 +115,24 @@ func NewDefaultTransportProvider() *TypeParser[*TransportPair] {
 
 	streamDialers := NewTypeParser(func(ctx context.Context, input ConfigNode) (*Dialer[transport.StreamConn], error) {
 		if input == nil {
+			// An absent dialer implicitly means TCP.
 			return &Dialer[transport.StreamConn]{ConnectionProviderInfo{ConnTypeDirect, ""}, (&transport.TCPDialer{}).DialStream}, nil
 		}
+		// If parser directive is missing, parse as Shadowsocks for backwards-compatibility.
 		return parseShadowsocksStreamDialer(ctx, input, streamEndpoints.Parse)
 	})
 
 	packetDialers := NewTypeParser(func(ctx context.Context, input ConfigNode) (*Dialer[net.Conn], error) {
 		if input == nil {
+			// An absent dialer implicitly means UDP.
 			return &Dialer[net.Conn]{ConnectionProviderInfo{ConnTypeDirect, ""}, (&transport.UDPDialer{}).DialPacket}, nil
 		}
+		// If parser directive is missing, parse as Shadowsocks for backwards-compatibility.
 		return parseShadowsocksPacketDialer(ctx, input, packetEndpoints.Parse)
 	})
 
 	streamEndpoints = NewTypeParser(func(ctx context.Context, input ConfigNode) (*Endpoint[transport.StreamConn], error) {
+		// TODO: perhaps only support string here to force the struct to have an explicit parser.
 		return parseDirectDialerEndpoint(ctx, input, streamDialers.Parse)
 	})
 	streamEndpoints.RegisterSubParser("dial", func(ctx context.Context, input map[string]any) (*Endpoint[transport.StreamConn], error) {
@@ -142,7 +147,8 @@ func NewDefaultTransportProvider() *TypeParser[*TransportPair] {
 	})
 
 	transports := NewTypeParser(func(ctx context.Context, input ConfigNode) (*TransportPair, error) {
-		return newShadowsocksTransport(ctx, input, streamEndpoints.Parse, packetEndpoints.Parse)
+		// If parser directive is missing, parse as Shadowsocks for backwards-compatibility.
+		return parseShadowsocksTransport(ctx, input, streamEndpoints.Parse, packetEndpoints.Parse)
 	})
 
 	// Shadowsocks support.

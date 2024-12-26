@@ -43,7 +43,7 @@ type LegacyShadowsocksConfig struct {
 	Prefix      string
 }
 
-func newShadowsocksTransport(ctx context.Context, config ConfigNode, newSE ParseFunc[*Endpoint[transport.StreamConn]], newPE ParseFunc[*Endpoint[net.Conn]]) (*TransportPair, error) {
+func parseShadowsocksTransport(ctx context.Context, config ConfigNode, newSE ParseFunc[*Endpoint[transport.StreamConn]], newPE ParseFunc[*Endpoint[net.Conn]]) (*TransportPair, error) {
 	params, err := parseShadowsocksParams(config)
 	if err != nil {
 		return nil, err
