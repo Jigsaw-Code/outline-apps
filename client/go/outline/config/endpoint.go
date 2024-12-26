@@ -45,7 +45,6 @@ func parseDirectDialerEndpoint[ConnType any](ctx context.Context, config any, ne
 	endpoint := &Endpoint[ConnType]{
 		Connect: func(ctx context.Context) (ConnType, error) {
 			return dialer.Dial(ctx, dialParams.Address)
-
 		},
 		ConnectionProviderInfo: dialer.ConnectionProviderInfo,
 	}

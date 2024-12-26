@@ -17,7 +17,6 @@ package config
 import (
 	"context"
 	"encoding/base64"
-	"errors"
 	"net"
 	"testing"
 
@@ -79,24 +78,13 @@ func TestParseShadowsocksConfig_URL(t *testing.T) {
 }
 
 func TestNewShadowsocksTransport(t *testing.T) {
-	streamDialers := NewTypeParser(func(ctx context.Context, input ConfigNode) (*Dialer[transport.StreamConn], error) {
-		if input == nil {
-			return &Dialer[transport.StreamConn]{ConnectionProviderInfo{ConnTypeDirect, ""}, (&transport.TCPDialer{}).DialStream}, nil
-		}
-		return nil, errors.ErrUnsupported
+	streamEndpoints := NewTypeParser(func(ctx context.Context, config ConfigNode) (*Endpoint[transport.StreamConn], error) {
+		require.Equal(t, "example.com:1234", config)
+		return &Endpoint[transport.StreamConn]{}, nil
 	})
-
-	packetDialers := NewTypeParser(func(ctx context.Context, input ConfigNode) (*Dialer[net.Conn], error) {
-		if input == nil {
-			return &Dialer[net.Conn]{ConnectionProviderInfo{ConnTypeDirect, ""}, (&transport.UDPDialer{}).DialPacket}, nil
-		}
-		return nil, errors.ErrUnsupported
-	})
-	streamEndpoints := NewTypeParser(func(ctx context.Context, input ConfigNode) (*Endpoint[transport.StreamConn], error) {
-		return parseDirectDialerEndpoint(ctx, input, streamDialers.Parse)
-	})
-	packetEndpoints := NewTypeParser(func(ctx context.Context, input ConfigNode) (*Endpoint[net.Conn], error) {
-		return parseDirectDialerEndpoint(ctx, input, packetDialers.Parse)
+	packetEndpoints := NewTypeParser(func(ctx context.Context, config ConfigNode) (*Endpoint[net.Conn], error) {
+		require.Equal(t, "example.com:1234", config)
+		return &Endpoint[net.Conn]{}, nil
 	})
 
 	t.Run("Success", func(t *testing.T) {
