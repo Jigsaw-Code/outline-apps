@@ -29,7 +29,7 @@ type TCPUDPConfig struct {
 func parseTCPUDPTransportPair(ctx context.Context, configMap map[string]any, parseSD ParseFunc[*Dialer[transport.StreamConn]], parsePL ParseFunc[*PacketListener]) (*TransportPair, error) {
 	var config TCPUDPConfig
 	if err := mapToAny(configMap, &config); err != nil {
-		return nil, fmt.Errorf("failed to parse TCPUDPConfig: %w", err)
+		return nil, fmt.Errorf("invalid config format: %w", err)
 	}
 
 	sd, err := parseSD(ctx, config.TCP)

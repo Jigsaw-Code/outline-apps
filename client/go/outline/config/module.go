@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"net"
+	"net/http"
 
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
@@ -71,43 +72,6 @@ func (t *TransportPair) DialStream(ctx context.Context, address string) (transpo
 func (t *TransportPair) ListenPacket(ctx context.Context) (net.PacketConn, error) {
 	return t.PacketListener.ListenPacket(ctx)
 }
-
-// // NewClientProvider creates a [ProviderContainer] with the base instances properly initialized.
-// func NewClientProvider() *ExtensibleProvider[*TransportClient], FunctionRegistry[] {
-// 	clients := NewExtensibleProvider[*TransportClient](nil)
-// 	return clients
-
-// 	defaultStreamDialer := &Dialer[transport.StreamConn]{ConnectionProviderInfo{ConnTypeDirect, ""}, (&transport.TCPDialer{}).DialStream}
-// 	defaultPacketDialer := &Dialer[net.Conn]{ConnectionProviderInfo{ConnTypeDirect, ""}, (&transport.UDPDialer{}).DialPacket}
-
-// 	return &ProviderContainer{
-// 		StreamDialers:   NewExtensibleProvider(defaultStreamDialer),
-// 		PacketDialers:   NewExtensibleProvider(defaultPacketDialer),
-// 		PacketListeners: NewExtensibleProvider(&PacketListener{ConnectionProviderInfo{ConnTypeDirect, ""}, &transport.UDPListener{}}),
-// 		StreamEndpoints: NewExtensibleProvider[*Endpoint[transport.StreamConn]](nil),
-// 		PacketEndpoints: NewExtensibleProvider[*Endpoint[net.Conn]](nil),
-// 	}
-// }
-
-// // RegisterDefaultProviders registers a set of default providers with the providers in [ProviderContainer].
-// func RegisterDefaultProviders(c *ProviderContainer) *ProviderContainer {
-// 	registerDirectDialEndpoint(c.StreamEndpoints, "string", c.StreamDialers.NewInstance)
-// 	registerDirectDialEndpoint(c.StreamEndpoints, "dial", c.StreamDialers.NewInstance)
-// 	registerDirectDialEndpoint(c.PacketEndpoints, "string", c.PacketDialers.NewInstance)
-// 	registerDirectDialEndpoint(c.PacketEndpoints, "dial", c.PacketDialers.NewInstance)
-
-// 	registerShadowsocksStreamDialer(c.StreamDialers, ProviderTypeDefault, c.StreamEndpoints.NewInstance)
-// 	registerShadowsocksStreamDialer(c.StreamDialers, "ss", c.StreamEndpoints.NewInstance)
-// 	registerShadowsocksStreamDialer(c.StreamDialers, "string", c.StreamEndpoints.NewInstance)
-
-// 	registerShadowsocksPacketDialer(c.PacketDialers, "ss", c.PacketEndpoints.NewInstance)
-// 	registerShadowsocksPacketDialer(c.PacketDialers, "string", c.PacketEndpoints.NewInstance)
-
-// 	registerShadowsocksPacketListener(c.PacketListeners, ProviderTypeDefault, c.PacketEndpoints.NewInstance)
-// 	registerShadowsocksPacketListener(c.PacketListeners, "ss", c.PacketEndpoints.NewInstance)
-// 	registerShadowsocksPacketListener(c.PacketListeners, "string", c.PacketEndpoints.NewInstance)
-// 	return c
-// }
 
 func NewDefaultTransportProvider() *TypeParser[*TransportPair] {
 	var streamEndpoints *TypeParser[*Endpoint[transport.StreamConn]]
@@ -181,13 +145,12 @@ func NewDefaultTransportProvider() *TypeParser[*TransportPair] {
 	})
 
 	// Websocket support.
+	httpClient := http.DefaultClient
 	streamEndpoints.RegisterSubParser("websocket", func(ctx context.Context, input map[string]any) (*Endpoint[transport.StreamConn], error) {
-		// TODO
-		return nil, errors.ErrUnsupported
+		return parseWebsocketStreamEndpoint(ctx, input, httpClient)
 	})
 	packetEndpoints.RegisterSubParser("websocket", func(ctx context.Context, input map[string]any) (*Endpoint[net.Conn], error) {
-		// TODO
-		return nil, errors.ErrUnsupported
+		return parseWebsocketPacketEndpoint(ctx, input, httpClient)
 	})
 
 	transports.RegisterSubParser("tcpudp", func(ctx context.Context, config map[string]any) (*TransportPair, error) {
