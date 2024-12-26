@@ -27,7 +27,7 @@ type DialEndpointConfig struct {
 	Dialer  any
 }
 
-func newDirectDialerEndpoint[ConnType any](ctx context.Context, config any, newDialer ParseFunc[*Dialer[ConnType]]) (*Endpoint[ConnType], error) {
+func parseDirectDialerEndpoint[ConnType any](ctx context.Context, config any, newDialer ParseFunc[*Dialer[ConnType]]) (*Endpoint[ConnType], error) {
 	if config == nil {
 		return nil, errors.New("endpoint config cannot be nil")
 	}

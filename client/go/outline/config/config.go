@@ -22,12 +22,11 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const ConfigTypeKey = "$type"
+const ConfigParserKey = "$parser"
 
 type ConfigNode any
-type ConfigFunction func(ctx context.Context, input any) (any, error)
 
-type ParseFunc[ObjectType any] func(ctx context.Context, input any) (ObjectType, error)
+type ParseFunc[OutputType any] func(ctx context.Context, input ConfigNode) (OutputType, error)
 
 func ParseConfigYAML(configText string) (ConfigNode, error) {
 	var node any
@@ -55,30 +54,33 @@ func mapToAny(in map[string]any, out any) error {
 	return decoder.Decode(out)
 }
 
-type TypeProvider[T any] struct {
+// TypeParser creates objects of the given type T from an input config.
+// You can register type-specific sub-parsers that get called when marked in the config.
+// The default value is not valid. Use [NewTypeParser] instead.
+type TypeParser[T any] struct {
 	fallbackHandler ParseFunc[T]
-	parsers         map[string]func(context.Context, map[string]any) (T, error)
+	subparsers      map[string]func(context.Context, map[string]any) (T, error)
 }
 
-var _ ParseFunc[any] = (*TypeProvider[any])(nil).NewInstance
+var _ ParseFunc[any] = (*TypeParser[any])(nil).Parse
 
-func NewTypeProvider[T any](fallbackHandler func(context.Context, any) (T, error)) *TypeProvider[T] {
-	return &TypeProvider[T]{
+func NewTypeParser[T any](fallbackHandler func(context.Context, ConfigNode) (T, error)) *TypeParser[T] {
+	return &TypeParser[T]{
 		fallbackHandler: fallbackHandler,
-		parsers:         make(map[string]func(context.Context, map[string]any) (T, error)),
+		subparsers:      make(map[string]func(context.Context, map[string]any) (T, error)),
 	}
 }
 
-func (p *TypeProvider[T]) NewInstance(ctx context.Context, input any) (T, error) {
+func (p *TypeParser[T]) Parse(ctx context.Context, config ConfigNode) (T, error) {
 	var zero T
 
 	// Iterate while the input is a function call.
 	for {
-		inMap, ok := input.(map[string]any)
+		inMap, ok := config.(map[string]any)
 		if !ok {
 			break
 		}
-		parserNameAny, ok := inMap[ConfigTypeKey]
+		parserNameAny, ok := inMap[ConfigParserKey]
 		if !ok {
 			break
 		}
@@ -86,37 +88,37 @@ func (p *TypeProvider[T]) NewInstance(ctx context.Context, input any) (T, error)
 		if !ok {
 			return zero, fmt.Errorf("parser name must be a string, found \"%T\"", parserNameAny)
 		}
-		parser, ok := p.parsers[parserName]
+		parser, ok := p.subparsers[parserName]
 		if !ok {
 			return zero, fmt.Errorf("provider \"%v\" for type %T is not registered", parserName, zero)
 		}
 
-		// $type is embedded in the value: {$type: ..., ...}.
+		// $parser is embedded in the value: {$parser: ..., ...}.
 		// Need to copy value and remove the type directive.
 		inputCopy := make(map[string]any, len(inMap))
 		for k, v := range inMap {
-			if k == ConfigTypeKey {
+			if k == ConfigParserKey {
 				continue
 			}
 			inputCopy[k] = v
 		}
 
 		var err error
-		input, err = parser(ctx, inputCopy)
+		config, err = parser(ctx, inputCopy)
 		if err != nil {
 			return zero, fmt.Errorf("parser \"%v\" failed: %w", parserName, err)
 		}
 	}
 
-	typed, ok := input.(T)
+	typed, ok := config.(T)
 	if ok {
 		return typed, nil
 	}
 
 	// Input is an intermediate type. We need a fallback handler.
-	return p.fallbackHandler(ctx, input)
+	return p.fallbackHandler(ctx, config)
 }
 
-func (p *TypeProvider[T]) RegisterParser(name string, function func(context.Context, map[string]any) (T, error)) {
-	p.parsers[name] = function
+func (p *TypeParser[T]) RegisterSubParser(name string, function func(context.Context, map[string]any) (T, error)) {
+	p.subparsers[name] = function
 }

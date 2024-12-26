@@ -109,62 +109,62 @@ func (t *TransportPair) ListenPacket(ctx context.Context) (net.PacketConn, error
 // 	return c
 // }
 
-func NewDefaultTransportProvider() *TypeProvider[*TransportPair] {
-	var streamEndpoints *TypeProvider[*Endpoint[transport.StreamConn]]
-	var packetEndpoints *TypeProvider[*Endpoint[net.Conn]]
+func NewDefaultTransportProvider() *TypeParser[*TransportPair] {
+	var streamEndpoints *TypeParser[*Endpoint[transport.StreamConn]]
+	var packetEndpoints *TypeParser[*Endpoint[net.Conn]]
 
-	streamDialers := NewTypeProvider(func(ctx context.Context, input any) (*Dialer[transport.StreamConn], error) {
+	streamDialers := NewTypeParser(func(ctx context.Context, input ConfigNode) (*Dialer[transport.StreamConn], error) {
 		if input == nil {
 			return &Dialer[transport.StreamConn]{ConnectionProviderInfo{ConnTypeDirect, ""}, (&transport.TCPDialer{}).DialStream}, nil
 		}
-		return newShadowsocksStreamDialer(ctx, input, streamEndpoints.NewInstance)
+		return parseShadowsocksStreamDialer(ctx, input, streamEndpoints.Parse)
 	})
 
-	packetDialers := NewTypeProvider(func(ctx context.Context, input any) (*Dialer[net.Conn], error) {
+	packetDialers := NewTypeParser(func(ctx context.Context, input ConfigNode) (*Dialer[net.Conn], error) {
 		if input == nil {
 			return &Dialer[net.Conn]{ConnectionProviderInfo{ConnTypeDirect, ""}, (&transport.UDPDialer{}).DialPacket}, nil
 		}
-		return newShadowsocksPacketDialer(ctx, input, packetEndpoints.NewInstance)
+		return parseShadowsocksPacketDialer(ctx, input, packetEndpoints.Parse)
 	})
 
-	streamEndpoints = NewTypeProvider(func(ctx context.Context, input any) (*Endpoint[transport.StreamConn], error) {
-		return newDirectDialerEndpoint(ctx, input, streamDialers.NewInstance)
+	streamEndpoints = NewTypeParser(func(ctx context.Context, input ConfigNode) (*Endpoint[transport.StreamConn], error) {
+		return parseDirectDialerEndpoint(ctx, input, streamDialers.Parse)
 	})
-	streamEndpoints.RegisterParser("dial", func(ctx context.Context, input map[string]any) (*Endpoint[transport.StreamConn], error) {
-		return newDirectDialerEndpoint(ctx, input, streamDialers.NewInstance)
-	})
-
-	packetEndpoints = NewTypeProvider(func(ctx context.Context, input any) (*Endpoint[net.Conn], error) {
-		return newDirectDialerEndpoint(ctx, input, packetDialers.NewInstance)
-	})
-	packetEndpoints.RegisterParser("dial", func(ctx context.Context, input map[string]any) (*Endpoint[net.Conn], error) {
-		return newDirectDialerEndpoint(ctx, input, packetDialers.NewInstance)
+	streamEndpoints.RegisterSubParser("dial", func(ctx context.Context, input map[string]any) (*Endpoint[transport.StreamConn], error) {
+		return parseDirectDialerEndpoint(ctx, input, streamDialers.Parse)
 	})
 
-	transports := NewTypeProvider(func(ctx context.Context, input any) (*TransportPair, error) {
-		return newShadowsocksTransport(ctx, input, streamEndpoints.NewInstance, packetEndpoints.NewInstance)
+	packetEndpoints = NewTypeParser(func(ctx context.Context, input ConfigNode) (*Endpoint[net.Conn], error) {
+		return parseDirectDialerEndpoint(ctx, input, packetDialers.Parse)
+	})
+	packetEndpoints.RegisterSubParser("dial", func(ctx context.Context, input map[string]any) (*Endpoint[net.Conn], error) {
+		return parseDirectDialerEndpoint(ctx, input, packetDialers.Parse)
+	})
+
+	transports := NewTypeParser(func(ctx context.Context, input ConfigNode) (*TransportPair, error) {
+		return newShadowsocksTransport(ctx, input, streamEndpoints.Parse, packetEndpoints.Parse)
 	})
 
 	// Shadowsocks support.
-	streamDialers.RegisterParser("shadowsocks", func(ctx context.Context, input map[string]any) (*Dialer[transport.StreamConn], error) {
-		return newShadowsocksStreamDialer(ctx, input, streamEndpoints.NewInstance)
+	streamDialers.RegisterSubParser("shadowsocks", func(ctx context.Context, input map[string]any) (*Dialer[transport.StreamConn], error) {
+		return parseShadowsocksStreamDialer(ctx, input, streamEndpoints.Parse)
 	})
-	packetDialers.RegisterParser("shadowsocks", func(ctx context.Context, input map[string]any) (*Dialer[net.Conn], error) {
-		return newShadowsocksPacketDialer(ctx, input, packetEndpoints.NewInstance)
+	packetDialers.RegisterSubParser("shadowsocks", func(ctx context.Context, input map[string]any) (*Dialer[net.Conn], error) {
+		return parseShadowsocksPacketDialer(ctx, input, packetEndpoints.Parse)
 	})
 
 	// Websocket support.
-	streamEndpoints.RegisterParser("websocket", func(ctx context.Context, input map[string]any) (*Endpoint[transport.StreamConn], error) {
+	streamEndpoints.RegisterSubParser("websocket", func(ctx context.Context, input map[string]any) (*Endpoint[transport.StreamConn], error) {
 		// TODO
 		return nil, errors.ErrUnsupported
 	})
-	packetEndpoints.RegisterParser("websocket", func(ctx context.Context, input map[string]any) (*Endpoint[net.Conn], error) {
+	packetEndpoints.RegisterSubParser("websocket", func(ctx context.Context, input map[string]any) (*Endpoint[net.Conn], error) {
 		// TODO
 		return nil, errors.ErrUnsupported
 	})
 
 	// TODO: Introduce explit transport parser.
-	transports.RegisterParser("explicit", func(ctx context.Context, input map[string]any) (*TransportPair, error) {
+	transports.RegisterSubParser("explicit", func(ctx context.Context, input map[string]any) (*TransportPair, error) {
 		return nil, errors.ErrUnsupported
 	})
 

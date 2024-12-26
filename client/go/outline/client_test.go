@@ -61,7 +61,7 @@ password: SECRET`,
 			name: "Explicit endpoint",
 			input: `
 endpoint:
-    $type: dial
+    $parser: dial
     address: example.com:4321
 cipher: chacha20-ietf-poly1305
 secret: SECRET`,
@@ -70,7 +70,7 @@ secret: SECRET`,
 			name: "Multi-hop",
 			input: `
 endpoint:
-    $type: dial
+    $parser: dial
     address: exit.example.com:4321
     dialer: ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@entry.example.com:4321/
 cipher: chacha20-ietf-poly1305

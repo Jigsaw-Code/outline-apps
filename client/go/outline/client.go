@@ -51,7 +51,7 @@ func NewTransport(transportConfig string) *NewTransportResult {
 		}
 	}
 
-	transportPair, err := config.NewDefaultTransportProvider().NewInstance(context.Background(), transportYAML)
+	transportPair, err := config.NewDefaultTransportProvider().Parse(context.Background(), transportYAML)
 	if err != nil {
 		return &NewTransportResult{
 			Error: &platerrors.PlatformError{

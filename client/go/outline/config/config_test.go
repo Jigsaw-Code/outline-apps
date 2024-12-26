@@ -275,7 +275,7 @@ func Test_parseConfigFromJSON(t *testing.T) {
 			require.NoError(t, err)
 			got, err := parseShadowsocksConfig(node)
 			if err == nil {
-				_, err = newShadowsocksParams(node)
+				_, err = parseShadowsocksParams(node)
 			}
 			if tt.wantErr {
 				require.Error(t, err)

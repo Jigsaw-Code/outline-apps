@@ -61,13 +61,13 @@ func TestParseShadowsocksURLNoEncoding(t *testing.T) {
 
 func TestParseShadowsocksURLInvalidCipherInfoFails(t *testing.T) {
 	configString := "ss://aes-256-gcm1234567@example.com:1234"
-	_, err := newShadowsocksParams(configString)
+	_, err := parseShadowsocksParams(configString)
 	require.Error(t, err)
 }
 
 func TestParseShadowsocksURLUnsupportedCypherFails(t *testing.T) {
 	configString := "ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwnTpLeTUyN2duU3FEVFB3R0JpQ1RxUnlT@example.com:1234"
-	_, err := newShadowsocksParams(configString)
+	_, err := parseShadowsocksParams(configString)
 	require.Error(t, err)
 }
 

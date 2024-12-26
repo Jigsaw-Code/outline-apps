@@ -44,7 +44,7 @@ type LegacyShadowsocksConfig struct {
 }
 
 func newShadowsocksTransport(ctx context.Context, config ConfigNode, newSE ParseFunc[*Endpoint[transport.StreamConn]], newPE ParseFunc[*Endpoint[net.Conn]]) (*TransportPair, error) {
-	params, err := newShadowsocksParams(config)
+	params, err := parseShadowsocksParams(config)
 	if err != nil {
 		return nil, err
 	}
@@ -75,8 +75,8 @@ func newShadowsocksTransport(ctx context.Context, config ConfigNode, newSE Parse
 	}, nil
 }
 
-func newShadowsocksStreamDialer(ctx context.Context, config ConfigNode, newSE ParseFunc[*Endpoint[transport.StreamConn]]) (*Dialer[transport.StreamConn], error) {
-	params, err := newShadowsocksParams(config)
+func parseShadowsocksStreamDialer(ctx context.Context, config ConfigNode, newSE ParseFunc[*Endpoint[transport.StreamConn]]) (*Dialer[transport.StreamConn], error) {
+	params, err := parseShadowsocksParams(config)
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +96,7 @@ func newShadowsocksStreamDialer(ctx context.Context, config ConfigNode, newSE Pa
 	return &Dialer[transport.StreamConn]{ConnectionProviderInfo{ConnTypeTunneled, se.FirstHop}, sd.DialStream}, nil
 }
 
-func newShadowsocksPacketDialer(ctx context.Context, config ConfigNode, newPE ParseFunc[*Endpoint[net.Conn]]) (*Dialer[net.Conn], error) {
+func parseShadowsocksPacketDialer(ctx context.Context, config ConfigNode, newPE ParseFunc[*Endpoint[net.Conn]]) (*Dialer[net.Conn], error) {
 	pl, err := newShadowsocksPacketListener(ctx, config, newPE)
 	if err != nil {
 		return nil, err
@@ -106,7 +106,7 @@ func newShadowsocksPacketDialer(ctx context.Context, config ConfigNode, newPE Pa
 }
 
 func newShadowsocksPacketListener(ctx context.Context, config ConfigNode, newPE ParseFunc[*Endpoint[net.Conn]]) (*PacketListener, error) {
-	params, err := newShadowsocksParams(config)
+	params, err := parseShadowsocksParams(config)
 	if err != nil {
 		return nil, err
 	}
@@ -168,7 +168,7 @@ func parseShadowsocksConfig(node ConfigNode) (*ShadowsocksConfig, error) {
 	}
 }
 
-func newShadowsocksParams(node ConfigNode) (*shadowsocksParams, error) {
+func parseShadowsocksParams(node ConfigNode) (*shadowsocksParams, error) {
 	config, err := parseShadowsocksConfig(node)
 	if err != nil {
 		return nil, err
