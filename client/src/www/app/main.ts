@@ -53,7 +53,10 @@ function getRootEl() {
   return document.querySelector('app-root') as {} as polymer.Base;
 }
 
-async function createServerRepo(platform: OutlinePlatform, eventQueue: EventQueue): Promise<ServerRepository> {
+async function createServerRepo(
+  platform: OutlinePlatform,
+  eventQueue: EventQueue
+): Promise<ServerRepository> {
   const localize = getLocalizationFunction();
   const vpnApi = platform.getVpnApi();
   if (vpnApi) {

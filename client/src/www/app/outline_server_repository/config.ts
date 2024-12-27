@@ -33,7 +33,10 @@ export type ServiceConfig = StaticServiceConfig | DynamicServiceConfig;
  * It's the structured representation of a Static Access Key.
  */
 export class StaticServiceConfig {
-  constructor(readonly name: string, readonly tunnelConfig: TunnelConfigJson) {}
+  constructor(
+    readonly name: string,
+    readonly tunnelConfig: TunnelConfigJson
+  ) {}
 }
 
 /**
@@ -41,7 +44,10 @@ export class StaticServiceConfig {
  * It's the structured representation of a Dynamic Access Key.
  */
 export class DynamicServiceConfig {
-  constructor(readonly name: string, readonly transportConfigLocation: URL) {}
+  constructor(
+    readonly name: string,
+    readonly transportConfigLocation: URL
+  ) {}
 }
 
 /**
