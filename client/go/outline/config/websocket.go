@@ -16,19 +16,18 @@ package config
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net"
 	"net/http"
 	"net/url"
+	"runtime"
 
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 	"github.com/coder/websocket"
 )
 
 type WebsocketEndpointConfig struct {
-	URL         string
-	HTTP_Client ConfigNode
+	URL string
 }
 
 func parseWebsocketStreamEndpoint(ctx context.Context, configMap map[string]any, httpClient *http.Client) (*Endpoint[transport.StreamConn], error) {
@@ -54,10 +53,6 @@ func parseWebsocketEndpoint[ConnType any](_ context.Context, configMap map[strin
 		return nil, fmt.Errorf("url is invalid: %w", err)
 	}
 
-	if config.HTTP_Client != nil {
-		return nil, errors.New("http_client not yet supported")
-	}
-
 	port := url.Port()
 	if port == "" {
 		switch url.Scheme {
@@ -68,7 +63,10 @@ func parseWebsocketEndpoint[ConnType any](_ context.Context, configMap map[strin
 		}
 	}
 
-	options := &websocket.DialOptions{HTTPClient: httpClient}
+	options := &websocket.DialOptions{
+		HTTPClient: httpClient,
+		HTTPHeader: http.Header(map[string][]string{"User-Agent": {fmt.Sprintf("Outline (%s; %s; %s)", runtime.GOOS, runtime.GOARCH, runtime.Version())}}),
+	}
 	return &Endpoint[ConnType]{
 		ConnectionProviderInfo: ConnectionProviderInfo{ConnType: ConnTypeDirect, FirstHop: net.JoinHostPort(url.Hostname(), port)},
 		Connect: func(ctx context.Context) (ConnType, error) {
