@@ -22,27 +22,28 @@ import (
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
-// Transport provides a transparent container for [transport.StreamDialer] and [transport.PacketListener]
+// Client provides a transparent container for [transport.StreamDialer] and [transport.PacketListener]
 // that is exportable (as an opaque object) via gobind.
 // It's used by the connectivity test and the tun2socks handlers.
-type Transport struct {
+// TODO: Rename to Transport. Needs to update per-platform code.
+type Client struct {
 	*config.Dialer[transport.StreamConn]
 	*config.PacketListener
 }
 
-// NewTransportResult represents the result of [NewClientAndReturnError].
+// NewClientResult represents the result of [NewClientAndReturnError].
 //
 // We use a struct instead of a tuple to preserve a strongly typed error that gobind recognizes.
-type NewTransportResult struct {
-	Transport *Transport
-	Error     *platerrors.PlatformError
+type NewClientResult struct {
+	Client *Client
+	Error  *platerrors.PlatformError
 }
 
-// NewTransport creates a new Outline client from a configuration string.
-func NewTransport(transportConfig string) *NewTransportResult {
+// NewClient creates a new Outline client from a configuration string.
+func NewClient(transportConfig string) *NewClientResult {
 	transportYAML, err := config.ParseConfigYAML(transportConfig)
 	if err != nil {
-		return &NewTransportResult{
+		return &NewClientResult{
 			Error: &platerrors.PlatformError{
 				Code:    platerrors.IllegalConfig,
 				Message: "config is not valid YAML",
@@ -53,7 +54,7 @@ func NewTransport(transportConfig string) *NewTransportResult {
 
 	transportPair, err := config.NewDefaultTransportProvider().Parse(context.Background(), transportYAML)
 	if err != nil {
-		return &NewTransportResult{
+		return &NewClientResult{
 			Error: &platerrors.PlatformError{
 				Code:    platerrors.IllegalConfig,
 				Message: "failed to create transport",
@@ -62,7 +63,7 @@ func NewTransport(transportConfig string) *NewTransportResult {
 		}
 	}
 
-	return &NewTransportResult{
-		Transport: &Transport{Dialer: transportPair.StreamDialer, PacketListener: transportPair.PacketListener},
+	return &NewClientResult{
+		Client: &Client{Dialer: transportPair.StreamDialer, PacketListener: transportPair.PacketListener},
 	}
 }

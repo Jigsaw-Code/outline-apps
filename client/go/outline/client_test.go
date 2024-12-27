@@ -24,10 +24,10 @@ func Test_NewTransport_SS_URL(t *testing.T) {
 	config := "ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@example.com:4321/"
 	firstHop := "example.com:4321"
 
-	result := NewTransport(config)
+	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
-	require.Equal(t, firstHop, result.Transport.Dialer.FirstHop)
-	require.Equal(t, firstHop, result.Transport.PacketListener.FirstHop)
+	require.Equal(t, firstHop, result.Client.Dialer.FirstHop)
+	require.Equal(t, firstHop, result.Client.PacketListener.FirstHop)
 }
 
 func Test_NewTransport_Legacy_JSON(t *testing.T) {
@@ -39,10 +39,10 @@ func Test_NewTransport_Legacy_JSON(t *testing.T) {
 }`
 	firstHop := "example.com:4321"
 
-	result := NewTransport(config)
+	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
-	require.Equal(t, firstHop, result.Transport.Dialer.FirstHop)
-	require.Equal(t, firstHop, result.Transport.PacketListener.FirstHop)
+	require.Equal(t, firstHop, result.Client.Dialer.FirstHop)
+	require.Equal(t, firstHop, result.Client.PacketListener.FirstHop)
 }
 
 func Test_NewTransport_Flexible_JSON(t *testing.T) {
@@ -55,10 +55,10 @@ func Test_NewTransport_Flexible_JSON(t *testing.T) {
 }`
 	firstHop := "example.com:4321"
 
-	result := NewTransport(config)
+	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
-	require.Equal(t, firstHop, result.Transport.Dialer.FirstHop)
-	require.Equal(t, firstHop, result.Transport.PacketListener.FirstHop)
+	require.Equal(t, firstHop, result.Client.Dialer.FirstHop)
+	require.Equal(t, firstHop, result.Client.PacketListener.FirstHop)
 }
 
 func Test_NewTransport_YAML(t *testing.T) {
@@ -69,10 +69,10 @@ method: chacha20-ietf-poly1305
 password: SECRET`
 	firstHop := "example.com:4321"
 
-	result := NewTransport(config)
+	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
-	require.Equal(t, firstHop, result.Transport.Dialer.FirstHop)
-	require.Equal(t, firstHop, result.Transport.PacketListener.FirstHop)
+	require.Equal(t, firstHop, result.Client.Dialer.FirstHop)
+	require.Equal(t, firstHop, result.Client.PacketListener.FirstHop)
 }
 
 func Test_NewTransport_Explicit_endpoint(t *testing.T) {
@@ -84,10 +84,10 @@ cipher: chacha20-ietf-poly1305
 secret: SECRET`
 	firstHop := "example.com:4321"
 
-	result := NewTransport(config)
+	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
-	require.Equal(t, firstHop, result.Transport.Dialer.FirstHop)
-	require.Equal(t, firstHop, result.Transport.PacketListener.FirstHop)
+	require.Equal(t, firstHop, result.Client.Dialer.FirstHop)
+	require.Equal(t, firstHop, result.Client.PacketListener.FirstHop)
 }
 
 func Test_NewTransport_Multihop_URL(t *testing.T) {
@@ -100,10 +100,10 @@ cipher: chacha20-ietf-poly1305
 secret: SECRET`
 	firstHop := "entry.example.com:4321"
 
-	result := NewTransport(config)
+	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
-	require.Equal(t, firstHop, result.Transport.Dialer.FirstHop)
-	require.Equal(t, firstHop, result.Transport.PacketListener.FirstHop)
+	require.Equal(t, firstHop, result.Client.Dialer.FirstHop)
+	require.Equal(t, firstHop, result.Client.PacketListener.FirstHop)
 }
 
 func Test_NewTransport_Multihop_Explicit(t *testing.T) {
@@ -120,10 +120,10 @@ cipher: chacha20-ietf-poly1305
 secret: EXIT_SECRET`
 	firstHop := "entry.example.com:4321"
 
-	result := NewTransport(config)
+	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
-	require.Equal(t, firstHop, result.Transport.Dialer.FirstHop)
-	require.Equal(t, firstHop, result.Transport.PacketListener.FirstHop)
+	require.Equal(t, firstHop, result.Client.Dialer.FirstHop)
+	require.Equal(t, firstHop, result.Client.PacketListener.FirstHop)
 }
 
 func Test_NewTransport_Explicit_TCPUDP(t *testing.T) {
@@ -141,10 +141,10 @@ udp:
     cipher: chacha20-ietf-poly1305
     secret: SECRET`
 
-	result := NewTransport(config)
+	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
-	require.Equal(t, "example.com:80", result.Transport.Dialer.FirstHop)
-	require.Equal(t, "example.com:53", result.Transport.PacketListener.FirstHop)
+	require.Equal(t, "example.com:80", result.Client.Dialer.FirstHop)
+	require.Equal(t, "example.com:53", result.Client.PacketListener.FirstHop)
 }
 
 func Test_NewTransport_YAML_Reuse(t *testing.T) {
@@ -160,10 +160,10 @@ tcp:
     prefix: "POST "`
 	firstHop := "example.com:4321"
 
-	result := NewTransport(config)
+	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
-	require.Equal(t, firstHop, result.Transport.Dialer.FirstHop)
-	require.Equal(t, firstHop, result.Transport.PacketListener.FirstHop)
+	require.Equal(t, firstHop, result.Client.Dialer.FirstHop)
+	require.Equal(t, firstHop, result.Client.PacketListener.FirstHop)
 }
 
 func Test_NewTransport_YAML_Partial_Reuse(t *testing.T) {
@@ -181,10 +181,10 @@ udp:
     endpoint: example.com:53
     <<: *cipher`
 
-	result := NewTransport(config)
+	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
-	require.Equal(t, "example.com:80", result.Transport.Dialer.FirstHop)
-	require.Equal(t, "example.com:53", result.Transport.PacketListener.FirstHop)
+	require.Equal(t, "example.com:80", result.Client.Dialer.FirstHop)
+	require.Equal(t, "example.com:53", result.Client.PacketListener.FirstHop)
 }
 
 func Test_NewTransport_Websocket(t *testing.T) {
@@ -204,10 +204,10 @@ udp:
         url: https://entrypoint.cdn.example.com/udp`
 	firstHop := "entrypoint.cdn.example.com:443"
 
-	result := NewTransport(config)
+	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
-	require.Equal(t, firstHop, result.Transport.Dialer.FirstHop)
-	require.Equal(t, firstHop, result.Transport.PacketListener.FirstHop)
+	require.Equal(t, firstHop, result.Client.Dialer.FirstHop)
+	require.Equal(t, firstHop, result.Client.PacketListener.FirstHop)
 }
 
 func Test_NewClientFromJSON_Errors(t *testing.T) {
@@ -262,9 +262,9 @@ func Test_NewClientFromJSON_Errors(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewTransport(tt.input)
-			if got.Error == nil || got.Transport != nil {
-				t.Errorf("NewClientFromJSON() expects an error, got = %v", got.Transport)
+			got := NewClient(tt.input)
+			if got.Error == nil || got.Client != nil {
+				t.Errorf("NewClientFromJSON() expects an error, got = %v", got.Client)
 				return
 			}
 		})
