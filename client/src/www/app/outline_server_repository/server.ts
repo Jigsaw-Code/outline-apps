@@ -45,7 +45,7 @@ export async function newOutlineServer(
     const tunnelConfigLocation = serviceConfig.transportConfigLocation;
     if (!name) {
       name =
-        tunnelConfigLocation.port === '443'
+        tunnelConfigLocation.port === '443' || !tunnelConfigLocation.port
           ? tunnelConfigLocation.hostname
           : net.joinHostPort(
               tunnelConfigLocation.hostname,
