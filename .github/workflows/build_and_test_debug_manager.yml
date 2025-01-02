@@ -37,6 +37,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2.3.4
 
+      - name: Install Chromium
+        uses: browser-actions/setup-chrome@v1
+
       - name: Install Node
         uses: actions/setup-node@v3
         with:
