@@ -67,6 +67,14 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    # Make sure Node version meets our requirement
+    - name: Install Node
+      uses: actions/setup-node@v3
+      with:
+        node-version-file: .nvmrc
+        cache: npm
+        cache-dependency-path: ./package-lock.json
+
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
