@@ -32,13 +32,10 @@ on:
 jobs:
   web_test:
     name: Web Test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
-
-      - name: Install Chromium
-        uses: browser-actions/setup-chrome@v1
 
       - name: Install Node
         uses: actions/setup-node@v3
