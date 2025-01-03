@@ -1,9 +1,10 @@
 module github.com/Jigsaw-Code/outline-apps
 
-go 1.21
+go 1.22
 
 require (
 	github.com/Jigsaw-Code/outline-sdk v0.0.14-0.20240216220040-f741c57bf854
+	github.com/coder/websocket v1.8.12
 	github.com/eycorsican/go-tun2socks v1.16.11
 	github.com/go-task/task/v3 v3.36.0
 	github.com/google/addlicense v1.1.1
@@ -11,6 +12,7 @@ require (
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/mobile v0.0.0-20240716161057-1ad2df20a8b6
 	golang.org/x/sys v0.22.0
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -56,7 +58,6 @@ require (
 	gopkg.in/src-d/go-billy.v4 v4.3.2 // indirect
 	gopkg.in/src-d/go-git.v4 v4.13.1 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/klog/v2 v2.80.1 // indirect
 	mvdan.cc/sh/v3 v3.8.0 // indirect
 )

@@ -26,12 +26,12 @@ export class FakeVpnApi implements VpnApi {
 
   constructor() {}
 
-  private playBroken(hostname?: string) {
-    return hostname === FAKE_BROKEN_HOSTNAME;
+  private playBroken(address?: string) {
+    return address.startsWith(FAKE_BROKEN_HOSTNAME);
   }
 
-  private playUnreachable(hostname?: string) {
-    return hostname === FAKE_UNREACHABLE_HOSTNAME;
+  private playUnreachable(address?: string) {
+    return address.startsWith(FAKE_UNREACHABLE_HOSTNAME);
   }
 
   async start(request: StartRequestJson): Promise<void> {
@@ -39,10 +39,10 @@ export class FakeVpnApi implements VpnApi {
       return;
     }
 
-    const host = request.config.firstHop.host;
-    if (this.playUnreachable(host)) {
+    const address = request.config.firstHop;
+    if (this.playUnreachable(address)) {
       throw new errors.OutlinePluginError(errors.ErrorCode.SERVER_UNREACHABLE);
-    } else if (this.playBroken(host)) {
+    } else if (this.playBroken(address)) {
       throw new errors.OutlinePluginError(
         errors.ErrorCode.CLIENT_START_FAILURE
       );

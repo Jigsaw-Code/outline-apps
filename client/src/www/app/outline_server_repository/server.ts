@@ -21,86 +21,83 @@ import {
   DynamicServiceConfig,
   StaticServiceConfig,
   parseAccessKey,
+  ServiceConfig,
 } from './config';
 import {StartRequestJson, VpnApi} from './vpn';
 import * as errors from '../../model/errors';
 import {PlatformError} from '../../model/platform_error';
-import {Server, ServerType} from '../../model/server';
+import {Server} from '../../model/server';
 import {getDefaultMethodChannel} from '../method_channel';
 
 // PLEASE DON'T use this class outside of this `outline_server_repository` folder!
 
-export class OutlineServer implements Server {
-  public readonly type: ServerType;
-  readonly tunnelConfigLocation: URL;
-  private displayAddress: string;
-  private readonly staticTunnelConfig?: TunnelConfigJson;
+export async function newOutlineServer(
+  vpnApi: VpnApi,
+  id: string,
+  name: string,
+  accessKey: string,
+  localize: Localizer
+): Promise<Server> {
+  const serviceConfig = await parseAccessKey(accessKey);
+  name = name ?? serviceConfig.name;
+
+  if (serviceConfig instanceof DynamicServiceConfig) {
+    const tunnelConfigLocation = serviceConfig.transportConfigLocation;
+    if (!name) {
+      name =
+        tunnelConfigLocation.port === '443' || !tunnelConfigLocation.port
+          ? tunnelConfigLocation.hostname
+          : net.joinHostPort(
+              tunnelConfigLocation.hostname,
+              tunnelConfigLocation.port
+            );
+    }
+    const server = new OutlineServer(vpnApi, id, name, serviceConfig);
+    return server;
+  } else if (serviceConfig instanceof StaticServiceConfig) {
+    if (!name) {
+      name = localize(
+        accessKey.includes('outline=1')
+          ? 'server-default-name-outline'
+          : 'server-default-name'
+      );
+    }
+    const server = new OutlineServer(vpnApi, id, name, serviceConfig);
+    return server;
+  }
+}
+
+class OutlineServer implements Server {
   errorMessageId?: string;
+  private tunnelConfig: TunnelConfigJson | undefined;
 
   constructor(
     private vpnApi: VpnApi,
     readonly id: string,
     public name: string,
-    readonly accessKey: string,
-    localize: Localizer
+    private serviceConfig: ServiceConfig
   ) {
-    const serviceConfig = parseAccessKey(accessKey);
-    this.name = name ?? serviceConfig.name;
-
-    if (serviceConfig instanceof DynamicServiceConfig) {
-      this.type = ServerType.DYNAMIC_CONNECTION;
-      this.tunnelConfigLocation = serviceConfig.transportConfigLocation;
-      this.displayAddress = '';
-
-      if (!this.name) {
-        this.name =
-          this.tunnelConfigLocation.port === '443'
-            ? this.tunnelConfigLocation.hostname
-            : net.joinHostPort(
-                this.tunnelConfigLocation.hostname,
-                this.tunnelConfigLocation.port
-              );
-      }
-    } else if (serviceConfig instanceof StaticServiceConfig) {
-      this.type = ServerType.STATIC_CONNECTION;
-      this.staticTunnelConfig = serviceConfig.tunnelConfig;
-      const firstHop = serviceConfig.tunnelConfig.firstHop;
-      this.displayAddress = net.joinHostPort(
-        firstHop.host,
-        firstHop.port.toString()
-      );
-
-      if (!this.name) {
-        this.name = localize(
-          accessKey.includes('outline=1')
-            ? 'server-default-name-outline'
-            : 'server-default-name'
-        );
-      }
+    if (serviceConfig instanceof StaticServiceConfig) {
+      this.tunnelConfig = serviceConfig.tunnelConfig;
     }
   }
 
   get address() {
-    return this.displayAddress;
+    return this.tunnelConfig?.firstHop || '';
   }
 
   async connect() {
-    let tunnelConfig: TunnelConfigJson;
-    if (this.type === ServerType.DYNAMIC_CONNECTION) {
-      tunnelConfig = await fetchTunnelConfig(this.tunnelConfigLocation);
-      this.displayAddress = net.joinHostPort(
-        tunnelConfig.firstHop.host,
-        tunnelConfig.firstHop.port.toString()
+    if (this.serviceConfig instanceof DynamicServiceConfig) {
+      this.tunnelConfig = await fetchTunnelConfig(
+        this.serviceConfig.transportConfigLocation
       );
-    } else {
-      tunnelConfig = this.staticTunnelConfig;
     }
 
     try {
       const request: StartRequestJson = {
         id: this.id,
         name: this.name,
-        config: tunnelConfig,
+        config: this.tunnelConfig,
       };
       await this.vpnApi.start(request);
     } catch (cause) {
@@ -126,8 +123,8 @@ export class OutlineServer implements Server {
     try {
       await this.vpnApi.stop(this.id);
 
-      if (this.type === ServerType.DYNAMIC_CONNECTION) {
-        this.displayAddress = '';
+      if (this.serviceConfig instanceof DynamicServiceConfig) {
+        this.tunnelConfig = undefined;
       }
     } catch (e) {
       // All the plugins treat disconnection errors as ErrorCode.UNEXPECTED.
