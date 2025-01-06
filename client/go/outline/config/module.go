@@ -153,6 +153,7 @@ func NewDefaultTransportProvider() *TypeParser[*TransportPair] {
 		return parseWebsocketPacketEndpoint(ctx, input, httpClient)
 	})
 
+	// Support distinct TCP and UDP configuration.
 	transports.RegisterSubParser("tcpudp", func(ctx context.Context, config map[string]any) (*TransportPair, error) {
 		return parseTCPUDPTransportPair(ctx, config, streamDialers.Parse, packetListeners.Parse)
 	})
