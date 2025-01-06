@@ -20,7 +20,6 @@
 
 import {pathToEmbeddedTun2socksBinary} from './app_paths';
 import {ChildProcessHelper} from './process';
-import {TransportConfigJson} from '../src/www/app/outline_server_repository/config';
 
 /**
  * Verifies the UDP connectivity of the server specified in `config`.
@@ -34,7 +33,7 @@ import {TransportConfigJson} from '../src/www/app/outline_server_repository/conf
  * @throws ProcessTerminatedExitCodeError if tun2socks failed to run.
  */
 export async function checkUDPConnectivity(
-  config: TransportConfigJson,
+  config: string,
   debugMode: boolean = false
 ): Promise<boolean> {
   const tun2socks = new ChildProcessHelper(pathToEmbeddedTun2socksBinary());

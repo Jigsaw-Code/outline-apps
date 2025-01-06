@@ -61,28 +61,6 @@ export interface TunnelConfigJson {
   transport: string;
 }
 
-/**
- * TransportConfigJson represents the transport to be used.
- * Application code should treat it as opaque, as it's handled by the networking layer.
- */
-export type TransportConfigJson = object;
-
-/**
- * setTransportConfigHost returns a new TransportConfigJson with the given host as the tunnel server.
- * Should only be set if getHostFromTransportConfig returns one.
- * This is used by the proxy resolution in Electron.
- */
-// TODO(fortuna): Move config parsing to Go and do the DNS resolution and IP injection for Electron there.
-export function setTransportConfigHost(
-  transport: TransportConfigJson,
-  newHost: string
-): TransportConfigJson | undefined {
-  if (!('host' in transport)) {
-    return undefined;
-  }
-  return {...transport, host: newHost};
-}
-
 // getAddressFromTransportConfig validates the transport config and returns the address of the first hop.
 async function getAddressFromTransportConfig(
   tunnelConfigText: string
