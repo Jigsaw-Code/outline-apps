@@ -4,7 +4,6 @@ go 1.22
 
 require (
 	github.com/Jigsaw-Code/outline-sdk v0.0.14-0.20240216220040-f741c57bf854
-	github.com/coder/websocket v1.8.12
 	github.com/eycorsican/go-tun2socks v1.16.11
 	github.com/go-task/task/v3 v3.36.0
 	github.com/google/addlicense v1.1.1

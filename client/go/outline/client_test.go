@@ -187,19 +187,21 @@ udp:
 	require.Equal(t, "example.com:53", result.Client.PacketListener.FirstHop)
 }
 
+/*
+TODO: Add Websocket support
 func Test_NewTransport_Websocket(t *testing.T) {
 	config := `
 $parser: tcpudp
 tcp: &base
     $parser: shadowsocks
-    endpoint: 
+    endpoint:
         $parser: websocket
         url: https://entrypoint.cdn.example.com/tcp
     cipher: chacha20-ietf-poly1305
     secret: SECRET
 udp:
     <<: *base
-    endpoint: 
+    endpoint:
         $parser: websocket
         url: https://entrypoint.cdn.example.com/udp`
 	firstHop := "entrypoint.cdn.example.com:443"
@@ -209,6 +211,7 @@ udp:
 	require.Equal(t, firstHop, result.Client.Dialer.FirstHop)
 	require.Equal(t, firstHop, result.Client.PacketListener.FirstHop)
 }
+*/
 
 func Test_NewClientFromJSON_Errors(t *testing.T) {
 	tests := []struct {
