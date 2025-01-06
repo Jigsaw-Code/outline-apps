@@ -20,6 +20,7 @@ import (
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/Jigsaw-Code/outline-apps/client/go/tunnel"
+	"github.com/Jigsaw-Code/outline-sdk/transport"
 	"github.com/eycorsican/go-tun2socks/common/log"
 )
 
@@ -51,7 +52,7 @@ func ConnectOutlineTunnel(fd int, client *outline.Client, isUDPEnabled bool) *Co
 		}}
 	}
 
-	t, err := newTunnel(client, client, isUDPEnabled, tun)
+	t, err := newTunnel(transport.FuncStreamDialer(client.Dial), client, isUDPEnabled, tun)
 	if err != nil {
 		return &ConnectOutlineTunnelResult{Error: &platerrors.PlatformError{
 			Code:    platerrors.SetupTrafficHandlerFailed,
