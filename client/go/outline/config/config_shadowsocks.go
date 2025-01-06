@@ -28,6 +28,7 @@ import (
 	"github.com/Jigsaw-Code/outline-sdk/transport/shadowsocks"
 )
 
+// ShadowsocksConfig is the format for the Shadowsocks config. It can specify Dialers or PacketListener.
 type ShadowsocksConfig struct {
 	Endpoint ConfigNode
 	Cipher   string
@@ -35,6 +36,7 @@ type ShadowsocksConfig struct {
 	Prefix   string
 }
 
+// LegacyShadowsocksConfig is the legacy format for the Shadowsocks config.
 type LegacyShadowsocksConfig struct {
 	Server      string
 	Server_Port uint16

@@ -22,40 +22,7 @@ import (
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
-type ConnType int
-
-const (
-	ConnTypeDirect ConnType = iota
-	ConnTypeTunneled
-)
-
-// ConnProviderConfig represents a dialer or endpoint that can create connections.
-type ConnectionProviderInfo struct {
-	// The type of the connections that are provided
-	ConnType ConnType
-	// The address of the first hop.
-	FirstHop string
-}
-
-type PacketListener struct {
-	ConnectionProviderInfo
-	transport.PacketListener
-}
-
-type DialFunc[ConnType any] func(ctx context.Context, address string) (ConnType, error)
-
-type Dialer[ConnType any] struct {
-	ConnectionProviderInfo
-	Dial DialFunc[ConnType]
-}
-
-type ConnectFunc[ConnType any] func(ctx context.Context) (ConnType, error)
-
-type Endpoint[ConnType any] struct {
-	ConnectionProviderInfo
-	Connect ConnectFunc[ConnType]
-}
-
+// TransportPair provides a StreamDialer and PacketListener, to use as the transport in a Tun2Socks VPN.
 type TransportPair struct {
 	StreamDialer   *Dialer[transport.StreamConn]
 	PacketListener *PacketListener
@@ -72,6 +39,7 @@ func (t *TransportPair) ListenPacket(ctx context.Context) (net.PacketConn, error
 	return t.PacketListener.ListenPacket(ctx)
 }
 
+// NewDefaultTransportProvider provider a [TransportPair].
 func NewDefaultTransportProvider() *TypeParser[*TransportPair] {
 	var streamEndpoints *TypeParser[*Endpoint[transport.StreamConn]]
 	var packetEndpoints *TypeParser[*Endpoint[net.Conn]]

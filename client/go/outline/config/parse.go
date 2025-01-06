@@ -22,12 +22,17 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// ConfigParserKey is the config key used to specify the parser to use to parse an object.
 const ConfigParserKey = "$parser"
 
+// ConfigNode represents an intermediate config node. It's typically one of the types supported by YAML (list, map, scalar)
+// but it can be arbitrary objects returned by parsers as well.
 type ConfigNode any
 
+// ParseFunc takes a [ConfigNode] and returns an object of the given type.
 type ParseFunc[OutputType any] func(ctx context.Context, input ConfigNode) (OutputType, error)
 
+// ParseConfigYAML takes a YAML config string and returns it as an object that the type parsers can use.
 func ParseConfigYAML(configText string) (ConfigNode, error) {
 	var node any
 	if err := yaml.Unmarshal([]byte(configText), &node); err != nil {
@@ -36,6 +41,8 @@ func ParseConfigYAML(configText string) (ConfigNode, error) {
 	return node, nil
 }
 
+// mapToAny marshalls a map into a struct. It's a helper for parsers that want to
+// map config maps into their config structures.
 func mapToAny(in map[string]any, out any) error {
 	newMap := make(map[string]any)
 	for k, v := range in {
@@ -47,11 +54,14 @@ func mapToAny(in map[string]any, out any) error {
 	}
 	yamlText, err := yaml.Marshal(newMap)
 	if err != nil {
-		return err
+		return fmt.Errorf("error marshaling to YAML: %w", err)
 	}
 	decoder := yaml.NewDecoder(bytes.NewReader(yamlText))
 	decoder.KnownFields(true)
-	return decoder.Decode(out)
+	if err := decoder.Decode(out); err != nil {
+		return fmt.Errorf("error decoding YAML: %w", err)
+	}
+	return nil
 }
 
 // TypeParser creates objects of the given type T from an input config.
@@ -64,6 +74,7 @@ type TypeParser[T any] struct {
 
 var _ ParseFunc[any] = (*TypeParser[any])(nil).Parse
 
+// NewTypeParser creates a [TypeParser] that calls the fallbackHandler if there's no parser specified in the config.
 func NewTypeParser[T any](fallbackHandler func(context.Context, ConfigNode) (T, error)) *TypeParser[T] {
 	return &TypeParser[T]{
 		fallbackHandler: fallbackHandler,
@@ -71,6 +82,7 @@ func NewTypeParser[T any](fallbackHandler func(context.Context, ConfigNode) (T, 
 	}
 }
 
+// Parse implements [ParseFunc] for the type T.
 func (p *TypeParser[T]) Parse(ctx context.Context, config ConfigNode) (T, error) {
 	var zero T
 
@@ -119,6 +131,9 @@ func (p *TypeParser[T]) Parse(ctx context.Context, config ConfigNode) (T, error)
 	return p.fallbackHandler(ctx, config)
 }
 
+// RegisterSubParser registers the given subparser function with the given name for the type T.
+// Note that a subparser always take a map[string]any, not ConfigNode, since we must have a map[string]any in
+// order to set the value for the ConfigParserKey.
 func (p *TypeParser[T]) RegisterSubParser(name string, function func(context.Context, map[string]any) (T, error)) {
 	p.subparsers[name] = function
 }

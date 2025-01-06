@@ -21,6 +21,8 @@ import (
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
+// TCPUDPConfig is the format for the TCPUDP config. It specifies separate TCP and UDP configs
+// to create a [TransportPair].
 type TCPUDPConfig struct {
 	TCP ConfigNode
 	UDP ConfigNode

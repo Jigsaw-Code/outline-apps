@@ -14,7 +14,6 @@
 
 package config
 
-/*
 import (
 	"context"
 	"testing"
@@ -28,7 +27,7 @@ import (
 // - Websocket endpoint POC
 
 func TestRegisterDefaultProviders(t *testing.T) {
-	providers := RegisterDefaultProviders(NewClientProvider())
+	provider := NewDefaultTransportProvider()
 
 	node, err := ParseConfigYAML(`
 $type: ss
@@ -37,40 +36,47 @@ cipher: chacha20-ietf-poly1305
 secret: SECRET`)
 	require.NoError(t, err)
 
-	d, err := providers.StreamDialers.NewInstance(context.Background(), node)
+	d, err := provider.Parse(context.Background(), node)
 	require.NoError(t, err)
 
-	require.NotNil(t, d.Dial)
-	require.Equal(t, "example.com:1234", d.FirstHop)
-	require.Equal(t, ConnTypeTunneled, d.ConnType)
+	require.NotNil(t, d.StreamDialer)
+	require.NotNil(t, d.PacketListener)
+	require.Equal(t, "example.com:1234", d.StreamDialer.FirstHop)
+	require.Equal(t, ConnTypeTunneled, d.StreamDialer.ConnType)
+	require.Equal(t, "example.com:1234", d.PacketListener.FirstHop)
+	require.Equal(t, ConnTypeTunneled, d.PacketListener.ConnType)
 }
 
 func TestRegisterParseURL(t *testing.T) {
-	providers := RegisterDefaultProviders(NewClientProvider())
+	provider := NewDefaultTransportProvider()
 
 	node, err := ParseConfigYAML(`ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpaTXJSMW92ZmRBaEQ@example.com:4321/#My%20Server`)
 	require.NoError(t, err)
 
-	d, err := providers.StreamDialers.NewInstance(context.Background(), node)
+	d, err := provider.Parse(context.Background(), node)
 	require.NoError(t, err)
 
-	require.NotNil(t, d.Dial)
-	require.Equal(t, "example.com:4321", d.FirstHop)
-	require.Equal(t, ConnTypeTunneled, d.ConnType)
+	require.NotNil(t, d.StreamDialer)
+	require.NotNil(t, d.PacketListener)
+	require.Equal(t, "example.com:4321", d.StreamDialer.FirstHop)
+	require.Equal(t, ConnTypeTunneled, d.StreamDialer.ConnType)
+	require.Equal(t, "example.com:4321", d.PacketListener.FirstHop)
+	require.Equal(t, ConnTypeTunneled, d.PacketListener.ConnType)
 }
 
 func TestRegisterParseURLInQuotes(t *testing.T) {
-	providers := RegisterDefaultProviders(NewClientProvider())
+	provider := NewDefaultTransportProvider()
 
 	node, err := ParseConfigYAML(`"ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpaTXJSMW92ZmRBaEQ@example.com:4321/#My%20Server"`)
 	require.NoError(t, err)
 
-	d, err := providers.StreamDialers.NewInstance(context.Background(), node)
+	d, err := provider.Parse(context.Background(), node)
 	require.NoError(t, err)
 
-	require.NotNil(t, d.Dial)
-	require.Equal(t, "example.com:4321", d.FirstHop)
-	require.Equal(t, ConnTypeTunneled, d.ConnType)
+	require.NotNil(t, d.StreamDialer)
+	require.NotNil(t, d.PacketListener)
+	require.Equal(t, "example.com:4321", d.StreamDialer.FirstHop)
+	require.Equal(t, ConnTypeTunneled, d.StreamDialer.ConnType)
+	require.Equal(t, "example.com:4321", d.PacketListener.FirstHop)
+	require.Equal(t, ConnTypeTunneled, d.PacketListener.ConnType)
 }
-
-*/

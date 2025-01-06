@@ -22,6 +22,7 @@ import (
 	"strconv"
 )
 
+// DialEndpointConfig is the format for the Dial Endpoint config.
 type DialEndpointConfig struct {
 	Address string
 	Dialer  any
