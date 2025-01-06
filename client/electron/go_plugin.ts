@@ -56,9 +56,9 @@ export async function invokeMethod(
     );
   }
 
-  console.debug('[Backend] - calling InvokeMethod ...');
+  console.debug(`[Backend] - calling InvokeMethod "${method}" ...`);
   const result = await invokeMethodFunc(method, input);
-  console.debug('[Backend] - InvokeMethod returned', result);
+  console.debug(`[Backend] - InvokeMethod "${method}" returned`, result);
   if (result.ErrorJson) {
     throw Error(result.ErrorJson);
   }
