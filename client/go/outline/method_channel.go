@@ -20,8 +20,21 @@ import (
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 )
 
-// API name constants
+// API name constants. Keep sorted by name.
 const (
+	// CloseVPN closes an existing VPN connection and restores network traffic to the default
+	// network interface.
+	//
+	//  - Input: null
+	//  - Output: null
+	MethodCloseVPN = "CloseVPN"
+
+	// EstablishVPN initiates a VPN connection and directs all network traffic through Outline.
+	//
+	//  - Input: a JSON string of vpn.configJSON.
+	//  - Output: a JSON string of vpn.connectionJSON.
+	MethodEstablishVPN = "EstablishVPN"
+
 	// FetchResource fetches a resource located at a given URL.
 	//  - Input: the URL string of the resource to fetch
 	//  - Output: the content in raw string of the fetched resource
@@ -44,6 +57,18 @@ type InvokeMethodResult struct {
 // InvokeMethod calls a method by name.
 func InvokeMethod(method string, input string) *InvokeMethodResult {
 	switch method {
+	case MethodCloseVPN:
+		err := closeVPN()
+		return &InvokeMethodResult{
+			Error: platerrors.ToPlatformError(err),
+		}
+
+	case MethodEstablishVPN:
+		err := establishVPN(input)
+		return &InvokeMethodResult{
+			Error: platerrors.ToPlatformError(err),
+		}
+
 	case MethodFetchResource:
 		url := input
 		content, err := fetchResource(url)

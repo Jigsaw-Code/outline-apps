@@ -16,6 +16,7 @@ package outline
 
 import (
 	"context"
+	"net"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/config"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
@@ -27,8 +28,16 @@ import (
 // It's used by the connectivity test and the tun2socks handlers.
 // TODO: Rename to Transport. Needs to update per-platform code.
 type Client struct {
-	*config.Dialer[transport.StreamConn]
-	*config.PacketListener
+	sd *config.Dialer[transport.StreamConn]
+	pl *config.PacketListener
+}
+
+func (c *Client) DialStream(ctx context.Context, address string) (transport.StreamConn, error) {
+	return c.sd.Dial(ctx, address)
+}
+
+func (c *Client) ListenPacket(ctx context.Context) (net.PacketConn, error) {
+	return c.pl.ListenPacket(ctx)
 }
 
 // NewClientResult represents the result of [NewClientAndReturnError].
@@ -41,6 +50,12 @@ type NewClientResult struct {
 
 // NewClient creates a new Outline client from a configuration string.
 func NewClient(transportConfig string) *NewClientResult {
+	tcpDialer := transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
+	udpDialer := transport.UDPDialer{}
+	return newClientWithBaseDialers(transportConfig, &tcpDialer, &udpDialer)
+}
+
+func newClientWithBaseDialers(transportConfig string, tcpDialer transport.StreamDialer, udpDialer transport.PacketDialer) *NewClientResult {
 	transportYAML, err := config.ParseConfigYAML(transportConfig)
 	if err != nil {
 		return &NewClientResult{
@@ -52,7 +67,7 @@ func NewClient(transportConfig string) *NewClientResult {
 		}
 	}
 
-	transportPair, err := config.NewDefaultTransportProvider().Parse(context.Background(), transportYAML)
+	transportPair, err := config.NewDefaultTransportProvider(tcpDialer, udpDialer).Parse(context.Background(), transportYAML)
 	if err != nil {
 		return &NewClientResult{
 			Error: &platerrors.PlatformError{
@@ -64,6 +79,6 @@ func NewClient(transportConfig string) *NewClientResult {
 	}
 
 	return &NewClientResult{
-		Client: &Client{Dialer: transportPair.StreamDialer, PacketListener: transportPair.PacketListener},
+		Client: &Client{sd: transportPair.StreamDialer, pl: transportPair.PacketListener},
 	}
 }
