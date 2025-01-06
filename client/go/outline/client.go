@@ -52,33 +52,31 @@ type NewClientResult struct {
 func NewClient(transportConfig string) *NewClientResult {
 	tcpDialer := transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
 	udpDialer := transport.UDPDialer{}
-	return newClientWithBaseDialers(transportConfig, &tcpDialer, &udpDialer)
+	client, err := newClientWithBaseDialers(transportConfig, &tcpDialer, &udpDialer)
+	if err != nil {
+		return &NewClientResult{Error: platerrors.ToPlatformError(err)}
+	}
+	return &NewClientResult{Client: client}
 }
 
-func newClientWithBaseDialers(transportConfig string, tcpDialer transport.StreamDialer, udpDialer transport.PacketDialer) *NewClientResult {
+func newClientWithBaseDialers(transportConfig string, tcpDialer transport.StreamDialer, udpDialer transport.PacketDialer) (*Client, error) {
 	transportYAML, err := config.ParseConfigYAML(transportConfig)
 	if err != nil {
-		return &NewClientResult{
-			Error: &platerrors.PlatformError{
-				Code:    platerrors.IllegalConfig,
-				Message: "config is not valid YAML",
-				Cause:   platerrors.ToPlatformError(err),
-			},
+		return nil, &platerrors.PlatformError{
+			Code:    platerrors.IllegalConfig,
+			Message: "config is not valid YAML",
+			Cause:   platerrors.ToPlatformError(err),
 		}
 	}
 
 	transportPair, err := config.NewDefaultTransportProvider(tcpDialer, udpDialer).Parse(context.Background(), transportYAML)
 	if err != nil {
-		return &NewClientResult{
-			Error: &platerrors.PlatformError{
-				Code:    platerrors.IllegalConfig,
-				Message: "failed to create transport",
-				Cause:   platerrors.ToPlatformError(err),
-			},
+		return nil, &platerrors.PlatformError{
+			Code:    platerrors.IllegalConfig,
+			Message: "failed to create transport",
+			Cause:   platerrors.ToPlatformError(err),
 		}
 	}
 
-	return &NewClientResult{
-		Client: &Client{sd: transportPair.StreamDialer, pl: transportPair.PacketListener},
-	}
+	return &Client{sd: transportPair.StreamDialer, pl: transportPair.PacketListener}, nil
 }
