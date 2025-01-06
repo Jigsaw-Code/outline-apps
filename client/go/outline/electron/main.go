@@ -29,7 +29,6 @@ import (
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/tun2socks"
-	"github.com/Jigsaw-Code/outline-sdk/transport"
 	_ "github.com/eycorsican/go-tun2socks/common/log/simple" // Register a simple logger.
 	"github.com/eycorsican/go-tun2socks/core"
 	"github.com/eycorsican/go-tun2socks/proxy/dnsfallback"
@@ -150,7 +149,7 @@ func main() {
 	core.RegisterOutputFn(tunDevice.Write)
 
 	// Register TCP and UDP connection handlers
-	core.RegisterTCPConnHandler(tun2socks.NewTCPHandler(transport.FuncStreamDialer(client.Dial)))
+	core.RegisterTCPConnHandler(tun2socks.NewTCPHandler(client))
 	if *args.dnsFallback {
 		// UDP connectivity not supported, fall back to DNS over TCP.
 		logger.Debug("Registering DNS fallback UDP handler")

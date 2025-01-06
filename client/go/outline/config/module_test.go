@@ -16,8 +16,10 @@ package config
 
 import (
 	"context"
+	"net"
 	"testing"
 
+	"github.com/Jigsaw-Code/outline-sdk/transport"
 	"github.com/stretchr/testify/require"
 )
 
@@ -26,8 +28,14 @@ import (
 // - Port tests to new API
 // - Websocket endpoint POC
 
+func newTestProvider() *TypeParser[*TransportPair] {
+	tcpDialer := &transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
+	udpDialer := &transport.UDPDialer{}
+	return NewDefaultTransportProvider(tcpDialer, udpDialer)
+}
+
 func TestRegisterDefaultProviders(t *testing.T) {
-	provider := NewDefaultTransportProvider()
+	provider := newTestProvider()
 
 	node, err := ParseConfigYAML(`
 $type: ss
@@ -48,7 +56,7 @@ secret: SECRET`)
 }
 
 func TestRegisterParseURL(t *testing.T) {
-	provider := NewDefaultTransportProvider()
+	provider := newTestProvider()
 
 	node, err := ParseConfigYAML(`ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpaTXJSMW92ZmRBaEQ@example.com:4321/#My%20Server`)
 	require.NoError(t, err)
@@ -65,7 +73,7 @@ func TestRegisterParseURL(t *testing.T) {
 }
 
 func TestRegisterParseURLInQuotes(t *testing.T) {
-	provider := NewDefaultTransportProvider()
+	provider := newTestProvider()
 
 	node, err := ParseConfigYAML(`"ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpaTXJSMW92ZmRBaEQ@example.com:4321/#My%20Server"`)
 	require.NoError(t, err)

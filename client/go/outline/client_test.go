@@ -26,8 +26,8 @@ func Test_NewTransport_SS_URL(t *testing.T) {
 
 	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
-	require.Equal(t, firstHop, result.Client.Dialer.FirstHop)
-	require.Equal(t, firstHop, result.Client.PacketListener.FirstHop)
+	require.Equal(t, firstHop, result.Client.sd.FirstHop)
+	require.Equal(t, firstHop, result.Client.pl.FirstHop)
 }
 
 func Test_NewTransport_Legacy_JSON(t *testing.T) {
@@ -41,8 +41,8 @@ func Test_NewTransport_Legacy_JSON(t *testing.T) {
 
 	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
-	require.Equal(t, firstHop, result.Client.Dialer.FirstHop)
-	require.Equal(t, firstHop, result.Client.PacketListener.FirstHop)
+	require.Equal(t, firstHop, result.Client.sd.FirstHop)
+	require.Equal(t, firstHop, result.Client.pl.FirstHop)
 }
 
 func Test_NewTransport_Flexible_JSON(t *testing.T) {
@@ -57,8 +57,8 @@ func Test_NewTransport_Flexible_JSON(t *testing.T) {
 
 	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
-	require.Equal(t, firstHop, result.Client.Dialer.FirstHop)
-	require.Equal(t, firstHop, result.Client.PacketListener.FirstHop)
+	require.Equal(t, firstHop, result.Client.sd.FirstHop)
+	require.Equal(t, firstHop, result.Client.pl.FirstHop)
 }
 
 func Test_NewTransport_YAML(t *testing.T) {
@@ -71,8 +71,8 @@ password: SECRET`
 
 	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
-	require.Equal(t, firstHop, result.Client.Dialer.FirstHop)
-	require.Equal(t, firstHop, result.Client.PacketListener.FirstHop)
+	require.Equal(t, firstHop, result.Client.sd.FirstHop)
+	require.Equal(t, firstHop, result.Client.pl.FirstHop)
 }
 
 func Test_NewTransport_Explicit_endpoint(t *testing.T) {
@@ -86,8 +86,8 @@ secret: SECRET`
 
 	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
-	require.Equal(t, firstHop, result.Client.Dialer.FirstHop)
-	require.Equal(t, firstHop, result.Client.PacketListener.FirstHop)
+	require.Equal(t, firstHop, result.Client.sd.FirstHop)
+	require.Equal(t, firstHop, result.Client.pl.FirstHop)
 }
 
 func Test_NewTransport_Multihop_URL(t *testing.T) {
@@ -102,8 +102,8 @@ secret: SECRET`
 
 	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
-	require.Equal(t, firstHop, result.Client.Dialer.FirstHop)
-	require.Equal(t, firstHop, result.Client.PacketListener.FirstHop)
+	require.Equal(t, firstHop, result.Client.sd.FirstHop)
+	require.Equal(t, firstHop, result.Client.pl.FirstHop)
 }
 
 func Test_NewTransport_Multihop_Explicit(t *testing.T) {
@@ -122,8 +122,8 @@ secret: EXIT_SECRET`
 
 	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
-	require.Equal(t, firstHop, result.Client.Dialer.FirstHop)
-	require.Equal(t, firstHop, result.Client.PacketListener.FirstHop)
+	require.Equal(t, firstHop, result.Client.sd.FirstHop)
+	require.Equal(t, firstHop, result.Client.pl.FirstHop)
 }
 
 func Test_NewTransport_Explicit_TCPUDP(t *testing.T) {
@@ -143,8 +143,8 @@ udp:
 
 	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
-	require.Equal(t, "example.com:80", result.Client.Dialer.FirstHop)
-	require.Equal(t, "example.com:53", result.Client.PacketListener.FirstHop)
+	require.Equal(t, "example.com:80", result.Client.sd.FirstHop)
+	require.Equal(t, "example.com:53", result.Client.pl.FirstHop)
 }
 
 func Test_NewTransport_YAML_Reuse(t *testing.T) {
@@ -162,8 +162,8 @@ tcp:
 
 	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
-	require.Equal(t, firstHop, result.Client.Dialer.FirstHop)
-	require.Equal(t, firstHop, result.Client.PacketListener.FirstHop)
+	require.Equal(t, firstHop, result.Client.sd.FirstHop)
+	require.Equal(t, firstHop, result.Client.pl.FirstHop)
 }
 
 func Test_NewTransport_YAML_Partial_Reuse(t *testing.T) {
@@ -183,8 +183,8 @@ udp:
 
 	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
-	require.Equal(t, "example.com:80", result.Client.Dialer.FirstHop)
-	require.Equal(t, "example.com:53", result.Client.PacketListener.FirstHop)
+	require.Equal(t, "example.com:80", result.Client.sd.FirstHop)
+	require.Equal(t, "example.com:53", result.Client.pl.FirstHop)
 }
 
 /*
@@ -208,8 +208,8 @@ udp:
 
 	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
-	require.Equal(t, firstHop, result.Client.Dialer.FirstHop)
-	require.Equal(t, firstHop, result.Client.PacketListener.FirstHop)
+	require.Equal(t, firstHop, result.Client.sd.FirstHop)
+	require.Equal(t, firstHop, result.Client.pl.FirstHop)
 }
 */
 

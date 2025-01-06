@@ -21,7 +21,6 @@ import (
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
-	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
 // TunWriter is an interface that allows for outputting packets to the TUN (VPN).
@@ -64,7 +63,7 @@ func ConnectOutlineTunnel(tunWriter TunWriter, client *outline.Client, isUDPEnab
 		}}
 	}
 
-	t, err := newTunnel(transport.FuncStreamDialer(client.Dial), client, isUDPEnabled, tunWriter)
+	t, err := newTunnel(client, client, isUDPEnabled, tunWriter)
 	if err != nil {
 		return &ConnectOutlineTunnelResult{Error: &platerrors.PlatformError{
 			Code:    platerrors.SetupTrafficHandlerFailed,

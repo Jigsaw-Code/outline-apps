@@ -84,8 +84,8 @@ func InvokeMethod(method string, input string) *InvokeMethodResult {
 				Error: result.Error,
 			}
 		}
-		streamFirstHop := result.Client.Dialer.ConnectionProviderInfo.FirstHop
-		packetFirstHop := result.Client.PacketListener.ConnectionProviderInfo.FirstHop
+		streamFirstHop := result.Client.sd.ConnectionProviderInfo.FirstHop
+		packetFirstHop := result.Client.pl.ConnectionProviderInfo.FirstHop
 		firstHop := ""
 		if streamFirstHop == packetFirstHop {
 			firstHop = streamFirstHop

@@ -40,7 +40,7 @@ func (t *TransportPair) ListenPacket(ctx context.Context) (net.PacketConn, error
 }
 
 // NewDefaultTransportProvider provider a [TransportPair].
-func NewDefaultTransportProvider() *TypeParser[*TransportPair] {
+func NewDefaultTransportProvider(tcpDialer transport.StreamDialer, udpDialer transport.PacketDialer) *TypeParser[*TransportPair] {
 	var streamEndpoints *TypeParser[*Endpoint[transport.StreamConn]]
 	var packetEndpoints *TypeParser[*Endpoint[net.Conn]]
 
@@ -48,7 +48,7 @@ func NewDefaultTransportProvider() *TypeParser[*TransportPair] {
 		switch input.(type) {
 		case nil:
 			// An absent config implicitly means TCP.
-			return &Dialer[transport.StreamConn]{ConnectionProviderInfo{ConnTypeDirect, ""}, (&transport.TCPDialer{}).DialStream}, nil
+			return &Dialer[transport.StreamConn]{ConnectionProviderInfo{ConnTypeDirect, ""}, tcpDialer.DialStream}, nil
 		case string:
 			// Parse URL-style config.
 			return parseShadowsocksStreamDialer(ctx, input, streamEndpoints.Parse)
@@ -61,7 +61,7 @@ func NewDefaultTransportProvider() *TypeParser[*TransportPair] {
 		switch input.(type) {
 		case nil:
 			// An absent config implicitly means UDP.
-			return &Dialer[net.Conn]{ConnectionProviderInfo{ConnTypeDirect, ""}, (&transport.UDPDialer{}).DialPacket}, nil
+			return &Dialer[net.Conn]{ConnectionProviderInfo{ConnTypeDirect, ""}, udpDialer.DialPacket}, nil
 		case string:
 			// Parse URL-style config.
 			return parseShadowsocksPacketDialer(ctx, input, packetEndpoints.Parse)
