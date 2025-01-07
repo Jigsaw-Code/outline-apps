@@ -19,6 +19,7 @@ import * as path from 'path';
 import * as process from 'process';
 import * as url from 'url';
 
+import * as net from '@outline/infrastructure/net';
 import * as Sentry from '@sentry/electron/main';
 import autoLaunch = require('auto-launch'); // tslint:disable-line
 import {
@@ -46,7 +47,6 @@ import {
   TunnelStatus,
 } from '../src/www/app/outline_server_repository/vpn';
 import * as errors from '../src/www/model/errors';
-import * as net from '@outline/infrastructure/net';
 
 // TODO: can we define these macros in other .d.ts files with default values?
 // Build-time macros injected by webpack's DefinePlugin:
