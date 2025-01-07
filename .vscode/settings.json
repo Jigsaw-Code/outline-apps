@@ -1,0 +1,17 @@
+{
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "always"
+  },
+  "eslint.options": {
+    "extensions": [".js", ".ts"]
+  },
+  "eslint.run": "onSave",
+  "eslint.validate": ["javascript", "typescript"],
+  "files.insertFinalNewline": true,
+  "html.validate.scripts": false,
+  "html.validate.styles": false,
+  "javascript.validate.enable": false,
+  "[go]": {
+    "editor.formatOnSave": true
+  }
+}
