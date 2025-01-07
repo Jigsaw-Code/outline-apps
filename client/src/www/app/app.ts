@@ -364,7 +364,7 @@ export class App {
   private async pullClipboardText() {
     try {
       const text = await this.clipboard.getContents();
-      this.handleClipboardText(text);
+      await this.handleClipboardText(text);
     } catch (e) {
       console.warn('cannot read clipboard, system may lack clipboard support');
     }
@@ -417,13 +417,13 @@ export class App {
     this.rootEl.changePage(event.detail.page);
   }
 
-  private handleClipboardText(text: string) {
+  private async handleClipboardText(text: string) {
     // Shorten, sanitise.
     // Note that we always check the text, even if the contents are same as last time, because we
     // keep an in-memory cache of user-ignored access keys.
     text = text.substring(0, 1000).trim();
     try {
-      this.confirmAddServer(text, true);
+      await this.confirmAddServer(text, true);
     } catch (err) {
       // Don't alert the user; high false positive rate.
     }
@@ -456,18 +456,18 @@ export class App {
       });
   }
 
-  private requestAddServerConfirmation(event: CustomEvent) {
+  private async requestAddServerConfirmation(event: CustomEvent) {
     const accessKey = event.detail.accessKey;
     console.debug('Got add server confirmation request from UI');
     try {
-      this.confirmAddServer(accessKey);
+      await this.confirmAddServer(accessKey);
     } catch (err) {
       console.error('Failed to confirm add sever.', err);
       this.showLocalizedError(err);
     }
   }
 
-  private confirmAddServer(accessKey: string, fromClipboard = false) {
+  private async confirmAddServer(accessKey: string, fromClipboard = false) {
     const addServerView = this.rootEl.$.addServerView;
     accessKey = unwrapInvite(accessKey);
     if (fromClipboard && !addServerView.open) {
@@ -480,7 +480,7 @@ export class App {
       }
     }
     try {
-      config.parseAccessKey(accessKey);
+      await config.parseAccessKey(accessKey);
       addServerView.accessKey = accessKey;
       addServerView.open = true;
     } catch (e) {
@@ -823,7 +823,7 @@ export class App {
   }
 
   private registerUrlInterceptionListener(urlInterceptor: UrlInterceptor) {
-    urlInterceptor.registerListener(url => {
+    urlInterceptor.registerListener(async url => {
       if (!isOutlineAccessKey(unwrapInvite(url))) {
         // This check is necessary to ignore empty and malformed install-referrer URLs in Android
         // while allowing ss://, ssconf:// and invite URLs.
@@ -832,7 +832,7 @@ export class App {
       }
 
       try {
-        this.confirmAddServer(url);
+        await this.confirmAddServer(url);
       } catch (err) {
         this.showLocalizedErrorInDefaultPage(err);
       }

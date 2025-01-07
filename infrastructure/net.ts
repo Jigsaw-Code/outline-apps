@@ -27,6 +27,9 @@ export function splitHostPort(address: string): {host: string; port: string} {
   }
   let host = address.substring(0, splitPos);
   if (host.length > 0 && host[0] === '[') {
+    if (host[host.length - 1] !== ']') {
+      throw new Error('IPv6 address missing closing ]');
+    }
     host = host.substring(1, host.length - 1);
   }
   const port = address.substring(splitPos + 1, address.length);
