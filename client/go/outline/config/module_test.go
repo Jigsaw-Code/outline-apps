@@ -23,11 +23,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TODO:
-// - Backward-compatibility
-// - Port tests to new API
-// - Websocket endpoint POC
-
 func newTestProvider() *TypeParser[*TransportPair] {
 	tcpDialer := &transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
 	udpDialer := &transport.UDPDialer{}
