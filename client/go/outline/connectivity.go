@@ -15,16 +15,8 @@
 package outline
 
 import (
-	"net"
-
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/connectivity"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
-)
-
-const (
-	tcpTestWebsite = "http://example.com"
-	dnsServerIP    = "1.1.1.1"
-	dnsServerPort  = 53
 )
 
 // TCPAndUDPConnectivityResult represents the result of TCP and UDP connectivity checks.
@@ -40,16 +32,7 @@ type TCPAndUDPConnectivityResult struct {
 // containing a TCP error and a UDP error.
 // If the connectivity check was successful, the corresponding error field will be nil.
 func CheckTCPAndUDPConnectivity(client *Client) *TCPAndUDPConnectivityResult {
-	// Start asynchronous UDP support check.
-	udpErrChan := make(chan error)
-	go func() {
-		resolverAddr := &net.UDPAddr{IP: net.ParseIP(dnsServerIP), Port: dnsServerPort}
-		udpErrChan <- connectivity.CheckUDPConnectivityWithDNS(client, resolverAddr)
-	}()
-
-	tcpErr := connectivity.CheckTCPConnectivityWithHTTP(client, tcpTestWebsite)
-	udpErr := <-udpErrChan
-
+	tcpErr, udpErr := connectivity.CheckTCPAndUDPConnectivity(client, client)
 	return &TCPAndUDPConnectivityResult{
 		TCPError: platerrors.ToPlatformError(tcpErr),
 		UDPError: platerrors.ToPlatformError(udpErr),
