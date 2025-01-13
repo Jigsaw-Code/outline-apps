@@ -34,7 +34,7 @@ import {getDefaultMethodChannel} from '../method_channel';
 export async function newOutlineServer(
   vpnApi: VpnApi,
   id: string,
-  name?: string,
+  name: string | undefined,
   accessKey: string,
   localize: Localizer
 ): Promise<Server> {
