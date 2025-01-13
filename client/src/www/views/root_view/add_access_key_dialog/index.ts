@@ -22,7 +22,10 @@ export class AddAccessKeyDialog extends LitElement {
   ) => string;
   @property({type: Boolean}) open: boolean;
   @property({type: String}) accessKey: string = '';
-  @property({type: Function}) isValidAccessKey: (accessKey: string) => boolean;
+  @property({type: Boolean}) isValidAccessKey: boolean = false;
+  @property({type: Function}) validateAccessKey: (
+    accessKey: string
+  ) => Promise<boolean>;
 
   static styles = css`
     :host {
@@ -89,7 +92,11 @@ export class AddAccessKeyDialog extends LitElement {
         ></section>
         <section>
           <md-filled-text-field
-            .error=${this.accessKey && !this.isValidAccessKey(this.accessKey)}
+            .error=${this.accessKey && !this.isValidAccessKey}
+            @change=${this.updateIsValidAccessKey(
+              this.accessKey,
+              this.validateAccessKey
+            )}
             @input=${this.handleEdit}
             error-text="${this.localize('add-access-key-dialog-error-text')}"
             label="${this.localize('add-access-key-dialog-label')}"
@@ -105,11 +112,20 @@ export class AddAccessKeyDialog extends LitElement {
         </md-text-button>
         <md-filled-button
           @click=${this.handleConfirm}
-          ?disabled=${!this.accessKey || !this.isValidAccessKey(this.accessKey)}
+          ?disabled=${!this.accessKey || !this.isValidAccessKey}
           >${this.localize('confirm')}</md-filled-button
         >
       </fieldset>
     </md-dialog>`;
+  }
+
+  private updateIsValidAccessKey(
+    accessKey: string,
+    validate: (accessKey: string) => Promise<boolean>
+  ) {
+    validate(accessKey).then(result => {
+      this.isValidAccessKey = result;
+    });
   }
 
   private handleEdit(event: InputEvent) {

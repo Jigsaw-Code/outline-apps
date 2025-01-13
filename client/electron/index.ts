@@ -19,6 +19,7 @@ import * as path from 'path';
 import * as process from 'process';
 import * as url from 'url';
 
+import * as net from '@outline/infrastructure/net';
 import * as Sentry from '@sentry/electron/main';
 import autoLaunch = require('auto-launch'); // tslint:disable-line
 import {
@@ -352,17 +353,18 @@ async function createVpnTunnel(
   // because startVpn will add a routing table entry that prefixed with this
   // host (e.g. "<host>/32"), therefore <host> must be an IP address.
   // TODO: make sure we resolve it in the native code
-  const host = tunnelConfig.firstHop.host;
+  const {host} = net.splitHostPort(tunnelConfig.firstHop);
   if (!host) {
     throw new errors.IllegalServerConfiguration('host is missing');
   }
   const hostIp = await lookupIp(host);
   const routing = new RoutingDaemon(hostIp || '', isAutoConnect);
   // Make sure the transport will use the IP we will allowlist.
-  const resolvedTransport =
-    config.setTransportConfigHost(tunnelConfig.transport, hostIp) ??
-    tunnelConfig.transport;
-  const tunnel = new GoVpnTunnel(routing, resolvedTransport);
+  // HACK: We do a simple string replacement in the config here. This may not always work with general configs
+  // but it works for simple configs.
+  // TODO: Remove the need to allowlisting the host IP.
+  tunnelConfig.transport = tunnelConfig.transport.replaceAll(host, hostIp);
+  const tunnel = new GoVpnTunnel(routing, tunnelConfig.transport);
   routing.onNetworkChange = tunnel.networkChanged.bind(tunnel);
   return tunnel;
 }

@@ -76,7 +76,12 @@ class CordovaErrorReporter extends SentryErrorReporter {
 
 class CordovaMethodChannel implements MethodChannel {
   invokeMethod(methodName: string, params: string): Promise<string> {
-    return pluginExecWithErrorCode('invokeMethod', methodName, params);
+    try {
+      return pluginExecWithErrorCode('invokeMethod', methodName, params);
+    } catch (e) {
+      console.debug('invokeMethod failed', methodName, e);
+      throw e;
+    }
   }
 }
 

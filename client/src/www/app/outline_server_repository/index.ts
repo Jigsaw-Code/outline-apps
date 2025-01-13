@@ -16,11 +16,21 @@ import {Localizer} from '@outline/infrastructure/i18n';
 import {makeConfig, SIP002_URI} from 'ShadowsocksConfig';
 import uuidv4 from 'uuidv4';
 
-import {OutlineServer} from './server';
+import {newOutlineServer} from './server';
 import {TunnelStatus, VpnApi} from './vpn';
 import * as errors from '../../model/errors';
 import * as events from '../../model/events';
 import {ServerRepository} from '../../model/server';
+import {Server} from '../../model/server';
+
+// Name by which servers are saved to storage.
+const SERVERS_STORAGE_KEY_V0 = 'servers';
+const SERVERS_STORAGE_KEY = 'servers_v1';
+
+export const TEST_ONLY = {
+  SERVERS_STORAGE_KEY_V0: SERVERS_STORAGE_KEY_V0,
+  SERVERS_STORAGE_KEY: SERVERS_STORAGE_KEY,
+};
 
 // DEPRECATED: V0 server persistence format.
 interface ServersStorageV0Config {
@@ -30,6 +40,7 @@ interface ServersStorageV0Config {
   method?: string;
   name?: string;
 }
+
 export interface ServersStorageV0 {
   [serverId: string]: ServersStorageV0Config;
 }
@@ -58,74 +69,92 @@ interface OutlineServerJson {
   readonly name: string;
 }
 
+type ServerEntry = {accessKey: string; server: Server};
+
+export async function newOutlineServerRepository(
+  vpnApi: VpnApi,
+  eventQueue: events.EventQueue,
+  storage: Storage,
+  localize: Localizer
+): Promise<ServerRepository> {
+  console.debug('OutlineServerRepository is initializing');
+
+  const repo = new OutlineServerRepository(
+    vpnApi,
+    eventQueue,
+    storage,
+    localize
+  );
+  await loadServers(storage, repo);
+  console.debug('OutlineServerRepository loaded servers');
+
+  vpnApi.onStatusChange((id: string, status: TunnelStatus) => {
+    console.debug(
+      `OutlineServerRepository received status update for server ${id}: ${status}`
+    );
+    let statusEvent: events.OutlineEvent;
+    switch (status) {
+      case TunnelStatus.CONNECTED:
+        statusEvent = new events.ServerConnected(id);
+        break;
+      case TunnelStatus.DISCONNECTING:
+        statusEvent = new events.ServerDisconnecting(id);
+        break;
+      case TunnelStatus.DISCONNECTED:
+        statusEvent = new events.ServerDisconnected(id);
+        break;
+      case TunnelStatus.RECONNECTING:
+        statusEvent = new events.ServerReconnecting(id);
+        break;
+      default:
+        console.warn(
+          `Received unknown tunnel status ${status} for tunnel ${id}`
+        );
+        return;
+    }
+    eventQueue.enqueue(statusEvent);
+  });
+  console.debug('OutlineServerRepository registered server status callback');
+  return repo;
+}
+
 // Maintains a persisted set of servers and liaises with the core.
-export class OutlineServerRepository implements ServerRepository {
-  // Name by which servers are saved to storage.
-  static readonly SERVERS_STORAGE_KEY_V0 = 'servers';
-  static readonly SERVERS_STORAGE_KEY = 'servers_v1';
-  private serverById!: Map<string, OutlineServer>;
-  private lastForgottenServer: OutlineServer | null = null;
+class OutlineServerRepository implements ServerRepository {
+  private lastForgottenServer: ServerEntry | null = null;
+  private serverById = new Map<string, ServerEntry>();
 
   constructor(
     private vpnApi: VpnApi,
     private eventQueue: events.EventQueue,
     private storage: Storage,
     private localize: Localizer
-  ) {
-    console.debug('OutlineServerRepository is initializing');
-    this.loadServers();
-    console.debug('OutlineServerRepository loaded servers');
-    vpnApi.onStatusChange((id: string, status: TunnelStatus) => {
-      console.debug(
-        `OutlineServerRepository received status update for server ${id}: ${status}`
-      );
-      let statusEvent: events.OutlineEvent;
-      switch (status) {
-        case TunnelStatus.CONNECTED:
-          statusEvent = new events.ServerConnected(id);
-          break;
-        case TunnelStatus.DISCONNECTING:
-          statusEvent = new events.ServerDisconnecting(id);
-          break;
-        case TunnelStatus.DISCONNECTED:
-          statusEvent = new events.ServerDisconnected(id);
-          break;
-        case TunnelStatus.RECONNECTING:
-          statusEvent = new events.ServerReconnecting(id);
-          break;
-        default:
-          console.warn(
-            `Received unknown tunnel status ${status} for tunnel ${id}`
-          );
-          return;
-      }
-      eventQueue.enqueue(statusEvent);
-    });
-    console.debug('OutlineServerRepository registered server status callback');
-  }
+  ) {}
 
   getAll() {
-    return Array.from(this.serverById.values());
+    return Array.from(this.serverById.values()).map(e => e.server);
   }
 
   getById(serverId: string) {
-    return this.serverById.get(serverId);
+    return this.serverById.get(serverId)?.server;
   }
 
-  add(accessKey: string) {
+  async add(accessKey: string): Promise<void> {
     const alreadyAddedServer = this.serverFromAccessKey(accessKey);
     if (alreadyAddedServer) {
       throw new errors.ServerAlreadyAdded(alreadyAddedServer);
     }
-    const server = this.createServer(uuidv4(), accessKey, undefined);
+    const server = await this.internalCreateServer(
+      uuidv4(),
+      accessKey,
+      undefined
+    );
 
-    this.serverById.set(server.id, server);
     this.storeServers();
     this.eventQueue.enqueue(new events.ServerAdded(server));
   }
 
   rename(serverId: string, newName: string) {
-    const server = this.serverById.get(serverId);
+    const server = this.serverById.get(serverId)?.server;
     if (!server) {
       console.warn(`Cannot rename nonexistent server ${serverId}`);
       return;
@@ -136,22 +165,22 @@ export class OutlineServerRepository implements ServerRepository {
   }
 
   forget(serverId: string) {
-    const server = this.serverById.get(serverId);
-    if (!server) {
+    const entry = this.serverById.get(serverId);
+    if (!entry) {
       console.warn(`Cannot remove nonexistent server ${serverId}`);
       return;
     }
     this.serverById.delete(serverId);
-    this.lastForgottenServer = server;
+    this.lastForgottenServer = entry;
     this.storeServers();
-    this.eventQueue.enqueue(new events.ServerForgotten(server));
+    this.eventQueue.enqueue(new events.ServerForgotten(entry.server));
   }
 
   undoForget(serverId: string) {
     if (!this.lastForgottenServer) {
       console.warn('No forgotten server to unforget');
       return;
-    } else if (this.lastForgottenServer.id !== serverId) {
+    } else if (this.lastForgottenServer.server.id !== serverId) {
       console.warn(
         'id of forgotten server',
         this.lastForgottenServer,
@@ -160,18 +189,21 @@ export class OutlineServerRepository implements ServerRepository {
       );
       return;
     }
-    this.serverById.set(this.lastForgottenServer.id, this.lastForgottenServer);
+    this.serverById.set(
+      this.lastForgottenServer.server.id,
+      this.lastForgottenServer
+    );
     this.storeServers();
     this.eventQueue.enqueue(
-      new events.ServerForgetUndone(this.lastForgottenServer)
+      new events.ServerForgetUndone(this.lastForgottenServer.server)
     );
     this.lastForgottenServer = null;
   }
 
-  private serverFromAccessKey(accessKey: string): OutlineServer | undefined {
+  private serverFromAccessKey(accessKey: string): Server | undefined {
     const trimmedAccessKey = accessKey.trim();
-    for (const server of this.serverById.values()) {
-      if (trimmedAccessKey === server.accessKey.trim()) {
+    for (const {accessKey, server} of this.serverById.values()) {
+      if (trimmedAccessKey === accessKey.trim()) {
         return server;
       }
     }
@@ -180,97 +212,94 @@ export class OutlineServerRepository implements ServerRepository {
 
   private storeServers() {
     const servers: ServersStorageV1 = [];
-    for (const server of this.serverById.values()) {
+    for (const {accessKey, server} of this.serverById.values()) {
       servers.push({
         id: server.id,
-        accessKey: server.accessKey,
+        accessKey,
         name: server.name,
       });
     }
     const json = JSON.stringify(servers);
-    this.storage.setItem(OutlineServerRepository.SERVERS_STORAGE_KEY, json);
+    this.storage.setItem(SERVERS_STORAGE_KEY, json);
   }
 
-  // Loads servers from storage, raising an error if there is any problem loading.
-  private loadServers() {
-    if (this.storage.getItem(OutlineServerRepository.SERVERS_STORAGE_KEY)) {
-      console.debug('server storage migrated to V1');
-      this.loadServersV1();
-      return;
-    }
-    this.loadServersV0();
-  }
-
-  private loadServersV0() {
-    this.serverById = new Map<string, OutlineServer>();
-    const serversJson = this.storage.getItem(
-      OutlineServerRepository.SERVERS_STORAGE_KEY_V0
-    );
-    if (!serversJson) {
-      console.debug('no V0 servers found in storage');
-      return;
-    }
-    let configById: ServersStorageV0 = {};
-    try {
-      configById = JSON.parse(serversJson);
-    } catch (e) {
-      throw new Error(`could not parse saved V0 servers: ${e.message}`);
-    }
-    for (const serverId of Object.keys(configById)) {
-      const v0Config = configById[serverId];
-
-      try {
-        this.loadServer({
-          id: serverId,
-          accessKey: serversStorageV0ConfigToAccessKey(v0Config),
-          name: v0Config.name,
-        });
-      } catch (e) {
-        // Don't propagate so other stored servers can be created.
-        console.error(e);
-      }
-    }
-  }
-
-  private loadServersV1() {
-    this.serverById = new Map<string, OutlineServer>();
-    const serversStorageJson = this.storage.getItem(
-      OutlineServerRepository.SERVERS_STORAGE_KEY
-    );
-    if (!serversStorageJson) {
-      console.debug('no servers found in storage');
-      return;
-    }
-    let serversJson: ServersStorageV1 = [];
-    try {
-      serversJson = JSON.parse(serversStorageJson);
-    } catch (e) {
-      throw new Error(`could not parse saved servers: ${e.message}`);
-    }
-    for (const serverJson of serversJson) {
-      try {
-        this.loadServer(serverJson);
-      } catch (e) {
-        // Don't propagate so other stored servers can be created.
-        console.error(e);
-      }
-    }
-  }
-
-  private loadServer(serverJson: OutlineServerJson) {
-    const server = this.createServer(
-      serverJson.id,
-      serverJson.accessKey,
-      serverJson.name
-    );
-    this.serverById.set(serverJson.id, server);
-  }
-
-  private createServer(
+  async internalCreateServer(
     id: string,
     accessKey: string,
     name?: string
-  ): OutlineServer {
-    return new OutlineServer(this.vpnApi, id, name, accessKey, this.localize);
+  ): Promise<Server> {
+    const server = await newOutlineServer(
+      this.vpnApi,
+      id,
+      name,
+      accessKey,
+      this.localize
+    );
+    this.serverById.set(id, {accessKey, server});
+    return server;
+  }
+}
+
+// Loads servers from storage, raising an error if there is any problem loading.
+async function loadServers(storage: Storage, repo: OutlineServerRepository) {
+  if (storage.getItem(SERVERS_STORAGE_KEY)) {
+    console.debug('server storage migrated to V1');
+    await loadServersV1(storage, repo);
+    return;
+  }
+  await loadServersV0(storage, repo);
+}
+
+async function loadServersV0(storage: Storage, repo: OutlineServerRepository) {
+  const serversJson = storage.getItem(SERVERS_STORAGE_KEY_V0);
+  if (!serversJson) {
+    console.debug('no V0 servers found in storage');
+    return;
+  }
+  let configById: ServersStorageV0 = {};
+  try {
+    configById = JSON.parse(serversJson);
+  } catch (e) {
+    throw new Error(`could not parse saved V0 servers: ${e.message}`);
+  }
+  for (const serverId of Object.keys(configById)) {
+    const v0Config = configById[serverId];
+
+    try {
+      await repo.internalCreateServer(
+        serverId,
+        serversStorageV0ConfigToAccessKey(v0Config),
+        v0Config.name
+      );
+    } catch (e) {
+      // Don't propagate so other stored servers can be created.
+      console.error(e);
+    }
+  }
+}
+
+async function loadServersV1(storage: Storage, repo: OutlineServerRepository) {
+  const serversStorageJson = storage.getItem(SERVERS_STORAGE_KEY);
+  if (!serversStorageJson) {
+    console.debug('no servers found in storage');
+    return;
+  }
+  let serversJson: ServersStorageV1 = [];
+  try {
+    serversJson = JSON.parse(serversStorageJson);
+  } catch (e) {
+    throw new Error(`could not parse saved servers: ${e.message}`);
+  }
+  for (const serverJson of serversJson) {
+    try {
+      await repo.internalCreateServer(
+        serverJson.id,
+        serverJson.accessKey,
+        serverJson.name
+      );
+    } catch (e) {
+      // Don't propagate so other stored servers can be created.
+      console.error(e);
+    }
   }
 }
