@@ -34,7 +34,7 @@ import {getDefaultMethodChannel} from '../method_channel';
 export async function newOutlineServer(
   vpnApi: VpnApi,
   id: string,
-  name: string,
+  name?: string,
   accessKey: string,
   localize: Localizer
 ): Promise<Server> {
@@ -62,14 +62,13 @@ export async function newOutlineServer(
           : 'server-default-name'
       );
     }
-    const server = new OutlineServer(vpnApi, id, name, serviceConfig);
-    return server;
+    return new OutlineServer(vpnApi, id, name, serviceConfig);
   }
 }
 
 class OutlineServer implements Server {
   errorMessageId?: string;
-  private tunnelConfig: TunnelConfigJson | undefined;
+  private tunnelConfig?: TunnelConfigJson;
 
   constructor(
     private vpnApi: VpnApi,

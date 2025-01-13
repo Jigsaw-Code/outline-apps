@@ -154,7 +154,7 @@ class OutlinePlugin: CDVPlugin {
     DDLogInfo("Invoking Method \(methodName) with input \(input)")
     Task {
       guard let result = OutlineInvokeMethod(methodName, input) else {
-        DDLogInfo("InvokeMethod \(methodName) got nil result")
+        DDLogWarn("InvokeMethod \(methodName) got nil result")
         return self.sendError("unexpected invoke error", callbackId: command.callbackId)
       }
       if result.error != nil {

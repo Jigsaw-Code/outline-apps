@@ -27,11 +27,11 @@ export class FakeVpnApi implements VpnApi {
   constructor() {}
 
   private playBroken(address?: string) {
-    return address.startsWith(FAKE_BROKEN_HOSTNAME);
+    return address?.startsWith(FAKE_BROKEN_HOSTNAME);
   }
 
   private playUnreachable(address?: string) {
-    return address.startsWith(FAKE_UNREACHABLE_HOSTNAME);
+    return address?.startsWith(FAKE_UNREACHABLE_HOSTNAME);
   }
 
   async start(request: StartRequestJson): Promise<void> {

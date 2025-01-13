@@ -131,7 +131,7 @@ class OutlineServerRepository implements ServerRepository {
   ) {}
 
   getAll() {
-    return Array.from(this.serverById.values()).map(e => e.server);
+    return Array.from(this.serverById.values(), e => e.server);
   }
 
   getById(serverId: string) {
@@ -154,7 +154,7 @@ class OutlineServerRepository implements ServerRepository {
   }
 
   rename(serverId: string, newName: string) {
-    const server = this.serverById.get(serverId)?.server;
+    const server = this.getById(serverId);
     if (!server) {
       console.warn(`Cannot rename nonexistent server ${serverId}`);
       return;

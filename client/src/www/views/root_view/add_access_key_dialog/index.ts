@@ -123,6 +123,7 @@ export class AddAccessKeyDialog extends LitElement {
     accessKey: string,
     validate: (accessKey: string) => Promise<boolean>
   ) {
+    this.isValidAccessKey = false;
     validate(accessKey).then(result => {
       this.isValidAccessKey = result;
     });
