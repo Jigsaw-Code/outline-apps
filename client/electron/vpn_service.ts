@@ -68,7 +68,7 @@ export async function establishVpn(request: StartRequestJson) {
     },
 
     // The actual transport config
-    transport: JSON.stringify(request.config.transport),
+    transport: request.config.transport,
   };
 
   await invokeMethod('EstablishVPN', JSON.stringify(config));
