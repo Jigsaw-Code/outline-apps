@@ -42,7 +42,7 @@ export async function checkUDPConnectivity(
   console.debug('[tun2socks] - checking connectivity ...');
   const output = await tun2socks.launch([
     '-transport',
-    JSON.stringify(config),
+    config,
     '-checkConnectivity',
   ]);
 

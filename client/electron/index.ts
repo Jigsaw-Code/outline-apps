@@ -371,6 +371,8 @@ async function createVpnTunnel(
 
 // Invoked by both the start-proxying event handler and auto-connect.
 async function startVpn(request: StartRequestJson, isAutoConnect: boolean) {
+  console.debug('startVpn called with request ', JSON.stringify(request));
+
   if (IS_LINUX && !process.env.APPIMAGE) {
     onVpnStatusChanged((id, status) => {
       setUiTunnelStatus(status, id);
