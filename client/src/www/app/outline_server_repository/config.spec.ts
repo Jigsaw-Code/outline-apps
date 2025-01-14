@@ -24,7 +24,8 @@ describe('parseTunnelConfig', () => {
       )
     ).toEqual({
       firstHop: 'example.com:443',
-      transport: '{"host":"example.com","port":443,"method":"METHOD","password":"PASSWORD"}'
+      transport:
+        '{"host":"example.com","port":443,"method":"METHOD","password":"PASSWORD"}',
     });
   });
 
@@ -35,7 +36,8 @@ describe('parseTunnelConfig', () => {
       )
     ).toEqual({
       firstHop: 'example.com:443',
-      transport: '{"host":"example.com","port":443,"method":"METHOD","password":"PASSWORD","prefix":"POST "}'
+      transport:
+        '{"host":"example.com","port":443,"method":"METHOD","password":"PASSWORD","prefix":"POST "}',
     });
   });
 
@@ -50,7 +52,8 @@ describe('parseTunnelConfig', () => {
     );
     expect(await config.parseTunnelConfig(ssUrl)).toEqual({
       firstHop: 'example.com:443',
-      transport: '{"host":"example.com","port":443,"method":"chacha20-ietf-poly1305","password":"PASSWORD"}'
+      transport:
+        '{"host":"example.com","port":443,"method":"chacha20-ietf-poly1305","password":"PASSWORD"}',
     });
   });
 
@@ -65,7 +68,8 @@ describe('parseTunnelConfig', () => {
     );
     expect(await config.parseTunnelConfig(`  ${ssUrl} \n\n\n`)).toEqual({
       firstHop: 'example.com:443',
-      transport: '{"host":"example.com","port":443,"method":"chacha20-ietf-poly1305","password":"PASSWORD"}'
+      transport:
+        '{"host":"example.com","port":443,"method":"chacha20-ietf-poly1305","password":"PASSWORD"}',
     });
   });
 });
@@ -73,12 +77,16 @@ describe('parseTunnelConfig', () => {
 describe('serviceNameFromAccessKey', () => {
   it('extracts name from ss:// key', () => {
     expect(
-      config.TEST_ONLY.serviceNameFromAccessKey(new URL('ss://anything#My%20Server'))
+      config.TEST_ONLY.serviceNameFromAccessKey(
+        new URL('ss://anything#My%20Server')
+      )
     ).toEqual('My Server');
   });
   it('extracts name from ssconf:// key', () => {
     expect(
-      config.TEST_ONLY.serviceNameFromAccessKey(new URL('ssconf://anything#My%20Server'))
+      config.TEST_ONLY.serviceNameFromAccessKey(
+        new URL('ssconf://anything#My%20Server')
+      )
     ).toEqual('My Server');
   });
   it('ignores parameters', () => {

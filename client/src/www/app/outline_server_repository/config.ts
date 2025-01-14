@@ -33,10 +33,7 @@ export type ServiceConfig = StaticServiceConfig | DynamicServiceConfig;
  * It's the structured representation of a Static Access Key.
  */
 export class StaticServiceConfig {
-  constructor(
-    readonly name: string,
-    readonly tunnelConfig: TunnelConfigJson
-  ) {}
+  constructor(readonly name: string, readonly tunnelConfig: TunnelConfigJson) {}
 }
 
 /**
@@ -44,10 +41,7 @@ export class StaticServiceConfig {
  * It's the structured representation of a Dynamic Access Key.
  */
 export class DynamicServiceConfig {
-  constructor(
-    readonly name: string,
-    readonly transportConfigLocation: URL
-  ) {}
+  constructor(readonly name: string, readonly transportConfigLocation: URL) {}
 }
 
 /**
@@ -103,7 +97,9 @@ export async function parseTunnelConfig(
 }
 
 /** Parses an access key string into a TunnelConfig object. */
-async function staticKeyToTunnelConfig(staticKey: string): Promise<TunnelConfigJson | null> {
+async function staticKeyToTunnelConfig(
+  staticKey: string
+): Promise<TunnelConfigJson | null> {
   const config = SHADOWSOCKS_URI.parse(staticKey);
   if (!isShadowsocksCipherSupported(config.method.data)) {
     throw new errors.ShadowsocksUnsupportedCipher(
