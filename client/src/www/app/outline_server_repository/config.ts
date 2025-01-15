@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import * as net from '@outline/infrastructure/net';
 import {SHADOWSOCKS_URI} from 'ShadowsocksConfig';
 
 import * as errors from '../../model/errors';
 
 export const TEST_ONLY = {
-  getAddressFromTransportConfig: getAddressFromTransportConfig,
+  parseAccessKey: parseAccessKey,
   serviceNameFromAccessKey: serviceNameFromAccessKey,
 };
 
@@ -49,58 +50,15 @@ export class DynamicServiceConfig {
   ) {}
 }
 
-/** EndpointAddress represents the address of a TCP/UDP endpoint. */
-class EndpointAddress {
-  readonly host: string;
-  readonly port: number | undefined;
-}
-
 /**
  * TunnelConfigJson represents the configuration to set up a tunnel.
  * This is where VPN-layer parameters would go (e.g. interface IP, routes, dns, etc.).
  */
 export interface TunnelConfigJson {
-  firstHop: EndpointAddress | undefined;
+  firstHop: string;
   /** transport describes how to establish connections to the destinations.
    * See https://github.com/Jigsaw-Code/outline-apps/blob/master/client/go/outline/config.go for format. */
-  transport: TransportConfigJson;
-}
-
-/**
- * TransportConfigJson represents the transport to be used.
- * Application code should treat it as opaque, as it's handled by the networking layer.
- */
-export type TransportConfigJson = object;
-
-/**
- * getAddressFromTransportConfig returns the address of the tunnel server, if there's a meaningful one.
- * This is used to show the server address in the UI when connected.
- */
-function getAddressFromTransportConfig(
-  transport: TransportConfigJson
-): EndpointAddress | undefined {
-  const hostConfig: {host?: string; port?: number} = transport;
-  if (hostConfig.host) {
-    return {host: hostConfig.host, port: hostConfig?.port};
-  } else {
-    return undefined;
-  }
-}
-
-/**
- * setTransportConfigHost returns a new TransportConfigJson with the given host as the tunnel server.
- * Should only be set if getHostFromTransportConfig returns one.
- * This is used by the proxy resolution in Electron.
- */
-// TODO(fortuna): Move config parsing to Go and do the DNS resolution and IP injection for Electron there.
-export function setTransportConfigHost(
-  transport: TransportConfigJson,
-  newHost: string
-): TransportConfigJson | undefined {
-  if (!('host' in transport)) {
-    return undefined;
-  }
-  return {...transport, host: newHost};
+  transport: string;
 }
 
 /**
@@ -109,9 +67,9 @@ export function setTransportConfigHost(
  * This is used by the server to parse the config fetched from the dynamic key, and to parse
  * static keys as tunnel configs (which may be present in the dynamic config).
  */
-export function parseTunnelConfig(
+export async function parseTunnelConfig(
   tunnelConfigText: string
-): TunnelConfigJson | null {
+): Promise<TunnelConfigJson | null> {
   tunnelConfigText = tunnelConfigText.trim();
   if (tunnelConfigText.startsWith('ss://')) {
     return staticKeyToTunnelConfig(tunnelConfigText);
@@ -129,7 +87,7 @@ export function parseTunnelConfig(
   // TODO(fortuna): stop converting to the Go format. Let the Go code convert.
   // We don't validate the method because that's already done in the Go code as
   // part of the Dynamic Key connection flow.
-  const transport: TransportConfigJson = {
+  const transport = {
     host: responseJson.server,
     port: responseJson.server_port,
     method: responseJson.method,
@@ -139,20 +97,22 @@ export function parseTunnelConfig(
     (transport as {prefix?: string}).prefix = responseJson.prefix;
   }
   return {
-    transport,
-    firstHop: getAddressFromTransportConfig(transport),
+    firstHop: net.joinHostPort(transport.host, `${transport.port}`),
+    transport: JSON.stringify(transport),
   };
 }
 
 /** Parses an access key string into a TunnelConfig object. */
-function staticKeyToTunnelConfig(staticKey: string): TunnelConfigJson {
+async function staticKeyToTunnelConfig(
+  staticKey: string
+): Promise<TunnelConfigJson | null> {
   const config = SHADOWSOCKS_URI.parse(staticKey);
   if (!isShadowsocksCipherSupported(config.method.data)) {
     throw new errors.ShadowsocksUnsupportedCipher(
       config.method.data || 'unknown'
     );
   }
-  const transport: TransportConfigJson = {
+  const transport = {
     host: config.host.data,
     port: config.port.data,
     method: config.method.data,
@@ -162,29 +122,40 @@ function staticKeyToTunnelConfig(staticKey: string): TunnelConfigJson {
     (transport as {prefix?: string}).prefix = config.extra?.['prefix'];
   }
   return {
-    transport,
-    firstHop: getAddressFromTransportConfig(transport),
+    firstHop: net.joinHostPort(transport.host, `${transport.port}`),
+    transport: JSON.stringify(transport),
   };
 }
 
-export function parseAccessKey(accessKey: string): ServiceConfig {
+export async function parseAccessKey(
+  accessKeyText: string
+): Promise<ServiceConfig> {
   try {
-    accessKey = accessKey.trim();
+    const accessKeyUrl = new URL(accessKeyText.trim());
 
     // The default service name is extracted from the URL fragment of the access key.
-    const name = serviceNameFromAccessKey(accessKey);
+    const name = serviceNameFromAccessKey(accessKeyUrl);
+    // The hash only encodes service config, not tunnel config or config location.
+    const noHashAccessKey = new URL(accessKeyUrl);
+    noHashAccessKey.hash = '';
 
     // Static ss:// keys. It encodes the full service config.
-    if (accessKey.startsWith('ss://')) {
-      return new StaticServiceConfig(name, parseTunnelConfig(accessKey));
+    if (noHashAccessKey.protocol === 'ss:') {
+      return new StaticServiceConfig(
+        name,
+        await parseTunnelConfig(noHashAccessKey.toString())
+      );
     }
 
     // Dynamic ssconf:// keys. It encodes the location of the service config.
-    if (accessKey.startsWith('ssconf://') || accessKey.startsWith('https://')) {
+    if (
+      noHashAccessKey.protocol === 'ssconf:' ||
+      noHashAccessKey.protocol === 'https:'
+    ) {
       try {
         // URL does not parse the hostname (treats as opaque string) if the protocol is non-standard (e.g. non-http).
         const configLocation = new URL(
-          accessKey.replace(/^ssconf:\/\//, 'https://')
+          noHashAccessKey.toString().replace(/^ssconf:\/\//, 'https://')
         );
         return new DynamicServiceConfig(name, configLocation);
       } catch (error) {
@@ -198,10 +169,6 @@ export function parseAccessKey(accessKey: string): ServiceConfig {
       cause: e,
     });
   }
-}
-
-export function validateAccessKey(accessKey: string) {
-  parseAccessKey(accessKey);
 }
 
 // We only support AEAD ciphers for Shadowsocks.
@@ -223,13 +190,11 @@ function isShadowsocksCipherSupported(cipher?: string): boolean {
  * entry that is not a key=value pair.
  * This is used to name the service card in the UI when the service is added.
  */
-function serviceNameFromAccessKey(accessKey: string): string | undefined {
-  const {hash} = new URL(accessKey.replace(/^ss(?:conf)?:\/\//, 'https://'));
-
-  if (!hash) return;
+function serviceNameFromAccessKey(accessKey: URL): string | undefined {
+  if (!accessKey.hash) return;
 
   return decodeURIComponent(
-    hash
+    accessKey.hash
       .slice(1)
       .split('&')
       .find(keyValuePair => !keyValuePair.includes('='))

@@ -151,16 +151,18 @@ class OutlinePlugin: CDVPlugin {
     guard let input = command.argument(at: 1) as? String else {
       return sendError("Missing method input", callbackId: command.callbackId)
     }
-    DDLogInfo("Invoking Method \(methodName) with input \(input)")
+    DDLogDebug("Invoking Method \(methodName) with input \(input)")
     Task {
       guard let result = OutlineInvokeMethod(methodName, input) else {
+        DDLogDebug("InvokeMethod \(methodName) got nil result")
         return self.sendError("unexpected invoke error", callbackId: command.callbackId)
       }
       if result.error != nil {
         let errorJson = marshalErrorJson(error: OutlineError.platformError(result.error!))
+        DDLogDebug("InvokeMethod \(methodName) failed with error \(errorJson)")
         return self.sendError(errorJson, callbackId: command.callbackId)
       }
-      DDLogInfo("InvokeMethod result: \(result.value)")
+      DDLogDebug("InvokeMethod result: \(result.value)")
       self.sendSuccess(result.value, callbackId: command.callbackId)
     }
   }

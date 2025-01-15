@@ -35,7 +35,7 @@
   "destroy": "Избриши",
   "digitalocean-disconnect-account": "Прекинување на врската со сметката на DigitalOcean",
   "digitalocean-unreachable": "Грешкава можеби се должи на заштитен ѕид на вашата мрежа или привремен проблем со поврзување со digitalocean.com.",
-  "disabled": "Оневозможете",
+  "disabled": "Оневозможи",
   "disconnect": "Прекини ја врската",
   "done": "Готово",
   "enabled": "Овозможено",
