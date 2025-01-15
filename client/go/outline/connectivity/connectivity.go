@@ -33,7 +33,7 @@ const (
 )
 
 const (
-	testTCPWebsite    = "http://example.com"
+	testTCPWebsite    = "http://captive.apple.com"
 	testDNSServerIP   = "1.1.1.1"
 	testDNSServerPort = 53
 )
