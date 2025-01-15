@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as net from '@outline/infrastructure/net';
-import {SHADOWSOCKS_URI} from 'ShadowsocksConfig';
+import * as methodChannel from '@outline/client/src/www/app/method_channel';
 
 import * as errors from '../../model/errors';
 
 export const TEST_ONLY = {
   parseAccessKey: parseAccessKey,
+  getAddressFromTransportConfig: getAddressFromTransportConfig,
   serviceNameFromAccessKey: serviceNameFromAccessKey,
 };
 
@@ -61,6 +61,16 @@ export interface TunnelConfigJson {
   transport: string;
 }
 
+// getAddressFromTransportConfig validates the transport config and returns the address of the first hop.
+async function getAddressFromTransportConfig(
+  tunnelConfigText: string
+): Promise<string> {
+  const firstHop = await methodChannel
+    .getDefaultMethodChannel()
+    .invokeMethod('GetFirstHop', tunnelConfigText);
+  return firstHop;
+}
+
 /**
  * parseTunnelConfig parses the given tunnel config as text and returns a new TunnelConfigJson.
  * The config text may be a "ss://" link or a JSON object.
@@ -70,60 +80,21 @@ export interface TunnelConfigJson {
 export async function parseTunnelConfig(
   tunnelConfigText: string
 ): Promise<TunnelConfigJson | null> {
+  // TODO: Define proper format for response so that errors don't conflict with the transport.
   tunnelConfigText = tunnelConfigText.trim();
-  if (tunnelConfigText.startsWith('ss://')) {
-    return staticKeyToTunnelConfig(tunnelConfigText);
+  if (!tunnelConfigText.startsWith('ss://')) {
+    const responseJson = JSON.parse(tunnelConfigText);
+    if ('error' in responseJson) {
+      throw new errors.SessionProviderError(
+        responseJson.error.message,
+        responseJson.error.details
+      );
+    }
   }
 
-  const responseJson = JSON.parse(tunnelConfigText);
-
-  if ('error' in responseJson) {
-    throw new errors.SessionProviderError(
-      responseJson.error.message,
-      responseJson.error.details
-    );
-  }
-
-  // TODO(fortuna): stop converting to the Go format. Let the Go code convert.
-  // We don't validate the method because that's already done in the Go code as
-  // part of the Dynamic Key connection flow.
-  const transport = {
-    host: responseJson.server,
-    port: responseJson.server_port,
-    method: responseJson.method,
-    password: responseJson.password,
-  };
-  if (responseJson.prefix) {
-    (transport as {prefix?: string}).prefix = responseJson.prefix;
-  }
   return {
-    firstHop: net.joinHostPort(transport.host, `${transport.port}`),
-    transport: JSON.stringify(transport),
-  };
-}
-
-/** Parses an access key string into a TunnelConfig object. */
-async function staticKeyToTunnelConfig(
-  staticKey: string
-): Promise<TunnelConfigJson | null> {
-  const config = SHADOWSOCKS_URI.parse(staticKey);
-  if (!isShadowsocksCipherSupported(config.method.data)) {
-    throw new errors.ShadowsocksUnsupportedCipher(
-      config.method.data || 'unknown'
-    );
-  }
-  const transport = {
-    host: config.host.data,
-    port: config.port.data,
-    method: config.method.data,
-    password: config.password.data,
-  };
-  if (config.extra?.['prefix']) {
-    (transport as {prefix?: string}).prefix = config.extra?.['prefix'];
-  }
-  return {
-    firstHop: net.joinHostPort(transport.host, `${transport.port}`),
-    transport: JSON.stringify(transport),
+    firstHop: await getAddressFromTransportConfig(tunnelConfigText),
+    transport: tunnelConfigText,
   };
 }
 
@@ -169,19 +140,6 @@ export async function parseAccessKey(
       cause: e,
     });
   }
-}
-
-// We only support AEAD ciphers for Shadowsocks.
-// See https://shadowsocks.org/en/spec/AEAD-Ciphers.html
-const SUPPORTED_SHADOWSOCKS_CIPHERS = [
-  'chacha20-ietf-poly1305',
-  'aes-128-gcm',
-  'aes-192-gcm',
-  'aes-256-gcm',
-];
-
-function isShadowsocksCipherSupported(cipher?: string): boolean {
-  return SUPPORTED_SHADOWSOCKS_CIPHERS.includes(cipher);
 }
 
 /**
