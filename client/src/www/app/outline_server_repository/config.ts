@@ -18,8 +18,6 @@ import * as errors from '../../model/errors';
 
 export const TEST_ONLY = {
   parseAccessKey: parseAccessKey,
-  getAddressFromTransportConfig: getAddressFromTransportConfig,
-  serviceNameFromAccessKey: serviceNameFromAccessKey,
 };
 
 /**
