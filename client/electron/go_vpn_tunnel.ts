@@ -21,7 +21,6 @@ import {checkUDPConnectivity} from './go_helpers';
 import {ChildProcessHelper, ProcessTerminatedSignalError} from './process';
 import {RoutingDaemon} from './routing_service';
 import {VpnTunnel} from './vpn_tunnel';
-import {TransportConfigJson} from '../src/www/app/outline_server_repository/config';
 import {TunnelStatus} from '../src/www/app/outline_server_repository/vpn';
 
 const isLinux = platform() === 'linux';
@@ -64,7 +63,7 @@ export class GoVpnTunnel implements VpnTunnel {
 
   constructor(
     private readonly routing: RoutingDaemon,
-    readonly transportConfig: TransportConfigJson
+    readonly transportConfig: string
   ) {
     this.tun2socks = new GoTun2socks();
 
@@ -248,10 +247,7 @@ class GoTun2socks {
    * Otherwise, an error containing a JSON-formatted message will be thrown.
    * @param isUdpEnabled Indicates whether the remote Outline server supports UDP.
    */
-  async start(
-    config: TransportConfigJson,
-    isUdpEnabled: boolean
-  ): Promise<void> {
+  async start(transportConfig: string, isUdpEnabled: boolean): Promise<void> {
     // ./tun2socks.exe \
     //   -tunName outline-tap0 -tunDNS 1.1.1.1,9.9.9.9 \
     //   -tunAddr 10.0.85.2 -tunGw 10.0.85.1 -tunMask 255.255.255.0 \
@@ -263,7 +259,7 @@ class GoTun2socks {
     args.push('-tunGw', TUN2SOCKS_VIRTUAL_ROUTER_IP);
     args.push('-tunMask', TUN2SOCKS_VIRTUAL_ROUTER_NETMASK);
     args.push('-tunDNS', DNS_RESOLVERS.join(','));
-    args.push('-transport', JSON.stringify(config));
+    args.push('-transport', transportConfig);
     args.push('-logLevel', this.process.isDebugModeEnabled ? 'debug' : 'info');
     if (!isUdpEnabled) {
       args.push('-dnsFallback');

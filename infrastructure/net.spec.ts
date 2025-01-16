@@ -22,3 +22,36 @@ describe('joinHostPort', () => {
     expect(net.joinHostPort('8example.com', '443')).toEqual('8example.com:443');
   });
 });
+
+describe('splitHostPort', () => {
+  it('splits correctly', () => {
+    expect(net.splitHostPort('example.com:443')).toEqual({
+      host: 'example.com',
+      port: '443',
+    });
+    expect(net.splitHostPort('example.com:')).toEqual({
+      host: 'example.com',
+      port: '',
+    });
+    expect(net.splitHostPort('1.2.3.4:443')).toEqual({
+      host: '1.2.3.4',
+      port: '443',
+    });
+    expect(net.splitHostPort('1.2.3.4:')).toEqual({
+      host: '1.2.3.4',
+      port: '',
+    });
+    expect(net.splitHostPort('[1:2:3::4]:443')).toEqual({
+      host: '1:2:3::4',
+      port: '443',
+    });
+    expect(net.splitHostPort('[1:2:3::4]:')).toEqual({
+      host: '1:2:3::4',
+      port: '',
+    });
+    expect(net.splitHostPort('8example.com:443')).toEqual({
+      host: '8example.com',
+      port: '443',
+    });
+  });
+});
