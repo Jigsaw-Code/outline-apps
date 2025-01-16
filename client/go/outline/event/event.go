@@ -19,7 +19,10 @@
 // All data structures related to an event should be designed to be compatible between both languages.
 package event
 
-import "sync"
+import (
+	"log/slog"
+	"sync"
+)
 
 // EventName is a type alias for string that represents the name of an event.
 // Using a dedicated type improves type safety when working with event names.
@@ -50,12 +53,14 @@ var (
 // The provided [Listener] will be called when the event is invoked, along with the event data and the supplied param.
 func Subscribe(evt EventName, cb Listener, param string) {
 	if evt == "" || cb == nil {
+		slog.Warn("empty event or listener is ignored")
 		return
 	}
 	mu.Lock()
 	defer mu.Unlock()
 
 	listeners[evt] = listenerInfo{cb, param}
+	slog.Debug("successfully subscribed to event", "event", evt, "param", param)
 }
 
 // Unsubscribe removes the listener for the specified [EventName].
@@ -66,6 +71,7 @@ func Unsubscribe(evt EventName) {
 	defer mu.Unlock()
 
 	delete(listeners, evt)
+	slog.Debug("successfully ubsubscribed from event", "event", evt)
 }
 
 // Raise triggers the specified [EventName] with the given data.
@@ -76,6 +82,9 @@ func Raise(evt EventName, data string) {
 	defer mu.RUnlock()
 
 	if l, ok := listeners[evt]; ok {
+		slog.Debug("firing event", "event", evt, "data", data, "param", l.param)
 		l.cb.Handle(data, l.param)
+	} else {
+		slog.Debug("event fired but no handlers are found", "event", evt, "data", data)
 	}
 }
