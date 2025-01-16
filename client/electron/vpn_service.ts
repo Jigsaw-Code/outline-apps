@@ -143,9 +143,6 @@ function parseVPNConnJSON(json: string): VPNConn | null {
     if (!('id' in rawConn) || !rawConn.id || !('status' in rawConn)) {
       return null;
     }
-    if (!('status' in rawConn) || !rawConn.status) {
-      return null;
-    }
     return {
       id: rawConn.id,
       status: rawConn.status,
