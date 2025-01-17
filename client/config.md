@@ -19,7 +19,6 @@ Format: [Interface](#Interface)
 Supported Interface types:
 
 - `tcpudp`: [TCPUDPConfig](#TCPUDPConfig)
-- `shadowsocks`: [ShadowsocksConfig](#ShadowsocksConfig)
 
 ### <a id=DialerConfig></a>DialerConfig
 
@@ -50,7 +49,7 @@ The _string_ Endpoint is the host:port address of the desired endpoint. The conn
 Supported Interface types:
 
 - `dial`: [DialEndpointConfig](#DialEndpointConfig)
-- `shadowsocks`: [ShadowsocksConfig](#ShadowsocksConfig)
+<!-- - `shadowsocks`: [ShadowsocksConfig](#ShadowsocksConfig) -->
 <!-- - `websocket`: [WebsocketEndpointConfig](#WebsocketEndpointConfig) -->
 
 ## Implementations
