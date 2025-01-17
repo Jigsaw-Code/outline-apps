@@ -16,10 +16,6 @@ import * as methodChannel from '@outline/client/src/www/app/method_channel';
 
 import * as errors from '../../model/errors';
 
-export const TEST_ONLY = {
-  parseAccessKey: parseAccessKey,
-};
-
 /**
  * ServiceConfig represents an Outline service. It's the structured representation of an Access Key.
  * It has a name, a tunnel config that can be statically or dynamically defined.

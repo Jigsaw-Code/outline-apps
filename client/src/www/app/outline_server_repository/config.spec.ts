@@ -33,7 +33,7 @@ describe('parseAccessKey', () => {
       btoa('chacha20-ietf-poly1305:SECRET')
     )}@example.com:4321`;
     const accessKey = `${transportConfig}#My%20Server`;
-    expect(await config.TEST_ONLY.parseAccessKey(accessKey)).toEqual(
+    expect(await config.parseAccessKey(accessKey)).toEqual(
       new config.StaticServiceConfig('My Server', {
         firstHop: 'first-hop:4321',
         transport: transportConfig,
@@ -43,9 +43,7 @@ describe('parseAccessKey', () => {
 
   it('extracts name from ssconf:// key', async () => {
     expect(
-      await config.TEST_ONLY.parseAccessKey(
-        'ssconf://example.com:4321/path#My%20Server'
-      )
+      await config.parseAccessKey('ssconf://example.com:4321/path#My%20Server')
     ).toEqual(
       new config.DynamicServiceConfig(
         'My Server',
@@ -57,7 +55,7 @@ describe('parseAccessKey', () => {
   it('name extraction ignores parameters', async () => {
     const transportConfig = 'ss://anything';
     const accessKey = `${transportConfig}#foo=bar&My%20Server&baz=boo`;
-    expect(await config.TEST_ONLY.parseAccessKey(accessKey)).toEqual(
+    expect(await config.parseAccessKey(accessKey)).toEqual(
       new config.StaticServiceConfig('My Server', {
         firstHop: 'first-hop:4321',
         transport: transportConfig,
