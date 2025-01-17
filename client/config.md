@@ -1,23 +1,25 @@
+<!-- markdownlint-disable-file MD033 -->
+
 # Outline Config Reference
 
 Outline uses a YAML-based configuration to specify the VPN parameters and how to handle TCP and UDP traffic.
 
-
 ## Interfaces
 
 ### <a id=TunnelConfig></a>TunnelConfig
+
 This is the format of the configuration returned by [Dynamic Access Keys](https://www.reddit.com/r/outlinevpn/wiki/index/dynamic_access_keys/).
 
-Format: [TunnelConfig](#TunnelConfig) | [LegacyShadowsocksConfig](#LegacyShadowsocksConfig) | [LegacyShadowsocksURL](#LegacyShadowsocksURL)
+Format: [ExplicitTunnelConfig](#ExplicitTunnelConfig) | [LegacyShadowsocksConfig](#LegacyShadowsocksConfig) | [LegacyShadowsocksURL](#LegacyShadowsocksURL)
 
 ### <a id=TransportConfig></a>TransportConfig
 
 Format: [Interface](#Interface)
 
 Supported Interface types:
+
 - `tcpudp`: [TCPUDPConfig](#TCPUDPConfig)
 - `shadowsocks`: [ShadowsocksConfig](#ShadowsocksConfig)
-
 
 ### <a id=DialerConfig></a>DialerConfig
 
@@ -26,8 +28,8 @@ Format: _null_ | [Interface](#Interface)
 The _null_ (absent) Dialer means the default Dialer.
 
 Supported Interface types:
-- `shadowsocks`: [ShadowsocksConfig](#ShadowsocksConfig)
 
+- `shadowsocks`: [ShadowsocksConfig](#ShadowsocksConfig)
 
 ### <a id=PacketListenerConfig></a>PacketListenerConfig
 
@@ -36,6 +38,7 @@ Format: _null_ | [Interface](#Interface)
 The _null_ (absent) Packet Listener means the default Packet Listener.
 
 Supported Interface types:
+
 - `shadowsocks`: [ShadowsocksConfig](#ShadowsocksConfig)
 
 ### <a id=EndpointConfig></a>EndpointConfig
@@ -45,19 +48,19 @@ Format: _string_ | [Interface](#Interface)
 The _string_ Endpoint is the host:port address of the desired endpoint. The connection is established using the default Dialer.
 
 Supported Interface types:
+
 - `dial`: [DialEndpointConfig](#DialEndpointConfig)
 - `shadowsocks`: [ShadowsocksConfig](#ShadowsocksConfig)
 <!-- - `websocket`: [WebsocketEndpointConfig](#WebsocketEndpointConfig) -->
 
-
 ## Implementations
-
 
 ### <a id=DialEndpointConfig></a>DialEndpointConfig
 
 Format: _struct_
 
 Fields:
+
 - `address` (_string_): the endpoint address to dial
 - `dialer` ([DialerConfig](#DialerConfig)): the dialer to use to dial the address
 
@@ -79,6 +82,7 @@ secret: SECRET
 Format: _struct_
 
 Fields:
+
 - `server` (_string_): the host to connect to
 - `server_port` (_number_): the port number to connect to
 - `method` (_string_): the [AEAD cipher](https://shadowsocks.org/doc/aead.html#aead-ciphers) to use
@@ -86,6 +90,7 @@ Fields:
 - `prefix` (_string_): the [prefix disguise](https://www.reddit.com/r/outlinevpn/wiki/index/prefixing/) to use. Currently only supported on stream connections.
 
 Example:
+
 ```yaml
 server: example.com
 server_port: 4321
@@ -94,7 +99,6 @@ password: SECRET
 prefix: "POST "
 ```
 
-
 ### <a id=LegacyShadowsocksURL></a>LegacyShadowsocksURL
 
 Format: _string_
@@ -102,6 +106,7 @@ Format: _string_
 See [Legacy Shadowsocks URI Format](https://shadowsocks.org/doc/configs.html#uri-and-qr-code) and [SIP002 URI scheme](https://shadowsocks.org/doc/sip002.html). We don't support plugins.
 
 Example:
+
 ```yaml
 ss://chacha20-ietf-poly1305:SECRET@example.com:443?prefix=POST%20
 ```
@@ -111,12 +116,14 @@ ss://chacha20-ietf-poly1305:SECRET@example.com:443?prefix=POST%20
 Format: _struct_
 
 Fields:
+
 - `endpoint` ([EndpointConfig](#EndpointConfig)): the Shadowsocks endpoint to connect to
 - `cipher` (_string_): the [AEAD cipher](https://shadowsocks.org/doc/aead.html#aead-ciphers) to use
 - `secret` (_string_): used to generate the encryption key
 - `prefix` (_string_): the [prefix disguise](https://www.reddit.com/r/outlinevpn/wiki/index/prefixing/) to use. Currently only supported on stream connections.
 
 Example:
+
 ```yaml
 endpoint: example.com:4321
 cipher: chacha20-ietf-poly1305
@@ -124,40 +131,39 @@ secret: SECRET
 prefix: "POST "
 ```
 
-
 ### <a id=TCPUDPConfig></a>TCPUDPConfig
 
 Format: _struct_
 
 Fields:
+
 - `tcp` (_StreamDialer_)
 - `udp` (_PacketListener_)
 
 Example sending TCP and UDP to different endpoints:
-```yaml
-transport:
-  $type: tcpudp
-  
-  tcp:
-    $type: shadowsocks
-    endpoint: ss.example.com:80
-    <<: &cipher
-      cipher: chacha20-ietf-poly1305
-      secret: SECRET
-    prefix: "POST "
 
-  udp:
-    $type: shadowsocks
-    endpoint: ss.example.com:53
-    <<: *cipher
+```yaml
+tcp:
+  $type: shadowsocks
+  endpoint: ss.example.com:80
+  <<: &cipher
+    cipher: chacha20-ietf-poly1305
+    secret: SECRET
+  prefix: "POST "
+
+udp:
+  $type: shadowsocks
+  endpoint: ss.example.com:53
+  <<: *cipher
 ```
 
-### <a id=TunnelConfig></a>TunnelConfig
+### <a id=ExplicitTunnelConfig></a>ExplicitTunnelConfig
 
 Format: _struct_
 
 Fields:
-- `transport` ([TransportConfig](#TransportConfig])): the transports to use
+
+- `transport` ([TransportConfig](#TransportConfig)): the transports to use
 - `error` (_struct_): information to communicate to the user in case of service error (e.g. key expired, quota exhausted)
   - `message` (_string_): user-friendly message to display to the user
   - `details` (_string_): message to display when the user opens the error details. Helpful for troubleshooting.
@@ -176,6 +182,7 @@ transport:
 ```
 
 Error example:
+
 ```yaml
 error:
   message: Quota exceeded
