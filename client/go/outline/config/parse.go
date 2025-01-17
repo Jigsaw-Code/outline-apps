@@ -23,8 +23,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// ConfigParserKey is the config key used to specify the parser to use to parse an object.
-const ConfigParserKey = "$parser"
+// ConfigTypeKey is the config key used to specify the type of the config in order to select the corresponding parser.
+const ConfigTypeKey = "$type"
 
 // ConfigNode represents an intermediate config node. It's typically one of the types supported by YAML (list, map, scalar)
 // but it can be arbitrary objects returned by parsers as well.
@@ -93,7 +93,7 @@ func (p *TypeParser[T]) Parse(ctx context.Context, config ConfigNode) (T, error)
 		if !ok {
 			break
 		}
-		parserNameAny, ok := inMap[ConfigParserKey]
+		parserNameAny, ok := inMap[ConfigTypeKey]
 		if !ok {
 			break
 		}
@@ -106,11 +106,11 @@ func (p *TypeParser[T]) Parse(ctx context.Context, config ConfigNode) (T, error)
 			return zero, fmt.Errorf("parser \"%v\" for type %T is not available: %w", parserName, zero, errors.ErrUnsupported)
 		}
 
-		// $parser is embedded in the value: {$parser: ..., ...}.
+		// $type is embedded in the value: {$type: ..., ...}.
 		// Need to copy value and remove the type directive.
 		inputCopy := make(map[string]any, len(inMap))
 		for k, v := range inMap {
-			if k == ConfigParserKey {
+			if k == ConfigTypeKey {
 				continue
 			}
 			inputCopy[k] = v

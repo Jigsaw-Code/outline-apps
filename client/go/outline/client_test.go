@@ -78,7 +78,7 @@ password: SECRET`
 func Test_NewTransport_Explicit_endpoint(t *testing.T) {
 	config := `
 endpoint:
-    $parser: dial
+    $type: dial
     address: example.com:4321
 cipher: chacha20-ietf-poly1305
 secret: SECRET`
@@ -93,7 +93,7 @@ secret: SECRET`
 func Test_NewTransport_Multihop_URL(t *testing.T) {
 	config := `
 endpoint:
-    $parser: dial
+    $type: dial
     address: exit.example.com:4321
     dialer: ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@entry.example.com:4321/
 cipher: chacha20-ietf-poly1305
@@ -109,10 +109,10 @@ secret: SECRET`
 func Test_NewTransport_Multihop_Explicit(t *testing.T) {
 	config := `
 endpoint:
-    $parser: dial
+    $type: dial
     address: exit.example.com:4321
     dialer: 
-      $parser: shadowsocks
+      $type: shadowsocks
       endpoint: entry.example.com:4321
       cipher: chacha20-ietf-poly1305
       secret: ENTRY_SECRET
@@ -128,15 +128,15 @@ secret: EXIT_SECRET`
 
 func Test_NewTransport_Explicit_TCPUDP(t *testing.T) {
 	config := `
-$parser: tcpudp
+$type: tcpudp
 tcp:
-    $parser: shadowsocks
+    $type: shadowsocks
     endpoint: example.com:80
     cipher: chacha20-ietf-poly1305
     secret: SECRET
     prefix: "POST "
 udp:
-    $parser: shadowsocks
+    $type: shadowsocks
     endpoint: example.com:53
     cipher: chacha20-ietf-poly1305
     secret: SECRET`
@@ -149,9 +149,9 @@ udp:
 
 func Test_NewTransport_YAML_Reuse(t *testing.T) {
 	config := `
-$parser: tcpudp
+$type: tcpudp
 udp: &base
-    $parser: shadowsocks
+    $type: shadowsocks
     endpoint: example.com:4321
     cipher: chacha20-ietf-poly1305
     secret: SECRET
@@ -168,16 +168,16 @@ tcp:
 
 func Test_NewTransport_YAML_Partial_Reuse(t *testing.T) {
 	config := `
-$parser: tcpudp
+$type: tcpudp
 tcp:
-    $parser: shadowsocks
+    $type: shadowsocks
     endpoint: example.com:80
     <<: &cipher
       cipher: chacha20-ietf-poly1305
       secret: SECRET
     prefix: "POST "
 udp:
-    $parser: shadowsocks
+    $type: shadowsocks
     endpoint: example.com:53
     <<: *cipher`
 
@@ -188,7 +188,7 @@ udp:
 }
 
 func Test_NewTransport_Unsupported(t *testing.T) {
-	config := `$parser: unsupported`
+	config := `$type: unsupported`
 	result := NewClient(config)
 	require.Error(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, "unsupported config", result.Error.Message)
@@ -198,18 +198,18 @@ func Test_NewTransport_Unsupported(t *testing.T) {
 TODO: Add Websocket support
 func Test_NewTransport_Websocket(t *testing.T) {
 	config := `
-$parser: tcpudp
+$type: tcpudp
 tcp: &base
-    $parser: shadowsocks
+    $type: shadowsocks
     endpoint:
-        $parser: websocket
+        $type: websocket
         url: https://entrypoint.cdn.example.com/tcp
     cipher: chacha20-ietf-poly1305
     secret: SECRET
 udp:
     <<: *base
     endpoint:
-        $parser: websocket
+        $type: websocket
         url: https://entrypoint.cdn.example.com/udp`
 	firstHop := "entrypoint.cdn.example.com:443"
 
