@@ -10,7 +10,7 @@ Outline uses a YAML-based configuration to specify the VPN parameters and how to
 
 This is the format of the configuration returned by [Dynamic Access Keys](https://www.reddit.com/r/outlinevpn/wiki/index/dynamic_access_keys/).
 
-Format: [ExplicitTunnelConfig](#ExplicitTunnelConfig) | [LegacyShadowsocksConfig](#LegacyShadowsocksConfig) | [LegacyShadowsocksURL](#LegacyShadowsocksURL)
+Format: [ExplicitTunnelConfig](#ExplicitTunnelConfig) | [LegacyShadowsocksConfig](#LegacyShadowsocksConfig) | [LegacyShadowsocksURI](#LegacyShadowsocksURI)
 
 ### <a id=TransportConfig></a>TransportConfig
 
@@ -25,7 +25,7 @@ Supported Interface types:
 
 Format: _null_ | [Interface](#Interface)
 
-The _null_ (absent) Dialer means the default Dialer.
+The _null_ (absent) Dialer means the default Dialer, which is a TCP dialer for stream and UDP dialer for packets.
 
 Supported Interface types:
 
@@ -35,7 +35,7 @@ Supported Interface types:
 
 Format: _null_ | [Interface](#Interface)
 
-The _null_ (absent) Packet Listener means the default Packet Listener.
+The _null_ (absent) Packet Listener means the default Packet Listener, which is a UDP Packet Listener.
 
 Supported Interface types:
 
@@ -99,7 +99,7 @@ password: SECRET
 prefix: "POST "
 ```
 
-### <a id=LegacyShadowsocksURL></a>LegacyShadowsocksURL
+### <a id=LegacyShadowsocksURI></a>LegacyShadowsocksURI
 
 Format: _string_
 
@@ -137,8 +137,8 @@ Format: _struct_
 
 Fields:
 
-- `tcp` (_StreamDialer_)
-- `udp` (_PacketListener_)
+- `tcp` ([StreamDialer](#DialerConfig))
+- `udp` ([PacketListener](#PacketListenerConfig))
 
 Example sending TCP and UDP to different endpoints:
 
