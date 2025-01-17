@@ -23,20 +23,23 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func newTestProvider() *TypeParser[*TransportPair] {
+func newTestTransportProvider() *TypeParser[*TransportPair] {
 	tcpDialer := &transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
 	udpDialer := &transport.UDPDialer{}
 	return NewDefaultTransportProvider(tcpDialer, udpDialer)
 }
 
 func TestRegisterDefaultProviders(t *testing.T) {
-	provider := newTestProvider()
+	provider := newTestTransportProvider()
 
 	node, err := ParseConfigYAML(`
-$type: ss
-endpoint: example.com:1234
-cipher: chacha20-ietf-poly1305
-secret: SECRET`)
+$type: tcpudp
+tcp: &shared
+  $type: shadowsocks
+  endpoint: example.com:1234
+  cipher: chacha20-ietf-poly1305
+  secret: SECRET
+udp: *shared`)
 	require.NoError(t, err)
 
 	d, err := provider.Parse(context.Background(), node)
@@ -51,7 +54,7 @@ secret: SECRET`)
 }
 
 func TestRegisterParseURL(t *testing.T) {
-	provider := newTestProvider()
+	provider := newTestTransportProvider()
 
 	node, err := ParseConfigYAML(`ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpaTXJSMW92ZmRBaEQ@example.com:4321/#My%20Server`)
 	require.NoError(t, err)
@@ -68,7 +71,7 @@ func TestRegisterParseURL(t *testing.T) {
 }
 
 func TestRegisterParseURLInQuotes(t *testing.T) {
-	provider := newTestProvider()
+	provider := newTestTransportProvider()
 
 	node, err := ParseConfigYAML(`"ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpaTXJSMW92ZmRBaEQ@example.com:4321/#My%20Server"`)
 	require.NoError(t, err)
