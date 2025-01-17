@@ -6,6 +6,70 @@ Outline uses a YAML-based configuration to define VPN parameters and handle TCP/
 
 The top-level configuration specifies a [TunnelConfig](#TunnelConfig).
 
+## Examples
+A typical Shadowsocks configuration will look like this:
+
+```yaml
+transport:
+  $type: tcpudp
+
+  tcp:
+    $type: shadowsocks
+    endpoint: ss.example.com:4321
+    cipher: chacha20-ietf-poly1305
+    secret: SECRET
+    prefix: "POST "
+
+  udp:
+    $type: shadowsocks
+    endpoint: ss.example.com:4321
+    cipher: chacha20-ietf-poly1305
+    secret: SECRET
+```
+
+Note how we can now have TCP and UDP running on different ports or endpoints.
+
+You can leverage YAML anchors and the `<<` merge key to avoid duplication:
+
+```yaml
+transport:
+  $type: tcpudp
+
+  tcp:
+    <<: &shared
+      $type: shadowsocks
+      endpoint: ss.example.com:4321
+      cipher: chacha20-ietf-poly1305
+      secret: SECRET
+    prefix: "POST "
+
+  udp: *shared
+```
+
+It's now possible to compose strategies and do multi-hops:
+
+```yaml
+transport:
+  $type: tcpudp
+
+  tcp:
+    $type: shadowsocks
+
+    endpoint:
+      $type: dial
+      address: exit.example.com:4321
+      dialer:
+        $type: shadowsocks
+        address: entry.example.com:4321
+        cipher: chacha20-ietf-poly1305
+        secret: ENTRY_SECRET
+
+    cipher: chacha20-ietf-poly1305
+    secret: EXIT_SECRET
+
+  udp: *shared
+```
+
 ## Tunnels
 
 ### <a id=TunnelConfig></a>TunnelConfig
