@@ -12,79 +12,63 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package event provides a thread-safe event system for Outline.
-// It allows components to subscribe to events and be notified when they occur.
-//
-// This package is also designed for cross-language invocations between Go and TypeScript.
-// All data structures related to an event should be designed to be compatible between both languages.
+// Package event provides a thread-safe mechanism for managing and triggering events.
 package event
 
 import (
 	"log/slog"
+	"slices"
 	"sync"
+
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/callback"
 )
 
 // EventName is a type alias for string that represents the name of an event.
 // Using a dedicated type improves type safety when working with event names.
 type EventName string
 
-// Listener is the interface that must be implemented by the object that wants to subscribe to events.
-type Listener interface {
-	// When an event is triggered, Handle is called with the event data as well as the optional parameter
-	// that was passed during [Subscribe].
-	Handle(eventData, param string)
-}
-
-// listenerInfo holds the listener callback and the optional parameter provided during [Subscribe].
-type listenerInfo struct {
-	cb    Listener
-	param string
-}
-
 var (
-	mu        sync.RWMutex                       // Protects the listeners map
-	listeners = make(map[EventName]listenerInfo) // A map containing all event listeners
+	mu        sync.RWMutex
+	listeners = make(map[EventName][]callback.Token)
 )
 
-// Subscribe registers a [Listener] for a given [EventName].
+// AddListener adds a [callback.Callback] to a given [EventName].
 //
-// This function overwrites any existing listeners for the specified [EventName].
-//
-// The provided [Listener] will be called when the event is invoked, along with the event data and the supplied param.
-func Subscribe(evt EventName, cb Listener, param string) {
-	if evt == "" || cb == nil {
-		slog.Warn("empty event or listener is ignored")
+// The provided callback will be called when the event is invoked, along with the event data.
+func AddListener(evt EventName, cb callback.Token) {
+	if evt == "" || cb == "" {
+		slog.Warn("empty event or callback are ignored")
 		return
 	}
 	mu.Lock()
 	defer mu.Unlock()
 
-	listeners[evt] = listenerInfo{cb, param}
-	slog.Debug("successfully subscribed to event", "event", evt, "param", param)
+	listeners[evt] = append(listeners[evt], cb)
+	slog.Debug("successfully subscribed to event", "event", evt, "callback", cb)
 }
 
-// Unsubscribe removes the listener for the specified [EventName].
+// RemoveListener removes a [callback.Callback] from the specified [EventName].
 //
 // Calling this function is safe even if the event has not been registered.
-func Unsubscribe(evt EventName) {
+func RemoveListener(evt EventName, cb callback.Token) {
 	mu.Lock()
 	defer mu.Unlock()
 
-	delete(listeners, evt)
-	slog.Debug("successfully ubsubscribed from event", "event", evt)
+	if cbs, ok := listeners[evt]; ok {
+		listeners[evt] = slices.DeleteFunc(cbs, func(t callback.Token) bool { return t == cb })
+	}
+	slog.Debug("successfully ubsubscribed from event", "event", evt, "callback", cb)
 }
 
-// Raise triggers the specified [EventName] with the given data.
+// Fire triggers the specified [EventName], invoking all associated callbacks with the given data.
 //
-// This function will do nothing if no listener is registered.
-func Raise(evt EventName, data string) {
+// Calling this function is safe even if the event has not been registered.
+func Fire(evt EventName, data string) {
 	mu.RLock()
 	defer mu.RUnlock()
 
-	if l, ok := listeners[evt]; ok {
-		slog.Debug("firing event", "event", evt, "data", data, "param", l.param)
-		l.cb.Handle(data, l.param)
-	} else {
-		slog.Debug("event fired but no handlers are found", "event", evt, "data", data)
+	slog.Debug("firing event", "event", evt, "data", data)
+	for _, cb := range listeners[evt] {
+		callback.Call(cb, data)
 	}
 }

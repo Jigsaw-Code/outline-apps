@@ -83,7 +83,7 @@ var conn *VPNConnection
 func (c *VPNConnection) SetStatus(status ConnectionStatus) {
 	c.Status = status
 	if connJson, err := json.Marshal(c); err == nil {
-		event.Raise(ConnectionStatusChanged, string(connJson))
+		event.Fire(ConnectionStatusChanged, string(connJson))
 	} else {
 		slog.Warn("failed to marshal VPN connection", "err", err)
 	}

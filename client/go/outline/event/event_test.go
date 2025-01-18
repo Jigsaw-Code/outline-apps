@@ -20,78 +20,121 @@ import (
 	"sync/atomic"
 	"testing"
 
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/callback"
 	"github.com/stretchr/testify/require"
 )
 
-func Test_InvalidParams(t *testing.T) {
-	cntLst := len(listeners)
+func Test_AddListener(t *testing.T) {
+	originalCnt := len(listeners)
+	evt := EventName("TestAddListenerEvent")
+	cb := callback.New(&testListener{})
+	AddListener(evt, cb)
+
+	require.Len(t, listeners, originalCnt+1)
+	require.Len(t, listeners[evt], 1)
+	require.Equal(t, listeners[evt][0], cb)
+}
+
+func Test_RemoveListener(t *testing.T) {
+	originalCnt := len(listeners)
+	evt := EventName("TestRemoveListenerEvent")
+	cb1 := callback.New(&testListener{})
+	cb2 := callback.New(&testListener{})
+
+	AddListener(evt, cb1)
+	AddListener(evt, cb2)
+	require.Len(t, listeners, originalCnt+1)
+	require.Len(t, listeners[evt], 2)
+	require.Equal(t, listeners[evt][0], cb1)
+	require.Equal(t, listeners[evt][1], cb2)
+
+	RemoveListener(evt, cb1)
+	require.Len(t, listeners, originalCnt+1)
+	require.Len(t, listeners[evt], 1)
+	require.Equal(t, listeners[evt][0], cb2)
+}
+
+func Test_ZeroParams(t *testing.T) {
+	originalCnt := len(listeners)
 
 	l := &testListener{}
-	Subscribe("", l, "")
-	Raise("", "")
-	Subscribe("TestEvent", nil, "")
-	Unsubscribe("")
+	AddListener("", callback.New(l))
+	Fire("", "")
+	AddListener("TestEvent_InvalidParam", "")
 
-	require.Equal(t, cntLst, len(listeners))
+	RemoveListener("", callback.New(l))
+	RemoveListener("TestEvent_InvalidParam", "")
+	RemoveListener("NonExistEventName", callback.New(&testListener{}))
+
+	Fire("", "data1")
+	Fire("NonExistEventName", "data2")
+
+	require.Len(t, listeners, originalCnt)
 }
 
-func Test_UnsubscribeNonExistEvent(t *testing.T) {
-	Unsubscribe("")
-	Unsubscribe("NonExistEventName")
-}
-
-func Test_InvokeNonExistEvent(t *testing.T) {
-	Raise("", "")
-	Raise("NonExistEventName", "Param")
-}
-
-func TestNoSubscription(t *testing.T) {
+func Test_NoSubscription(t *testing.T) {
 	evt := EventName("testNoSubEvent")
 	l := &testListener{}
+	cb := callback.New(l)
 
-	Raise(evt, "data")
-	l.requireEqual(t, 0, "", "")
+	Fire(evt, "data")
+	l.requireEqual(t, 0, "") // No listener, callback should not be called
 
-	Subscribe(evt, l, "param")
-	Unsubscribe(evt)
-	Raise(evt, "data2")
-	l.requireEqual(t, 0, "", "")
+	AddListener(evt, cb)
+	RemoveListener(evt, cb)
+	Fire(evt, "data2")
+	l.requireEqual(t, 0, "") // Listener removed, callback should not be called
 }
 
-func TestSingleSubscription(t *testing.T) {
+func Test_SingleSubscription(t *testing.T) {
 	evt := EventName("testSingleSubEvent")
 	l := &testListener{}
-	Subscribe(evt, l, "mySingleSubParam")
+	cb := callback.New(l)
+	AddListener(evt, cb)
 
-	Raise(evt, "mySingleSubData")
-	l.requireEqual(t, 1, "mySingleSubData", "mySingleSubParam")
+	Fire(evt, "mySingleSubData")
+	l.requireEqual(t, 1, "mySingleSubData")
 
-	Raise(evt, "mySingleSubData2")
-	l.requireEqual(t, 2, "mySingleSubData2", "mySingleSubParam")
+	Fire(evt, "mySingleSubData2")
+	l.requireEqual(t, 2, "mySingleSubData2")
 
-	Unsubscribe(evt)
-	Raise(evt, "mySingleSubData3")
-	l.requireEqual(t, 2, "mySingleSubData2", "mySingleSubParam")
+	RemoveListener(evt, cb)
+	Fire(evt, "mySingleSubData3")
+	l.requireEqual(t, 2, "mySingleSubData2")
 
-	Subscribe(evt, l, "")
-	Raise(evt, "mySingleSubData4")
-	l.requireEqual(t, 3, "mySingleSubData4", "")
+	AddListener(evt, cb)
+	Fire(evt, "mySingleSubData4")
+	l.requireEqual(t, 3, "mySingleSubData4")
 }
 
-func TestOverwriteSubscription(t *testing.T) {
-	evt := EventName("testOverwriteSubEvent")
+func Test_MultipleSubscriptions(t *testing.T) {
+	evt := EventName("testMultiSubEvent")
 	l1 := &testListener{}
 	l2 := &testListener{}
+	l3 := &testListener{}
+	cb1 := callback.New(l1)
+	cb2 := callback.New(l2)
+	cb3 := callback.New(l3)
 
-	Subscribe(evt, l1, "param1")
-	Raise(evt, "data1")
-	l1.requireEqual(t, 1, "data1", "param1")
-	l2.requireEqual(t, 0, "", "")
+	AddListener(evt, cb1)
+	AddListener(evt, cb2)
+	AddListener(evt, cb3)
 
-	Subscribe(evt, l2, "param2")
-	Raise(evt, "data2")
-	l1.requireEqual(t, 1, "data1", "param1")
-	l2.requireEqual(t, 1, "data2", "param2")
+	Fire(evt, "data1")
+	l1.requireEqual(t, 1, "data1")
+	l2.requireEqual(t, 1, "data1")
+	l3.requireEqual(t, 1, "data1")
+
+	Fire(evt, "data2")
+	l1.requireEqual(t, 2, "data2")
+	l2.requireEqual(t, 2, "data2")
+	l3.requireEqual(t, 2, "data2")
+
+	RemoveListener(evt, cb2)
+	Fire(evt, "data3")
+	l1.requireEqual(t, 3, "data3")
+	l2.requireEqual(t, 2, "data2") // Listener 2 removed, should not increment
+	l3.requireEqual(t, 3, "data3")
 }
 
 func TestMultipleEvents(t *testing.T) {
@@ -99,43 +142,53 @@ func TestMultipleEvents(t *testing.T) {
 	evt2 := EventName("testMultiEvt2")
 	l1 := &testListener{}
 	l2 := &testListener{}
+	cb1 := callback.New(l1)
+	cb2 := callback.New(l2)
 
-	Subscribe(evt1, l1, "p1")
-	Subscribe(evt2, l2, "p2")
+	AddListener(evt1, cb1)
+	AddListener(evt2, cb2)
 
-	Raise(evt1, "d1")
-	l1.requireEqual(t, 1, "d1", "p1")
-	l2.requireEqual(t, 0, "", "")
+	Fire(evt1, "data1")
+	l1.requireEqual(t, 1, "data1")
+	l2.requireEqual(t, 0, "")
 
-	Raise(evt2, "d2")
-	l1.requireEqual(t, 1, "d1", "p1")
-	l2.requireEqual(t, 1, "d2", "p2")
+	Fire(evt2, "data2")
+	l1.requireEqual(t, 1, "data1")
+	l2.requireEqual(t, 1, "data2")
 
-	Raise(evt1, "d3")
-	l1.requireEqual(t, 2, "d3", "p1")
-	l2.requireEqual(t, 1, "d2", "p2")
+	Fire(evt1, "data3")
+	l1.requireEqual(t, 2, "data3")
+	l2.requireEqual(t, 1, "data2")
 
-	Raise(evt2, "d4")
-	l1.requireEqual(t, 2, "d3", "p1")
-	l2.requireEqual(t, 2, "d4", "p2")
+	Fire(evt2, "data4")
+	l1.requireEqual(t, 2, "data3")
+	l2.requireEqual(t, 2, "data4")
 }
 
 func TestConcurrentEvents(t *testing.T) {
-	const numEvents = 50
-	const invokesPerEvent = 50
+	const (
+		numEvents         = 50
+		listenersPerEvent = 20
+		invokesPerEvent   = 50
+	)
 
+	originalCnt := len(listeners)
+	evts := make([]EventName, numEvents)
 	var wg sync.WaitGroup
 
 	// Subscribe to events concurrently
-	listeners := make([]*testListener, numEvents)
-	wg.Add(numEvents)
+	handlers := make([]*testListener, numEvents*listenersPerEvent)
+	wg.Add(numEvents * listenersPerEvent)
 	for i := 0; i < numEvents; i++ {
-		go func(i int) {
-			defer wg.Done()
-			listeners[i] = &testListener{}
-			evtName := EventName(fmt.Sprintf("testConcurrentEvent-%d", i))
-			Subscribe(evtName, listeners[i], fmt.Sprintf("param-%d", i))
-		}(i)
+		evts[i] = EventName(fmt.Sprintf("testConcurrentEvent-%d", i))
+		for j := 0; j < listenersPerEvent; j++ {
+			go func(i, j int) {
+				defer wg.Done()
+				lis := &testListener{}
+				AddListener(evts[i], callback.New(lis))
+				handlers[i*listenersPerEvent+j] = lis
+			}(i, j)
+		}
 	}
 	wg.Wait()
 
@@ -145,39 +198,35 @@ func TestConcurrentEvents(t *testing.T) {
 		for j := 0; j < invokesPerEvent; j++ {
 			go func(i, j int) {
 				defer wg.Done()
-				evtName := EventName(fmt.Sprintf("testConcurrentEvent-%d", i))
-				Raise(evtName, fmt.Sprintf("data-%d-%d", i, j))
+				Fire(evts[i], fmt.Sprintf("data-%d-%d", i, j))
 			}(i, j)
 		}
 	}
 	wg.Wait()
 
 	// Verify results
-	for i := 0; i < numEvents; i++ {
-		require.Equal(t, int32(invokesPerEvent), listeners[i].cnt.Load())
-		require.Regexp(t, fmt.Sprintf("data-%d-\\d", i), listeners[i].lastData.Load())
-		require.Equal(t, fmt.Sprintf("param-%d", i), listeners[i].lastParam.Load())
+	require.Len(t, listeners, originalCnt+numEvents)
+	for i := 0; i < numEvents*listenersPerEvent; i++ {
+		require.Equal(t, int32(invokesPerEvent), handlers[i].cnt.Load())
+		require.Regexp(t, fmt.Sprintf("data-%d-\\d", i/listenersPerEvent), handlers[i].lastData.Load())
 	}
 }
 
 type testListener struct {
-	cnt                 atomic.Int32
-	lastData, lastParam atomic.Value
+	cnt      atomic.Int32
+	lastData atomic.Value
 }
 
-func (l *testListener) Handle(eventData, param string) {
+func (l *testListener) OnCall(eventData string) {
 	l.cnt.Add(1)
 	l.lastData.Store(eventData)
-	l.lastParam.Store(param)
 }
 
-func (l *testListener) requireEqual(t *testing.T, cnt int32, data string, param string) {
+func (l *testListener) requireEqual(t *testing.T, cnt int32, data string) {
 	require.Equal(t, cnt, l.cnt.Load())
 	if cnt == 0 {
 		require.Nil(t, l.lastData.Load())
-		require.Nil(t, l.lastParam.Load())
 	} else {
 		require.Equal(t, data, l.lastData.Load())
-		require.Equal(t, param, l.lastParam.Load())
 	}
 }
