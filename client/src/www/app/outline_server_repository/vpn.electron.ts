@@ -17,7 +17,7 @@ import {IpcRendererEvent} from 'electron/main';
 import {TunnelStatus} from './vpn';
 import {StartRequestJson} from './vpn';
 import {VpnApi} from './vpn';
-import {PlatformError} from '../../model/platform_error';
+import * as methodChannel from '../method_channel';
 
 export class ElectronVpnApi implements VpnApi {
   private statusChangeListener:
@@ -54,11 +54,9 @@ export class ElectronVpnApi implements VpnApi {
       return Promise.resolve();
     }
 
-    try {
-      await window.electron.methodChannel.invoke('start-proxying', request);
-    } catch (e) {
-      throw PlatformError.parseFrom(e);
-    }
+    await methodChannel
+      .getDefaultMethodChannel()
+      .invokeMethod('StartProxying', JSON.stringify(request));
   }
 
   async stop(id: string) {
@@ -66,11 +64,9 @@ export class ElectronVpnApi implements VpnApi {
       return;
     }
 
-    try {
-      await window.electron.methodChannel.invoke('stop-proxying');
-    } catch (e) {
-      console.error(`Failed to stop tunnel ${e}`);
-    }
+    await methodChannel
+      .getDefaultMethodChannel()
+      .invokeMethod('StopProxying', '');
   }
 
   async isRunning(id: string): Promise<boolean> {
