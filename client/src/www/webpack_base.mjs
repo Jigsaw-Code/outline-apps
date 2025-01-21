@@ -40,12 +40,16 @@ export const baseConfig = {
   resolve: {
     extensions: ['.ts', '.js', '.mts', '.mjs'],
     fallback: {url: require.resolve('url/')},
-    // This alias prevents multiple copies of lit from creeping into the build:
+    // These aliai prevents multiple copies of lit from creeping into the build:
     // See: https://lit.dev/docs/tools/development/#multiple-lit-versions
     alias: {
       lit: path.resolve(getRootDir(), 'node_modules/lit'),
       'lit/*': path.resolve(getRootDir(), 'node_modules/lit/*'),
       'lit-html': path.resolve(getRootDir(), 'node_modules/lit-html'),
+      '@lit/reactive-element': path.resolve(
+        getRootDir(),
+        'node_modules/@lit/reactive-element'
+      ),
     },
   },
   optimization: {

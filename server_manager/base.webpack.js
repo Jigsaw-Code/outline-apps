@@ -76,6 +76,10 @@ exports.makeConfig = options => {
         lit: path.resolve(__dirname, '../node_modules/lit'),
         'lit/*': path.resolve(__dirname, '../node_modules/lit/*'),
         'lit-html': path.resolve(__dirname, '../node_modules/lit-html'),
+        '@lit/reactive-element': path.resolve(
+          __dirname,
+          '../node_modules/@lit/reactive-element'
+        ),
       },
     },
     plugins: [

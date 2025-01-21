@@ -23,7 +23,6 @@
     "client"
   ],
   "devDependencies": {
-    "@lit/reactive-element": "^1.6.3",
     "@storybook/addon-essentials": "^8.2.6",
     "@storybook/addon-links": "^8.2.6",
     "@storybook/blocks": "^8.2.6",
@@ -45,8 +44,5 @@
     "node-fetch": "^2.6.7",
     "storybook": "^8.2.6",
     "typescript": "^5.4.5"
-  },
-  "overrides": {
-    "@lit/reactive-element": "$@lit/reactive-element"
   }
 }
