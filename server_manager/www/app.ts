@@ -1046,6 +1046,8 @@ export class App {
 
       let totalUserHours = 0;
       for (const {tunnelTime} of serverMetrics.server) {
+        if (!tunnelTime) continue;
+
         totalUserHours += tunnelTime.seconds / HOUR_IN_SECS;
       }
 
@@ -1054,6 +1056,8 @@ export class App {
 
       let totalInboundBytes = 0;
       for (const {dataTransferred} of serverMetrics.accessKeys) {
+        if (!dataTransferred) continue;
+
         totalInboundBytes += dataTransferred.bytes;
       }
 
@@ -1062,7 +1066,9 @@ export class App {
       // Update all the displayed access keys, even if usage didn't change, in case data limits did.
       const keyDataTransferMap = serverMetrics.accessKeys.reduce(
         (map, {accessKeyId, dataTransferred}) => {
-          map.set(String(accessKeyId), dataTransferred.bytes);
+          if (dataTransferred) {
+            map.set(String(accessKeyId), dataTransferred.bytes);
+          }
           return map;
         },
         new Map<string, number>()

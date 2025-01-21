@@ -57,17 +57,9 @@ function makeAccessKeyModel(apiAccessKey: AccessKeyJson): server.AccessKey {
 export class ShadowboxServer implements server.Server {
   private api: PathApiClient;
   private serverConfig: ServerConfigJson;
-  private supportedEndpoints: {
-    'experimental/server/metrics': boolean;
-  };
+  private _supportedExperimentalEndpointCache: Set<string>;
 
-  constructor(private readonly id: string) {
-    this.id = id;
-
-    this.supportedEndpoints = {
-      'experimental/server/metrics': false,
-    };
-  }
+  constructor(private readonly id: string) {}
 
   getId(): string {
     return this.id;
@@ -159,7 +151,9 @@ export class ShadowboxServer implements server.Server {
   }
 
   async getServerMetrics(): Promise<server.ServerMetricsJson> {
-    if (this.supportedEndpoints['experimental/server/metrics']) {
+    if (
+      (await this.getSupportedExperimentalEndpoints()).has('server/metrics')
+    ) {
       return this.api.request<server.ServerMetricsJson>(
         'experimental/server/metrics?since=30d'
       );
@@ -187,6 +181,31 @@ export class ShadowboxServer implements server.Server {
 
   getName(): string {
     return this.serverConfig?.name;
+  }
+
+  async getSupportedExperimentalEndpoints(): Promise<Set<string>> {
+    if (this._supportedExperimentalEndpointCache)
+      return this._supportedExperimentalEndpointCache;
+
+    const result = new Set<string>();
+
+    if (!this.api) return result;
+
+    try {
+      await this.api.request<server.ServerMetricsJson>(
+        'experimental/server/metrics?since=30d'
+      );
+      result.add('server/metrics');
+    } catch (error) {
+      // endpoint is not defined, keep set to false
+      if (error.response?.status !== 404) {
+        result.add('server/metrics');
+      }
+    }
+
+    this._supportedExperimentalEndpointCache = result;
+
+    return result;
   }
 
   async setName(name: string): Promise<void> {
@@ -286,20 +305,6 @@ export class ShadowboxServer implements server.Server {
 
   protected setManagementApi(api: PathApiClient): void {
     this.api = api;
-
-    this.api
-      .request<server.ServerMetricsJson>(
-        'experimental/server/metrics?since=30d'
-      )
-      .then(
-        () => (this.supportedEndpoints['experimental/server/metrics'] = true)
-      )
-      .catch(error => {
-        // endpoint is not defined, keep set to false
-        if (error.response.status === 404) return;
-
-        this.supportedEndpoints['experimental/server/metrics'] = true;
-      });
   }
 
   getManagementApiUrl(): string {

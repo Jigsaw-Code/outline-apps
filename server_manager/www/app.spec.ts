@@ -19,6 +19,7 @@ import {
   FakeCloudAccounts,
   FakeDigitalOceanAccount,
   FakeManualServerRepository,
+  FakeManualServer,
 } from './testing/models';
 import {AppRoot} from './ui_components/app-root';
 import * as accounts from '../model/accounts';
@@ -108,6 +109,36 @@ describe('App', () => {
     expect(serverList).toContain(
       jasmine.objectContaining({id: '_fake-region-id'})
     );
+  });
+
+  it('uses the metrics endpoint by default', async () => {
+    expect(
+      (
+        await (
+          await new FakeManualServer({
+            certSha256: 'cert',
+            apiUrl: 'api-url',
+          })
+        ).getServerMetrics()
+      ).server.length
+    ).toBe(0);
+  });
+
+  it('uses the experimental metrics endpoint if present', async () => {
+    class FakeExperimentalMetricsManualServer extends FakeManualServer {
+      getSupportedExperimentalEndpoints() {
+        return Promise.resolve(new Set(['server/metrics']));
+      }
+    }
+
+    expect(
+      (
+        await new FakeExperimentalMetricsManualServer({
+          certSha256: 'cert',
+          apiUrl: 'api-url',
+        }).getServerMetrics()
+      ).server.length
+    ).toBe(1);
   });
 
   it('initially shows the last selected server', async () => {
