@@ -68,7 +68,16 @@ exports.makeConfig = options => {
         },
       ],
     },
-    resolve: {extensions: ['.tsx', '.ts', '.js']},
+    resolve: {
+      extensions: ['.tsx', '.ts', '.js'],
+      // This alias prevents multiple copies of lit from creeping into the build:
+      // See: https://lit.dev/docs/tools/development/#multiple-lit-versions
+      alias: {
+        lit: path.resolve(__dirname, '../node_modules/lit'),
+        'lit/*': path.resolve(__dirname, '../node_modules/lit/*'),
+        'lit-html': path.resolve(__dirname, '../node_modules/lit-html'),
+      },
+    },
     plugins: [
       new webpack.DefinePlugin({
         'outline.gcpAuthEnabled': JSON.stringify(

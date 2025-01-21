@@ -15,6 +15,7 @@ import {createRequire} from 'module';
 import path from 'path';
 import {fileURLToPath} from 'url';
 
+import {getRootDir} from '@outline/infrastructure/build/get_root_dir.mjs';
 import CopyPlugin from 'copy-webpack-plugin';
 import TerserPlugin from 'terser-webpack-plugin';
 
@@ -39,6 +40,13 @@ export const baseConfig = {
   resolve: {
     extensions: ['.ts', '.js', '.mts', '.mjs'],
     fallback: {url: require.resolve('url/')},
+    // This alias prevents multiple copies of lit from creeping into the build:
+    // See: https://lit.dev/docs/tools/development/#multiple-lit-versions
+    alias: {
+      lit: path.resolve(getRootDir(), 'node_modules/lit'),
+      'lit/*': path.resolve(getRootDir(), 'node_modules/lit/*'),
+      'lit-html': path.resolve(getRootDir(), 'node_modules/lit-html'),
+    },
   },
   optimization: {
     minimizer: [
