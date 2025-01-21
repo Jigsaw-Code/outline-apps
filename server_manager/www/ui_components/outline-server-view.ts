@@ -973,8 +973,8 @@ export class ServerView extends DirMixin(PolymerElement) {
       {
         icon: 'timer',
         name: this.localize('server-metrics-user-hours'),
-        units: this.localize('server-metrics-user-hours-unit'),
-        value: totalUserHours.toFixed(2),
+        units: this._formatHourUnits(totalUserHours, language),
+        value: this._formatHourValue(totalUserHours, language),
       },
       {
         icon: 'swap_horiz',
@@ -1127,6 +1127,35 @@ export class ServerView extends DirMixin(PolymerElement) {
       return '';
     }
     return formatting.formatBytesParts(totalBytes, language).value;
+  }
+
+  _formatHourUnits(hours: number, language: string) {
+    // This happens during app startup before we set the language
+    if (!language) {
+      return '';
+    }
+
+    const formattedValue = this._formatHourValue(hours, language);
+    const formattedValueAndUnit = new Intl.NumberFormat(language, {
+      style: 'unit',
+      unit: 'hour',
+      unitDisplay: 'long',
+    }).format(hours);
+
+    return formattedValueAndUnit
+      .split(formattedValue)
+      .find(_ => _)
+      .trim();
+  }
+
+  _formatHourValue(hours: number, language: string) {
+    // This happens during app startup before we set the language
+    if (!language) {
+      return '';
+    }
+    return new Intl.NumberFormat(language, {
+      unit: 'hour',
+    }).format(hours);
   }
 
   _formatBytesTransferred(numBytes: number, language: string, emptyValue = '') {
