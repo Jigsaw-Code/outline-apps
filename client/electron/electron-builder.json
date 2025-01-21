@@ -19,8 +19,8 @@
 
   "deb": {
     "depends": [
-      "gconf2", "gconf-service", "libnotify4", "libappindicator1", "libxtst6", "libnss3",
-      "libcap2-bin"
+      "libnotify4", "libxtst6", "libnss3",
+      "libcap2-bin", "patchelf"
     ],
     "afterInstall": "client/electron/debian/after_install.sh"
   },
@@ -30,7 +30,8 @@
     "files": [
       "client/electron/linux_proxy_controller/dist",
       "client/electron/icons/png",
-      "client/output/build/linux"
+      "client/output/build/linux",
+      "!client/output/build/linux/*.h"
     ],
     "icon": "client/electron/icons/png",
     "maintainer": "Jigsaw LLC",
@@ -51,7 +52,8 @@
   },
   "win": {
     "files": [
-      "client/output/build/windows"
+      "client/output/build/windows",
+      "!client/output/build/windows/*.h"
     ],
     "icon": "client/electron/icons/win/icon.ico",
     "sign": "client/electron/windows/electron_builder_signing_plugin.cjs",

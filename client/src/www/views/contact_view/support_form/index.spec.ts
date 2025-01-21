@@ -16,10 +16,16 @@
 
 import {TextField} from '@material/mwc-textfield';
 
-import {fixture, html, nextFrame, oneEvent, triggerBlurFor, triggerFocusFor} from '@open-wc/testing';
+import {
+  fixture,
+  html,
+  nextFrame,
+  oneEvent,
+  triggerBlurFor,
+  triggerFocusFor,
+} from '@open-wc/testing';
 
 import {FormValues, SupportForm} from './index';
-
 
 async function setValue(el: TextField, value: string) {
   await triggerFocusFor(el);
@@ -40,22 +46,37 @@ describe('SupportForm', () => {
       accessKeySource: 'a friend',
       subject: 'Test Subject',
       description: 'Test Description',
+      outreachConsent: false,
     };
-    const el = await fixture(html` <support-form .values=${values}></support-form> `);
+    const el = await fixture(html`
+      <support-form .values=${values}></support-form>
+    `);
 
-    const emailInput: TextField = el.shadowRoot!.querySelector('mwc-textfield[name="email"')!;
+    const emailInput: TextField = el.shadowRoot!.querySelector(
+      'mwc-textfield[name="email"'
+    )!;
     expect(emailInput.value).toBe('foo@bar.com');
-    const accessKeySourceInput: TextField = el.shadowRoot!.querySelector('mwc-textfield[name="accessKeySource"')!;
+    const accessKeySourceInput: TextField = el.shadowRoot!.querySelector(
+      'mwc-textfield[name="accessKeySource"'
+    )!;
     expect(accessKeySourceInput.value).toBe('a friend');
-    const subjectInput: TextField = el.shadowRoot!.querySelector('mwc-textfield[name="subject"')!;
+    const subjectInput: TextField = el.shadowRoot!.querySelector(
+      'mwc-textfield[name="subject"'
+    )!;
     expect(subjectInput.value).toBe('Test Subject');
-    const descriptionInput: TextField = el.shadowRoot!.querySelector('mwc-textarea[name="description"')!;
+    const descriptionInput: TextField = el.shadowRoot!.querySelector(
+      'mwc-textarea[name="description"'
+    )!;
     expect(descriptionInput.value).toBe('Test Description');
   });
 
   it('updating the `values` property updates the form', async () => {
-    const el: SupportForm = await fixture(html` <support-form></support-form> `);
-    const emailInput: TextField = el.shadowRoot!.querySelector('mwc-textfield[name="email"')!;
+    const el: SupportForm = await fixture(html`
+      <support-form></support-form>
+    `);
+    const emailInput: TextField = el.shadowRoot!.querySelector(
+      'mwc-textfield[name="email"'
+    )!;
     await setValue(emailInput, 'foo@bar.com');
 
     el.values = {};
@@ -66,7 +87,9 @@ describe('SupportForm', () => {
 
   it('submit button is disabled by default', async () => {
     const el = await fixture(html` <support-form></support-form> `);
-    const submitButton = el.shadowRoot!.querySelectorAll('mwc-button')[1] as HTMLElement;
+    const submitButton = el.shadowRoot!.querySelectorAll(
+      'mwc-button'
+    )[1] as HTMLElement;
     expect(submitButton.hasAttribute('disabled')).toBeTrue();
   });
 
@@ -77,16 +100,26 @@ describe('SupportForm', () => {
     beforeEach(async () => {
       el = await fixture(html` <support-form></support-form> `);
 
-      const emailInput: TextField = el.shadowRoot!.querySelector('mwc-textfield[name="email"')!;
+      const emailInput: TextField = el.shadowRoot!.querySelector(
+        'mwc-textfield[name="email"'
+      )!;
       await setValue(emailInput, 'foo@bar.com');
-      const accessKeySourceInput: TextField = el.shadowRoot!.querySelector('mwc-textfield[name="accessKeySource"')!;
+      const accessKeySourceInput: TextField = el.shadowRoot!.querySelector(
+        'mwc-textfield[name="accessKeySource"'
+      )!;
       await setValue(accessKeySourceInput, 'From a friend');
-      const subjectInput: TextField = el.shadowRoot!.querySelector('mwc-textfield[name="subject"')!;
+      const subjectInput: TextField = el.shadowRoot!.querySelector(
+        'mwc-textfield[name="subject"'
+      )!;
       await setValue(subjectInput, 'Test Subject');
-      const descriptionInput: TextField = el.shadowRoot!.querySelector('mwc-textarea[name="description"')!;
+      const descriptionInput: TextField = el.shadowRoot!.querySelector(
+        'mwc-textarea[name="description"'
+      )!;
       await setValue(descriptionInput, 'Test Description');
 
-      submitButton = el.shadowRoot!.querySelectorAll('mwc-button')[1] as HTMLElement;
+      submitButton = el.shadowRoot!.querySelectorAll(
+        'mwc-button'
+      )[1] as HTMLElement;
     });
 
     it('submit button is enabled', async () => {
@@ -104,10 +137,14 @@ describe('SupportForm', () => {
   });
 
   it('emits form cancel event', async () => {
-    const el: SupportForm = await fixture(html` <support-form></support-form> `);
+    const el: SupportForm = await fixture(html`
+      <support-form></support-form>
+    `);
     const listener = oneEvent(el, 'cancel');
 
-    const cancelButton = el.shadowRoot!.querySelectorAll('mwc-button')[0] as HTMLElement;
+    const cancelButton = el.shadowRoot!.querySelectorAll(
+      'mwc-button'
+    )[0] as HTMLElement;
     cancelButton.click();
 
     const {detail} = await listener;

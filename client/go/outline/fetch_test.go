@@ -19,6 +19,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/stretchr/testify/require"
@@ -30,9 +31,9 @@ func TestFetchResource(t *testing.T) {
 	}))
 	defer server.Close()
 
-	result := FetchResource(server.URL)
-	require.Nil(t, result.Error)
-	require.Equal(t, "{\"name\": \"my-test-key\"}\n", result.Content)
+	content, err := fetchResource(server.URL)
+	require.Nil(t, err)
+	require.Equal(t, "{\"name\": \"my-test-key\"}\n", content)
 }
 
 func TestFetchResource_Redirection(t *testing.T) {
@@ -55,9 +56,9 @@ func TestFetchResource_Redirection(t *testing.T) {
 		}))
 		defer redirSvr.Close()
 
-		result := FetchResource(redirSvr.URL)
-		require.Nil(t, result.Error)
-		require.Equal(t, "ss://my-url-format-test-key\n", result.Content)
+		content, err := fetchResource(redirSvr.URL)
+		require.Nil(t, err)
+		require.Equal(t, "ss://my-url-format-test-key\n", content)
 	}
 }
 
@@ -78,10 +79,12 @@ func TestFetchResource_HTTPStatusError(t *testing.T) {
 		}))
 		defer server.Close()
 
-		result := FetchResource(server.URL)
-		require.Error(t, result.Error)
-		require.Equal(t, platerrors.FetchConfigFailed, result.Error.Code)
-		require.Error(t, result.Error.Cause)
+		var perr platerrors.PlatformError
+		content, err := fetchResource(server.URL)
+		require.Empty(t, content)
+		require.ErrorAs(t, err, &perr)
+		require.Equal(t, platerrors.FetchConfigFailed, perr.Code)
+		require.Error(t, perr.Cause)
 	}
 }
 
@@ -91,8 +94,36 @@ func TestFetchResource_BodyReadError(t *testing.T) {
 	}))
 	defer server.Close()
 
-	result := FetchResource(server.URL)
-	require.Error(t, result.Error)
-	require.Equal(t, platerrors.FetchConfigFailed, result.Error.Code)
-	require.Error(t, result.Error.Cause)
+	var perr platerrors.PlatformError
+	content, err := fetchResource(server.URL)
+	require.Empty(t, content)
+	require.ErrorAs(t, err, &perr)
+	require.Equal(t, platerrors.FetchConfigFailed, perr.Code)
+	require.Error(t, perr.Cause)
+}
+
+func TestFetchResource_Timeout(t *testing.T) {
+	const (
+		MaxFetchWaitTime = 12 * time.Second
+		ServerDelay      = 20 * time.Second
+	)
+
+	testDone := make(chan bool)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		select {
+		case <-time.After(ServerDelay):
+			w.WriteHeader(http.StatusNoContent)
+		case <-testDone:
+		}
+	}))
+	defer server.Close()
+
+	start := time.Now()
+	content, err := fetchResource(server.URL)
+	duration := time.Since(start)
+	testDone <- true
+
+	require.LessOrEqual(t, duration, MaxFetchWaitTime, "fetchResource should time out in 10s")
+	require.Error(t, err, "fetchResource should return a non-nil timeout error")
+	require.Empty(t, content)
 }

@@ -37,7 +37,7 @@
   "email-feedback-input": "Adreça electrònica (opcional)",
   "error-connection-configuration": "Configuració no vàlida. Fes una captura de pantalla de la informació de l'error i envia-la al proveïdor de la clau d'accés.",
   "error-connection-configuration-fetch": "No s'ha pogut baixar la configuració del servidor. Fes una captura de pantalla de la informació de l'error i envia-la al proveïdor de la clau d'accés.",
-  "error-connection-proxy": "S'ha produït un error en la connexió. Comprova la connexió a Internet i, a continuació, fes una captura de pantalla de la informació de l'error i envia-la al proveïdor de la clau d'accés.",
+  "error-connection-proxy": "Hi ha hagut un error en la connexió. Comprova la connexió a Internet i, a continuació, fes una captura de pantalla de la informació de l'error i envia-la al proveïdor de la clau d'accés.",
   "error-details": "Detalls",
   "error-feedback-submission": "No hem pogut enviar els teus comentaris. Comprova la connexió a Internet i torna-ho a provar.",
   "error-invalid-access-key": "La clau d'accés no és vàlida. Torna-ho a provar o envia comentaris per obtenir ajuda.",

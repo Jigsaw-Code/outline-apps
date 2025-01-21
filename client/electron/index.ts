@@ -19,6 +19,7 @@ import * as path from 'path';
 import * as process from 'process';
 import * as url from 'url';
 
+import * as net from '@outline/infrastructure/net';
 import * as Sentry from '@sentry/electron/main';
 import autoLaunch = require('auto-launch'); // tslint:disable-line
 import {
@@ -34,10 +35,11 @@ import {
 import {autoUpdater} from 'electron-updater';
 
 import {lookupIp} from './connectivity';
-import {fetchResource} from './go_helpers';
+import {invokeMethod} from './go_plugin';
 import {GoVpnTunnel} from './go_vpn_tunnel';
 import {installRoutingServices, RoutingDaemon} from './routing_service';
 import {TunnelStore} from './tunnel_store';
+import {closeVpn, establishVpn, onVpnStatusChanged} from './vpn_service';
 import {VpnTunnel} from './vpn_tunnel';
 import * as config from '../src/www/app/outline_server_repository/config';
 import {
@@ -56,7 +58,7 @@ declare const APP_VERSION: string;
 // Run-time environment variables:
 const debugMode = process.env.OUTLINE_DEBUG === 'true';
 
-const isLinux = os.platform() === 'linux';
+const IS_LINUX = os.platform() === 'linux';
 
 // Used for the auto-connect feature. There will be a tunnel in store
 // if the user was connected at shutdown.
@@ -158,7 +160,7 @@ function setupWindow(): void {
   //
   // The ideal solution would be: either electron-builder supports the app icon; or we add
   // dpi-aware features to this app.
-  if (isLinux) {
+  if (IS_LINUX) {
     mainWindow.setIcon(
       path.join(
         app.getAppPath(),
@@ -251,7 +253,7 @@ function updateTray(status: TunnelStatus) {
     {type: 'separator'} as MenuItemConstructorOptions,
     {label: localizedStrings['quit'], click: quitApp},
   ];
-  if (isLinux) {
+  if (IS_LINUX) {
     // Because the click event is never fired on Linux, we need an explicit open option.
     menuTemplate = [
       {
@@ -309,7 +311,7 @@ function interceptShadowsocksLink(argv: string[]) {
 async function setupAutoLaunch(request: StartRequestJson): Promise<void> {
   try {
     await tunnelStore.save(request);
-    if (isLinux) {
+    if (IS_LINUX) {
       if (process.env.APPIMAGE) {
         const outlineAutoLauncher = new autoLaunch({
           name: 'OutlineClient',
@@ -327,7 +329,7 @@ async function setupAutoLaunch(request: StartRequestJson): Promise<void> {
 
 async function tearDownAutoLaunch() {
   try {
-    if (isLinux) {
+    if (IS_LINUX) {
       const outlineAutoLauncher = new autoLaunch({
         name: 'OutlineClient',
       });
@@ -351,23 +353,35 @@ async function createVpnTunnel(
   // because startVpn will add a routing table entry that prefixed with this
   // host (e.g. "<host>/32"), therefore <host> must be an IP address.
   // TODO: make sure we resolve it in the native code
-  const host = tunnelConfig.firstHop.host;
+  const {host} = net.splitHostPort(tunnelConfig.firstHop);
   if (!host) {
     throw new errors.IllegalServerConfiguration('host is missing');
   }
   const hostIp = await lookupIp(host);
   const routing = new RoutingDaemon(hostIp || '', isAutoConnect);
   // Make sure the transport will use the IP we will allowlist.
-  const resolvedTransport =
-    config.setTransportConfigHost(tunnelConfig.transport, hostIp) ??
-    tunnelConfig.transport;
-  const tunnel = new GoVpnTunnel(routing, resolvedTransport);
+  // HACK: We do a simple string replacement in the config here. This may not always work with general configs
+  // but it works for simple configs.
+  // TODO: Remove the need to allowlisting the host IP.
+  tunnelConfig.transport = tunnelConfig.transport.replaceAll(host, hostIp);
+  const tunnel = new GoVpnTunnel(routing, tunnelConfig.transport);
   routing.onNetworkChange = tunnel.networkChanged.bind(tunnel);
   return tunnel;
 }
 
 // Invoked by both the start-proxying event handler and auto-connect.
 async function startVpn(request: StartRequestJson, isAutoConnect: boolean) {
+  console.debug('startVpn called with request ', JSON.stringify(request));
+
+  if (IS_LINUX && !process.env.APPIMAGE) {
+    onVpnStatusChanged((id, status) => {
+      setUiTunnelStatus(status, id);
+      console.info('VPN Status Changed: ', id, status);
+    });
+    await establishVpn(request);
+    return;
+  }
+
   if (currentTunnel) {
     throw new Error('already connected');
   }
@@ -401,6 +415,11 @@ async function startVpn(request: StartRequestJson, isAutoConnect: boolean) {
 
 // Invoked by both the stop-proxying event and quit handler.
 async function stopVpn() {
+  if (IS_LINUX && !process.env.APPIMAGE) {
+    await Promise.all([closeVpn(), tearDownAutoLaunch()]);
+    return;
+  }
+
   if (!currentTunnel) {
     return;
   }
@@ -499,10 +518,19 @@ function main() {
     mainWindow?.webContents.send('outline-ipc-push-clipboard');
   });
 
-  // Fetches a resource (usually the dynamic key config) from a remote URL.
+  // This IPC handler allows the renderer process to call functions exposed by the backend.
+  // It takes two arguments:
+  //   - method: The name of the method to call.
+  //   - params: A string representing the input data to the function.
+  //
+  // The handler returns the output string from the Go function if successful.
+  // Both the input string and output string need to be interpreted by the renderer process according
+  // to the specific API being called.
+  // If the function encounters an error, it throws an Error that can be parsed by the `PlatformError`.
   ipcMain.handle(
-    'outline-ipc-fetch-resource',
-    async (_, url: string): Promise<string> => fetchResource(url, debugMode)
+    'outline-ipc-invoke-method',
+    (_, method: string, params: string): Promise<string> =>
+      invokeMethod(method, params)
   );
 
   // Connects to a proxy server specified by a config.

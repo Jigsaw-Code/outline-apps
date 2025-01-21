@@ -12,14 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {pluginExecWithErrorCode} from './plugin.cordova';
-import {ResourceFetcher} from './resource_fetcher';
+//go:build !linux
 
-/**
- * Fetches resources using Cordova plugin.
- */
-export class CordovaResourceFetcher implements ResourceFetcher {
-  fetch(url: string): Promise<string> {
-    return pluginExecWithErrorCode<string>('fetchResource', url);
-  }
+package vpn
+
+func newPlatformVPNConn(conf *Config) (_ platformVPNConn, err error) {
+	panic("VPN connection not supported on non-Linux OS")
 }

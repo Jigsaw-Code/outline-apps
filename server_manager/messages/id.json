@@ -36,7 +36,7 @@
   "digitalocean-disconnect-account": "Putus sambungan akun DigitalOcean",
   "digitalocean-unreachable": "Error ini mungkin disebabkan oleh firewall di jaringan Anda atau masalah konektivitas sementara dengan digitalocean.com.",
   "disabled": "Nonaktifkan",
-  "disconnect": "Putuskan koneksi",
+  "disconnect": "Berhenti hubungkan",
   "done": "Selesai",
   "enabled": "Aktifkan",
   "error-connectivity": "Kami mengalami masalah saat menyambungkan ke akun DigitalOcean Anda. Biasanya, ini merupakan masalah sementara dengan DigitalOcean atau koneksi internet Anda. Jika tetap tidak berhasil setelah mencoba kembali, login ulang ke DigitalOcean seharusnya dapat memperbaiki masalah tersebut.",

@@ -1,0 +1,18 @@
+{
+  "eslint.run": "onSave",
+  "eslint.validate": ["javascript", "typescript"],
+  "files.insertFinalNewline": true,
+  "[go]": {
+    "editor.formatOnSave": true
+  },
+  "[javascript]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "always"
+    },
+  },
+  "[typescript]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "always"
+    },
+  },
+}

@@ -21,3 +21,7 @@ All submissions, including submissions by project members, require review. We
 use GitHub pull requests for this purpose. Consult
 [GitHub Help](https://help.github.com/articles/about-pull-requests/) for more
 information on using pull requests.
+
+## Setup: VSCode
+
+You'll have to clean up your extensions to get formatting to work properly. First, go to the `Extensions` tab and remove any extensions that might be formatting your code, like `esbenp.prettier-vscode`. Then, if VSCode doesn't automatically prompt you, install the recommended extensions by searching for `@recommended`.

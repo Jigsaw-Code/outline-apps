@@ -31,6 +31,9 @@ type ErrorCode = string
 const (
 	// InternalError represents a general internal service error.
 	InternalError ErrorCode = "ERR_INTERNAL_ERROR"
+
+	// OperationCanceled means that user canceled the long running operation.
+	OperationCanceled ErrorCode = "ERR_OPERATION_CANCELED_BY_USER"
 )
 
 //////////
@@ -55,6 +58,10 @@ const (
 
 	// SetupSystemVPNFailed means we failed to configure the system VPN to route to us.
 	SetupSystemVPNFailed ErrorCode = "ERR_SYSTEM_VPN_SETUP_FAILURE"
+
+	// DisconnectSystemVPNFailed means we failed to remove the system VPN.
+	// This typically indicates that a reboot is needed.
+	DisconnectSystemVPNFailed ErrorCode = "ERR_SYSTEM_VPN_DISCONNECT_FAILURE"
 
 	// DataTransmissionFailed means we failed to copy data from one device to another.
 	DataTransmissionFailed ErrorCode = "ERR_DATA_TRANSMISSION_FAILURE"
