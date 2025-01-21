@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {PlatformError} from '../model/platform_error';
+import {ipcToAppError} from '../model/platform_error';
 
 export const OUTLINE_PLUGIN_NAME = 'OutlinePlugin';
 
@@ -30,6 +30,6 @@ export async function pluginExecWithErrorCode<T>(
   try {
     return await pluginExec<T>(cmd, ...args);
   } catch (e) {
-    throw PlatformError.parseFrom(e);
+    throw ipcToAppError(e);
   }
 }
