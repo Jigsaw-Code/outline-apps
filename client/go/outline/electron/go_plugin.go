@@ -30,24 +30,20 @@ typedef struct InvokeMethodResult_t
 	const char *ErrorJson;
 } InvokeMethodResult;
 
-// ListenerFunc is a C function pointer type that represents a callback function.
-// This callback function will be invoked when an event is emitted.
+// CallbackFuncPtr is a C function pointer type that represents a callback function.
+// This callback function will be invoked by the Go side.
 //
-// - data: The event data, passed as a C string.
-// - param: An optional parameter that was passed during [SubscribeEvent], also passed as a C string.
-typedef void (*ListenerFunc)(const char *data, const char *param);
+// - data: The callback data, passed as a C string (typically a JSON string).
+typedef void (*CallbackFuncPtr)(const char *data);
 
-// InvokeListenerFunc takes a ListenerFunc callback, event data, and a parameter, and invokes the
-// callback with these arguments.
+// InvokeCallback is a helper function that invokes the C callback function pointer.
 //
-// This function is the glue code needed for Go to call C function pointers.
+// This function serves as a bridge, allowing Go to call a C function pointer.
 //
 // - f: The C function pointer to be invoked.
-// - data: The event data, passed as a C string.
-// - param: An optional parameter, passed as a C string.
-static void InvokeListenerFunc(ListenerFunc f, const char *data, const char *param)
-{
-  f(data, param);
+// - data: A C-string typed data to be passed to the callback.
+static void InvokeCallback(CallbackFuncPtr f, const char *data) {
+  f(data);
 }
 */
 import "C"
@@ -58,7 +54,7 @@ import (
 	"unsafe"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline"
-	"github.com/Jigsaw-Code/outline-apps/client/go/outline/event"
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/callback"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 )
 
@@ -78,34 +74,27 @@ func InvokeMethod(method *C.char, input *C.char) C.InvokeMethodResult {
 	}
 }
 
-// cgoListener implements [event.Listener] and calls a C function pointer when an event is emitted.
-type cgoListener struct {
-	cb C.ListenerFunc
+// cgoCallback implements the [callback.Callback] interface and bridges the Go callback
+// to a C function pointer.
+type cgoCallback struct {
+	ptr C.CallbackFuncPtr
 }
 
-var _ event.Listener = (*cgoListener)(nil)
+var _ callback.Callback = (*cgoCallback)(nil)
 
-// Handle forwards the event data and the parameter to the C callback function pointer.
-func (l *cgoListener) Handle(eventData, param string) {
-	C.InvokeListenerFunc(l.cb, newCGoString(eventData), newCGoString(param))
+// OnCall forwards the data to the C callback function pointer.
+func (ccb *cgoCallback) OnCall(data string) {
+	C.InvokeCallback(ccb.ptr, newCGoString(data))
 }
 
-// SubscribeEvent allows TypeScript to subscribe to events implemented by the event package.
+// NewCallback registers a new callback function and returns a [callback.Token] string.
 //
-// For more details, refer to the documentation of the [event.Subscribe].
+// The caller can delete the callback by calling [InvokeMethod] with method "DeleteCallback".
 //
-//export SubscribeEvent
-func SubscribeEvent(eventName *C.char, callback C.ListenerFunc, param *C.char) {
-	event.Subscribe(event.EventName(C.GoString(eventName)), &cgoListener{callback}, C.GoString(param))
-}
-
-// UnsubscribeEvent allows TypeScript to unsubscribe from events.
-//
-// For more details, refer to the documentation of the [event.Unsubscribe].
-//
-//export UnsubscribeEvent
-func UnsubscribeEvent(eventName *C.char) {
-	event.Unsubscribe(event.EventName(C.GoString(eventName)))
+//export NewCallback
+func NewCallback(cb C.CallbackFuncPtr) C.InvokeMethodResult {
+	token := callback.New(&cgoCallback{cb})
+	return C.InvokeMethodResult{Output: newCGoString(string(token))}
 }
 
 // newCGoString allocates memory for a C string based on the given Go string.

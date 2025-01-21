@@ -17,15 +17,24 @@ package outline
 import (
 	"fmt"
 
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/callback"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 )
 
 // API name constants
 const (
-	// FetchResource fetches a resource located at a given URL.
-	//  - Input: the URL string of the resource to fetch
-	//  - Output: the content in raw string of the fetched resource
-	MethodFetchResource = "FetchResource"
+	// CloseVPN closes an existing VPN connection and restores network traffic to the default
+	// network interface.
+	//
+	//  - Input: null
+	//  - Output: null
+	MethodCloseVPN = "CloseVPN"
+
+	// DeleteCallback deletes a callback associated with the given callback.Token string.
+	//
+	//  - Input: The callback token as a string.
+	//  - Output: null
+	MethodDeleteCallback = "DeleteCallback"
 
 	// EstablishVPN initiates a VPN connection and directs all network traffic through Outline.
 	//
@@ -33,12 +42,10 @@ const (
 	//  - Output: a JSON string of vpn.connectionJSON.
 	MethodEstablishVPN = "EstablishVPN"
 
-	// CloseVPN closes an existing VPN connection and restores network traffic to the default
-	// network interface.
-	//
-	//  - Input: null
-	//  - Output: null
-	MethodCloseVPN = "CloseVPN"
+	// FetchResource fetches a resource located at a given URL.
+	//  - Input: the URL string of the resource to fetch
+	//  - Output: the content in raw string of the fetched resource
+	MethodFetchResource = "FetchResource"
 )
 
 // InvokeMethodResult represents the result of an InvokeMethod call.
@@ -52,11 +59,9 @@ type InvokeMethodResult struct {
 // InvokeMethod calls a method by name.
 func InvokeMethod(method string, input string) *InvokeMethodResult {
 	switch method {
-	case MethodFetchResource:
-		url := input
-		content, err := fetchResource(url)
+	case MethodCloseVPN:
+		err := closeVPN()
 		return &InvokeMethodResult{
-			Value: content,
 			Error: platerrors.ToPlatformError(err),
 		}
 
@@ -66,9 +71,15 @@ func InvokeMethod(method string, input string) *InvokeMethodResult {
 			Error: platerrors.ToPlatformError(err),
 		}
 
-	case MethodCloseVPN:
-		err := closeVPN()
+	case MethodDeleteCallback:
+		callback.Delete(callback.Token(input))
+		return &InvokeMethodResult{}
+
+	case MethodFetchResource:
+		url := input
+		content, err := fetchResource(url)
 		return &InvokeMethodResult{
+			Value: content,
 			Error: platerrors.ToPlatformError(err),
 		}
 
