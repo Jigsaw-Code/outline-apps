@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {invokeMethod} from './go_plugin';
+import {invokeGoMethod} from './go_plugin';
 import {
   StartRequestJson,
   TunnelStatus,
@@ -71,13 +71,13 @@ export async function establishVpn(request: StartRequestJson) {
     transport: request.config.transport,
   };
 
-  await invokeMethod('EstablishVPN', JSON.stringify(config));
+  await invokeGoMethod('EstablishVPN', JSON.stringify(config));
   statusCb?.(currentRequestId, TunnelStatus.CONNECTED);
 }
 
 export async function closeVpn(): Promise<void> {
   statusCb?.(currentRequestId!, TunnelStatus.DISCONNECTING);
-  await invokeMethod('CloseVPN', '');
+  await invokeGoMethod('CloseVPN', '');
   statusCb?.(currentRequestId!, TunnelStatus.DISCONNECTED);
 }
 
