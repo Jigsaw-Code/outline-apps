@@ -16,6 +16,7 @@ package outline
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/internal/utf8"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
@@ -61,9 +62,8 @@ func parseConfigFromJSON(in string) (*configJSON, error) {
 	var conf configJSON
 	if err := json.Unmarshal([]byte(in), &conf); err != nil {
 		return nil, platerrors.PlatformError{
-			Code:    platerrors.IllegalConfig,
-			Message: "transport config is not a valid JSON",
-			Cause:   platerrors.ToPlatformError(err),
+			Code:  platerrors.IllegalConfig,
+			Cause: platerrors.ToPlatformError(fmt.Errorf("transport config is not a valid JSON: %w", err)),
 		}
 	}
 	return &conf, nil
@@ -94,14 +94,17 @@ func newIllegalConfigErrorWithDetails(
 	msg, field string, got interface{}, expect string, cause error,
 ) platerrors.PlatformError {
 	return platerrors.PlatformError{
-		Code:    platerrors.IllegalConfig,
-		Message: msg,
-		Details: platerrors.ErrorDetails{
-			"proxy-protocol": "shadowsocks",
-			"field":          field,
-			"got":            got,
-			"expected":       expect,
+		Code: platerrors.IllegalConfig,
+		Cause: &platerrors.PlatformError{
+			Code:    platerrors.GenericErr,
+			Message: msg,
+			Details: platerrors.ErrorDetails{
+				"proxy-protocol": "shadowsocks",
+				"field":          field,
+				"got":            got,
+				"expected":       expect,
+			},
+			Cause: platerrors.ToPlatformError(cause),
 		},
-		Cause: platerrors.ToPlatformError(cause),
 	}
 }

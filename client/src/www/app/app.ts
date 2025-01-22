@@ -750,7 +750,7 @@ export class App {
   private showErrorCauseDialog(error: Error) {
     let message = error.toString();
 
-    if (error.cause) {
+    if (!(error instanceof PlatformError && error.cause)) {
       message += '\nCause: ';
       message += error.cause.toString();
     }
