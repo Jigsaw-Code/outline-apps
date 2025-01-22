@@ -554,6 +554,7 @@ export class App {
       });
       console.error(`could not connect to server ${serverId}: ${e}`);
       if (
+        // TODO(fortuna): Use typed errors instead.
         e instanceof PlatformError &&
         e.code === ROUTING_SERVICE_NOT_RUNNING
       ) {
