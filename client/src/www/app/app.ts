@@ -330,10 +330,6 @@ export class App {
       buttonHandler = () => {
         this.showErrorDetailsDialog(error.details);
       };
-    } else if (error instanceof PlatformError) {
-      toastMessage = localizeErrorCode(error.code, this.localize);
-      buttonMessage = this.localize('error-details');
-      buttonHandler = () => this.showErrorDetailsDialog(error.toString());
     } else {
       const hasErrorDetails = Boolean(error.message || error.cause);
       toastMessage = this.localize('error-unexpected');

@@ -14,6 +14,12 @@
 
 import {CustomError} from '@outline/infrastructure/custom_error';
 
+import * as errors from './errors';
+
+// TODO(fortuna): Remove PlatformError from the model.
+// PlatformError is an implementation detail. It does not belong in the model.
+// It's also about serialization, we should not use it in application code.
+
 /**
  * @fileoverview This file defines types and constants corresponding to the backend Go's
  * `platerrors` package. It will be used to receive native errors from Go, eventually replacing
@@ -189,9 +195,30 @@ export class PlatformError extends CustomError {
   }
 }
 
-/** ipcToAppError converts an Error returned from IPC to an application error */
-export function ipcToAppError(ipcError: Error): Error {
-  return convertRawErrorObjectToPlatformError(JSON.parse(ipcError.message));
+/**
+ * ipcToAppError converts an Error returned from the MethodChannel IPC to an application error.
+ * MethodChannel errors encode its information as a JSON object in the Error message.
+ */
+export function ipcToAppError(ipcError: Error): CustomError {
+  const platError = convertRawErrorObjectToPlatformError(
+    JSON.parse(ipcError.message)
+  );
+  let options = undefined as {cause?: Error};
+  if (platError.cause instanceof Error) {
+    options = {cause: platError.cause};
+  }
+  switch (platError.code) {
+    case FETCH_CONFIG_FAILED:
+      return new errors.SessionConfigFetchFailed(platError.message, options);
+    case ILLEGAL_CONFIG:
+      return new errors.ServerAccessKeyInvalid(platError.message, options);
+    case PROXY_SERVER_UNREACHABLE:
+      return new errors.ServerUnreachable(platError.message, options);
+    case VPN_PERMISSION_NOT_GRANTED:
+      return new errors.VpnPermissionNotGranted(platError.message, options);
+    default:
+      return platError;
+  }
 }
 
 //////
@@ -207,13 +234,12 @@ export type ErrorCode = string;
 
 export const INTERNAL_ERROR: ErrorCode = 'ERR_INTERNAL_ERROR';
 
-export const FETCH_CONFIG_FAILED: ErrorCode = 'ERR_FETCH_CONFIG_FAILURE';
-export const ILLEGAL_CONFIG: ErrorCode = 'ERR_ILLEGAL_CONFIG';
+const FETCH_CONFIG_FAILED: ErrorCode = 'ERR_FETCH_CONFIG_FAILURE';
+const ILLEGAL_CONFIG: ErrorCode = 'ERR_ILLEGAL_CONFIG';
 
-export const VPN_PERMISSION_NOT_GRANTED = 'ERR_VPN_PERMISSION_NOT_GRANTED';
+const VPN_PERMISSION_NOT_GRANTED = 'ERR_VPN_PERMISSION_NOT_GRANTED';
 
-export const PROXY_SERVER_UNREACHABLE: ErrorCode =
-  'ERR_PROXY_SERVER_UNREACHABLE';
+const PROXY_SERVER_UNREACHABLE: ErrorCode = 'ERR_PROXY_SERVER_UNREACHABLE';
 
 /** Indicates that the OS routing service is not running (electron only). */
 export const ROUTING_SERVICE_NOT_RUNNING = 'ERR_ROUTING_SERVICE_NOT_RUNNING';
