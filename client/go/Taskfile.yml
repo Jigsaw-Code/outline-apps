@@ -48,7 +48,7 @@ tasks:
           GOOS={{.TARGET_OS}} GOARCH={{.TARGET_ARCH}} CGO_ENABLED=1 \
           CC='zig cc -target {{if eq .TARGET_ARCH "386"}}x86{{else}}x86_64{{end}}-{{.TARGET_OS}}{{if eq .TARGET_OS "linux"}}-gnu{{end}}'
         {{- end}} \
-        go build -trimpath -ldflags="-s -w -X=main.version={{.TUN2SOCKS_VERSION}}" -o '{{.OUTPUT}}' '{{.TASKFILE_DIR}}/outline/electron'
+        go env && go build -trimpath -x -v -ldflags="-s -w -X=main.version={{.TUN2SOCKS_VERSION}}" -o '{{.OUTPUT}}' '{{.TASKFILE_DIR}}/outline/electron'
       - |
         {{if or (ne OS .TARGET_OS) (ne ARCH .TARGET_ARCH) -}}
           GOOS={{.TARGET_OS}} GOARCH={{.TARGET_ARCH}} CGO_ENABLED=1 \

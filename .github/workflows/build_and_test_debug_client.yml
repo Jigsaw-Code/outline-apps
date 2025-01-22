@@ -127,7 +127,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v4
         with:
-          go-version-file: '${{ github.workspace }}/go.mod'
+          go-version: 'stable'
 
       - name: Install zig
         uses: mlugg/setup-zig@v1
