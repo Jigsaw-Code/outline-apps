@@ -194,7 +194,8 @@ export class ShadowboxServer implements server.Server {
 
     try {
       await this.api.request<server.ServerMetricsJson>(
-        'experimental/server/metrics?since=30d'
+        'experimental/server/metrics?since=30d',
+        'HEAD'
       );
       result.add('server/metrics');
     } catch (error) {
@@ -306,6 +307,10 @@ export class ShadowboxServer implements server.Server {
 
   protected setManagementApi(api: PathApiClient): void {
     this.api = api;
+
+    // re-populate the supported endpoint cache
+    this._supportedExperimentalEndpointCache = null;
+    this.getSupportedExperimentalEndpoints();
   }
 
   getManagementApiUrl(): string {
