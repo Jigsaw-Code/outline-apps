@@ -98,5 +98,6 @@ const (
 	GenericErr ErrorCode = "ERR_GENERIC"
 
 	// IllegalConfig indicates an invalid config to connect to a remote server.
+	// It should have only the Code and Cause fields set. Other fields are ignored, but you can add details to the cause.
 	IllegalConfig ErrorCode = "ERR_ILLEGAL_CONFIG"
 )

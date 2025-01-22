@@ -225,7 +225,12 @@ export class PlatformError extends CustomError {
    * @returns {string} A user friendly string representing this error.
    */
   toString(): string {
-    let result = this.code + '\n' + this.message;
+    let result = '';
+    if (this.code === GoErrorCode.GENERIC_ERROR) {
+      result = this.message;
+    } else {
+      result = this.code + '\n' + this.message;
+    }
     if (this.details) {
       result += '\nDetails: ';
       try {
