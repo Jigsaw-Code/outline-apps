@@ -184,8 +184,9 @@ export class ShadowboxServer implements server.Server {
   }
 
   async getSupportedExperimentalEndpoints(): Promise<Set<string>> {
-    if (this._supportedExperimentalEndpointCache)
+    if (this._supportedExperimentalEndpointCache) {
       return this._supportedExperimentalEndpointCache;
+    }
 
     const result = new Set<string>();
 
