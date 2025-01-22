@@ -53,7 +53,7 @@ function createInternalError(cause?: unknown): PlatformError {
  * @returns {PlatformError} A non-null instance of PlatformError.
  * @throws {Error} Will be thrown when {@link rawObj} is invalid.
  */
-function convertRawErrorObjectToPlatformError(rawObj: object): PlatformError {
+function convertRawErrorObjectToPlatformError(rawObj: object): CustomError {
   if (!('code' in rawObj) || typeof rawObj.code !== 'string') {
     throw new Error('code is invalid');
   }
@@ -83,7 +83,18 @@ function convertRawErrorObjectToPlatformError(rawObj: object): PlatformError {
     }
   }
 
-  return new PlatformError(code, rawObj.message, options);
+  switch (code) {
+    case FETCH_CONFIG_FAILED:
+      return new errors.SessionConfigFetchFailed(rawObj.message, options);
+    case ILLEGAL_CONFIG:
+      return new errors.ServerAccessKeyInvalid(rawObj.message, options);
+    case PROXY_SERVER_UNREACHABLE:
+      return new errors.ServerUnreachable(rawObj.message, options);
+    case VPN_PERMISSION_NOT_GRANTED:
+      return new errors.VpnPermissionNotGranted(rawObj.message, options);
+    default:
+      return new PlatformError(code, rawObj.message, options);
+  }
 }
 
 /**
@@ -135,7 +146,7 @@ export class PlatformError extends CustomError {
    *   throw PlatformError.parseFrom(e);
    * }
    */
-  static parseFrom(errObj: string | Error | unknown): PlatformError {
+  static parseFrom(errObj: string | Error | unknown): CustomError {
     if (typeof errObj === 'undefined' || errObj === null) {
       return createInternalError();
     }
@@ -200,25 +211,7 @@ export class PlatformError extends CustomError {
  * MethodChannel errors encode its information as a JSON object in the Error message.
  */
 export function ipcToAppError(ipcError: Error): CustomError {
-  const platError = convertRawErrorObjectToPlatformError(
-    JSON.parse(ipcError.message)
-  );
-  let options = undefined as {cause?: Error};
-  if (platError.cause instanceof Error) {
-    options = {cause: platError.cause};
-  }
-  switch (platError.code) {
-    case FETCH_CONFIG_FAILED:
-      return new errors.SessionConfigFetchFailed(platError.message, options);
-    case ILLEGAL_CONFIG:
-      return new errors.ServerAccessKeyInvalid(platError.message, options);
-    case PROXY_SERVER_UNREACHABLE:
-      return new errors.ServerUnreachable(platError.message, options);
-    case VPN_PERMISSION_NOT_GRANTED:
-      return new errors.VpnPermissionNotGranted(platError.message, options);
-    default:
-      return platError;
-  }
+  return convertRawErrorObjectToPlatformError(JSON.parse(ipcError.message));
 }
 
 //////
