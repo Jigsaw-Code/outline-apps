@@ -38,53 +38,61 @@ export async function invokeGoMethod(
   const result = await ensureCgo().invokeMethod(method, input);
   console.debug(`[Backend] - InvokeMethod "${method}" returned`, result);
   if (result.ErrorJson) {
-    throw Error(result.ErrorJson);
+    throw new Error(result.ErrorJson);
   }
   return result.Output;
 }
 
 /**
- * Represents a callback function for an event.
- * @param data The event data string passed from the source.
- * @param param The param string provided during registration.
+ * Represents a function that will be called from the Go backend.
+ * @param data The data string passed from the Go backend.
  */
-export type CallbackFunction = (data: string, param: string) => void;
+export type CallbackFunction = (data: string) => void;
 
 /**
- * Subscribes to an event from the Go backend.
- *
- * @param name The name of the event to subscribe to.
- * @param callback The callback function to be called when the event is fired.
- * @param param An optional parameter to be passed to the callback function.
- * @returns A Promise that resolves when the subscription is successful.
- *
- * @remarks Subscribing to an event will replace any previously subscribed callback for that event.
+ * Koffi requires us to register all persistent callbacks; we track the registrations here.
+ * @see https://koffi.dev/callbacks#registered-callbacks
  */
-export async function subscribeEvent(
-  name: string,
-  callback: CallbackFunction,
-  param: string | null = null
-): Promise<void> {
-  console.debug(`[Backend] - calling SubscribeEvent "${name}" "${param}" ...`);
-  await ensureCgo().subscribeEvent(
-    name,
-    registerKoffiCallback(name, callback),
-    param
-  );
-  console.debug(`[Backend] - SubscribeEvent "${name}" done`);
+const koffiCallbacks = new Map<string, koffi.IKoffiRegisteredCallback>();
+
+/**
+ * Registers a callback function in TypeScript, making it invokable from Go.
+ *
+ * The caller can delete the callback by calling `deleteCallback`.
+ *
+ * @param callback The callback function to be registered.
+ * @returns A Promise resolves to the callback token, which can be used to refer to the callback.
+ */
+export async function newCallback(callback: CallbackFunction): Promise<string> {
+  console.debug(`[Backend] - calling newCallback ...`);
+  const persistentCallback = koffi.register(callback, ensureCgo().callbackFuncPtr);
+  const result = await ensureCgo().newCallback(persistentCallback);
+  console.debug(`[Backend] - newCallback done`, result);
+  if (result.ErrorJson) {
+    koffi.unregister(persistentCallback);
+    throw new Error(result.ErrorJson);
+  }
+  koffiCallbacks.set(result.Output, persistentCallback);
+  console.debug(`[Backend] - registered persistent callback ${result.Output} with koffi`);
+  return result.Output;
 }
 
 /**
- * Unsubscribes from an event from the Go backend.
+ * Unregisters a specified callback function from the Go backend.
  *
- * @param name The name of the event to unsubscribe from.
- * @returns A Promise that resolves when the unsubscription is successful.
+ * @param token The callback token returned from `newCallback`.
+ * @returns A Promise that resolves when the unregistration is done.
  */
-export async function unsubscribeEvent(name: string): Promise<void> {
-  console.debug(`[Backend] - calling UnsubscribeEvent "${name}" ...`);
-  await ensureCgo().unsubscribeEvent(name);
-  unregisterKoffiCallback(name);
-  console.debug(`[Backend] - UnsubscribeEvent "${name}" done`);
+export async function deleteCallback(token: string): Promise<void> {
+  console.debug(`[Backend] - calling deleteCallback ...`);
+  await ensureCgo().deleteCallback(token);
+  console.debug(`[Backend] - deleteCallback done`);
+  const persistentCallback = koffiCallbacks.get(token);
+  if (persistentCallback) {
+    koffi.unregister(persistentCallback);
+    koffiCallbacks.delete(token);
+    console.debug(`[Backend] - unregistered persistent callback ${token} from koffi`)
+  }
 }
 
 /** Interface containing the exported native CGo functions. */
@@ -92,14 +100,14 @@ interface CgoFunctions {
   // InvokeMethodResult InvokeMethod(char* method, char* input);
   invokeMethod: Function;
 
-  // void (*ListenerFunc)(const char *data, const char *param);
-  listenerFuncPtr: koffi.IKoffiCType;
+  // void (*CallbackFuncPtr)(const char *data);
+  callbackFuncPtr: koffi.IKoffiCType;
 
-  // void SubscribeEvent(char* eventName, ListenerFunc callback, char* param);
-  subscribeEvent: Function;
+  // InvokeMethodResult NewCallback(CallbackFuncPtr cb);
+  newCallback: Function;
 
-  // void UnsubscribeEvent(char* eventName);
-  unsubscribeEvent: Function;
+  // void DeleteCallback(char* token);
+  deleteCallback: Function;
 }
 
 /** Singleton of the loaded native CGo functions. */
@@ -131,59 +139,21 @@ function ensureCgo(): CgoFunctions {
       backendLib.func('InvokeMethod', invokeMethodResult, ['str', 'str']).async
     );
 
-    // Define SubscribeEvent/UnsubscribeEvent data structures and function
-    const listenerFuncPtr = koffi.pointer(
-      koffi.proto('ListenerFunc', 'void', [cgoString, cgoString])
+    // Define callback data structures and functions
+    const callbackFuncPtr = koffi.pointer(
+      koffi.proto('CallbackFuncPtr', 'void', [cgoString])
     );
-    const subscribeEvent = promisify(
-      backendLib.func('SubscribeEvent', 'void', ['str', listenerFuncPtr, 'str'])
+    const newCallback = promisify(
+      backendLib.func('NewCallback', invokeMethodResult, [callbackFuncPtr])
         .async
     );
-    const unsubscribeEvent = promisify(
-      backendLib.func('UnsubscribeEvent', 'void', ['str']).async
+    const deleteCallback = promisify(
+      backendLib.func('DeleteCallback', 'void', ['str']).async
     );
 
     // Cache them so we don't have to reload these functions
-    cgo = {invokeMethod, listenerFuncPtr, subscribeEvent, unsubscribeEvent};
+    cgo = {invokeMethod, callbackFuncPtr, newCallback, deleteCallback};
     console.debug('[Backend] - cgo environment initialized');
   }
   return cgo;
 }
-
-//#region Koffi's internal registration management
-
-const koffiCallbacks = new Map<string, koffi.IKoffiRegisteredCallback>();
-
-/**
- * Registers a persistent JS callback function with Koffi.
- * This will replace any previously registered functions to align with `subscribeEvent`.
- *
- * @param eventName The name of the event.
- * @param jsCallback The JavaScript callback function.
- * @returns The registered Koffi callback.
- * @see https://koffi.dev/callbacks#registered-callbacks
- */
-function registerKoffiCallback(
-  eventName: string,
-  jsCallback: CallbackFunction
-): koffi.IKoffiRegisteredCallback {
-  unregisterKoffiCallback(eventName);
-  const koffiCb = koffi.register(jsCallback, ensureCgo().listenerFuncPtr);
-  koffiCallbacks.set(eventName, koffiCb);
-  return koffiCb;
-}
-
-/**
- * Unregisters a Koffi callback for a specific event.
- *
- * @param eventName The name of the event.
- */
-function unregisterKoffiCallback(eventName: string): void {
-  const cb = koffiCallbacks.get(eventName);
-  if (cb) {
-    koffi.unregister(cb);
-    koffiCallbacks.delete(eventName);
-  }
-}
-
-//#endregion Koffi's internal registration management

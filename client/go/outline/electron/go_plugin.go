@@ -89,12 +89,19 @@ func (ccb *cgoCallback) OnCall(data string) {
 
 // NewCallback registers a new callback function and returns a [callback.Token] string.
 //
-// The caller can delete the callback by calling [InvokeMethod] with method "DeleteCallback".
+// The caller can delete the callback by calling [DeleteCallback] with the returned token.
 //
 //export NewCallback
 func NewCallback(cb C.CallbackFuncPtr) C.InvokeMethodResult {
 	token := callback.New(&cgoCallback{cb})
 	return C.InvokeMethodResult{Output: newCGoString(string(token))}
+}
+
+// DeleteCallback deletes the callback identified by the token returned by [NewCallback].
+//
+//export DeleteCallback
+func DeleteCallback(token *C.char) {
+	callback.Delete(callback.Token(C.GoString(token)))
 }
 
 // newCGoString allocates memory for a C string based on the given Go string.

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {invokeGoMethod} from './go_plugin';
+import {invokeGoMethod, newCallback} from './go_plugin';
 import {
   StartRequestJson,
   TunnelStatus,
@@ -36,7 +36,7 @@ interface EstablishVpnRequest {
 }
 
 export async function establishVpn(request: StartRequestJson) {
-  subscribeVPNConnEvents();
+  await subscribeVPNConnEvents();
 
   const config: EstablishVpnRequest = {
     vpn: {
@@ -68,11 +68,11 @@ export async function establishVpn(request: StartRequestJson) {
     transport: request.config.transport,
   };
 
-  await invokeMethod('EstablishVPN', JSON.stringify(config));
+  await invokeGoMethod('EstablishVPN', JSON.stringify(config));
 }
 
 export async function closeVpn(): Promise<void> {
-  await invokeMethod('CloseVPN', '');
+  await invokeGoMethod('CloseVPN', '');
 }
 
 export type VpnStatusCallback = (id: string, status: TunnelStatus) => void;
@@ -88,7 +88,7 @@ export function onVpnStatusChanged(cb: VpnStatusCallback): void {
  * @param connJson The JSON string representing the VPNConn interface.
  */
 function handleVpnConnectionStatusChanged(connJson: string) {
-  const conn = parseVPNConnJSON(connJson);
+  const conn = JSON.parse(connJson) as VPNConn;
   console.debug(`received ${StatusChangedEvent}`, conn);
   switch (conn?.status) {
     case VPNConnConnected:
@@ -106,16 +106,20 @@ function handleVpnConnectionStatusChanged(connJson: string) {
   }
 }
 
-let vpnEventsSubscribed = false;
+// Callback token of the VPNConnStatusChanged event
+let vpnConnStatusChangedCb: string | undefined;
 
 /**
  * Subscribes to all VPN connection related events.
  * This function ensures that the subscription only happens once.
  */
-function subscribeVPNConnEvents(): void {
-  if (!vpnEventsSubscribed) {
-    subscribeEvent(StatusChangedEvent, handleVpnConnectionStatusChanged);
-    vpnEventsSubscribed = true;
+async function subscribeVPNConnEvents(): Promise<void> {
+  if (!vpnConnStatusChangedCb) {
+    vpnConnStatusChangedCb = await newCallback(handleVpnConnectionStatusChanged);
+    await invokeGoMethod('AddEventListener', JSON.stringify({
+      name: StatusChangedEvent,
+      callbackToken: vpnConnStatusChangedCb,
+    }));
   }
 }
 
@@ -135,21 +139,6 @@ const VPNConnDisconnected: VPNConnStatus = 'Disconnected';
 interface VPNConn {
   readonly id: string;
   readonly status: VPNConnStatus;
-}
-
-function parseVPNConnJSON(json: string): VPNConn | null {
-  try {
-    const rawConn = JSON.parse(json);
-    if (!('id' in rawConn) || !rawConn.id || !('status' in rawConn)) {
-      return null;
-    }
-    return {
-      id: rawConn.id,
-      status: rawConn.status,
-    };
-  } catch {
-    return null;
-  }
 }
 
 //#endregion type definitions of VPNConnection in Go
