@@ -94,8 +94,8 @@ const (
 //////////
 
 const (
-	// FetchConfigFailed means we failed to fetch a config from a remote location.
-	FetchConfigFailed ErrorCode = "ERR_FETCH_CONFIG_FAILURE"
+	// GenericErr indicates a generic error that is not directly surfaced to the user.
+	GenericErr ErrorCode = "ERR_GENERIC"
 
 	// IllegalConfig indicates an invalid config to connect to a remote server.
 	IllegalConfig ErrorCode = "ERR_ILLEGAL_CONFIG"

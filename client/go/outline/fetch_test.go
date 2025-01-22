@@ -83,7 +83,7 @@ func TestFetchResource_HTTPStatusError(t *testing.T) {
 		content, err := fetchResource(server.URL)
 		require.Empty(t, content)
 		require.ErrorAs(t, err, &perr)
-		require.Equal(t, platerrors.FetchConfigFailed, perr.Code)
+		require.Equal(t, platerrors.GenericErr, perr.Code)
 		require.Error(t, perr.Cause)
 	}
 }
@@ -98,7 +98,7 @@ func TestFetchResource_BodyReadError(t *testing.T) {
 	content, err := fetchResource(server.URL)
 	require.Empty(t, content)
 	require.ErrorAs(t, err, &perr)
-	require.Equal(t, platerrors.FetchConfigFailed, perr.Code)
+	require.Equal(t, platerrors.GenericErr, perr.Code)
 	require.Error(t, perr.Cause)
 }
 

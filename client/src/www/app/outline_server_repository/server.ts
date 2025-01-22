@@ -141,27 +141,29 @@ class OutlineServer implements Server {
 async function fetchTunnelConfig(
   configLocation: URL
 ): Promise<TunnelConfigJson> {
-  const responseBody = (
-    await getDefaultMethodChannel().invokeMethod(
-      'FetchResource',
-      configLocation.toString()
-    )
-  ).trim();
+  let responseBody: string;
+  try {
+    responseBody = (
+      await getDefaultMethodChannel().invokeMethod(
+        'FetchResource',
+        configLocation.toString()
+      )
+    ).trim();
+  } catch (e) {
+    throw new errors.SessionConfigFetchFailed(e);
+  }
   if (!responseBody) {
     throw new errors.ServerAccessKeyInvalid(
-      'Got empty config from dynamic key.'
+      new Error('Got empty config from dynamic key.')
     );
   }
   try {
-    return parseTunnelConfig(responseBody);
+    return await parseTunnelConfig(responseBody);
   } catch (cause) {
     if (cause instanceof errors.SessionProviderError) {
       throw cause;
     }
-
-    throw new errors.ServerAccessKeyInvalid(
-      'Failed to parse VPN information fetched from dynamic access key.',
-      {cause}
-    );
+    // TODO(fortuna): Use a more specific "invalid tunnel config" error.
+    throw new errors.ServerAccessKeyInvalid(cause);
   }
 }

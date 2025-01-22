@@ -35,7 +35,7 @@ func fetchResource(url string) (string, error) {
 	resp, err := client.Get(url)
 	if err != nil {
 		return "", platerrors.PlatformError{
-			Code:    platerrors.FetchConfigFailed,
+			Code:    platerrors.GenericErr,
 			Message: "failed to fetch the URL",
 			Details: platerrors.ErrorDetails{"url": url},
 			Cause:   platerrors.ToPlatformError(err),
@@ -45,7 +45,7 @@ func fetchResource(url string) (string, error) {
 	resp.Body.Close()
 	if resp.StatusCode > 299 {
 		return "", platerrors.PlatformError{
-			Code:    platerrors.FetchConfigFailed,
+			Code:    platerrors.GenericErr,
 			Message: "non-successful HTTP status",
 			Details: platerrors.ErrorDetails{
 				"status": resp.Status,
@@ -55,7 +55,7 @@ func fetchResource(url string) (string, error) {
 	}
 	if err != nil {
 		return "", platerrors.PlatformError{
-			Code:    platerrors.FetchConfigFailed,
+			Code:    platerrors.GenericErr,
 			Message: "failed to read the body",
 			Details: platerrors.ErrorDetails{"url": url},
 			Cause:   platerrors.ToPlatformError(err),

@@ -41,14 +41,8 @@ export class ServerUrlInvalid extends CustomError {
 }
 
 export class SessionConfigFetchFailed extends CustomError {
-  constructor(message: string, options?: {cause?: Error}) {
-    super(message, options);
-  }
-}
-
-export class SessionConfigError extends CustomError {
-  constructor(message: string, options?: {cause?: Error}) {
-    super(message, options);
+  constructor(cause?: Error) {
+    super(undefined, {cause});
   }
 }
 
@@ -63,8 +57,8 @@ export class SessionProviderError extends CustomError {
 }
 
 export class ServerAccessKeyInvalid extends CustomError {
-  constructor(message: string, options?: {cause?: Error}) {
-    super(message, options);
+  constructor(cause: Error) {
+    super(undefined, {cause});
   }
 }
 

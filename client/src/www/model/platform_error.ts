@@ -35,14 +35,14 @@ function createInternalError(cause?: unknown): PlatformError {
   const MESSAGE = 'Internal service error';
 
   if (typeof cause === 'undefined' || cause === null) {
-    return new PlatformError(INTERNAL_ERROR, MESSAGE);
+    return new PlatformError(GoErrorCode.INTERNAL_ERROR, MESSAGE);
   } else if (cause instanceof Error) {
-    return new PlatformError(INTERNAL_ERROR, MESSAGE, {cause});
+    return new PlatformError(GoErrorCode.INTERNAL_ERROR, MESSAGE, {cause});
   }
 
   // Use String(cause) instead of cause.toString() or new String(cause) to cover
   // primitive types and Symbols.
-  return new PlatformError(INTERNAL_ERROR, MESSAGE, {
+  return new PlatformError(GoErrorCode.INTERNAL_ERROR, MESSAGE, {
     cause: new Error(String(cause)),
   });
 }
@@ -57,7 +57,7 @@ function convertRawErrorObjectToPlatformError(rawObj: object): CustomError {
   if (!('code' in rawObj) || typeof rawObj.code !== 'string') {
     throw new Error('code is invalid');
   }
-  const code = rawObj.code.trim();
+  const code = rawObj.code.trim() as GoErrorCode;
   if (!code) {
     throw new Error('code is empty');
   }
@@ -84,17 +84,52 @@ function convertRawErrorObjectToPlatformError(rawObj: object): CustomError {
   }
 
   switch (code) {
-    case FETCH_CONFIG_FAILED:
-      return new errors.SessionConfigFetchFailed(rawObj.message, options);
-    case ILLEGAL_CONFIG:
-      return new errors.ServerAccessKeyInvalid(rawObj.message, options);
-    case PROXY_SERVER_UNREACHABLE:
+    case GoErrorCode.ILLEGAL_CONFIG:
+      return new errors.ServerAccessKeyInvalid(options.cause);
+    case GoErrorCode.PROXY_SERVER_UNREACHABLE:
       return new errors.ServerUnreachable(rawObj.message, options);
-    case VPN_PERMISSION_NOT_GRANTED:
+    case GoErrorCode.VPN_PERMISSION_NOT_GRANTED:
       return new errors.VpnPermissionNotGranted(rawObj.message, options);
     default:
       return new PlatformError(code, rawObj.message, options);
   }
+}
+
+/**
+ * Recursively converts a {@link PlatformError} into a raw JavaScript object that
+ * could be converted into a JSON string.
+ * @param {PlatformError} platErr Any non-null PlatformError.
+ * @returns {object} A plain JavaScript object that can be converted to JSON.
+ */
+function convertPlatformErrorToRawErrorObject(platErr: PlatformError): object {
+  const rawObj: {
+    code: string;
+    message: string;
+    details?: ErrorDetails;
+    cause?: object;
+  } = {
+    code: platErr.code,
+    message: platErr.message,
+    details: platErr.details,
+  };
+  if (platErr.cause) {
+    let cause: PlatformError;
+    if (platErr.cause instanceof PlatformError) {
+      cause = platErr.cause;
+    } else {
+      cause = new PlatformError(
+        GoErrorCode.INTERNAL_ERROR,
+        String(platErr.cause)
+      );
+    }
+    rawObj.cause = convertPlatformErrorToRawErrorObject(cause);
+  }
+  return rawObj;
+}
+
+export function serializeForIpc(platErr: PlatformError): string {
+  const errRawObj = convertPlatformErrorToRawErrorObject(platErr);
+  return JSON.stringify(errRawObj);
 }
 
 /**
@@ -111,12 +146,12 @@ export class PlatformError extends CustomError {
 
   /**
    * Constructs a new PlatformError instance with the specified parameters.
-   * @param {ErrorCode} code An ErrorCode representing the category of this error.
+   * @param {GoErrorCode} code An ErrorCode representing the category of this error.
    * @param {string} message A user-readable string of this error.
    * @param options An object containing the optional details and cause.
    */
   constructor(
-    readonly code: ErrorCode,
+    readonly code: GoErrorCode,
     message: string,
     options?: {
       details?: ErrorDetails;
@@ -128,6 +163,7 @@ export class PlatformError extends CustomError {
   }
 
   /**
+   * @deprecated
    * Parses a cross-component-boundary error object into a {@link PlatformError}.
    *
    * The error object can be one of the following types:
@@ -215,16 +251,15 @@ export class PlatformError extends CustomError {
  * ErrorCode can be used to identify the specific type of a {@link PlatformError}.
  * You can reliably use the constant values to check for specific errors.
  */
-export type ErrorCode = string;
+export enum GoErrorCode {
+  // Generic error, usually used as a cause for an application error. Use it, unless the
+  // Go backend needs to throw application errors.
+  GENERIC_ERROR = 'ERR_GENERIC',
 
-export const INTERNAL_ERROR: ErrorCode = 'ERR_INTERNAL_ERROR';
-
-const FETCH_CONFIG_FAILED: ErrorCode = 'ERR_FETCH_CONFIG_FAILURE';
-const ILLEGAL_CONFIG: ErrorCode = 'ERR_ILLEGAL_CONFIG';
-
-const VPN_PERMISSION_NOT_GRANTED = 'ERR_VPN_PERMISSION_NOT_GRANTED';
-
-const PROXY_SERVER_UNREACHABLE: ErrorCode = 'ERR_PROXY_SERVER_UNREACHABLE';
-
-/** Indicates that the OS routing service is not running (electron only). */
-export const ROUTING_SERVICE_NOT_RUNNING = 'ERR_ROUTING_SERVICE_NOT_RUNNING';
+  INTERNAL_ERROR = 'ERR_INTERNAL_ERROR',
+  ILLEGAL_CONFIG = 'ERR_ILLEGAL_CONFIG',
+  VPN_PERMISSION_NOT_GRANTED = 'ERR_VPN_PERMISSION_NOT_GRANTED',
+  PROXY_SERVER_UNREACHABLE = 'ERR_PROXY_SERVER_UNREACHABLE',
+  /** Indicates that the OS routing service is not running (electron only). */
+  ROUTING_SERVICE_NOT_RUNNING = 'ERR_ROUTING_SERVICE_NOT_RUNNING',
+}

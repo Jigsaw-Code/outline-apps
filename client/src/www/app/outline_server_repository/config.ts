@@ -165,9 +165,7 @@ export async function parseAccessKey(
 
     throw new TypeError('Access Key is not a ss:// or ssconf:// URL');
   } catch (e) {
-    throw new errors.ServerAccessKeyInvalid('Invalid static access key.', {
-      cause: e,
-    });
+    throw new errors.ServerAccessKeyInvalid(e);
   }
 }
 

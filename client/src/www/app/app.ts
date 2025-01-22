@@ -24,10 +24,7 @@ import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
 import * as errors from '../model/errors';
 import * as events from '../model/events';
-import {
-  PlatformError,
-  ROUTING_SERVICE_NOT_RUNNING,
-} from '../model/platform_error';
+import {PlatformError, GoErrorCode} from '../model/platform_error';
 import {Server, ServerRepository} from '../model/server';
 import {OutlineErrorReporter} from '../shared/error_reporter';
 import {ServerConnectionState, ServerListItem} from '../views/servers_view';
@@ -309,18 +306,19 @@ export class App {
       };
     } else if (error instanceof errors.SessionConfigFetchFailed) {
       toastMessage = this.localize('error-connection-configuration-fetch');
-      buttonMessage = this.localize('error-details');
-      buttonHandler = () => {
-        this.showErrorCauseDialog(error);
-      };
+      if (error?.cause instanceof Error) {
+        const cause = error.cause;
+        buttonMessage = this.localize('error-details');
+        buttonHandler = () => {
+          this.showErrorCauseDialog(cause);
+        };
+      }
     } else if (error instanceof errors.ProxyConnectionFailure) {
       toastMessage = this.localize('error-connection-proxy');
       buttonMessage = this.localize('error-details');
       buttonHandler = () => {
         this.showErrorCauseDialog(error);
       };
-    } else if (error instanceof errors.SessionConfigError) {
-      toastMessage = error.message;
     } else if (error instanceof errors.SessionProviderError) {
       toastMessage = error.message;
       buttonMessage = this.localize('error-details');
@@ -555,7 +553,7 @@ export class App {
       if (
         // TODO(fortuna): Use typed errors instead.
         e instanceof PlatformError &&
-        e.code === ROUTING_SERVICE_NOT_RUNNING
+        e.code === GoErrorCode.ROUTING_SERVICE_NOT_RUNNING
       ) {
         const confirmation =
           this.localize('outline-services-installation-confirmation') +

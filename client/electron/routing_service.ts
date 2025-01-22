@@ -25,7 +25,8 @@ import {TunnelStatus} from '../src/www/app/outline_server_repository/vpn';
 import {ErrorCode} from '../src/www/model/errors';
 import {
   PlatformError,
-  ROUTING_SERVICE_NOT_RUNNING,
+  serializeForIpc,
+  GoErrorCode,
 } from '../src/www/model/platform_error';
 
 const isLinux = platform() === 'linux';
@@ -135,10 +136,10 @@ export class RoutingDaemon {
             cleanup();
             newSocket.destroy();
             const perr = new PlatformError(
-              ROUTING_SERVICE_NOT_RUNNING,
+              GoErrorCode.ROUTING_SERVICE_NOT_RUNNING,
               'routing daemon service stopped before started'
             );
-            reject(new Error(perr.toJSON()));
+            reject(new Error(serializeForIpc(perr)));
           } else {
             fulfill();
           }
@@ -159,11 +160,11 @@ export class RoutingDaemon {
         console.error('Routing daemon socket setup failed', err);
         this.socket = null;
         const perr = new PlatformError(
-          ROUTING_SERVICE_NOT_RUNNING,
+          GoErrorCode.ROUTING_SERVICE_NOT_RUNNING,
           'routing daemon is not running',
           {cause: err}
         );
-        reject(new Error(perr.toJSON()));
+        reject(new Error(serializeForIpc(perr)));
       };
       newSocket.once('error', initialErrorHandler);
     });

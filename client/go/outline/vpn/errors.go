@@ -27,33 +27,3 @@ func errCancelled(cause error) error {
 		Cause: perrs.ToPlatformError(cause),
 	}
 }
-
-func errIllegalConfig(msg string, params ...any) error {
-	return errPlatError(perrs.IllegalConfig, msg, nil, params...)
-}
-
-func errSetupVPN(msg string, cause error, params ...any) error {
-	return errPlatError(perrs.SetupSystemVPNFailed, msg, cause, params...)
-}
-
-func errCloseVPN(msg string, cause error, params ...any) error {
-	return errPlatError(perrs.DisconnectSystemVPNFailed, msg, cause, params...)
-}
-
-func errPlatError(code perrs.ErrorCode, msg string, cause error, params ...any) error {
-	logParams := append(params, "err", cause)
-	slog.Error(msg, logParams...)
-
-	details := perrs.ErrorDetails{}
-	for i := 1; i < len(params); i += 2 {
-		if key, ok := params[i-1].(string); ok {
-			details[key] = params[i]
-		}
-	}
-	return perrs.PlatformError{
-		Code:    code,
-		Message: msg,
-		Details: details,
-		Cause:   perrs.ToPlatformError(cause),
-	}
-}
