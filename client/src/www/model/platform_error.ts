@@ -206,14 +206,6 @@ export class PlatformError extends CustomError {
   }
 }
 
-/**
- * ipcToAppError converts an Error returned from the MethodChannel IPC to an application error.
- * MethodChannel errors encode its information as a JSON object in the Error message.
- */
-export function ipcToAppError(ipcError: Error): CustomError {
-  return convertRawErrorObjectToPlatformError(JSON.parse(ipcError.message));
-}
-
 //////
 // Error Code Definitions
 // They should be identical to the ones defined in Go's `platerrors` package.
