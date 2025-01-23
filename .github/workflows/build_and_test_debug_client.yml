@@ -131,8 +131,9 @@ jobs:
 
       - name: Install zig
         uses: mlugg/setup-zig@v1
-        with:
-          version: 0.13.0
+
+      - name: Build Go First (Test)
+        run: npm run action client/go/build windows
 
       - name: Build Windows Client
         run: npm run action client/electron/build windows
