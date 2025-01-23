@@ -104,7 +104,7 @@ jobs:
 
   windows_debug_build:
     name: Windows Debug Build
-    runs-on: windows-2022
+    runs-on: windows-2019
     timeout-minutes: 20
     needs: [web_test, backend_test]
     steps:
@@ -127,18 +127,12 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v4
         with:
-          go-version: 'stable'
-
-      - name: Set up MinGW
-        uses: egor-tensin/setup-mingw@v2
-        with:
-          platform: x86
+          go-version-file: '${{ github.workspace }}/go.mod'
 
       - name: Install zig
         uses: mlugg/setup-zig@v1
-
-      - name: Build Go First (Test)
-        run: npm run action client/go/build windows
+        with:
+          version: 0.13.0
 
       - name: Build Windows Client
         run: npm run action client/electron/build windows
