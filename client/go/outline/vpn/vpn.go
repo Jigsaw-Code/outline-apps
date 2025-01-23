@@ -16,10 +16,12 @@ package vpn
 
 import (
 	"context"
+	"encoding/json"
 	"io"
 	"log/slog"
 	"sync"
 
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/event"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
@@ -47,9 +49,23 @@ type platformVPNConn interface {
 	Close() error
 }
 
+// ConnectionStatus represents the status of a [VPNConnection].
+type ConnectionStatus string
+
+const (
+	ConnectionConnected     ConnectionStatus = "Connected"
+	ConnectionDisconnected  ConnectionStatus = "Disconnected"
+	ConnectionConnecting    ConnectionStatus = "Connecting"
+	ConnectionDisconnecting ConnectionStatus = "Disconnecting"
+)
+
+// ConnectionStatusChanged event will be raised when the status of a [VPNConnection] changes.
+const ConnectionStatusChanged event.EventName = "VPNConnStatusChanged"
+
 // VPNConnection represents a system-wide VPN connection.
 type VPNConnection struct {
-	ID string
+	ID     string           `json:"id"`
+	Status ConnectionStatus `json:"status"`
 
 	cancelEst     context.CancelFunc
 	wgEst, wgCopy sync.WaitGroup
@@ -62,6 +78,16 @@ type VPNConnection struct {
 // This package allows at most one active VPN connection at the same time.
 var mu sync.Mutex
 var conn *VPNConnection
+
+// SetStatus sets the [VPNConnection] Status and raises the [ConnectionStatusChanged] event.
+func (c *VPNConnection) SetStatus(status ConnectionStatus) {
+	c.Status = status
+	if connJson, err := json.Marshal(c); err == nil {
+		event.Fire(ConnectionStatusChanged, string(connJson))
+	} else {
+		slog.Warn("failed to marshal VPN connection", "err", err)
+	}
+}
 
 // EstablishVPN establishes a new active [VPNConnection] connecting to a [ProxyDevice]
 // with the given VPN [Config].
@@ -81,7 +107,7 @@ func EstablishVPN(
 		panic("a PacketListener must be provided")
 	}
 
-	c := &VPNConnection{ID: conf.ID}
+	c := &VPNConnection{ID: conf.ID, Status: ConnectionDisconnected}
 	ctx, c.cancelEst = context.WithCancel(ctx)
 
 	if c.platform, err = newPlatformVPNConn(conf); err != nil {
@@ -97,6 +123,14 @@ func EstablishVPN(
 	}
 
 	slog.Debug("establishing vpn connection ...", "id", c.ID)
+	c.SetStatus(ConnectionConnecting)
+	defer func() {
+		if err == nil {
+			c.SetStatus(ConnectionConnected)
+		} else {
+			c.SetStatus(ConnectionDisconnected)
+		}
+	}()
 
 	if c.proxy, err = ConnectRemoteDevice(ctx, sd, pl); err != nil {
 		slog.Error("failed to connect to the remote device", "err", err)
@@ -154,14 +188,15 @@ func closeVPNNoLock() (err error) {
 		return nil
 	}
 
+	slog.Debug("terminating the global vpn connection...", "id", conn.ID)
+	conn.SetStatus(ConnectionDisconnecting)
 	defer func() {
 		if err == nil {
 			slog.Info("vpn connection terminated", "id", conn.ID)
+			conn.SetStatus(ConnectionDisconnected)
 			conn = nil
 		}
 	}()
-
-	slog.Debug("terminating the global vpn connection...", "id", conn.ID)
 
 	// Cancel the Establish process and wait
 	conn.cancelEst()
