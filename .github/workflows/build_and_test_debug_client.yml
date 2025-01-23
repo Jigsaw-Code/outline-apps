@@ -129,6 +129,11 @@ jobs:
         with:
           go-version: 'stable'
 
+      - name: Set up MinGW
+        uses: egor-tensin/setup-mingw@v2
+        with:
+          platform: x86
+
       - name: Install zig
         uses: mlugg/setup-zig@v1
 
