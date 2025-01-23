@@ -29,6 +29,12 @@ typedef struct InvokeMethodResult_t
 	// This error can be parsed by the PlatformError in TypeScript.
 	const char *ErrorJson;
 } InvokeMethodResult;
+
+// CallbackFuncPtr is a C function pointer type that represents a callback function.
+// This callback function will be invoked by the Go side.
+//
+// - data: The callback data, passed as a C string (typically a JSON string).
+typedef void (*CallbackFuncPtr)(const char *data);
 */
 import "C"
 import (
@@ -55,6 +61,18 @@ func InvokeMethod(method *C.char, input *C.char) C.InvokeMethodResult {
 		Output:    newCGoString(result.Value),
 		ErrorJson: marshalCGoErrorJson(result.Error),
 	}
+}
+
+var ptr C.CallbackFuncPtr
+
+// NewCallback registers a new callback function and returns a [callback.Token] string.
+//
+// The caller can delete the callback by calling [DeleteCallback] with the returned token.
+//
+//export NewCallback
+func NewCallback(cb C.CallbackFuncPtr) C.InvokeMethodResult {
+	ptr = cb
+	return C.InvokeMethodResult{Output: newCGoString(string("test"))}
 }
 
 // newCGoString allocates memory for a C string based on the given Go string.
