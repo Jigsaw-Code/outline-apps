@@ -31,18 +31,18 @@ import * as errors from './errors';
  * @param cause An optional cause of this error.
  * @returns A non-null instance of {@link PlatformError}.
  */
-function createInternalError(cause?: unknown): PlatformError {
+function createInternalError(cause?: unknown): Error {
   const MESSAGE = 'Internal service error';
 
   if (typeof cause === 'undefined' || cause === null) {
-    return new PlatformError(GoErrorCode.INTERNAL_ERROR, MESSAGE);
+    return new Error(MESSAGE);
   } else if (cause instanceof Error) {
-    return new PlatformError(GoErrorCode.INTERNAL_ERROR, MESSAGE, {cause});
+    return new Error(MESSAGE, {cause});
   }
 
   // Use String(cause) instead of cause.toString() or new String(cause) to cover
   // primitive types and Symbols.
-  return new PlatformError(GoErrorCode.INTERNAL_ERROR, MESSAGE, {
+  return new Error(MESSAGE, {
     cause: new Error(String(cause)),
   });
 }
@@ -50,10 +50,10 @@ function createInternalError(cause?: unknown): PlatformError {
 /**
  * Recursively validates and parses a {@link rawObj} into a {@link PlatformError}.
  * @param {object} rawObj Any object that is returned by JSON.parse.
- * @returns {PlatformError} A non-null instance of PlatformError.
+ * @returns {Error} A non-null instance of PlatformError.
  * @throws {Error} Will be thrown when {@link rawObj} is invalid.
  */
-function convertRawErrorObjectToPlatformError(rawObj: object): CustomError {
+function convertRawErrorObjectToError(rawObj: object): Error {
   if (!('code' in rawObj) || typeof rawObj.code !== 'string') {
     throw new Error('code is invalid');
   }
@@ -65,33 +65,40 @@ function convertRawErrorObjectToPlatformError(rawObj: object): CustomError {
     throw new Error('message is invalid');
   }
 
-  const options: {details?: ErrorDetails; cause?: Error} = {};
+  let detailsMessage = rawObj.message;
   if ('details' in rawObj) {
     if (typeof rawObj.details !== 'object') {
       throw new Error('details is invalid');
     }
     if (rawObj.details) {
-      options.details = <ErrorDetails>rawObj.details;
+      detailsMessage = makeDetailsString(
+        rawObj.message,
+        <ErrorDetails>rawObj.details
+      );
     }
   }
+  let cause: Error;
   if ('cause' in rawObj) {
     if (typeof rawObj.cause !== 'object') {
       throw new Error('cause is invalid');
     }
     if (rawObj.cause) {
-      options.cause = convertRawErrorObjectToPlatformError(rawObj.cause);
+      cause = convertRawErrorObjectToError(rawObj.cause);
     }
   }
 
   switch (code) {
     case GoErrorCode.ILLEGAL_CONFIG:
-      return new errors.ServerAccessKeyInvalid(options.cause);
+      return new errors.ServerAccessKeyInvalid(detailsMessage, {cause});
     case GoErrorCode.PROXY_SERVER_UNREACHABLE:
-      return new errors.ServerUnreachable(rawObj.message, options);
+      return new errors.ServerUnreachable(detailsMessage, {cause});
     case GoErrorCode.VPN_PERMISSION_NOT_GRANTED:
-      return new errors.VpnPermissionNotGranted(rawObj.message, options);
-    default:
-      return new PlatformError(code, rawObj.message, options);
+      return new errors.VpnPermissionNotGranted(detailsMessage, {cause});
+    default: {
+      const error = new Error(detailsMessage, {cause});
+      error.name = code;
+      return error;
+    }
   }
 }
 
@@ -101,36 +108,55 @@ function convertRawErrorObjectToPlatformError(rawObj: object): CustomError {
  * @param {PlatformError} platErr Any non-null PlatformError.
  * @returns {object} A plain JavaScript object that can be converted to JSON.
  */
-function convertPlatformErrorToRawErrorObject(platErr: PlatformError): object {
-  const rawObj: {
-    code: string;
-    message: string;
-    details?: ErrorDetails;
-    cause?: object;
-  } = {
-    code: platErr.code,
-    message: platErr.message,
-    details: platErr.details,
-  };
-  if (platErr.cause) {
-    let cause: PlatformError;
-    if (platErr.cause instanceof PlatformError) {
-      cause = platErr.cause;
-    } else {
-      cause = new PlatformError(
-        GoErrorCode.INTERNAL_ERROR,
-        String(platErr.cause)
-      );
-    }
-    rawObj.cause = convertPlatformErrorToRawErrorObject(cause);
-  }
-  return rawObj;
-}
+// function makeIpcErrorJson(
+//   code: GoErrorCode,
+//   details: string,
+//   options?: {
+//     details?: ErrorDetails;
+//     cause?: object;
+//   }
+// ): object {
+//   return {};
+//   const rawObj: {
+//     code: string;
+//     message: string;
+//     details?: ErrorDetails;
+//     cause?: object;
+//   } = {
+//     code: platErr.code,
+//     message: platErr.message,
+//     details: platErr.details,
+//   };
+//   if (platErr.cause) {
+//     let cause: PlatformError;
+//     if (platErr.cause instanceof PlatformError) {
+//       cause = platErr.cause;
+//     } else {
+//       cause = new PlatformError(
+//         GoErrorCode.INTERNAL_ERROR,
+//         String(platErr.cause)
+//       );
+//     }
+//     rawObj.cause = convertPlatformErrorToRawErrorObject(cause);
+//   }
+//   return rawObj;
+// }
 
-export function serializeForIpc(platErr: PlatformError): string {
-  const errRawObj = convertPlatformErrorToRawErrorObject(platErr);
-  return JSON.stringify(errRawObj);
-}
+/**
+//  * Serializes the platform error so it can be sent over an IPC from Electron main to the renderer code.
+//  * @param platErr
+//  * @returns
+//  */
+// export function makeIpcError(errorJson: {
+//   code: GoErrorCode;
+//   details: string;
+//   options?: {
+//     details?: ErrorDetails;
+//     cause?: object;
+//   };
+// }): object {
+//   return JSON.stringify(errorJson);
+// }
 
 /**
  * ErrorDetails represents the details map of a {@link PlatformError}.
@@ -142,7 +168,7 @@ export type ErrorDetails = {[key: string]: unknown};
  * PlatformError is used to communicate error details from Go to TypeScript.
  */
 export class PlatformError extends CustomError {
-  readonly details?: ErrorDetails = null;
+  details?: ErrorDetails = null;
 
   /**
    * Constructs a new PlatformError instance with the specified parameters.
@@ -151,99 +177,113 @@ export class PlatformError extends CustomError {
    * @param options An object containing the optional details and cause.
    */
   constructor(
-    readonly code: GoErrorCode,
+    code: GoErrorCode,
     message: string,
     options?: {
       details?: ErrorDetails;
       cause?: Error;
     }
   ) {
-    super(message, options);
-    this.details = options?.details;
+    if (options?.details) {
+      message = `${message}\nDetails: ${JSON.stringify(options?.details, null, 2)}`;
+    }
+    super(message, {cause: options.cause});
+    this.name = code;
   }
 
-  /**
-   * @deprecated
-   * Parses a cross-component-boundary error object into a {@link PlatformError}.
-   *
-   * The error object can be one of the following types:
-   * - A raw JSON string representation of a PlatformError.
-   * - An Error whose message is a raw JSON string representation of a PlatformError.
-   * - Otherwise, an {@link INTERNAL_ERROR} {@link PlatformError} with {@link errObj} as its cause
-   *   will be returned.
-   *
-   * @param errObj The error object to be parsed.
-   * @returns A non-null PlatformError object.
-   *
-   * @example
-   * try {
-   *   // cordova plugin calls or electron IPC calls
-   * } catch (e) {
-   *   throw PlatformError.parseFrom(e);
-   * }
-   */
-  static parseFrom(errObj: string | Error | unknown): CustomError {
-    if (typeof errObj === 'undefined' || errObj === null) {
-      return createInternalError();
-    }
-    if (errObj instanceof PlatformError) {
-      return errObj;
-    }
+  // /**
+  //  * Returns a user readable string of this error with all details and causes.
+  //  * @returns {string} A user friendly string representing this error.
+  //  */
+  // toString(): string {
+  //   let result = '';
+  //   if (this.code === GoErrorCode.GENERIC_ERROR) {
+  //     result = this.message;
+  //   } else {
+  //     result = this.code + '\n' + this.message;
+  //   }
+  //   if (this.details) {
+  //     result += '\nDetails: ';
+  //     try {
+  //       result += JSON.stringify(this.details, null, 2);
+  //     } catch {
+  //       result += '<Unable To Show>';
+  //     }
+  //   }
+  //   if (this.cause) {
+  //     // Indent and append
+  //     result += '\nCaused by:\n' + String(this.cause).replace(/^/gm, '  ');
+  //   }
+  //   return result;
+  // }
+}
 
-    let rawJSON: string;
-    let rawObj: object;
-    if (typeof errObj === 'string') {
-      rawJSON = errObj;
-    } else if (errObj instanceof Error) {
-      rawJSON = errObj.message;
-    } else if (typeof errObj === 'object') {
-      rawObj = errObj;
-    } else {
-      return createInternalError(errObj);
-    }
-
-    if (rawJSON) {
-      try {
-        rawObj = JSON.parse(rawJSON);
-      } catch {
-        return createInternalError(errObj);
-      }
-    }
-
-    if (typeof rawObj !== 'object' || !rawObj) {
-      return createInternalError(errObj);
-    }
+function makeDetailsString(
+  detailsMessage?: string,
+  detailsMap?: object
+): string {
+  let result = detailsMessage;
+  if (detailsMap) {
+    result += '\nDetails: ';
     try {
-      return convertRawErrorObjectToPlatformError(rawObj);
+      result += JSON.stringify(detailsMap, null, 2);
     } catch {
-      return createInternalError(errObj);
+      result += '<Unable To Show>';
+    }
+  }
+  return result;
+}
+
+/**
+ * Parses a cross-component-boundary error object into an {@link Error}.
+ *
+ * The error object can be one of the following types:
+ * - A raw JSON string representation of a PlatformError.
+ * - An Error whose message is a raw JSON string representation of a PlatformError.
+ * - Otherwise, an {@link INTERNAL_ERROR} {@link PlatformError} with {@link errObj} as its cause
+ *   will be returned.
+ *
+ * @param errObj The error object to be parsed.
+ * @returns A non-null PlatformError object.
+ *
+ * @example
+ * try {
+ *   // cordova plugin calls or electron IPC calls
+ * } catch (e) {
+ *   throw PlatformError.parseFrom(e);
+ * }
+ */
+export function parseErrorFromIpc(ipcError: unknown): Error {
+  if (typeof ipcError === 'undefined' || ipcError === null) {
+    return createInternalError();
+  }
+  let rawJSON: string;
+  let rawObj: object;
+  if (typeof ipcError === 'string') {
+    rawJSON = ipcError;
+  } else if (ipcError instanceof Error) {
+    rawJSON = ipcError.message;
+  } else if (typeof ipcError === 'object') {
+    rawObj = ipcError;
+  } else {
+    return createInternalError(ipcError);
+  }
+
+  if (rawJSON) {
+    try {
+      rawObj = JSON.parse(rawJSON);
+    } catch {
+      return createInternalError(ipcError);
     }
   }
 
-  /**
-   * Returns a user readable string of this error with all details and causes.
-   * @returns {string} A user friendly string representing this error.
-   */
-  toString(): string {
-    let result = '';
-    if (this.code === GoErrorCode.GENERIC_ERROR) {
-      result = this.message;
-    } else {
-      result = this.code + '\n' + this.message;
-    }
-    if (this.details) {
-      result += '\nDetails: ';
-      try {
-        result += JSON.stringify(this.details, null, 2);
-      } catch {
-        result += '<Unable To Show>';
-      }
-    }
-    if (this.cause) {
-      // Indent and append
-      result += '\nCaused by:\n' + String(this.cause).replace(/^/gm, '  ');
-    }
-    return result;
+  if (typeof rawObj !== 'object' || !rawObj) {
+    return createInternalError(ipcError);
+  }
+  try {
+    return convertRawErrorObjectToError(rawObj);
+  } catch {
+    return createInternalError(ipcError);
   }
 }
 

@@ -154,7 +154,7 @@ async function fetchTunnelConfig(
   }
   if (!responseBody) {
     throw new errors.ServerAccessKeyInvalid(
-      new Error('Got empty config from dynamic key.')
+      'Got empty config from dynamic key.'
     );
   }
   try {
@@ -164,6 +164,9 @@ async function fetchTunnelConfig(
       throw cause;
     }
     // TODO(fortuna): Use a more specific "invalid tunnel config" error.
-    throw new errors.ServerAccessKeyInvalid(cause);
+    throw new errors.ServerAccessKeyInvalid(
+      'Failed to parse VPN information fetched from dynamic access key.',
+      {cause}
+    );
   }
 }

@@ -39,7 +39,7 @@ import {
 import {AbstractUpdater} from './updater';
 import * as interceptors from './url_interceptor';
 import {NoOpVpnInstaller, VpnInstaller} from './vpn_installer';
-import {PlatformError} from '../model/platform_error';
+import {parseErrorFromIpc} from '../model/platform_error';
 import {SentryErrorReporter, Tags} from '../shared/error_reporter';
 
 const hasDeviceSupport = cordova.platformId !== 'browser';
@@ -81,7 +81,7 @@ class CordovaMethodChannel implements MethodChannel {
       return pluginExecWithErrorCode('invokeMethod', methodName, params);
     } catch (e) {
       console.debug('invokeMethod failed', methodName, e);
-      throw PlatformError.parseFrom(e);
+      throw parseErrorFromIpc(e);
     }
   }
 }

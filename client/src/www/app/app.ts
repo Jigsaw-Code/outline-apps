@@ -553,7 +553,7 @@ export class App {
       if (
         // TODO(fortuna): Use typed errors instead.
         e instanceof PlatformError &&
-        e.code === GoErrorCode.ROUTING_SERVICE_NOT_RUNNING
+        e.name === GoErrorCode.ROUTING_SERVICE_NOT_RUNNING
       ) {
         const confirmation =
           this.localize('outline-services-installation-confirmation') +
@@ -750,7 +750,7 @@ export class App {
   private showErrorCauseDialog(error: Error) {
     let message = error.toString();
 
-    if (!(error instanceof PlatformError && error.cause)) {
+    if (error.cause) {
       message += '\nCause: ';
       message += error.cause.toString();
     }
