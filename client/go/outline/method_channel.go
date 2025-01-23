@@ -39,6 +39,10 @@ const (
 	//  - Input: null
 	//  - Output: null
 	MethodCloseVPN = "CloseVPN"
+
+	MethodAddEventListener = "AddEventListener"
+
+	MethodRemoveEventListener = "RemoveEventListener"
 )
 
 // InvokeMethodResult represents the result of an InvokeMethod call.
@@ -68,6 +72,18 @@ func InvokeMethod(method string, input string) *InvokeMethodResult {
 
 	case MethodCloseVPN:
 		err := closeVPN()
+		return &InvokeMethodResult{
+			Error: platerrors.ToPlatformError(err),
+		}
+
+	case MethodAddEventListener:
+		err := addEventListener(input)
+		return &InvokeMethodResult{
+			Error: platerrors.ToPlatformError(err),
+		}
+
+	case MethodRemoveEventListener:
+		err := removeEventListener(input)
 		return &InvokeMethodResult{
 			Error: platerrors.ToPlatformError(err),
 		}
