@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {invokeGoMethod, newCallback} from './go_plugin';
+import { CallbackToken, invokeGoMethod, newCallback } from './go_plugin';
 import {
   StartRequestJson,
   TunnelStatus,
@@ -107,7 +107,7 @@ function handleVpnConnectionStatusChanged(connJson: string) {
 }
 
 // Callback token of the VPNConnStatusChanged event
-let vpnConnStatusChangedCb: string | undefined;
+let vpnConnStatusChangedCb: CallbackToken | undefined;
 
 /**
  * Subscribes to all VPN connection related events.

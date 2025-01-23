@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {promisify} from 'node:util';
+import { promisify } from 'node:util';
 
 import koffi from 'koffi';
 
-import {pathToBackendLibrary} from './app_paths';
+import { pathToBackendLibrary } from './app_paths';
 
 /**
  * Calls a Go function by invoking the `InvokeMethod` function in the native backend library.
@@ -49,6 +49,9 @@ export async function invokeGoMethod(
  */
 export type CallbackFunction = (data: string) => void;
 
+/** A unique token for a callback created by `newCallback`. */
+export type CallbackToken = string;
+
 /**
  * Koffi requires us to register all persistent callbacks; we track the registrations here.
  * @see https://koffi.dev/callbacks#registered-callbacks
@@ -63,17 +66,22 @@ const koffiCallbacks = new Map<string, koffi.IKoffiRegisteredCallback>();
  * @param callback The callback function to be registered.
  * @returns A Promise resolves to the callback token, which can be used to refer to the callback.
  */
-export async function newCallback(callback: CallbackFunction): Promise<string> {
-  console.debug(`[Backend] - calling newCallback ...`);
-  const persistentCallback = koffi.register(callback, ensureCgo().callbackFuncPtr);
+export async function newCallback(callback: CallbackFunction): Promise<CallbackToken> {
+  console.debug('[Backend] - calling newCallback ...');
+  const persistentCallback = koffi.register(
+    callback,
+    ensureCgo().callbackFuncPtr
+  );
   const result = await ensureCgo().newCallback(persistentCallback);
-  console.debug(`[Backend] - newCallback done`, result);
+  console.debug('[Backend] - newCallback done', result);
   if (result.ErrorJson) {
     koffi.unregister(persistentCallback);
     throw new Error(result.ErrorJson);
   }
   koffiCallbacks.set(result.Output, persistentCallback);
-  console.debug(`[Backend] - registered persistent callback ${result.Output} with koffi`);
+  console.debug(
+    `[Backend] - registered persistent callback ${result.Output} with koffi`
+  );
   return result.Output;
 }
 
@@ -83,15 +91,17 @@ export async function newCallback(callback: CallbackFunction): Promise<string> {
  * @param token The callback token returned from `newCallback`.
  * @returns A Promise that resolves when the unregistration is done.
  */
-export async function deleteCallback(token: string): Promise<void> {
-  console.debug(`[Backend] - calling deleteCallback ...`);
+export async function deleteCallback(token: CallbackToken): Promise<void> {
+  console.debug('[Backend] - calling deleteCallback ...');
   await ensureCgo().deleteCallback(token);
-  console.debug(`[Backend] - deleteCallback done`);
+  console.debug('[Backend] - deleteCallback done');
   const persistentCallback = koffiCallbacks.get(token);
   if (persistentCallback) {
     koffi.unregister(persistentCallback);
     koffiCallbacks.delete(token);
-    console.debug(`[Backend] - unregistered persistent callback ${token} from koffi`)
+    console.debug(
+      `[Backend] - unregistered persistent callback ${token} from koffi`
+    );
   }
 }
 
@@ -152,7 +162,7 @@ function ensureCgo(): CgoFunctions {
     );
 
     // Cache them so we don't have to reload these functions
-    cgo = {invokeMethod, callbackFuncPtr, newCallback, deleteCallback};
+    cgo = { invokeMethod, callbackFuncPtr, newCallback, deleteCallback };
     console.debug('[Backend] - cgo environment initialized');
   }
   return cgo;
