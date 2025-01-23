@@ -1,6 +1,5 @@
 {
   "recommendations": [
-    "dbaeumer.vscode-eslint",
-    "runem.lit-plugin"
+    "dbaeumer.vscode-eslint"
   ]
 }
