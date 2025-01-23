@@ -42,6 +42,9 @@ export const baseConfig = {
     fallback: {url: require.resolve('url/')},
     // These aliai prevents multiple copies of lit from creeping into the build:
     // See: https://lit.dev/docs/tools/development/#multiple-lit-versions
+
+    // We should be able to remove this once we drop support for iOS 15 and consolidate
+    // our component libraries (see #2345)
     alias: {
       lit: path.resolve(getRootDir(), 'node_modules/lit'),
       'lit/*': path.resolve(getRootDir(), 'node_modules/lit/*'),
