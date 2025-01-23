@@ -47,6 +47,11 @@ func InvokeMethod(method *C.char, input *C.char) C.InvokeMethodResult {
 
 var ptr C.CallbackFuncPtr
 
+//export CallPtr
+func CallPtr(data *C.char) {
+	C.InvokeCallback(ptr, data)
+}
+
 // NewCallback registers a new callback function and returns a [callback.Token] string.
 //
 // The caller can delete the callback by calling [DeleteCallback] with the returned token.
