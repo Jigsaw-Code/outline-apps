@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { promisify } from 'node:util';
+import {promisify} from 'node:util';
 
 import koffi from 'koffi';
 
-import { pathToBackendLibrary } from './app_paths';
+import {pathToBackendLibrary} from './app_paths';
 
 /**
  * Calls a Go function by invoking the `InvokeMethod` function in the native backend library.
@@ -66,7 +66,9 @@ const koffiCallbacks = new Map<string, koffi.IKoffiRegisteredCallback>();
  * @param callback The callback function to be registered.
  * @returns A Promise resolves to the callback token, which can be used to refer to the callback.
  */
-export async function newCallback(callback: CallbackFunction): Promise<CallbackToken> {
+export async function newCallback(
+  callback: CallbackFunction
+): Promise<CallbackToken> {
   console.debug('[Backend] - calling newCallback ...');
   const persistentCallback = koffi.register(
     callback,
@@ -162,7 +164,7 @@ function ensureCgo(): CgoFunctions {
     );
 
     // Cache them so we don't have to reload these functions
-    cgo = { invokeMethod, callbackFuncPtr, newCallback, deleteCallback };
+    cgo = {invokeMethod, callbackFuncPtr, newCallback, deleteCallback};
     console.debug('[Backend] - cgo environment initialized');
   }
   return cgo;

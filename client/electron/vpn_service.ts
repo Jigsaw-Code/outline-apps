@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { CallbackToken, invokeGoMethod, newCallback } from './go_plugin';
+import {CallbackToken, invokeGoMethod, newCallback} from './go_plugin';
 import {
   StartRequestJson,
   TunnelStatus,
@@ -115,11 +115,16 @@ let vpnConnStatusChangedCb: CallbackToken | undefined;
  */
 async function subscribeVPNConnEvents(): Promise<void> {
   if (!vpnConnStatusChangedCb) {
-    vpnConnStatusChangedCb = await newCallback(handleVpnConnectionStatusChanged);
-    await invokeGoMethod('AddEventListener', JSON.stringify({
-      name: StatusChangedEvent,
-      callbackToken: vpnConnStatusChangedCb,
-    }));
+    vpnConnStatusChangedCb = await newCallback(
+      handleVpnConnectionStatusChanged
+    );
+    await invokeGoMethod(
+      'AddEventListener',
+      JSON.stringify({
+        name: StatusChangedEvent,
+        callbackToken: vpnConnStatusChangedCb,
+      })
+    );
   }
 }
 
