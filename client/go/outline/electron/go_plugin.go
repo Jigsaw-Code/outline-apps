@@ -26,6 +26,7 @@ import (
 	"unsafe"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline"
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/callback"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 )
 
@@ -45,11 +46,17 @@ func InvokeMethod(method *C.char, input *C.char) C.InvokeMethodResult {
 	}
 }
 
-var ptr C.CallbackFuncPtr
+// cgoCallback implements the [callback.Callback] interface and bridges the Go callback
+// to a C function pointer.
+type cgoCallback struct {
+	ptr C.CallbackFuncPtr
+}
 
-//export CallPtr
-func CallPtr(data *C.char) {
-	C.InvokeCallback(ptr, data)
+var _ callback.Callback = (*cgoCallback)(nil)
+
+// OnCall forwards the data to the C callback function pointer.
+func (ccb *cgoCallback) OnCall(data string) {
+	C.InvokeCallback(ccb.ptr, newCGoString(data))
 }
 
 // NewCallback registers a new callback function and returns a [callback.Token] string.
@@ -58,8 +65,15 @@ func CallPtr(data *C.char) {
 //
 //export NewCallback
 func NewCallback(cb C.CallbackFuncPtr) C.InvokeMethodResult {
-	ptr = cb
-	return C.InvokeMethodResult{Output: newCGoString(string("test"))}
+	token := callback.New(&cgoCallback{cb})
+	return C.InvokeMethodResult{Output: newCGoString(string(token))}
+}
+
+// DeleteCallback deletes the callback identified by the token returned by [NewCallback].
+//
+//export DeleteCallback
+func DeleteCallback(token *C.char) {
+	callback.Delete(callback.Token(C.GoString(token)))
 }
 
 // newCGoString allocates memory for a C string based on the given Go string.
