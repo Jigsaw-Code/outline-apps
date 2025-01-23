@@ -199,7 +199,7 @@ export class SupportForm extends LitElement {
           <md-checkbox
             touch-target="wrapper"
             name="outreachConsent"
-            .value=${live(this.values.outreachConsent ?? false)}
+            .value=${String(live(this.values.outreachConsent ?? false))}
             @input=${this.handleInput}
           ></md-checkbox>
           ${this.localize('support-form-outreach-consent')}

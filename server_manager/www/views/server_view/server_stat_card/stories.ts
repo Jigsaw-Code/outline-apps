@@ -32,6 +32,11 @@ export default {
 
 export const Example = ({icon, name, value, units}: ServerStatCard) => html`
   <div style="height: 300px;">
-    <server-stat-card icon=${icon} name=${name} value=${value} units=${units} />
+    <server-stat-card
+      icon=${icon}
+      name=${name}
+      value=${value}
+      units=${units}
+    ></server-stat-card>
   </div>
 `;

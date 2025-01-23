@@ -92,7 +92,7 @@ export class AddAccessKeyDialog extends LitElement {
         ></section>
         <section>
           <md-filled-text-field
-            .error=${this.accessKey && !this.isValidAccessKey}
+            .error=${Boolean(this.accessKey) && !this.isValidAccessKey}
             @input=${this.handleEdit}
             error-text="${this.localize('add-access-key-dialog-error-text')}"
             label="${this.localize('add-access-key-dialog-label')}"

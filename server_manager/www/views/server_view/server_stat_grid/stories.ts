@@ -60,6 +60,10 @@ export default {
 
 export const Example = ({stats, columns, rows}: ServerStatGrid) => html`
   <div style="height: 80vh;">
-    <server-stat-grid columns=${columns} rows=${rows} .stats=${stats} />
+    <server-stat-grid
+      columns=${columns}
+      rows=${rows}
+      .stats=${stats}
+    ></server-stat-grid>
   </div>
 `;

@@ -105,10 +105,11 @@
     "karma-coverage-istanbul-reporter": "^3.0.3",
     "karma-jasmine": "^4.0.1",
     "karma-webpack": "^5.0.0",
+    "lit-analyzer": "^2.0.3",
     "minimist": "^1.2.6",
     "node-fetch": "^3.3.0",
-    "node-loader": "^2.0.0",
     "node-gyp": "^10.0.1",
+    "node-loader": "^2.0.0",
     "postcss": "^7.0.39",
     "postcss-rtl": "^1.7.3",
     "prettier": "^2.8.0",
@@ -149,6 +150,7 @@
     ]
   },
   "scripts": {
-    "clean": "rm -rf output node_modules www platforms plugins"
+    "clean": "rm -rf output node_modules www platforms plugins",
+    "lint:lit": "lit-analyzer src/www/views"
   }
 }

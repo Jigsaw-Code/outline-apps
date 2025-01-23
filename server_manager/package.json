@@ -107,6 +107,7 @@
     "karma-chrome-launcher": "^3.1.0",
     "karma-jasmine": "^5.1.0",
     "karma-webpack": "^5.0.0",
+    "lit-analyzer": "^2.0.3",
     "node-jq": "^1.11.2",
     "postcss": "^7.0.29",
     "postcss-rtl": "^1.7.3",
@@ -127,6 +128,7 @@
     "type-detect": "1.0.0"
   },
   "scripts": {
-    "clean": "rm -rf node_modules install_scripts/do_install_script.ts install_scripts/gcp_install_script.ts"
+    "clean": "rm -rf node_modules install_scripts/do_install_script.ts install_scripts/gcp_install_script.ts",
+    "lint:lit": "lit-analyzer www/views"
   }
 }
