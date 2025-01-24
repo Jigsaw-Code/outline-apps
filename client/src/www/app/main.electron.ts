@@ -28,7 +28,7 @@ import {AbstractUpdater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
 import {ErrorCode, OutlinePluginError} from '../model/errors';
-import {PlatformError} from '../model/platform_error';
+import {deserializeError} from '../model/platform_error';
 import {
   getSentryBrowserIntegrations,
   OutlineErrorReporter,
@@ -137,7 +137,7 @@ class ElectronMethodChannel implements MethodChannel {
         params
       );
     } catch (e) {
-      throw PlatformError.parseFrom(e);
+      throw deserializeError(e);
     }
   }
 }

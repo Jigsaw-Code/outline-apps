@@ -148,7 +148,7 @@ async function fetchTunnelConfig(
     )
   ).trim();
   if (!responseBody) {
-    throw new errors.ServerAccessKeyInvalid(
+    throw new errors.InvalidServiceConfiguration(
       'Got empty config from dynamic key.'
     );
   }
@@ -159,7 +159,7 @@ async function fetchTunnelConfig(
       throw cause;
     }
 
-    throw new errors.ServerAccessKeyInvalid(
+    throw new errors.InvalidServiceConfiguration(
       'Failed to parse VPN information fetched from dynamic access key.',
       {cause}
     );
