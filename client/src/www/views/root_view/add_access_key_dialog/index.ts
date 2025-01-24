@@ -93,10 +93,6 @@ export class AddAccessKeyDialog extends LitElement {
         <section>
           <md-filled-text-field
             .error=${this.accessKey && !this.isValidAccessKey}
-            @change=${this.updateIsValidAccessKey(
-              this.accessKey,
-              this.validateAccessKey
-            )}
             @input=${this.handleEdit}
             error-text="${this.localize('add-access-key-dialog-error-text')}"
             label="${this.localize('add-access-key-dialog-label')}"
@@ -131,6 +127,8 @@ export class AddAccessKeyDialog extends LitElement {
 
   private handleEdit(event: InputEvent) {
     this.accessKey = (event.target as HTMLInputElement).value;
+
+    this.updateIsValidAccessKey(this.accessKey, this.validateAccessKey);
   }
 
   private handleConfirm() {

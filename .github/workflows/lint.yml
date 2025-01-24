@@ -15,7 +15,7 @@
 name: Lint
 
 concurrency:
-  group: ${{ github.head_ref || github.ref }}
+  group: ${{ github.head_ref || github.ref }}-lint
   cancel-in-progress: true
 
 on:
