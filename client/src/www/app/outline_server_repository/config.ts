@@ -55,16 +55,6 @@ export interface TunnelConfigJson {
   transport: string;
 }
 
-// getAddressFromTransportConfig validates the transport config and returns the address of the first hop.
-async function getAddressFromTransportConfig(
-  tunnelConfigText: string
-): Promise<string> {
-  const firstHop = await methodChannel
-    .getDefaultMethodChannel()
-    .invokeMethod('GetFirstHop', tunnelConfigText);
-  return firstHop;
-}
-
 /**
  * parseTunnelConfig parses the given tunnel config as text and returns a new TunnelConfigJson.
  * The config text may be a "ss://" link or a JSON object.
@@ -74,22 +64,10 @@ async function getAddressFromTransportConfig(
 export async function parseTunnelConfig(
   tunnelConfigText: string
 ): Promise<TunnelConfigJson | null> {
-  // TODO: Define proper format for response so that errors don't conflict with the transport.
-  tunnelConfigText = tunnelConfigText.trim();
-  if (!tunnelConfigText.startsWith('ss://')) {
-    const responseJson = JSON.parse(tunnelConfigText);
-    if ('error' in responseJson) {
-      throw new errors.SessionProviderError(
-        responseJson.error.message,
-        responseJson.error.details
-      );
-    }
-  }
-
-  return {
-    firstHop: await getAddressFromTransportConfig(tunnelConfigText),
-    transport: tunnelConfigText,
-  };
+  const config = await methodChannel
+    .getDefaultMethodChannel()
+    .invokeMethod('ParseTunnelConfig', tunnelConfigText);
+  return JSON.parse(config);
 }
 
 export async function parseAccessKey(
@@ -130,7 +108,7 @@ export async function parseAccessKey(
 
     throw new TypeError('Access Key is not a ss:// or ssconf:// URL');
   } catch (e) {
-    throw new errors.ServerAccessKeyInvalid('Invalid static access key.', {
+    throw new errors.InvalidServiceConfiguration('Invalid static access key.', {
       cause: e,
     });
   }
