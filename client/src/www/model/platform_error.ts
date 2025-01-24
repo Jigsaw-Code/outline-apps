@@ -47,9 +47,9 @@ function createInternalError(cause?: unknown): Error {
 }
 
 /**
- * Recursively validates and parses a {@link rawObj} into a {@link PlatformError}.
+ * Recursively validates and parses a {@link rawObj} into an {@link Error}.
  * @param {object} rawObj Any object that is returned by JSON.parse.
- * @returns {PlatformError} A non-null instance of PlatformError.
+ * @returns {Error} A non-null instance of Error.
  * @throws {Error} Will be thrown when {@link rawObj} is invalid.
  */
 function convertRawErrorObjectToError(rawObj: object): Error {
@@ -182,63 +182,6 @@ export class PlatformError extends CustomError {
   }
 
   /**
-   * Parses a cross-component-boundary error object into a {@link PlatformError}.
-   *
-   * The error object can be one of the following types:
-   * - A raw JSON string representation of a PlatformError.
-   * - An Error whose message is a raw JSON string representation of a PlatformError.
-   * - Otherwise, an {@link INTERNAL_ERROR} {@link PlatformError} with {@link errObj} as its cause
-   *   will be returned.
-   *
-   * @param errObj The error object to be parsed.
-   * @returns A non-null PlatformError object.
-   *
-   * @example
-   * try {
-   *   // cordova plugin calls or electron IPC calls
-   * } catch (e) {
-   *   throw PlatformError.parseFrom(e);
-   * }
-   */
-  static parseFrom(errObj: string | Error | unknown): Error {
-    if (typeof errObj === 'undefined' || errObj === null) {
-      return createInternalError();
-    }
-    if (errObj instanceof PlatformError) {
-      return errObj;
-    }
-
-    let rawJSON: string;
-    let rawObj: object;
-    if (typeof errObj === 'string') {
-      rawJSON = errObj;
-    } else if (errObj instanceof Error) {
-      rawJSON = errObj.message;
-    } else if (typeof errObj === 'object') {
-      rawObj = errObj;
-    } else {
-      return createInternalError(errObj);
-    }
-
-    if (rawJSON) {
-      try {
-        rawObj = JSON.parse(rawJSON);
-      } catch {
-        return createInternalError(errObj);
-      }
-    }
-
-    if (typeof rawObj !== 'object' || !rawObj) {
-      return createInternalError(errObj);
-    }
-    try {
-      return convertRawErrorObjectToError(rawObj);
-    } catch {
-      return createInternalError(errObj);
-    }
-  }
-
-  /**
    * Returns a user readable string of this error with all details and causes.
    * @returns {string} A user friendly string representing this error.
    */
@@ -266,6 +209,63 @@ export class PlatformError extends CustomError {
   toJSON(): string {
     const errRawObj = convertPlatformErrorToRawErrorObject(this);
     return JSON.stringify(errRawObj);
+  }
+}
+
+/**
+ * De-serializes a cross-component-boundary error object into an {@link Error}.
+ *
+ * The error object can be one of the following types:
+ * - A raw JSON string representation of a PlatformError.
+ * - An Error whose message is a raw JSON string representation of a PlatformError.
+ * - Otherwise, an {@link INTERNAL_ERROR} {@link PlatformError} with {@link errObj} as its cause
+ *   will be returned.
+ *
+ * @param errObj The error object to be parsed.
+ * @returns A non-null Error object.
+ *
+ * @example
+ * try {
+ *   // cordova plugin calls or electron IPC calls
+ * } catch (e) {
+ *   throw deserializeError(e);
+ * }
+ */
+export function deserializeError(errObj: string | Error | unknown): Error {
+  if (typeof errObj === 'undefined' || errObj === null) {
+    return createInternalError();
+  }
+  if (errObj instanceof PlatformError) {
+    return errObj;
+  }
+
+  let rawJSON: string;
+  let rawObj: object;
+  if (typeof errObj === 'string') {
+    rawJSON = errObj;
+  } else if (errObj instanceof Error) {
+    rawJSON = errObj.message;
+  } else if (typeof errObj === 'object') {
+    rawObj = errObj;
+  } else {
+    return createInternalError(errObj);
+  }
+
+  if (rawJSON) {
+    try {
+      rawObj = JSON.parse(rawJSON);
+    } catch {
+      return createInternalError(errObj);
+    }
+  }
+
+  if (typeof rawObj !== 'object' || !rawObj) {
+    return createInternalError(errObj);
+  }
+  try {
+    return convertRawErrorObjectToError(rawObj);
+  } catch {
+    return createInternalError(errObj);
   }
 }
 
