@@ -70,9 +70,9 @@ export interface TunnelConfigJson {
 export async function parseTunnelConfig(
   tunnelConfigText: string
 ): Promise<TunnelConfigJson | null> {
+  tunnelConfigText = tunnelConfigText.trim();
   let responseJson;
   try {
-    tunnelConfigText = tunnelConfigText.trim();
     if (tunnelConfigText.startsWith('ss://')) {
       return staticKeyToTunnelConfig(tunnelConfigText);
     }
