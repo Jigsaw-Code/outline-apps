@@ -26,7 +26,7 @@ import * as errors from './errors';
  */
 
 /**
- * Creates a new {@link Error} instance with the name set to {@link INTERNAL_ERROR}.
+ * Creates a new {@link Error} instance with the name set to {@link GoErrorCode.INTERNAL_ERROR}.
  * @param cause An optional cause of this error.
  * @returns A non-null instance of {@link Error}.
  */
