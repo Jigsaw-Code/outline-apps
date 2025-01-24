@@ -14,31 +14,36 @@
 
 import {CustomError} from '@outline/infrastructure/custom_error';
 
+import * as errors from './errors';
+
 /**
  * @fileoverview This file defines types and constants corresponding to the backend Go's
  * `platerrors` package. It will be used to receive native errors from Go, eventually replacing
  * the older NativeError type.
+ *
+ * TODO(fortuna): Move this out of the model. It's an implementation detail, not a product concept.
+ * We also need to move away from using loosely typed PlatformError in application code.
  */
 
 /**
- * Creates a new {@link PlatformError} instance with the error code set to {@link INTERNAL_ERROR}.
+ * Creates a new {@link Error} instance with the name set to {@link INTERNAL_ERROR}.
  * @param cause An optional cause of this error.
- * @returns A non-null instance of {@link PlatformError}.
+ * @returns A non-null instance of {@link Error}.
  */
-function createInternalError(cause?: unknown): PlatformError {
-  const MESSAGE = 'Internal service error';
+function createInternalError(cause?: unknown): Error {
+  const options = {} as {cause?: Error};
 
-  if (typeof cause === 'undefined' || cause === null) {
-    return new PlatformError(INTERNAL_ERROR, MESSAGE);
-  } else if (cause instanceof Error) {
-    return new PlatformError(INTERNAL_ERROR, MESSAGE, {cause});
+  if (cause instanceof Error) {
+    options.cause = cause;
+  } else if (cause) {
+    // Use String(cause) instead of cause.toString() or new String(cause) to cover
+    // primitive types and Symbols.
+    options.cause = new Error(String(cause));
   }
 
-  // Use String(cause) instead of cause.toString() or new String(cause) to cover
-  // primitive types and Symbols.
-  return new PlatformError(INTERNAL_ERROR, MESSAGE, {
-    cause: new Error(String(cause)),
-  });
+  const err = new Error('Internal service error', options);
+  err.name = GoErrorCode.INTERNAL_ERROR;
+  return err;
 }
 
 /**
@@ -47,11 +52,11 @@ function createInternalError(cause?: unknown): PlatformError {
  * @returns {PlatformError} A non-null instance of PlatformError.
  * @throws {Error} Will be thrown when {@link rawObj} is invalid.
  */
-function convertRawErrorObjectToPlatformError(rawObj: object): PlatformError {
+function convertRawErrorObjectToError(rawObj: object): Error {
   if (!('code' in rawObj) || typeof rawObj.code !== 'string') {
     throw new Error('code is invalid');
   }
-  const code = rawObj.code.trim();
+  const code = rawObj.code.trim() as GoErrorCode;
   if (!code) {
     throw new Error('code is empty');
   }
@@ -59,25 +64,59 @@ function convertRawErrorObjectToPlatformError(rawObj: object): PlatformError {
     throw new Error('message is invalid');
   }
 
-  const options: {details?: ErrorDetails; cause?: Error} = {};
+  let detailsMessage = rawObj.message;
   if ('details' in rawObj) {
     if (typeof rawObj.details !== 'object') {
       throw new Error('details is invalid');
     }
     if (rawObj.details) {
-      options.details = <ErrorDetails>rawObj.details;
+      detailsMessage = makeDetailsString(
+        rawObj.message,
+        <ErrorDetails>rawObj.details
+      );
     }
   }
+  let cause: Error;
   if ('cause' in rawObj) {
     if (typeof rawObj.cause !== 'object') {
       throw new Error('cause is invalid');
     }
     if (rawObj.cause) {
-      options.cause = convertRawErrorObjectToPlatformError(rawObj.cause);
+      cause = convertRawErrorObjectToError(rawObj.cause);
     }
   }
 
-  return new PlatformError(code, rawObj.message, options);
+  switch (code) {
+    case GoErrorCode.FETCH_CONFIG_FAILED:
+      return new errors.SessionConfigFetchFailed(detailsMessage, {cause});
+    case GoErrorCode.ILLEGAL_CONFIG:
+      return new errors.InvalidServiceConfiguration(detailsMessage, {cause});
+    case GoErrorCode.PROXY_SERVER_UNREACHABLE:
+      return new errors.ServerUnreachable(detailsMessage, {cause});
+    case GoErrorCode.VPN_PERMISSION_NOT_GRANTED:
+      return new errors.VpnPermissionNotGranted(detailsMessage, {cause});
+    default: {
+      const error = new Error(detailsMessage, {cause});
+      error.name = String(code);
+      return error;
+    }
+  }
+}
+
+function makeDetailsString(
+  detailsMessage?: string,
+  detailsMap?: object
+): string {
+  let result = detailsMessage;
+  if (detailsMap) {
+    result += '\nDetails: ';
+    try {
+      result += JSON.stringify(detailsMap, null, 2);
+    } catch {
+      result += '<Unable To Show>';
+    }
+  }
+  return result;
 }
 
 /**
@@ -93,7 +132,7 @@ function convertPlatformErrorToRawErrorObject(platErr: PlatformError): object {
     details?: ErrorDetails;
     cause?: object;
   } = {
-    code: platErr.code,
+    code: String(platErr.code),
     message: platErr.message,
     details: platErr.details,
   };
@@ -102,7 +141,10 @@ function convertPlatformErrorToRawErrorObject(platErr: PlatformError): object {
     if (platErr.cause instanceof PlatformError) {
       cause = platErr.cause;
     } else {
-      cause = new PlatformError(INTERNAL_ERROR, String(platErr.cause));
+      cause = new PlatformError(
+        GoErrorCode.INTERNAL_ERROR,
+        String(platErr.cause)
+      );
     }
     rawObj.cause = convertPlatformErrorToRawErrorObject(cause);
   }
@@ -123,12 +165,12 @@ export class PlatformError extends CustomError {
 
   /**
    * Constructs a new PlatformError instance with the specified parameters.
-   * @param {ErrorCode} code An ErrorCode representing the category of this error.
+   * @param {GoErrorCode} code An ErrorCode representing the category of this error.
    * @param {string} message A user-readable string of this error.
    * @param options An object containing the optional details and cause.
    */
   constructor(
-    readonly code: ErrorCode,
+    readonly code: GoErrorCode,
     message: string,
     options?: {
       details?: ErrorDetails;
@@ -158,7 +200,7 @@ export class PlatformError extends CustomError {
    *   throw PlatformError.parseFrom(e);
    * }
    */
-  static parseFrom(errObj: string | Error | unknown): PlatformError {
+  static parseFrom(errObj: string | Error | unknown): Error {
     if (typeof errObj === 'undefined' || errObj === null) {
       return createInternalError();
     }
@@ -190,7 +232,7 @@ export class PlatformError extends CustomError {
       return createInternalError(errObj);
     }
     try {
-      return convertRawErrorObjectToPlatformError(rawObj);
+      return convertRawErrorObjectToError(rawObj);
     } catch {
       return createInternalError(errObj);
     }
@@ -236,17 +278,12 @@ export class PlatformError extends CustomError {
  * ErrorCode can be used to identify the specific type of a {@link PlatformError}.
  * You can reliably use the constant values to check for specific errors.
  */
-export type ErrorCode = string;
-
-export const INTERNAL_ERROR: ErrorCode = 'ERR_INTERNAL_ERROR';
-
-export const FETCH_CONFIG_FAILED: ErrorCode = 'ERR_FETCH_CONFIG_FAILURE';
-export const ILLEGAL_CONFIG: ErrorCode = 'ERR_ILLEGAL_CONFIG';
-
-export const VPN_PERMISSION_NOT_GRANTED = 'ERR_VPN_PERMISSION_NOT_GRANTED';
-
-export const PROXY_SERVER_UNREACHABLE: ErrorCode =
-  'ERR_PROXY_SERVER_UNREACHABLE';
-
-/** Indicates that the OS routing service is not running (electron only). */
-export const ROUTING_SERVICE_NOT_RUNNING = 'ERR_ROUTING_SERVICE_NOT_RUNNING';
+export enum GoErrorCode {
+  INTERNAL_ERROR = 'ERR_INTERNAL_ERROR',
+  FETCH_CONFIG_FAILED = 'ERR_FETCH_CONFIG_FAILURE',
+  ILLEGAL_CONFIG = 'ERR_ILLEGAL_CONFIG',
+  VPN_PERMISSION_NOT_GRANTED = 'ERR_VPN_PERMISSION_NOT_GRANTED',
+  PROXY_SERVER_UNREACHABLE = 'ERR_PROXY_SERVER_UNREACHABLE',
+  /** Indicates that the OS routing service is not running (electron only). */
+  ROUTING_SERVICE_NOT_RUNNING = 'ERR_ROUTING_SERVICE_NOT_RUNNING',
+}

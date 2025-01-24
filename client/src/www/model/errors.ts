@@ -45,13 +45,7 @@ export class SessionConfigFetchFailed extends CustomError {
     super(message, options);
   }
 }
-
-export class SessionConfigError extends CustomError {
-  constructor(message: string, options?: {cause?: Error}) {
-    super(message, options);
-  }
-}
-
+// SessionProviderError is the error that a provider can specify in a dynamic key.
 export class SessionProviderError extends CustomError {
   readonly details: string | undefined;
 
@@ -62,7 +56,7 @@ export class SessionProviderError extends CustomError {
   }
 }
 
-export class ServerAccessKeyInvalid extends CustomError {
+export class InvalidServiceConfiguration extends CustomError {
   constructor(message: string, options?: {cause?: Error}) {
     super(message, options);
   }

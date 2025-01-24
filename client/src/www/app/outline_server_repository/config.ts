@@ -70,12 +70,18 @@ export interface TunnelConfigJson {
 export async function parseTunnelConfig(
   tunnelConfigText: string
 ): Promise<TunnelConfigJson | null> {
-  tunnelConfigText = tunnelConfigText.trim();
-  if (tunnelConfigText.startsWith('ss://')) {
-    return staticKeyToTunnelConfig(tunnelConfigText);
+  let responseJson;
+  try {
+    tunnelConfigText = tunnelConfigText.trim();
+    if (tunnelConfigText.startsWith('ss://')) {
+      return staticKeyToTunnelConfig(tunnelConfigText);
+    }
+    responseJson = JSON.parse(tunnelConfigText);
+  } catch (err) {
+    throw new errors.InvalidServiceConfiguration('Invalid config format', {
+      cause: err,
+    });
   }
-
-  const responseJson = JSON.parse(tunnelConfigText);
 
   if ('error' in responseJson) {
     throw new errors.SessionProviderError(
@@ -165,7 +171,7 @@ export async function parseAccessKey(
 
     throw new TypeError('Access Key is not a ss:// or ssconf:// URL');
   } catch (e) {
-    throw new errors.ServerAccessKeyInvalid('Invalid static access key.', {
+    throw new errors.InvalidServiceConfiguration('Invalid static access key.', {
       cause: e,
     });
   }
