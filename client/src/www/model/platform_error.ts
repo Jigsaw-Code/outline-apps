@@ -18,8 +18,8 @@ import * as errors from './errors';
 
 /**
  * @fileoverview This file defines types and constants corresponding to the backend Go's
- * `platerrors` package. It will be used to receive native errors from Go, eventually replacing
- * the older NativeError type.
+ * `platerrors` package. It will be used to receive native errors from Go, eventually being
+ * transformed into a strongly-typed `errors.NativeError`.
  *
  * TODO(fortuna): Move this out of the model. It's an implementation detail, not a product concept.
  * We also need to move away from using loosely typed PlatformError in application code.
