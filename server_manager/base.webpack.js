@@ -68,7 +68,23 @@ exports.makeConfig = options => {
         },
       ],
     },
-    resolve: {extensions: ['.tsx', '.ts', '.js']},
+    resolve: {
+      extensions: ['.tsx', '.ts', '.js'],
+      // This alias prevents multiple copies of lit from creeping into the build:
+      // See: https://lit.dev/docs/tools/development/#multiple-lit-versions
+
+      // We should be able to remove this once we drop support for iOS 15 and consolidate
+      // our component libraries (see #2345)
+      alias: {
+        lit: path.resolve(__dirname, '../node_modules/lit'),
+        'lit/*': path.resolve(__dirname, '../node_modules/lit/*'),
+        'lit-html': path.resolve(__dirname, '../node_modules/lit-html'),
+        '@lit/reactive-element': path.resolve(
+          __dirname,
+          '../node_modules/@lit/reactive-element'
+        ),
+      },
+    },
     plugins: [
       new webpack.DefinePlugin({
         'outline.gcpAuthEnabled': JSON.stringify(
