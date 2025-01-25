@@ -65,6 +65,10 @@ tasks:
     desc: "Build the tun2socks binary and library for Linux"
     cmds: [{task: electron, vars: {TARGET_OS: "linux", TARGET_ARCH: "amd64"}}]
 
+  linux_arm64:
+    desc: "Build the tun2socks binary and library for Linux"
+    cmds: [{task: electron, vars: {TARGET_OS: "linux", TARGET_ARCH: "arm64"}}]
+
   android:
     desc: "Build the tun2socks.aar library for Android"
     vars:
