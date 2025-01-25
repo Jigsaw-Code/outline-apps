@@ -40,10 +40,10 @@ const (
 	//  - Output: the content in raw string of the fetched resource
 	MethodFetchResource = "FetchResource"
 
-	// GetFirstHop validates a transport config and returns the first hop.
+	// Parses the TunnelConfig and extracts the first hop or provider error as needed.
 	//  - Input: the transport config text
-	//  - Output: the host:port address of the first hop, if applicable.
-	MethodGetFirstHop = "GetFirstHop"
+	//  - Output: the TunnelConfigJson that Typescript needs
+	MethodParseTunnelConfig = "ParseTunnelConfig"
 )
 
 // InvokeMethodResult represents the result of an InvokeMethod call.
@@ -77,22 +77,8 @@ func InvokeMethod(method string, input string) *InvokeMethodResult {
 			Error: platerrors.ToPlatformError(err),
 		}
 
-	case MethodGetFirstHop:
-		result := NewClient(input)
-		if result.Error != nil {
-			return &InvokeMethodResult{
-				Error: result.Error,
-			}
-		}
-		streamFirstHop := result.Client.sd.ConnectionProviderInfo.FirstHop
-		packetFirstHop := result.Client.pl.ConnectionProviderInfo.FirstHop
-		firstHop := ""
-		if streamFirstHop == packetFirstHop {
-			firstHop = streamFirstHop
-		}
-		return &InvokeMethodResult{
-			Value: firstHop,
-		}
+	case MethodParseTunnelConfig:
+		return doParseTunnelConfig(input)
 
 	default:
 		return &InvokeMethodResult{Error: &platerrors.PlatformError{

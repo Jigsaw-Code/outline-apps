@@ -64,7 +64,7 @@ func newClientWithBaseDialers(transportConfig string, tcpDialer transport.Stream
 	transportYAML, err := config.ParseConfigYAML(transportConfig)
 	if err != nil {
 		return nil, &platerrors.PlatformError{
-			Code:    platerrors.IllegalConfig,
+			Code:    platerrors.InvalidConfig,
 			Message: "config is not valid YAML",
 			Cause:   platerrors.ToPlatformError(err),
 		}
@@ -74,13 +74,13 @@ func newClientWithBaseDialers(transportConfig string, tcpDialer transport.Stream
 	if err != nil {
 		if errors.Is(err, errors.ErrUnsupported) {
 			return nil, &platerrors.PlatformError{
-				Code:    platerrors.IllegalConfig,
+				Code:    platerrors.InvalidConfig,
 				Message: "unsupported config",
 				Cause:   platerrors.ToPlatformError(err),
 			}
 		} else {
 			return nil, &platerrors.PlatformError{
-				Code:    platerrors.IllegalConfig,
+				Code:    platerrors.InvalidConfig,
 				Message: "failed to create transport",
 				Cause:   platerrors.ToPlatformError(err),
 			}
