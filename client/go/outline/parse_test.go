@@ -17,6 +17,7 @@ package outline
 import (
 	"testing"
 
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/stretchr/testify/require"
 )
 
@@ -35,4 +36,20 @@ transport:
 	require.Equal(t,
 		"{\"firstHop\":\"example.com:80\",\"transport\":\"$type: tcpudp\\ntcp: \\u0026shared\\n    $type: shadowsocks\\n    endpoint: example.com:80\\n    cipher: chacha20-ietf-poly1305\\n    secret: SECRET\\nudp: *shared\\n\"}",
 		result.Value)
+}
+
+func Test_doParseTunnelConfig_ProviderError(t *testing.T) {
+	result := doParseTunnelConfig(`
+error:
+  message: Unauthorized
+  details: Account expired
+`)
+
+	require.Equal(t, result.Error, &platerrors.PlatformError{
+		Code:    platerrors.ProviderError,
+		Message: "Unauthorized",
+		Details: map[string]any{
+			"details": "Account expired",
+		},
+	})
 }
