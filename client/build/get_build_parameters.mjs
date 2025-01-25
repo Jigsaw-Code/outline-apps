@@ -14,7 +14,15 @@
 
 import minimist from 'minimist';
 
-const VALID_PLATFORMS = ['linux', 'windows', 'ios', 'macos', 'maccatalyst', 'android', 'browser'];
+const VALID_PLATFORMS = [
+  'linux',
+  'windows',
+  'ios',
+  'macos',
+  'maccatalyst',
+  'android',
+  'browser',
+];
 const VALID_BUILD_MODES = ['debug', 'release'];
 
 const MS_PER_HOUR = 1000 * 60 * 60;
@@ -54,7 +62,8 @@ export function getBuildParameters(cliArguments) {
     platform,
     buildMode,
     verbose,
-    versionName: buildMode === 'release' ? versionName : `${versionName}-${buildMode}`,
+    versionName:
+      buildMode === 'release' ? versionName : `${versionName}-${buildMode}`,
     sentryDsn,
     buildNumber: Math.floor(Date.now() / MS_PER_HOUR),
     arch,
