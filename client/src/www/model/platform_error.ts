@@ -99,7 +99,7 @@ function convertRawErrorObjectToError(rawObj: object): Error {
       return new errors.VpnPermissionNotGranted(detailsMessage, {cause});
     case GoErrorCode.PROVIDER_ERROR:
       return new errors.SessionProviderError(
-        detailsMessage,
+        rawObj.message,
         (detailsMap as {details?: string})?.details
       );
     default: {
