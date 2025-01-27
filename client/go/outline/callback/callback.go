@@ -24,8 +24,10 @@ import (
 type Token int
 
 // Callback is an interface that can be implemented to receive callbacks.
+//
+// It accepts an input and returns an output, allowing communication back to the caller.
 type Callback interface {
-	OnCall(data string)
+	OnCall(data string) string
 }
 
 var (
@@ -59,16 +61,18 @@ func Delete(token Token) {
 
 // Call executes a callback identified by the token.
 //
+// It passes the data string to the [Callback].OnCall and returns the string returned by OnCall.
+//
 // Calling this function is safe even if the callback has not been registered.
-func Call(token Token, data string) {
+func Call(token Token, data string) string {
 	mu.RLock()
 	defer mu.RUnlock()
 
 	cb, ok := callbacks[token]
 	if !ok {
 		slog.Warn("callback not yet created", "token", token)
-		return
+		return ""
 	}
 	slog.Debug("invoking callback", "token", token, "data", data)
-	cb.OnCall(data)
+	return cb.OnCall(data)
 }

@@ -59,6 +59,7 @@ declare const APP_VERSION: string;
 const debugMode = process.env.OUTLINE_DEBUG === 'true';
 
 const IS_LINUX = os.platform() === 'linux';
+const USE_MODERN_ROUTING = (IS_LINUX && !process.env.APPIMAGE);
 
 // Used for the auto-connect feature. There will be a tunnel in store
 // if the user was connected at shutdown.
@@ -369,15 +370,20 @@ async function createVpnTunnel(
   return tunnel;
 }
 
+/**
+ * Initializes the VPN service. For example, subscribing to global events.
+ */
+async function initVpnService() {
+  if (USE_MODERN_ROUTING) {
+    onVpnStatusChanged((id, status) => setUiTunnelStatus(status, id));
+  }
+}
+
 // Invoked by both the start-proxying event handler and auto-connect.
 async function startVpn(request: StartRequestJson, isAutoConnect: boolean) {
   console.debug('startVpn called with request ', JSON.stringify(request));
 
-  if (IS_LINUX && !process.env.APPIMAGE) {
-    onVpnStatusChanged((id, status) => {
-      setUiTunnelStatus(status, id);
-      console.info('VPN Status Changed: ', id, status);
-    });
+  if (USE_MODERN_ROUTING) {
     await establishVpn(request);
     return;
   }
@@ -415,7 +421,7 @@ async function startVpn(request: StartRequestJson, isAutoConnect: boolean) {
 
 // Invoked by both the stop-proxying event and quit handler.
 async function stopVpn() {
-  if (IS_LINUX && !process.env.APPIMAGE) {
+  if (USE_MODERN_ROUTING) {
     await Promise.all([closeVpn(), tearDownAutoLaunch()]);
     return;
   }
@@ -470,6 +476,8 @@ function main() {
     setupTray();
     // TODO(fortuna): Start the app with the window hidden on auto-start?
     setupWindow();
+
+    await initVpnService();
 
     let requestAtShutdown: StartRequestJson | undefined;
     try {

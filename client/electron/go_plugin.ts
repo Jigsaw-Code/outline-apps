@@ -46,17 +46,18 @@ export async function invokeGoMethod(
 /**
  * Represents a function that will be called from the Go backend.
  * @param data The data string passed from the Go backend.
+ * @returns A result string that will be passed back to the caller.
  */
-export type CallbackFunction = (data: string) => void;
+export type CallbackFunction = (data: string) => string;
 
 /** A unique token for a callback created by `newCallback`. */
-export type CallbackToken = string;
+export type CallbackToken = number;
 
 /**
  * Koffi requires us to register all persistent callbacks; we track the registrations here.
  * @see https://koffi.dev/callbacks#registered-callbacks
  */
-const koffiCallbacks = new Map<string, koffi.IKoffiRegisteredCallback>();
+const koffiCallbacks = new Map<CallbackToken, koffi.IKoffiRegisteredCallback>();
 
 /**
  * Registers a callback function in TypeScript, making it invokable from Go.
@@ -74,17 +75,10 @@ export async function newCallback(
     callback,
     ensureCgo().callbackFuncPtr
   );
-  const result = await ensureCgo().newCallback(persistentCallback);
-  console.debug('[Backend] - newCallback done', result);
-  if (result.ErrorJson) {
-    koffi.unregister(persistentCallback);
-    throw new Error(result.ErrorJson);
-  }
-  koffiCallbacks.set(result.Output, persistentCallback);
-  console.debug(
-    `[Backend] - registered persistent callback ${result.Output} with koffi`
-  );
-  return result.Output;
+  const token = await ensureCgo().newCallback(persistentCallback);
+  console.debug('[Backend] - newCallback done', token);
+  koffiCallbacks.set(token, persistentCallback);
+  return token.Output;
 }
 
 /**
@@ -94,7 +88,7 @@ export async function newCallback(
  * @returns A Promise that resolves when the unregistration is done.
  */
 export async function deleteCallback(token: CallbackToken): Promise<void> {
-  console.debug('[Backend] - calling deleteCallback ...');
+  console.debug('[Backend] - calling deleteCallback ...', token);
   await ensureCgo().deleteCallback(token);
   console.debug('[Backend] - deleteCallback done');
   const persistentCallback = koffiCallbacks.get(token);
@@ -153,14 +147,14 @@ function ensureCgo(): CgoFunctions {
 
     // Define callback data structures and functions
     const callbackFuncPtr = koffi.pointer(
-      koffi.proto('CallbackFuncPtr', 'void', [cgoString])
+      koffi.proto('CallbackFuncPtr', 'str', [cgoString])
     );
     const newCallback = promisify(
-      backendLib.func('NewCallback', invokeMethodResult, [callbackFuncPtr])
+      backendLib.func('NewCallback', 'int', [callbackFuncPtr])
         .async
     );
     const deleteCallback = promisify(
-      backendLib.func('DeleteCallback', 'void', ['str']).async
+      backendLib.func('DeleteCallback', 'void', ['int']).async
     );
 
     // Cache them so we don't have to reload these functions

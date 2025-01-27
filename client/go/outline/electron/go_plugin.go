@@ -34,7 +34,7 @@ typedef struct InvokeMethodResult_t
 // This callback function will be invoked by the Go side.
 //
 // - data: The callback data, passed as a C string (typically a JSON string).
-typedef void (*CallbackFuncPtr)(const char *data);
+typedef const char* (*CallbackFuncPtr)(const char *data);
 
 // InvokeCallback is a helper function that invokes the C callback function pointer.
 //
@@ -42,8 +42,8 @@ typedef void (*CallbackFuncPtr)(const char *data);
 //
 // - f: The C function pointer to be invoked.
 // - data: A C-string typed data to be passed to the callback.
-static void InvokeCallback(CallbackFuncPtr f, const char *data) {
-  f(data);
+static const char* InvokeCallback(CallbackFuncPtr f, const char *data) {
+  return f(data);
 }
 */
 import "C"
@@ -83,8 +83,9 @@ type cgoCallback struct {
 var _ callback.Callback = (*cgoCallback)(nil)
 
 // OnCall forwards the data to the C callback function pointer.
-func (ccb *cgoCallback) OnCall(data string) {
-	C.InvokeCallback(ccb.ptr, newCGoString(data))
+func (ccb *cgoCallback) OnCall(data string) string {
+	ret := C.InvokeCallback(ccb.ptr, newCGoString(data))
+	return C.GoString(ret)
 }
 
 // NewCallback registers a new callback function and returns a [callback.Token] number.

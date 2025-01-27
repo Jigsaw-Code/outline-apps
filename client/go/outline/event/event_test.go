@@ -217,9 +217,10 @@ type testListener struct {
 	lastData atomic.Value
 }
 
-func (l *testListener) OnCall(eventData string) {
+func (l *testListener) OnCall(eventData string) string {
 	l.cnt.Add(1)
 	l.lastData.Store(eventData)
+	return ""
 }
 
 func (l *testListener) requireEqual(t *testing.T, cnt int32, data string) {

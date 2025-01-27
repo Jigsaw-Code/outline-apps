@@ -59,16 +59,20 @@ func Test_Call(t *testing.T) {
 	token := New(c)
 	c.requireEqual(t, 0, "")
 
-	Call(token, "arg1")
+	ret := Call(token, "arg1")
+	require.Equal(t, ret, "ret-arg1")
 	c.requireEqual(t, 1, "arg1")
 
-	Call(-1, "arg1")
+	ret = Call(-1, "arg1")
+	require.Empty(t, ret)
 	c.requireEqual(t, 1, "arg1") // No change
 
-	Call(token, "arg2")
+	ret = Call(token, "arg2")
+	require.Equal(t, ret, "ret-arg2")
 	c.requireEqual(t, 2, "arg2")
 
-	Call(99999999, "arg3")
+	ret = Call(99999999, "arg3")
+	require.Empty(t, ret)
 	c.requireEqual(t, 2, "arg2") // No change
 }
 
@@ -114,7 +118,8 @@ func Test_ConcurrentCall(t *testing.T) {
 	for i := 0; i < numInvocations; i++ {
 		go func(i int) {
 			defer wg.Done()
-			Call(token, fmt.Sprintf("data-%d", i))
+			ret := Call(token, fmt.Sprintf("data-%d", i))
+			require.Equal(t, ret, fmt.Sprintf("ret-data-%d", i))
 		}(i)
 	}
 	wg.Wait()
@@ -162,9 +167,10 @@ type testCallback struct {
 	lastData atomic.Value
 }
 
-func (tc *testCallback) OnCall(data string) {
+func (tc *testCallback) OnCall(data string) string {
 	tc.cnt.Add(1)
 	tc.lastData.Store(data)
+	return fmt.Sprintf("ret-%s", data)
 }
 
 func (tc *testCallback) requireEqual(t *testing.T, cnt int32, data string) {
