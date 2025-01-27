@@ -24,7 +24,7 @@ describe('parseAccessKey', () => {
       if (params.indexOf('invalid') > -1) {
         throw Error('fake invalid config');
       }
-      return 'first-hop:4321';
+      return `{"transport": ${JSON.stringify(params)}, "firstHop": "first-hop:4321"}`;
     },
   });
 
