@@ -16,13 +16,12 @@
 package callback
 
 import (
-	"fmt"
 	"log/slog"
 	"sync"
 )
 
 // Token can be used to uniquely identify a registered callback.
-type Token string
+type Token int
 
 // Callback is an interface that can be implemented to receive callbacks.
 type Callback interface {
@@ -31,8 +30,8 @@ type Callback interface {
 
 var (
 	mu        sync.RWMutex
-	callbacks        = make(map[uint32]Callback)
-	nextCbID  uint32 = 1
+	callbacks       = make(map[Token]Callback)
+	nextCbID  Token = 1
 )
 
 // New registers a new callback and returns a unique callback token.
@@ -40,11 +39,11 @@ func New(c Callback) Token {
 	mu.Lock()
 	defer mu.Unlock()
 
-	id := nextCbID
+	token := nextCbID
 	nextCbID++
-	callbacks[id] = c
-	slog.Debug("callback created", "id", id)
-	return getTokenByID(id)
+	callbacks[token] = c
+	slog.Debug("callback created", "token", token)
+	return token
 }
 
 // Delete removes a callback identified by the token.
@@ -54,44 +53,22 @@ func Delete(token Token) {
 	mu.Lock()
 	defer mu.Unlock()
 
-	if id, err := getIDByToken(token); err == nil {
-		delete(callbacks, id)
-		slog.Debug("callback deleted", "id", id)
-	} else {
-		slog.Warn("invalid callback token", "err", err, "token", token)
-	}
+	delete(callbacks, token)
+	slog.Debug("callback deleted", "token", token)
 }
 
 // Call executes a callback identified by the token.
 //
 // Calling this function is safe even if the callback has not been registered.
 func Call(token Token, data string) {
-	id, err := getIDByToken(token)
-	if err != nil {
-		slog.Warn("invalid callback token", "err", err, "token", token)
-		return
-	}
-
 	mu.RLock()
-	cb, ok := callbacks[id]
-	mu.RUnlock()
+	defer mu.RUnlock()
 
+	cb, ok := callbacks[token]
 	if !ok {
-		slog.Warn("callback not yet created", "id", id, "token", token)
+		slog.Warn("callback not yet created", "token", token)
 		return
 	}
-	slog.Debug("invoking callback", "id", id, "data", data)
+	slog.Debug("invoking callback", "token", token, "data", data)
 	cb.OnCall(data)
-}
-
-// getTokenByID creates a string-based callback token from a number-based internal ID.
-func getTokenByID(id uint32) Token {
-	return Token(fmt.Sprintf("cbid-%d", id))
-}
-
-// getIDByToken parses a number-based internal ID from a string-based callback token.
-func getIDByToken(token Token) (uint32, error) {
-	var id uint32
-	_, err := fmt.Sscanf(string(token), "cbid-%d", &id)
-	return id, err
 }

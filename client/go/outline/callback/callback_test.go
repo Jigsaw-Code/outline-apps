@@ -26,33 +26,31 @@ import (
 func Test_New(t *testing.T) {
 	curID := nextCbID
 	token := New(&testCallback{})
+	require.Equal(t, curID, token)
+	require.Contains(t, callbacks, token)
 	require.Equal(t, curID+1, nextCbID)
-	require.Contains(t, callbacks, curID)
-
-	require.NotEmpty(t, token)
-	require.Equal(t, fmt.Sprintf("cbid-%d", curID), string(token))
-
-	id, err := getIDByToken(token)
-	require.NoError(t, err)
-	require.Contains(t, callbacks, id)
-	require.Equal(t, id, curID)
 }
 
 func Test_Delete(t *testing.T) {
 	curID := nextCbID
 	token := New(&testCallback{})
-	require.Contains(t, callbacks, curID)
+	require.Equal(t, curID, token)
+	require.Contains(t, callbacks, token)
 
 	Delete(token)
-	require.NotContains(t, callbacks, curID)
+	require.NotContains(t, callbacks, token)
 	require.Equal(t, curID+1, nextCbID)
 
-	Delete("invalid-token")
-	require.NotContains(t, callbacks, curID)
+	Delete(0)
+	require.NotContains(t, callbacks, token)
 	require.Equal(t, curID+1, nextCbID)
 
-	Delete("cbid-99999999")
-	require.NotContains(t, callbacks, curID)
+	Delete(-1)
+	require.NotContains(t, callbacks, token)
+	require.Equal(t, curID+1, nextCbID)
+
+	Delete(99999999)
+	require.NotContains(t, callbacks, token)
 	require.Equal(t, curID+1, nextCbID)
 }
 
@@ -64,13 +62,13 @@ func Test_Call(t *testing.T) {
 	Call(token, "arg1")
 	c.requireEqual(t, 1, "arg1")
 
-	Call("invalid-token", "arg1")
+	Call(-1, "arg1")
 	c.requireEqual(t, 1, "arg1") // No change
 
 	Call(token, "arg2")
 	c.requireEqual(t, 2, "arg2")
 
-	Call("cbid-99999999", "arg3")
+	Call(99999999, "arg3")
 	c.requireEqual(t, 2, "arg2") // No change
 }
 
@@ -87,8 +85,7 @@ func Test_ConcurrentCreate(t *testing.T) {
 		go func(i int) {
 			defer wg.Done()
 			tokens[i] = New(&testCallback{})
-			require.NotEmpty(t, tokens[i])
-			require.Regexp(t, `^cbid-\d+$`, tokens[i])
+			require.Greater(t, tokens[i], 0)
 		}(i)
 	}
 	wg.Wait()
@@ -99,10 +96,7 @@ func Test_ConcurrentCreate(t *testing.T) {
 	for _, token := range tokens {
 		require.False(t, tokenSet[token], "Duplicate token found: %s", token)
 		tokenSet[token] = true
-
-		id, err := getIDByToken(token)
-		require.NoError(t, err)
-		require.Contains(t, callbacks, id)
+		require.Contains(t, callbacks, token)
 	}
 }
 

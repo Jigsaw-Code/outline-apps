@@ -60,10 +60,10 @@ func Test_ZeroParams(t *testing.T) {
 	l := &testListener{}
 	AddListener("", callback.New(l))
 	Fire("", "")
-	AddListener("TestEvent_InvalidParam", "")
+	AddListener("TestEvent_InvalidParam", -1)
 
 	RemoveListener("", callback.New(l))
-	RemoveListener("TestEvent_InvalidParam", "")
+	RemoveListener("TestEvent_InvalidParam", -1)
 	RemoveListener("NonExistEventName", callback.New(&testListener{}))
 
 	Fire("", "data1")

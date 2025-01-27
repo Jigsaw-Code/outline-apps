@@ -28,7 +28,7 @@ type eventListenerJSON struct {
 	Name string `json:"name"`
 
 	// Callback token is the token of the callback function returned from callback.NewCallback.
-	Callback string `json:"callbackToken"`
+	Callback int `json:"callbackToken"`
 }
 
 func addEventListener(input string) error {

@@ -36,8 +36,8 @@ var (
 //
 // The provided callback will be called when the event is invoked, along with the event data.
 func AddListener(evt EventName, cb callback.Token) {
-	if evt == "" || cb == "" {
-		slog.Warn("empty event or callback are ignored")
+	if evt == "" || cb <= 0 {
+		slog.Warn("ignores empty event or invalid callback token")
 		return
 	}
 	mu.Lock()
@@ -61,6 +61,9 @@ func RemoveListener(evt EventName, cb callback.Token) {
 }
 
 // Fire triggers the specified [EventName], invoking all associated callbacks with the given data.
+//
+// The event data string must contain at least a sender ID and the event details.
+// This allows listeners to identify who triggered the event.
 //
 // Calling this function is safe even if the event has not been registered.
 func Fire(evt EventName, data string) {
