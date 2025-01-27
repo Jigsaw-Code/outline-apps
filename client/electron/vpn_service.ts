@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {CallbackToken, invokeGoMethod, newCallback} from './go_plugin';
+import {invokeGoMethod, newCallback} from './go_plugin';
 import {
   StartRequestJson,
   TunnelStatus,
@@ -78,7 +78,7 @@ export type VpnStatusCallback = (id: string, status: TunnelStatus) => void;
 /**
  * Registers a callback function to be invoked when the VPN status changes.
  *
- * @param cb - The callback function to be invoked when the VPN status changes. 
+ * @param cb - The callback function to be invoked when the VPN status changes.
  *             The callback will receive the VPN connection ID as well as the new status.
  *
  * @remarks The caller should subscribe to this event **only once**.
@@ -106,7 +106,7 @@ export async function onVpnStatusChanged(cb: VpnStatusCallback): Promise<void> {
         cb(conn.id, TunnelStatus.DISCONNECTED);
         break;
     }
-    return "";
+    return '';
   });
 
   await invokeGoMethod(

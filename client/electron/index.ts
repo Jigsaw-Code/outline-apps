@@ -59,7 +59,7 @@ declare const APP_VERSION: string;
 const debugMode = process.env.OUTLINE_DEBUG === 'true';
 
 const IS_LINUX = os.platform() === 'linux';
-const USE_MODERN_ROUTING = (IS_LINUX && !process.env.APPIMAGE);
+const USE_MODERN_ROUTING = IS_LINUX && !process.env.APPIMAGE;
 
 // Used for the auto-connect feature. There will be a tunnel in store
 // if the user was connected at shutdown.

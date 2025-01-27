@@ -76,9 +76,9 @@ export async function newCallback(
     ensureCgo().callbackFuncPtr
   );
   const token = await ensureCgo().newCallback(persistentCallback);
-  console.debug('[Backend] - newCallback done', token);
+  console.debug('[Backend] - newCallback done, token:', token);
   koffiCallbacks.set(token, persistentCallback);
-  return token.Output;
+  return token;
 }
 
 /**
@@ -88,7 +88,7 @@ export async function newCallback(
  * @returns A Promise that resolves when the unregistration is done.
  */
 export async function deleteCallback(token: CallbackToken): Promise<void> {
-  console.debug('[Backend] - calling deleteCallback ...', token);
+  console.debug('[Backend] - calling deleteCallback:', token);
   await ensureCgo().deleteCallback(token);
   console.debug('[Backend] - deleteCallback done');
   const persistentCallback = koffiCallbacks.get(token);
@@ -150,8 +150,7 @@ function ensureCgo(): CgoFunctions {
       koffi.proto('CallbackFuncPtr', 'str', [cgoString])
     );
     const newCallback = promisify(
-      backendLib.func('NewCallback', 'int', [callbackFuncPtr])
-        .async
+      backendLib.func('NewCallback', 'int', [callbackFuncPtr]).async
     );
     const deleteCallback = promisify(
       backendLib.func('DeleteCallback', 'void', ['int']).async
