@@ -36,7 +36,7 @@ func establishVPN(configStr string) error {
 	var conf vpnConfigJSON
 	if err := json.Unmarshal([]byte(configStr), &conf); err != nil {
 		return perrs.PlatformError{
-			Code:    perrs.IllegalConfig,
+			Code:    perrs.InvalidConfig,
 			Message: "invalid VPN config format",
 			Cause:   perrs.ToPlatformError(err),
 		}

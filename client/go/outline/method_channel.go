@@ -20,12 +20,14 @@ import (
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 )
 
-// API name constants
+// API name constants. Keep sorted by name.
 const (
-	// FetchResource fetches a resource located at a given URL.
-	//  - Input: the URL string of the resource to fetch
-	//  - Output: the content in raw string of the fetched resource
-	MethodFetchResource = "FetchResource"
+	// CloseVPN closes an existing VPN connection and restores network traffic to the default
+	// network interface.
+	//
+	//  - Input: null
+	//  - Output: null
+	MethodCloseVPN = "CloseVPN"
 
 	// EstablishVPN initiates a VPN connection and directs all network traffic through Outline.
 	//
@@ -33,12 +35,15 @@ const (
 	//  - Output: a JSON string of vpn.connectionJSON.
 	MethodEstablishVPN = "EstablishVPN"
 
-	// CloseVPN closes an existing VPN connection and restores network traffic to the default
-	// network interface.
-	//
-	//  - Input: null
-	//  - Output: null
-	MethodCloseVPN = "CloseVPN"
+	// FetchResource fetches a resource located at a given URL.
+	//  - Input: the URL string of the resource to fetch
+	//  - Output: the content in raw string of the fetched resource
+	MethodFetchResource = "FetchResource"
+
+	// Parses the TunnelConfig and extracts the first hop or provider error as needed.
+	//  - Input: the transport config text
+	//  - Output: the TunnelConfigJson that Typescript needs
+	MethodParseTunnelConfig = "ParseTunnelConfig"
 )
 
 // InvokeMethodResult represents the result of an InvokeMethod call.
@@ -52,11 +57,9 @@ type InvokeMethodResult struct {
 // InvokeMethod calls a method by name.
 func InvokeMethod(method string, input string) *InvokeMethodResult {
 	switch method {
-	case MethodFetchResource:
-		url := input
-		content, err := fetchResource(url)
+	case MethodCloseVPN:
+		err := closeVPN()
 		return &InvokeMethodResult{
-			Value: content,
 			Error: platerrors.ToPlatformError(err),
 		}
 
@@ -66,11 +69,16 @@ func InvokeMethod(method string, input string) *InvokeMethodResult {
 			Error: platerrors.ToPlatformError(err),
 		}
 
-	case MethodCloseVPN:
-		err := closeVPN()
+	case MethodFetchResource:
+		url := input
+		content, err := fetchResource(url)
 		return &InvokeMethodResult{
+			Value: content,
 			Error: platerrors.ToPlatformError(err),
 		}
+
+	case MethodParseTunnelConfig:
+		return doParseTunnelConfig(input)
 
 	default:
 		return &InvokeMethodResult{Error: &platerrors.PlatformError{

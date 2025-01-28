@@ -22,10 +22,7 @@ export async function pluginExec<T>(
   ...args: unknown[]
 ): Promise<T> {
   return new Promise<T>((resolve, reject) => {
-    try {
-      cordova.exec(resolve, reject, OUTLINE_PLUGIN_NAME, cmd, args);
-    } catch (e) {
-      throw deserializeError(e);
-    }
+    const wrappedReject = (e: unknown) => reject(deserializeError(e));
+    cordova.exec(resolve, wrappedReject, OUTLINE_PLUGIN_NAME, cmd, args);
   });
 }

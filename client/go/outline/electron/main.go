@@ -113,7 +113,7 @@ func main() {
 	setLogLevel(*args.logLevel)
 
 	if len(*args.transportConfig) == 0 {
-		printErrorAndExit(platerrors.PlatformError{Code: platerrors.IllegalConfig, Message: "transport config missing"}, exitCodeFailure)
+		printErrorAndExit(platerrors.PlatformError{Code: platerrors.InvalidConfig, Message: "transport config missing"}, exitCodeFailure)
 	}
 	clientResult := outline.NewClient(*args.transportConfig)
 	if clientResult.Error != nil {
