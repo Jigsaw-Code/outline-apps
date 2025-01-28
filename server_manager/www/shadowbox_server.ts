@@ -182,33 +182,6 @@ export class ShadowboxServer implements server.Server {
     return this.serverConfig?.name;
   }
 
-  async getSupportedExperimentalUniversalMetricsEndpoint(): Promise<boolean> {
-    if (this._supportedExperimentalUniversalMetricsEndpointCache !== null) {
-      return this._supportedExperimentalUniversalMetricsEndpointCache;
-    }
-
-    let result = false;
-
-    if (!this.api) return result;
-
-    try {
-      await this.api.request<server.ServerMetricsJson>(
-        'experimental/server/metrics?since=30d',
-        'HEAD'
-      );
-      result = true;
-    } catch (error) {
-      // endpoint is not defined, keep set to false
-      if (error.response?.status !== 404) {
-        result = true;
-      }
-    }
-
-    this._supportedExperimentalUniversalMetricsEndpointCache = result;
-
-    return result;
-  }
-
   async setName(name: string): Promise<void> {
     console.info('Setting server name');
     await this.api.requestJson<void>('name', 'PUT', {name});
@@ -302,6 +275,33 @@ export class ShadowboxServer implements server.Server {
   private async getServerConfig(): Promise<ServerConfigJson> {
     console.info('Retrieving server configuration');
     return await this.api.request<ServerConfigJson>('server');
+  }
+
+  private async getSupportedExperimentalUniversalMetricsEndpoint(): Promise<boolean> {
+    if (this._supportedExperimentalUniversalMetricsEndpointCache !== null) {
+      return this._supportedExperimentalUniversalMetricsEndpointCache;
+    }
+
+    let result = false;
+
+    if (!this.api) return result;
+
+    try {
+      await this.api.request<server.ServerMetricsJson>(
+        'experimental/server/metrics?since=30d',
+        'HEAD'
+      );
+      result = true;
+    } catch (error) {
+      // endpoint is not defined, keep set to false
+      if (error.response?.status !== 404) {
+        result = true;
+      }
+    }
+
+    this._supportedExperimentalUniversalMetricsEndpointCache = result;
+
+    return result;
   }
 
   protected setManagementApi(api: PathApiClient): void {
