@@ -126,8 +126,8 @@ describe('App', () => {
 
   it('uses the experimental metrics endpoint if present', async () => {
     class FakeExperimentalMetricsManualServer extends FakeManualServer {
-      getSupportedExperimentalEndpoints() {
-        return Promise.resolve(new Set(['server/metrics']));
+      getSupportedExperimentalUniversalMetricsEndpoint() {
+        return Promise.resolve(true);
       }
     }
 

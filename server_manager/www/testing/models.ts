@@ -173,7 +173,7 @@ export class FakeServer implements server.Server {
       new Error('FakeServer.getServerMetrics not implemented')
     );
   }
-  getSupportedExperimentalEndpoints(): Promise<Set<string>> {
+  getSupportedExperimentalUniversalMetricsEndpoint(): Promise<boolean> {
     return Promise.reject(
       new Error('FakeServer.getSupportedExperimentalEndpoints not implemented')
     );
@@ -256,13 +256,11 @@ export class FakeManualServer
   getCertificateFingerprint() {
     return this.manualServerConfig.certSha256;
   }
-  getSupportedExperimentalEndpoints(): Promise<Set<string>> {
-    return Promise.resolve(new Set());
+  getSupportedExperimentalUniversalMetricsEndpoint(): Promise<boolean> {
+    return Promise.resolve(null);
   }
   async getServerMetrics() {
-    if (
-      (await this.getSupportedExperimentalEndpoints()).has('server/metrics')
-    ) {
+    if (await this.getSupportedExperimentalUniversalMetricsEndpoint()) {
       return {
         server: [
           {

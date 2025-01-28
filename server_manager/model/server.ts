@@ -27,9 +27,6 @@ export interface Server {
   // Gets the version of the shadowbox binary the server is running
   getVersion(): string;
 
-  // Returns a set of experimental endpoints the server supports
-  getSupportedExperimentalEndpoints(): Promise<Set<string>>;
-
   // Updates the server name.
   setName(name: string): Promise<void>;
 

@@ -57,7 +57,8 @@ function makeAccessKeyModel(apiAccessKey: AccessKeyJson): server.AccessKey {
 export class ShadowboxServer implements server.Server {
   private api: PathApiClient;
   private serverConfig: ServerConfigJson;
-  private _supportedExperimentalEndpointCache: Set<string>;
+  private _supportedExperimentalUniversalMetricsEndpointCache: boolean | null =
+    null;
 
   constructor(private readonly id: string) {}
 
@@ -151,9 +152,7 @@ export class ShadowboxServer implements server.Server {
   }
 
   async getServerMetrics(): Promise<server.ServerMetricsJson> {
-    if (
-      (await this.getSupportedExperimentalEndpoints()).has('server/metrics')
-    ) {
+    if (await this.getSupportedExperimentalUniversalMetricsEndpoint()) {
       return this.api.request<server.ServerMetricsJson>(
         'experimental/server/metrics?since=30d'
       );
@@ -183,12 +182,12 @@ export class ShadowboxServer implements server.Server {
     return this.serverConfig?.name;
   }
 
-  async getSupportedExperimentalEndpoints(): Promise<Set<string>> {
-    if (this._supportedExperimentalEndpointCache) {
-      return this._supportedExperimentalEndpointCache;
+  async getSupportedExperimentalUniversalMetricsEndpoint(): Promise<boolean> {
+    if (this._supportedExperimentalUniversalMetricsEndpointCache !== null) {
+      return this._supportedExperimentalUniversalMetricsEndpointCache;
     }
 
-    const result = new Set<string>();
+    let result = false;
 
     if (!this.api) return result;
 
@@ -197,15 +196,15 @@ export class ShadowboxServer implements server.Server {
         'experimental/server/metrics?since=30d',
         'HEAD'
       );
-      result.add('server/metrics');
+      result = true;
     } catch (error) {
       // endpoint is not defined, keep set to false
       if (error.response?.status !== 404) {
-        result.add('server/metrics');
+        result = true;
       }
     }
 
-    this._supportedExperimentalEndpointCache = result;
+    this._supportedExperimentalUniversalMetricsEndpointCache = result;
 
     return result;
   }
@@ -309,8 +308,8 @@ export class ShadowboxServer implements server.Server {
     this.api = api;
 
     // re-populate the supported endpoint cache
-    this._supportedExperimentalEndpointCache = null;
-    this.getSupportedExperimentalEndpoints();
+    this._supportedExperimentalUniversalMetricsEndpointCache = null;
+    this.getSupportedExperimentalUniversalMetricsEndpoint();
   }
 
   getManagementApiUrl(): string {
