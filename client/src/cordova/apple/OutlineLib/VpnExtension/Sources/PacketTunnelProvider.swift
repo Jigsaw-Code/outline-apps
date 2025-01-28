@@ -61,10 +61,10 @@ public class SwiftBridge: NSObject {
   }
 
   /**
-   Creates a NSError (of `OutlineError.errorDomain`) from the `OutlineError.illegalConfig` error.
+   Creates a NSError (of `OutlineError.errorDomain`) from the `OutlineError.invalidConfig` error.
    */
-  public static func newIllegalConfigOutlineError(message: String) -> NSError {
-    return OutlineError.illegalConfig(message: message) as NSError
+  public static func newInvalidConfigOutlineError(message: String) -> NSError {
+    return OutlineError.invalidConfig(message: message) as NSError
   }
 
   /**

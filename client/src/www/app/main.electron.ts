@@ -129,9 +129,9 @@ class ElectronErrorReporter implements OutlineErrorReporter {
 }
 
 class ElectronMethodChannel implements MethodChannel {
-  invokeMethod(methodName: string, params: string): Promise<string> {
+  async invokeMethod(methodName: string, params: string): Promise<string> {
     try {
-      return window.electron.methodChannel.invoke(
+      return await window.electron.methodChannel.invoke(
         'invoke-method',
         methodName,
         params
