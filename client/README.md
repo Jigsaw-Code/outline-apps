@@ -57,10 +57,10 @@ SENTRY_DSN=<your sentry dsn> npm run action client/src/cordova/setup macos -- --
 
 ## Debugging Karma Tests
 
-The test action is designed to be run in the CI - if you want to trip the debugger in a Karma test, you'll need to first drop a `debugger;` statement where you want it, then run
+If you want to trip the debugger in a Karma test, you'll need to first drop a `debugger;` statement where you want it, then run
 
 ```sh
-npx karma start client/src/www/karma.conf.js
+npm run action client/src/cordova/test -- --watch
 ```
 
 This will launch a debug window, likely at `http://localhost:9876/`. Open that window in your browser and click the "Debug" button.
