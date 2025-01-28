@@ -14,7 +14,7 @@
 
 import {StartRequestJson, VpnApi, TunnelStatus} from './vpn';
 import * as errors from '../../model/errors';
-import {OUTLINE_PLUGIN_NAME, pluginExecWithErrorCode} from '../plugin.cordova';
+import {OUTLINE_PLUGIN_NAME, pluginExec} from '../plugin.cordova';
 
 export class CordovaVpnApi implements VpnApi {
   constructor() {}
@@ -23,7 +23,7 @@ export class CordovaVpnApi implements VpnApi {
     if (!request.config) {
       throw new errors.IllegalServerConfiguration();
     }
-    return pluginExecWithErrorCode<void>(
+    return pluginExec<void>(
       'start',
       // TODO(fortuna): Make the Cordova plugin take a StartRequestJson.
       request.id,
@@ -33,11 +33,11 @@ export class CordovaVpnApi implements VpnApi {
   }
 
   stop(id: string) {
-    return pluginExecWithErrorCode<void>('stop', id);
+    return pluginExec<void>('stop', id);
   }
 
   isRunning(id: string) {
-    return pluginExecWithErrorCode<boolean>('isRunning', id);
+    return pluginExec<boolean>('isRunning', id);
   }
 
   onStatusChange(listener: (id: string, status: TunnelStatus) => void): void {

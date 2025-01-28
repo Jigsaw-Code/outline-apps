@@ -17,7 +17,6 @@ import {OperationTimedOut} from '@outline/infrastructure/timeout_promise';
 
 import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
-import {localizeErrorCode} from './error_localizer';
 import * as config from './outline_server_repository/config';
 import {Settings, SettingsKey} from './settings';
 import {Updater} from './updater';
@@ -25,10 +24,7 @@ import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
 import * as errors from '../model/errors';
 import * as events from '../model/events';
-import {
-  PlatformError,
-  ROUTING_SERVICE_NOT_RUNNING,
-} from '../model/platform_error';
+import {PlatformError, GoErrorCode} from '../model/platform_error';
 import {Server, ServerRepository} from '../model/server';
 import {OutlineErrorReporter} from '../shared/error_reporter';
 import {ServerConnectionState, ServerListItem} from '../views/servers_view';
@@ -302,7 +298,7 @@ export class App {
         'cipher',
         error.cipher
       );
-    } else if (error instanceof errors.ServerAccessKeyInvalid) {
+    } else if (error instanceof errors.InvalidServiceConfiguration) {
       toastMessage = this.localize('error-connection-configuration');
       buttonMessage = this.localize('error-details');
       buttonHandler = () => {
@@ -320,20 +316,15 @@ export class App {
       buttonHandler = () => {
         this.showErrorCauseDialog(error);
       };
-    } else if (error instanceof errors.SessionConfigError) {
-      toastMessage = error.message;
     } else if (error instanceof errors.SessionProviderError) {
       toastMessage = error.message;
-      buttonMessage = this.localize('error-details');
-
       console.log(error, error.message, error.details);
-      buttonHandler = () => {
-        this.showErrorDetailsDialog(error.details);
-      };
-    } else if (error instanceof PlatformError) {
-      toastMessage = localizeErrorCode(error.code, this.localize);
-      buttonMessage = this.localize('error-details');
-      buttonHandler = () => this.showErrorDetailsDialog(error.toString());
+      if (error.details) {
+        buttonMessage = this.localize('error-details');
+        buttonHandler = () => {
+          alert(error.details);
+        };
+      }
     } else {
       const hasErrorDetails = Boolean(error.message || error.cause);
       toastMessage = this.localize('error-unexpected');
@@ -559,7 +550,7 @@ export class App {
       console.error(`could not connect to server ${serverId}: ${e}`);
       if (
         e instanceof PlatformError &&
-        e.code === ROUTING_SERVICE_NOT_RUNNING
+        e.code === GoErrorCode.ROUTING_SERVICE_NOT_RUNNING
       ) {
         const confirmation =
           this.localize('outline-services-installation-confirmation') +
@@ -754,22 +745,16 @@ export class App {
   }
 
   private showErrorCauseDialog(error: Error) {
-    let message = error.toString();
-
-    if (error.cause) {
-      message += '\nCause: ';
-      message += error.cause.toString();
-    }
-
-    return alert(message);
+    const makeString = (error: unknown, indent: string): string => {
+      let message = indent + String(error);
+      if (error instanceof Object && 'cause' in error && error.cause) {
+        message += `\n${indent}Cause: `;
+        message += makeString(error.cause, indent + '  ');
+      }
+      return message;
+    };
+    return alert(makeString(error, ''));
   }
-
-  private showErrorDetailsDialog(details: string) {
-    if (!details) return;
-
-    return alert(details);
-  }
-
   //#endregion UI dialogs
 
   // Helpers:
