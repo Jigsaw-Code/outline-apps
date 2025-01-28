@@ -55,6 +55,20 @@ Certain actions take configuration flags - but since we're running them through 
 SENTRY_DSN=<your sentry dsn> npm run action client/src/cordova/setup macos -- --buildMode=release --versionName=<your version name>
 ```
 
+## Debugging Karma Tests
+
+The test action is designed to be run in the CI - if you want to trip the debugger in a Karma test, you'll need to first drop a `debugger;` statement where you want it, then run
+
+```sh
+npx karma start client/src/www/karma.conf.js
+```
+
+This will launch a debug window, likely at `http://localhost:9876/`. Open that window in your browser and click the "Debug" button.
+
+This will trigger a test run, but your breakpoint will not trigger as the devtools are not open. Open the Web Inspector and refresh the page - the breakpoint should trip.
+
+Happy Debugging!
+
 ## Life of a Packet
 
 [How does the Outline Client work?](/docs/life_of_a_packet.md)
