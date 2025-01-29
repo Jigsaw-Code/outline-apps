@@ -262,7 +262,10 @@ export class FakeManualServer
   getSupportedExperimentalUniversalMetricsEndpoint(): Promise<boolean> {
     return Promise.resolve(null);
   }
-  async getServerMetrics() {
+  async getServerMetrics(): Promise<{
+    server: server.ServerMetrics[];
+    accessKeys: server.AccessKeyMetrics[];
+  }> {
     if (await this.getSupportedExperimentalUniversalMetricsEndpoint()) {
       return {
         server: [
@@ -270,6 +273,8 @@ export class FakeManualServer
             location: 'US',
             asn: 10000,
             asOrg: 'Fake AS',
+            userHours: 0,
+            averageDevices: 0,
           },
         ],
         accessKeys: [
