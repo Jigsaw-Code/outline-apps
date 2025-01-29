@@ -282,10 +282,10 @@ export class ShadowboxServer implements server.Server {
       return this._supportedExperimentalUniversalMetricsEndpointCache;
     }
 
+    if (!this.api) {
+      return false;
+    }
     let result = false;
-
-    if (!this.api) return result;
-
     try {
       await this.api.request<server.ServerMetricsJson>(
         'experimental/server/metrics?since=30d',
