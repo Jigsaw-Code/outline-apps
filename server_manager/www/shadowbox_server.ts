@@ -17,6 +17,9 @@ import * as semver from 'semver';
 
 import * as server from '../model/server';
 
+const HOUR_IN_SECS = 60 * 60;
+const DAY_IN_HOURS = 24;
+
 interface AccessKeyJson {
   id: string;
   name: string;
@@ -49,7 +52,7 @@ interface MetricsJson {
     };
   }[];
   accessKeys: {
-    accessKeyId: number;
+    accessKeyId: string;
     tunnelTime?: {
       seconds: number;
     };
@@ -179,12 +182,37 @@ export class ShadowboxServer implements server.Server {
     accessKeys: server.AccessKeyMetrics[];
   }> {
     if (await this.getSupportedExperimentalUniversalMetricsEndpoint()) {
-      return this.api.request<MetricsJson>(
-        'experimental/server/metrics?since=30d'
+      const timeRangeInDays = 30;
+      const json = await this.api.request<MetricsJson>(
+        `experimental/server/metrics?since=${timeRangeInDays}d`
       );
+
+      return {
+        server: json.server.map(server => {
+          const userHours = server.tunnelTime.seconds / HOUR_IN_SECS;
+
+          return {
+            location: server.location,
+            asn: server.asn,
+            asOrg: server.asOrg,
+            tunnelTime: server.tunnelTime,
+            dataTransferred: server.dataTransferred,
+            userHours,
+            averageDevices: userHours / (timeRangeInDays * DAY_IN_HOURS),
+          };
+        }),
+        accessKeys: json.accessKeys.map(key => ({
+          accessKeyId: key.accessKeyId,
+          tunnelTime: key.tunnelTime,
+          dataTransferred: key.dataTransferred,
+        })),
+      };
     }
 
-    const result: MetricsJson = {
+    const result: {
+      server: server.ServerMetrics[];
+      accessKeys: server.AccessKeyMetrics[];
+    } = {
       server: [],
       accessKeys: [],
     };
@@ -196,7 +224,7 @@ export class ShadowboxServer implements server.Server {
       jsonResponse.bytesTransferredByUserId
     )) {
       result.accessKeys.push({
-        accessKeyId: Number(accessKeyId),
+        accessKeyId,
         dataTransferred: {bytes},
       });
     }
