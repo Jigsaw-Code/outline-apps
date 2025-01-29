@@ -531,7 +531,6 @@ export class ServerView extends DirMixin(PolymerElement) {
         </div>
       </div>
       <div class="tabs-container">
-        <div class="tabs-spacer"></div>
         <paper-tabs
           selected="{{selectedTab}}"
           attr-for-selected="name"
@@ -547,6 +546,7 @@ export class ServerView extends DirMixin(PolymerElement) {
             >[[localize('server-settings')]]</paper-tab
           >
         </paper-tabs>
+        <div class="tabs-spacer"></div>
       </div>
       <iron-pages
         selected="[[selectedTab]]"
