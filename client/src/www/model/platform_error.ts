@@ -65,11 +65,13 @@ function convertRawErrorObjectToError(rawObj: object): Error {
   }
 
   let detailsMessage = rawObj.message;
+  let detailsMap = {};
   if ('details' in rawObj) {
     if (typeof rawObj.details !== 'object') {
       throw new Error('details is invalid');
     }
     if (rawObj.details) {
+      detailsMap = rawObj.details;
       detailsMessage = makeDetailsString(
         rawObj.message,
         <ErrorDetails>rawObj.details
@@ -89,12 +91,17 @@ function convertRawErrorObjectToError(rawObj: object): Error {
   switch (code) {
     case GoErrorCode.FETCH_CONFIG_FAILED:
       return new errors.SessionConfigFetchFailed(detailsMessage, {cause});
-    case GoErrorCode.ILLEGAL_CONFIG:
+    case GoErrorCode.INVALID_CONFIG:
       return new errors.InvalidServiceConfiguration(detailsMessage, {cause});
     case GoErrorCode.PROXY_SERVER_UNREACHABLE:
       return new errors.ServerUnreachable(detailsMessage, {cause});
     case GoErrorCode.VPN_PERMISSION_NOT_GRANTED:
       return new errors.VpnPermissionNotGranted(detailsMessage, {cause});
+    case GoErrorCode.PROVIDER_ERROR:
+      return new errors.SessionProviderError(
+        rawObj.message,
+        (detailsMap as {details?: string})?.details
+      );
     default: {
       const error = new Error(detailsMessage, {cause});
       error.name = String(code);
@@ -281,7 +288,8 @@ export function deserializeError(errObj: string | Error | unknown): Error {
 export enum GoErrorCode {
   INTERNAL_ERROR = 'ERR_INTERNAL_ERROR',
   FETCH_CONFIG_FAILED = 'ERR_FETCH_CONFIG_FAILURE',
-  ILLEGAL_CONFIG = 'ERR_ILLEGAL_CONFIG',
+  INVALID_CONFIG = 'ERR_INVALID_CONFIG',
+  PROVIDER_ERROR = 'ERR_PROVIDER',
   VPN_PERMISSION_NOT_GRANTED = 'ERR_VPN_PERMISSION_NOT_GRANTED',
   PROXY_SERVER_UNREACHABLE = 'ERR_PROXY_SERVER_UNREACHABLE',
   /** Indicates that the OS routing service is not running (electron only). */

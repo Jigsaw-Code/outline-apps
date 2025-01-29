@@ -13,7 +13,7 @@
 // limitations under the License.
 
 // This packages provides helper functions to encode or decode UTF-8 strings
-package utf8
+package config
 
 import "fmt"
 
@@ -22,7 +22,7 @@ import "fmt"
 // single byte (must be in range 0x00 ~ 0xff).
 //
 // If a codepoint falls out of the range, an error will be returned.
-func DecodeUTF8CodepointsToRawBytes(utf8Str string) ([]byte, error) {
+func decodeUTF8CodepointsToRawBytes(utf8Str string) ([]byte, error) {
 	runes := []rune(utf8Str)
 	rawBytes := make([]byte, len(runes))
 	for i, r := range runes {

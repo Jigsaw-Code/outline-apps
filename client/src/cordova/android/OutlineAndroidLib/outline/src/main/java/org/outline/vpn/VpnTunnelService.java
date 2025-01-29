@@ -182,7 +182,7 @@ public class VpnTunnelService extends VpnService {
       final TunnelConfig config, boolean isAutoStart) {
     LOG.info(String.format(Locale.ROOT, "Starting tunnel %s for server %s", config.id, config.name));
     if (config.id == null || config.transportConfig == null) {
-      return new PlatformError(Platerrors.IllegalConfig, "id and transportConfig are required");
+      return new PlatformError(Platerrors.InvalidConfig, "id and transportConfig are required");
     }
     final boolean isRestart = tunnelConfig != null;
     if (isRestart) {

@@ -12,88 +12,54 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {makeConfig, SIP002_URI} from 'ShadowsocksConfig';
-
 import * as config from './config';
+import * as methodChannel from '../method_channel';
 
-describe('parseTunnelConfig', () => {
-  it('parses correctly', async () => {
-    expect(
-      await config.parseTunnelConfig(
-        '{"server": "example.com", "server_port": 443, "method": "METHOD", "password": "PASSWORD"}'
-      )
-    ).toEqual({
-      firstHop: 'example.com:443',
-      transport:
-        '{"host":"example.com","port":443,"method":"METHOD","password":"PASSWORD"}',
-    });
+describe('parseAccessKey', () => {
+  methodChannel.installDefaultMethodChannel({
+    async invokeMethod(methodName: string, params: string): Promise<string> {
+      if (!params) {
+        throw Error('empty transport config');
+      }
+      if (params.indexOf('invalid') > -1) {
+        throw Error('fake invalid config');
+      }
+      return `{"transport": ${JSON.stringify(params)}, "firstHop": "first-hop:4321"}`;
+    },
   });
 
-  it('parses prefix', async () => {
-    expect(
-      await config.parseTunnelConfig(
-        '{"server": "example.com", "server_port": 443, "method": "METHOD", "password": "PASSWORD", "prefix": "POST "}'
-      )
-    ).toEqual({
-      firstHop: 'example.com:443',
-      transport:
-        '{"host":"example.com","port":443,"method":"METHOD","password":"PASSWORD","prefix":"POST "}',
-    });
-  });
-
-  it('parses URL', async () => {
-    const ssUrl = SIP002_URI.stringify(
-      makeConfig({
-        host: 'example.com',
-        port: 443,
-        method: 'chacha20-ietf-poly1305',
-        password: 'PASSWORD',
+  it('extracts name from ss:// key', async () => {
+    const transportConfig = `ss://${encodeURIComponent(
+      btoa('chacha20-ietf-poly1305:SECRET')
+    )}@example.com:4321`;
+    const accessKey = `${transportConfig}#My%20Server`;
+    expect(await config.parseAccessKey(accessKey)).toEqual(
+      new config.StaticServiceConfig('My Server', {
+        firstHop: 'first-hop:4321',
+        transport: transportConfig,
       })
     );
-    expect(await config.parseTunnelConfig(ssUrl)).toEqual({
-      firstHop: 'example.com:443',
-      transport:
-        '{"host":"example.com","port":443,"method":"chacha20-ietf-poly1305","password":"PASSWORD"}',
-    });
   });
 
-  it('parses URL with blanks', async () => {
-    const ssUrl = SIP002_URI.stringify(
-      makeConfig({
-        host: 'example.com',
-        port: 443,
-        method: 'chacha20-ietf-poly1305',
-        password: 'PASSWORD',
+  it('extracts name from ssconf:// key', async () => {
+    expect(
+      await config.parseAccessKey('ssconf://example.com:4321/path#My%20Server')
+    ).toEqual(
+      new config.DynamicServiceConfig(
+        'My Server',
+        new URL('https://example.com:4321/path')
+      )
+    );
+  });
+
+  it('name extraction ignores parameters', async () => {
+    const transportConfig = 'ss://anything';
+    const accessKey = `${transportConfig}#foo=bar&My%20Server&baz=boo`;
+    expect(await config.parseAccessKey(accessKey)).toEqual(
+      new config.StaticServiceConfig('My Server', {
+        firstHop: 'first-hop:4321',
+        transport: transportConfig,
       })
     );
-    expect(await config.parseTunnelConfig(`  ${ssUrl} \n\n\n`)).toEqual({
-      firstHop: 'example.com:443',
-      transport:
-        '{"host":"example.com","port":443,"method":"chacha20-ietf-poly1305","password":"PASSWORD"}',
-    });
-  });
-});
-
-describe('serviceNameFromAccessKey', () => {
-  it('extracts name from ss:// key', () => {
-    expect(
-      config.TEST_ONLY.serviceNameFromAccessKey(
-        new URL('ss://anything#My%20Server')
-      )
-    ).toEqual('My Server');
-  });
-  it('extracts name from ssconf:// key', () => {
-    expect(
-      config.TEST_ONLY.serviceNameFromAccessKey(
-        new URL('ssconf://anything#My%20Server')
-      )
-    ).toEqual('My Server');
-  });
-  it('ignores parameters', () => {
-    expect(
-      config.TEST_ONLY.serviceNameFromAccessKey(
-        new URL('ss://anything#foo=bar&My%20Server&baz=boo')
-      )
-    ).toEqual('My Server');
   });
 });

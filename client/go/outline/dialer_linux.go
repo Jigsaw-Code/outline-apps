@@ -17,29 +17,35 @@ package outline
 import (
 	"net"
 	"syscall"
+
+	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
 // newFWMarkProtectedTCPDialer creates a base TCP dialer for [Client]
 // protected by the specified firewall mark.
-func newFWMarkProtectedTCPDialer(fwmark uint32) net.Dialer {
-	return net.Dialer{
-		KeepAlive: -1,
-		Control: func(network, address string, c syscall.RawConn) error {
-			return c.Control(func(fd uintptr) {
-				syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, syscall.SO_MARK, int(fwmark))
-			})
+func newFWMarkProtectedTCPDialer(fwmark uint32) transport.StreamDialer {
+	return &transport.TCPDialer{
+		Dialer: net.Dialer{
+			KeepAlive: -1,
+			Control: func(network, address string, c syscall.RawConn) error {
+				return c.Control(func(fd uintptr) {
+					syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, syscall.SO_MARK, int(fwmark))
+				})
+			},
 		},
 	}
 }
 
 // newFWMarkProtectedUDPDialer creates a new UDP dialer for [Client]
 // protected by the specified firewall mark.
-func newFWMarkProtectedUDPDialer(fwmark uint32) net.Dialer {
-	return net.Dialer{
-		Control: func(network, address string, c syscall.RawConn) error {
-			return c.Control(func(fd uintptr) {
-				syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, syscall.SO_MARK, int(fwmark))
-			})
+func newFWMarkProtectedUDPDialer(fwmark uint32) transport.PacketDialer {
+	return &transport.UDPDialer{
+		Dialer: net.Dialer{
+			Control: func(network, address string, c syscall.RawConn) error {
+				return c.Control(func(fd uintptr) {
+					syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, syscall.SO_MARK, int(fwmark))
+				})
+			},
 		},
 	}
 }

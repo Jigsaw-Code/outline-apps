@@ -15,21 +15,30 @@
 package outline
 
 import (
-	"fmt"
+	"context"
+	"errors"
 	"net"
 
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/config"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
-	"github.com/Jigsaw-Code/outline-sdk/transport/shadowsocks"
-	"github.com/eycorsican/go-tun2socks/common/log"
 )
 
 // Client provides a transparent container for [transport.StreamDialer] and [transport.PacketListener]
 // that is exportable (as an opaque object) via gobind.
 // It's used by the connectivity test and the tun2socks handlers.
+// TODO: Rename to Transport. Needs to update per-platform code.
 type Client struct {
-	transport.StreamDialer
-	transport.PacketListener
+	sd *config.Dialer[transport.StreamConn]
+	pl *config.PacketListener
+}
+
+func (c *Client) DialStream(ctx context.Context, address string) (transport.StreamConn, error) {
+	return c.sd.Dial(ctx, address)
+}
+
+func (c *Client) ListenPacket(ctx context.Context) (net.PacketConn, error) {
+	return c.pl.ListenPacket(ctx)
 }
 
 // NewClientResult represents the result of [NewClientAndReturnError].
@@ -42,67 +51,41 @@ type NewClientResult struct {
 
 // NewClient creates a new Outline client from a configuration string.
 func NewClient(transportConfig string) *NewClientResult {
-	client, err := newClientWithBaseDialers(transportConfig, net.Dialer{KeepAlive: -1}, net.Dialer{})
-	return &NewClientResult{
-		Client: client,
-		Error:  platerrors.ToPlatformError(err),
+	tcpDialer := transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
+	udpDialer := transport.UDPDialer{}
+	client, err := newClientWithBaseDialers(transportConfig, &tcpDialer, &udpDialer)
+	if err != nil {
+		return &NewClientResult{Error: platerrors.ToPlatformError(err)}
 	}
+	return &NewClientResult{Client: client}
 }
 
-func newClientWithBaseDialers(transportConfig string, tcpDialer, udpDialer net.Dialer) (*Client, error) {
-	conf, err := parseConfigFromJSON(transportConfig)
+func newClientWithBaseDialers(transportConfig string, tcpDialer transport.StreamDialer, udpDialer transport.PacketDialer) (*Client, error) {
+	transportYAML, err := config.ParseConfigYAML(transportConfig)
 	if err != nil {
-		return nil, err
-	}
-	prefixBytes, err := ParseConfigPrefixFromString(conf.Prefix)
-	if err != nil {
-		return nil, err
-	}
-
-	return newShadowsocksClient(conf.Host, int(conf.Port), conf.Method, conf.Password, prefixBytes, tcpDialer, udpDialer)
-}
-
-func newShadowsocksClient(
-	host string, port int, cipherName, password string, prefix []byte, tcpDialer, udpDialer net.Dialer,
-) (*Client, error) {
-	if err := validateConfig(host, port, cipherName, password); err != nil {
-		return nil, err
-	}
-
-	// TODO: consider using net.LookupIP to get a list of IPs, and add logic for optimal selection.
-	proxyAddress := net.JoinHostPort(host, fmt.Sprint(port))
-
-	cryptoKey, err := shadowsocks.NewEncryptionKey(cipherName, password)
-	if err != nil {
-		return nil, newIllegalConfigErrorWithDetails("cipher&password pair is not valid",
-			"cipher|password", cipherName+"|"+password, "valid combination", err)
-	}
-
-	// We disable Keep-Alive as per https://datatracker.ietf.org/doc/html/rfc1122#page-101, which states that it should only be
-	// enabled in server applications. This prevents the device from unnecessarily waking up to send keep alives.
-	streamDialer, err := shadowsocks.NewStreamDialer(&transport.TCPEndpoint{Address: proxyAddress, Dialer: tcpDialer}, cryptoKey)
-	if err != nil {
-		return nil, platerrors.PlatformError{
-			Code:    platerrors.SetupTrafficHandlerFailed,
-			Message: "failed to create TCP traffic handler",
-			Details: platerrors.ErrorDetails{"proxy-protocol": "shadowsocks", "handler": "tcp"},
-			Cause:   platerrors.ToPlatformError(err),
-		}
-	}
-	if len(prefix) > 0 {
-		log.Debugf("Using salt prefix: %s", string(prefix))
-		streamDialer.SaltGenerator = shadowsocks.NewPrefixSaltGenerator(prefix)
-	}
-
-	packetListener, err := shadowsocks.NewPacketListener(&transport.UDPEndpoint{Address: proxyAddress, Dialer: udpDialer}, cryptoKey)
-	if err != nil {
-		return nil, platerrors.PlatformError{
-			Code:    platerrors.SetupTrafficHandlerFailed,
-			Message: "failed to create UDP traffic handler",
-			Details: platerrors.ErrorDetails{"proxy-protocol": "shadowsocks", "handler": "udp"},
+		return nil, &platerrors.PlatformError{
+			Code:    platerrors.InvalidConfig,
+			Message: "config is not valid YAML",
 			Cause:   platerrors.ToPlatformError(err),
 		}
 	}
 
-	return &Client{StreamDialer: streamDialer, PacketListener: packetListener}, nil
+	transportPair, err := config.NewDefaultTransportProvider(tcpDialer, udpDialer).Parse(context.Background(), transportYAML)
+	if err != nil {
+		if errors.Is(err, errors.ErrUnsupported) {
+			return nil, &platerrors.PlatformError{
+				Code:    platerrors.InvalidConfig,
+				Message: "unsupported config",
+				Cause:   platerrors.ToPlatformError(err),
+			}
+		} else {
+			return nil, &platerrors.PlatformError{
+				Code:    platerrors.InvalidConfig,
+				Message: "failed to create transport",
+				Cause:   platerrors.ToPlatformError(err),
+			}
+		}
+	}
+
+	return &Client{sd: transportPair.StreamDialer, pl: transportPair.PacketListener}, nil
 }

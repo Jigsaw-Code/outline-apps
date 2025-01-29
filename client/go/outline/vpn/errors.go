@@ -28,8 +28,8 @@ func errCancelled(cause error) error {
 	}
 }
 
-func errIllegalConfig(msg string, params ...any) error {
-	return errPlatError(perrs.IllegalConfig, msg, nil, params...)
+func errInvalidConfig(msg string, params ...any) error {
+	return errPlatError(perrs.InvalidConfig, msg, nil, params...)
 }
 
 func errSetupVPN(msg string, cause error, params ...any) error {
