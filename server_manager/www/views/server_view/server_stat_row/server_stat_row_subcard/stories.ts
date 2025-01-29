@@ -3,8 +3,8 @@ import {html} from 'lit';
 import './index';
 
 const meta = {
-  title: 'Server View/Server Stat Row/Server Stat Subcard',
-  component: 'server-stat-subcard',
+  title: 'Manager/Server View/Server Stat Row/Server Stat Row Subcard',
+  component: 'server-stat-row-subcard',
   argTypes: {
     highlightText: {control: 'text'},
     titleText: {control: 'text'},
