@@ -812,7 +812,7 @@ export class ServerView extends DirMixin(PolymerElement) {
       retryDisplayingServer: Function,
       totalInboundBytes: Number,
       totalUserHours: Number,
-      totalDevices: Number,
+      totalAverageDevices: Number,
       baselineDataTransfer: Number,
       accessKeyRows: Array,
       hasNonAdminAccessKeys: Boolean,
@@ -829,7 +829,7 @@ export class ServerView extends DirMixin(PolymerElement) {
       serverMetrics: {
         type: Array,
         computed:
-          '_computeServerMetrics(totalDevices, totalUserHours, totalInboundBytes, language)',
+          '_computeServerMetrics(totalAverageDevices, totalUserHours, totalInboundBytes, language)',
       },
     };
   }
@@ -864,7 +864,7 @@ export class ServerView extends DirMixin(PolymerElement) {
   retryDisplayingServer: () => void = null;
   totalInboundBytes = 0;
   totalUserHours = 0;
-  totalDevices = 0;
+  totalAverageDevices = 0;
   /** The number to which access key transfer amounts are compared for progress bar display */
   baselineDataTransfer = Number.POSITIVE_INFINITY;
   accessKeyRows: DisplayAccessKey[] = [];
@@ -959,7 +959,7 @@ export class ServerView extends DirMixin(PolymerElement) {
   }
 
   _computeServerMetrics(
-    totalDevices: number,
+    totalAverageDevices: number,
     totalUserHours: number,
     totalInboundBytes: number,
     language: string
@@ -968,7 +968,7 @@ export class ServerView extends DirMixin(PolymerElement) {
       {
         icon: 'devices',
         name: this.localize('server-metrics-average-devices'),
-        value: totalDevices.toFixed(2),
+        value: totalAverageDevices.toFixed(2),
       },
       {
         icon: 'timer',

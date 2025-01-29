@@ -45,7 +45,6 @@ const CHANGE_HOSTNAME_VERSION = '1.2.0';
 const KEY_SETTINGS_VERSION = '1.6.0';
 const MAX_ACCESS_KEY_DATA_LIMIT_BYTES = 50 * 10 ** 9; // 50GB
 const HOUR_IN_SECS = 60 * 60;
-const MONTH_IN_HOURS = 30 * 24;
 const CANCELLED_ERROR = new Error('Cancelled');
 export const LAST_DISPLAYED_SERVER_STORAGE_KEY = 'lastDisplayedServer';
 
@@ -64,7 +63,7 @@ Sentry.init({
 
 function displayDataAmountToDataLimit(
   dataAmount: DisplayDataAmount
-): server_model.DataLimit | null {
+): server_model.Data | null {
   if (!dataAmount) {
     return null;
   }
@@ -77,7 +76,7 @@ function displayDataAmountToDataLimit(
 async function computeDefaultDataLimit(
   server: server_model.Server,
   accessKeys?: server_model.AccessKey[]
-): Promise<server_model.DataLimit> {
+): Promise<server_model.Data> {
   try {
     // Assume non-managed servers have a data transfer capacity of 1TB.
     let serverTransferCapacity: server_model.DataAmount = {terabytes: 1};
@@ -1045,14 +1044,16 @@ export class App {
       const serverMetrics = await selectedServer.getServerMetrics();
 
       let totalUserHours = 0;
-      for (const {tunnelTime} of serverMetrics.server) {
+      let totalAverageDevices = 0;
+      for (const {averageDevices, tunnelTime} of serverMetrics.server) {
         if (!tunnelTime) continue;
 
+        totalAverageDevices += averageDevices;
         totalUserHours += tunnelTime.seconds / HOUR_IN_SECS;
       }
 
       serverView.totalUserHours = totalUserHours;
-      serverView.totalDevices = serverView.totalUserHours / MONTH_IN_HOURS;
+      serverView.totalAverageDevices = totalAverageDevices;
 
       let totalInboundBytes = 0;
       for (const {dataTransferred} of serverMetrics.accessKeys) {
@@ -1171,7 +1172,7 @@ export class App {
       });
   }
 
-  private async setDefaultDataLimit(limit: server_model.DataLimit) {
+  private async setDefaultDataLimit(limit: server_model.Data) {
     if (!limit) {
       return;
     }

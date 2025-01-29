@@ -168,7 +168,10 @@ export class FakeServer implements server.Server {
   getDataUsage() {
     return Promise.resolve(new Map<server.AccessKeyId, number>());
   }
-  getServerMetrics(): Promise<server.ServerMetricsJson> {
+  getServerMetrics(): Promise<{
+    server: server.ServerMetrics[];
+    accessKeys: server.AccessKeyMetrics[];
+  }> {
     return Promise.reject(
       new Error('FakeServer.getServerMetrics not implemented')
     );
@@ -216,7 +219,7 @@ export class FakeServer implements server.Server {
   }
   setAccessKeyDataLimit(
     _accessKeyId: string,
-    _limit: server.DataLimit
+    _limit: server.Data
   ): Promise<void> {
     return Promise.reject(
       new Error('FakeServer.setAccessKeyDataLimit not implemented')
@@ -227,7 +230,7 @@ export class FakeServer implements server.Server {
       new Error('FakeServer.removeAccessKeyDataLimit not implemented')
     );
   }
-  setDefaultDataLimit(_limit: server.DataLimit): Promise<void> {
+  setDefaultDataLimit(_limit: server.Data): Promise<void> {
     return Promise.reject(
       new Error('FakeServer.setDefaultDataLimit not implemented')
     );
@@ -235,7 +238,7 @@ export class FakeServer implements server.Server {
   removeDefaultDataLimit(): Promise<void> {
     return Promise.resolve();
   }
-  getDefaultDataLimit(): server.DataLimit | undefined {
+  getDefaultDataLimit(): server.Data | undefined {
     return undefined;
   }
 }
@@ -271,7 +274,7 @@ export class FakeManualServer
         ],
         accessKeys: [
           {
-            accessKeyId: 0,
+            accessKeyId: '0',
           },
         ],
       };
@@ -281,7 +284,7 @@ export class FakeManualServer
       server: [],
       accessKeys: [
         {
-          accessKeyId: 0,
+          accessKeyId: '0',
         },
       ],
     };

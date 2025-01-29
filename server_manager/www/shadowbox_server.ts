@@ -33,7 +33,30 @@ interface ServerConfigJson {
   version: string;
   // This is the server default data limit.  We use this instead of defaultDataLimit for API
   // backwards compatibility.
-  accessKeyDataLimit?: server.DataLimit;
+  accessKeyDataLimit?: server.Data;
+}
+
+interface MetricsJson {
+  server: {
+    location: string;
+    asn: number;
+    asOrg: string;
+    tunnelTime?: {
+      seconds: number;
+    };
+    dataTransferred?: {
+      bytes: number;
+    };
+  }[];
+  accessKeys: {
+    accessKeyId: number;
+    tunnelTime?: {
+      seconds: number;
+    };
+    dataTransferred?: {
+      bytes: number;
+    };
+  }[];
 }
 
 // Byte transfer stats for the past 30 days, including both inbound and outbound.
@@ -107,7 +130,7 @@ export class ShadowboxServer implements server.Server {
     return this.api.request<void>('access-keys/' + accessKeyId, 'DELETE');
   }
 
-  async setDefaultDataLimit(limit: server.DataLimit): Promise<void> {
+  async setDefaultDataLimit(limit: server.Data): Promise<void> {
     console.info(`Setting server default data limit: ${JSON.stringify(limit)}`);
     await this.api.requestJson<void>(this.getDefaultDataLimitPath(), 'PUT', {
       limit,
@@ -121,7 +144,7 @@ export class ShadowboxServer implements server.Server {
     delete this.serverConfig.accessKeyDataLimit;
   }
 
-  getDefaultDataLimit(): server.DataLimit | undefined {
+  getDefaultDataLimit(): server.Data | undefined {
     return this.serverConfig.accessKeyDataLimit;
   }
 
@@ -136,7 +159,7 @@ export class ShadowboxServer implements server.Server {
 
   async setAccessKeyDataLimit(
     keyId: server.AccessKeyId,
-    limit: server.DataLimit
+    limit: server.Data
   ): Promise<void> {
     console.info(
       `Setting data limit of ${limit.bytes} bytes for access key ${keyId}`
@@ -151,14 +174,17 @@ export class ShadowboxServer implements server.Server {
     await this.api.request<void>(`access-keys/${keyId}/data-limit`, 'DELETE');
   }
 
-  async getServerMetrics(): Promise<server.ServerMetricsJson> {
+  async getServerMetrics(): Promise<{
+    server: server.ServerMetrics[];
+    accessKeys: server.AccessKeyMetrics[];
+  }> {
     if (await this.getSupportedExperimentalUniversalMetricsEndpoint()) {
-      return this.api.request<server.ServerMetricsJson>(
+      return this.api.request<MetricsJson>(
         'experimental/server/metrics?since=30d'
       );
     }
 
-    const result: server.ServerMetricsJson = {
+    const result: MetricsJson = {
       server: [],
       accessKeys: [],
     };
@@ -285,23 +311,19 @@ export class ShadowboxServer implements server.Server {
     if (!this.api) {
       return false;
     }
-    let result = false;
+
     try {
-      await this.api.request<server.ServerMetricsJson>(
+      await this.api.request<MetricsJson>(
         'experimental/server/metrics?since=30d',
         'HEAD'
       );
-      result = true;
+      return (this._supportedExperimentalUniversalMetricsEndpointCache = true);
     } catch (error) {
       // endpoint is not defined, keep set to false
       if (error.response?.status !== 404) {
-        result = true;
+        return false;
       }
     }
-
-    this._supportedExperimentalUniversalMetricsEndpointCache = result;
-
-    return result;
   }
 
   protected setManagementApi(api: PathApiClient): void {
