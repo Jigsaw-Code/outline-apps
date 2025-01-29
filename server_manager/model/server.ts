@@ -36,8 +36,11 @@ export interface Server {
   // Lists the access keys for this server, including the admin.
   listAccessKeys(): Promise<AccessKey[]>;
 
-  // Returns stats for bytes transferred across all access keys of this server.
-  getDataUsage(): Promise<BytesByAccessKey>;
+  // Returns server metrics
+  getServerMetrics(): Promise<{
+    server: ServerMetrics[];
+    accessKeys: AccessKeyMetrics[];
+  }>;
 
   // Adds a new access key to this server.
   addAccessKey(): Promise<AccessKey>;
@@ -51,10 +54,10 @@ export interface Server {
   // Sets a default access key data transfer limit over a 30 day rolling window for all access keys.
   // This limit is overridden by per-key data limits.  Forces enforcement of all data limits,
   // including per-key data limits.
-  setDefaultDataLimit(limit: DataLimit): Promise<void>;
+  setDefaultDataLimit(limit: Data): Promise<void>;
 
   // Returns the server default access key data transfer limit, or undefined if it has not been set.
-  getDefaultDataLimit(): DataLimit | undefined;
+  getDefaultDataLimit(): Data | undefined;
 
   // Removes the server default data limit.  Per-key data limits are still enforced.  Traffic is
   // tracked for if the limit is re-enabled.  Forces enforcement of all data limits, including
@@ -63,10 +66,7 @@ export interface Server {
 
   // Sets the custom data limit for a specific key. This limit overrides the server default limit
   // if it exists. Forces enforcement of the chosen key's data limit.
-  setAccessKeyDataLimit(
-    accessKeyId: AccessKeyId,
-    limit: DataLimit
-  ): Promise<void>;
+  setAccessKeyDataLimit(accessKeyId: AccessKeyId, limit: Data): Promise<void>;
 
   // Removes the custom data limit for a specific key.  The key is still bound by the server default
   // limit if it exists. Forces enforcement of the chosen key's data limit.
@@ -149,6 +149,7 @@ export interface ManagedServerHost {
   delete(): Promise<void>;
 }
 
+// TODO: refactor to the `Data` type, see below
 export class DataAmount {
   terabytes: number;
 }
@@ -183,13 +184,31 @@ export interface AccessKey {
   id: AccessKeyId;
   name: string;
   accessUrl: string;
-  dataLimit?: DataLimit;
+  dataLimit?: Data;
 }
-
-export type BytesByAccessKey = Map<AccessKeyId, number>;
 
 // Data transfer allowance, measured in bytes.
 // NOTE: Must be kept in sync with the definition in src/shadowbox/access_key.ts.
-export interface DataLimit {
+export interface Data {
   readonly bytes: number;
+}
+
+export interface Duration {
+  readonly seconds: number;
+}
+
+export interface ServerMetrics {
+  location: string;
+  asn: number;
+  asOrg: string;
+  averageDevices: number;
+  userHours: number;
+  tunnelTime?: Duration;
+  dataTransferred?: Data;
+}
+
+export interface AccessKeyMetrics {
+  accessKeyId: AccessKeyId;
+  tunnelTime?: Duration;
+  dataTransferred?: Data;
 }
