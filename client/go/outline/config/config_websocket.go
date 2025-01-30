@@ -73,6 +73,9 @@ func parseWebsocketEndpoint[ConnType any](ctx context.Context, configMap map[str
 		"User-Agent": {fmt.Sprintf("Outline (%s; %s; %s)", runtime.GOOS, runtime.GOARCH, runtime.Version())},
 	})
 	connect, err := newWE(url.String(), transport.FuncStreamDialer(sd.Dial), websocket.WithHTTPHeaders(headers))
+	if err != nil {
+		return nil, err
+	}
 
 	return &Endpoint[ConnType]{
 		ConnectionProviderInfo: ConnectionProviderInfo{ConnType: ConnTypeDirect, FirstHop: net.JoinHostPort(url.Hostname(), port)},
