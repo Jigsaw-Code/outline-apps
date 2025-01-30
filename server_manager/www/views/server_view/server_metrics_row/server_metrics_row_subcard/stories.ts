@@ -17,8 +17,8 @@
 import './index';
 
 export default {
-  title: 'Manager/Server View/Server Stat Row/Server Stat Row Subcard',
-  component: 'server-stat-row-subcard',
+  title: 'Manager/Server View/Server Metrics Row/Server Metrics Row Subcard',
+  component: 'server-metrics-row-subcard',
   argTypes: {
     highlight: {control: 'text'},
     title: {control: 'text'},
