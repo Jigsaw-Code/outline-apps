@@ -64,7 +64,7 @@ interface IpcEvent {
 
 function createMainWindow() {
   const win = new electron.BrowserWindow({
-    width: 800,
+    width: 1255,
     height: 1024,
     minWidth: 600,
     minHeight: 768,
