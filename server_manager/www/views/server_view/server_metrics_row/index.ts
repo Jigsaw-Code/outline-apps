@@ -26,7 +26,6 @@ import type {ServerMetricsRowSubcard} from './server_metrics_row_subcard';
 @customElement('server-metrics-row')
 export class ServerMetricsRow extends LitElement {
   @property({type: Array}) subcards?: Array<Partial<ServerMetricsRowSubcard>>;
-  @property({type: String}) annotation?: string;
   @property({type: String}) subtitle?: string;
   @property({type: String}) title: string;
   @property({type: String}) titleIcon?: string;

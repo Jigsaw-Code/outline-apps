@@ -20,7 +20,6 @@ export default {
   title: 'Manager/Server View/Server Metrics Row',
   component: 'server-metrics-row',
   argTypes: {
-    annotation: {control: 'text'},
     subcards: {control: 'object'},
     subtitle: {control: 'text'},
     title: {control: 'text'},
