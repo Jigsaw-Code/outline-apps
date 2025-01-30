@@ -111,14 +111,13 @@ func NewDefaultTransportProvider(tcpDialer transport.StreamDialer, udpDialer tra
 		return parseShadowsocksPacketListener(ctx, input, packetEndpoints.Parse)
 	})
 
-	// TODO: Websocket support.
-	// httpClient := http.DefaultClient
-	// streamEndpoints.RegisterSubParser("websocket", func(ctx context.Context, input map[string]any) (*Endpoint[transport.StreamConn], error) {
-	// 	return parseWebsocketStreamEndpoint(ctx, input, httpClient)
-	// })
-	// packetEndpoints.RegisterSubParser("websocket", func(ctx context.Context, input map[string]any) (*Endpoint[net.Conn], error) {
-	// 	return parseWebsocketPacketEndpoint(ctx, input, httpClient)
-	// })
+	// Websocket support.
+	streamEndpoints.RegisterSubParser("websocket", func(ctx context.Context, input map[string]any) (*Endpoint[transport.StreamConn], error) {
+		return parseWebsocketStreamEndpoint(ctx, input, streamDialers.Parse)
+	})
+	packetEndpoints.RegisterSubParser("websocket", func(ctx context.Context, input map[string]any) (*Endpoint[net.Conn], error) {
+		return parseWebsocketPacketEndpoint(ctx, input, streamDialers.Parse)
+	})
 
 	// Support distinct TCP and UDP configuration.
 	transports.RegisterSubParser("tcpudp", func(ctx context.Context, config map[string]any) (*TransportPair, error) {
