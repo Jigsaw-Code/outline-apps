@@ -4,7 +4,7 @@ go 1.22.0
 
 require (
 	github.com/Jigsaw-Code/outline-sdk v0.0.18-0.20241106233708-faffebb12629
-	github.com/Jigsaw-Code/outline-sdk/x v0.0.0-20250129215116-5f6d09583605
+	github.com/Jigsaw-Code/outline-sdk/x v0.0.0-20250130191133-1f7340826841
 	github.com/Wifx/gonetworkmanager/v2 v2.1.0
 	github.com/eycorsican/go-tun2socks v1.16.11
 	github.com/go-task/task/v3 v3.36.0
