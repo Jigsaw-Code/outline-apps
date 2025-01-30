@@ -27,21 +27,21 @@ import (
 )
 
 type WebsocketEndpointConfig struct {
-	URL    string
-	Dialer any
+	URL      string
+	Endpoint any
 }
 
-func parseWebsocketStreamEndpoint(ctx context.Context, configMap map[string]any, parseSD ParseFunc[*Dialer[transport.StreamConn]]) (*Endpoint[transport.StreamConn], error) {
-	return parseWebsocketEndpoint[transport.StreamConn](ctx, configMap, parseSD, websocket.NewStreamEndpoint)
+func parseWebsocketStreamEndpoint(ctx context.Context, configMap map[string]any, parseSE ParseFunc[*Endpoint[transport.StreamConn]]) (*Endpoint[transport.StreamConn], error) {
+	return parseWebsocketEndpoint[transport.StreamConn](ctx, configMap, parseSE, websocket.NewStreamEndpoint)
 }
 
-func parseWebsocketPacketEndpoint(ctx context.Context, configMap map[string]any, parseSD ParseFunc[*Dialer[transport.StreamConn]]) (*Endpoint[net.Conn], error) {
-	return parseWebsocketEndpoint[net.Conn](ctx, configMap, parseSD, websocket.NewPacketEndpoint)
+func parseWebsocketPacketEndpoint(ctx context.Context, configMap map[string]any, parseSE ParseFunc[*Endpoint[transport.StreamConn]]) (*Endpoint[net.Conn], error) {
+	return parseWebsocketEndpoint[net.Conn](ctx, configMap, parseSE, websocket.NewPacketEndpoint)
 }
 
 type newWebsocketEndpoint[ConnType any] func(urlStr string, sd transport.StreamDialer, opts ...websocket.Option) (func(context.Context) (ConnType, error), error)
 
-func parseWebsocketEndpoint[ConnType any](ctx context.Context, configMap map[string]any, parseSD ParseFunc[*Dialer[transport.StreamConn]], newWE newWebsocketEndpoint[ConnType]) (*Endpoint[ConnType], error) {
+func parseWebsocketEndpoint[ConnType any](ctx context.Context, configMap map[string]any, parseSE ParseFunc[*Endpoint[transport.StreamConn]], newWE newWebsocketEndpoint[ConnType]) (*Endpoint[ConnType], error) {
 	var config WebsocketEndpointConfig
 	if err := mapToAny(configMap, &config); err != nil {
 		return nil, fmt.Errorf("invalid config format: %w", err)
@@ -51,12 +51,6 @@ func parseWebsocketEndpoint[ConnType any](ctx context.Context, configMap map[str
 	if err != nil {
 		return nil, fmt.Errorf("url is invalid: %w", err)
 	}
-
-	sd, err := parseSD(ctx, config.Dialer)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse websocket dialer: %w", err)
-	}
-
 	port := url.Port()
 	if port == "" {
 		switch url.Scheme {
@@ -69,10 +63,18 @@ func parseWebsocketEndpoint[ConnType any](ctx context.Context, configMap map[str
 		}
 	}
 
+	if config.Endpoint == nil {
+		config.Endpoint = net.JoinHostPort(url.Hostname(), port)
+	}
+	se, err := parseSE(ctx, config.Endpoint)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse websocket endpoint: %w", err)
+	}
+
 	headers := http.Header(map[string][]string{
 		"User-Agent": {fmt.Sprintf("Outline (%s; %s; %s)", runtime.GOOS, runtime.GOARCH, runtime.Version())},
 	})
-	connect, err := newWE(url.String(), transport.FuncStreamDialer(sd.Dial), websocket.WithHTTPHeaders(headers))
+	connect, err := newWE(url.String(), transport.FuncStreamEndpoint(se.Connect), websocket.WithHTTPHeaders(headers))
 	if err != nil {
 		return nil, err
 	}
