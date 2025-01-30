@@ -33,11 +33,10 @@ export default {
 
 export const Example = {
   args: {
-    title: 'Total Tunnel Time',
+    title: 'Total Tunnel Time <i>(last 30 days)</i>',
     value: '43.5',
     valueLabel: 'Total hours',
-    annotation: '(last 30 days)',
-    subtitle: 'ASNs with highest Tunnel Time',
+    subtitle: 'ASNs with highest Tunnel Time <i>(last 30 days)</i>',
     tooltip:
       'Lorem ipsum dolor sit amet,\nconsectetur adipiscing elit.\nDonec a diam lectus.',
     titleIcon: 'timer',

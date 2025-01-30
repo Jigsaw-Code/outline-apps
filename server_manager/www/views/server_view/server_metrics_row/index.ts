@@ -16,6 +16,7 @@
 
 import {LitElement, html, css, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
+import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
 import '@material/mwc-icon';
 
@@ -73,10 +74,6 @@ export class ServerMetricsRow extends LitElement {
       display: block;
       font-family: 'iRoboto', system-u;
       width: 100%;
-    }
-
-    .annotation {
-      font-style: italic;
     }
 
     .title-and-value-container {
@@ -178,10 +175,7 @@ export class ServerMetricsRow extends LitElement {
             ${this.titleIcon
               ? html`<mwc-icon>${this.titleIcon}</mwc-icon>`
               : nothing}
-            <h2 class="title">
-              ${this.title}
-              <span class="annotation">${this.annotation}</span>
-            </h2>
+            <h2 class="title">${unsafeHTML(this.title)}</h2>
             ${this.tooltip
               ? html`<div class="tooltip-container">
                   <mwc-icon>info</mwc-icon>
@@ -199,10 +193,7 @@ export class ServerMetricsRow extends LitElement {
           ? html`
               <aside>
                 ${this.subtitle
-                  ? html`<h3 class="subtitle">
-                      ${this.subtitle}
-                      <span class="annotation">${this.annotation}</span>
-                    </h3>`
+                  ? html`<h3 class="subtitle">${unsafeHTML(this.subtitle)}</h3>`
                   : nothing}
 
                 <div class="subcards-container">
