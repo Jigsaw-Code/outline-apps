@@ -168,6 +168,19 @@ export class FakeServer implements server.Server {
   getDataUsage() {
     return Promise.resolve(new Map<server.AccessKeyId, number>());
   }
+  getServerMetrics(): Promise<{
+    server: server.ServerMetrics[];
+    accessKeys: server.AccessKeyMetrics[];
+  }> {
+    return Promise.reject(
+      new Error('FakeServer.getServerMetrics not implemented')
+    );
+  }
+  getSupportedExperimentalUniversalMetricsEndpoint(): Promise<boolean> {
+    return Promise.reject(
+      new Error('FakeServer.getSupportedExperimentalEndpoints not implemented')
+    );
+  }
   addAccessKey() {
     const accessKey = {
       id: Math.floor(Math.random()).toString(),
@@ -206,7 +219,7 @@ export class FakeServer implements server.Server {
   }
   setAccessKeyDataLimit(
     _accessKeyId: string,
-    _limit: server.DataLimit
+    _limit: server.Data
   ): Promise<void> {
     return Promise.reject(
       new Error('FakeServer.setAccessKeyDataLimit not implemented')
@@ -217,7 +230,7 @@ export class FakeServer implements server.Server {
       new Error('FakeServer.removeAccessKeyDataLimit not implemented')
     );
   }
-  setDefaultDataLimit(_limit: server.DataLimit): Promise<void> {
+  setDefaultDataLimit(_limit: server.Data): Promise<void> {
     return Promise.reject(
       new Error('FakeServer.setDefaultDataLimit not implemented')
     );
@@ -225,7 +238,7 @@ export class FakeServer implements server.Server {
   removeDefaultDataLimit(): Promise<void> {
     return Promise.resolve();
   }
-  getDefaultDataLimit(): server.DataLimit | undefined {
+  getDefaultDataLimit(): server.Data | undefined {
     return undefined;
   }
 }
@@ -245,6 +258,41 @@ export class FakeManualServer
   }
   getCertificateFingerprint() {
     return this.manualServerConfig.certSha256;
+  }
+  getSupportedExperimentalUniversalMetricsEndpoint(): Promise<boolean> {
+    return Promise.resolve(null);
+  }
+  async getServerMetrics(): Promise<{
+    server: server.ServerMetrics[];
+    accessKeys: server.AccessKeyMetrics[];
+  }> {
+    if (await this.getSupportedExperimentalUniversalMetricsEndpoint()) {
+      return {
+        server: [
+          {
+            location: 'US',
+            asn: 10000,
+            asOrg: 'Fake AS',
+            userHours: 0,
+            averageDevices: 0,
+          },
+        ],
+        accessKeys: [
+          {
+            accessKeyId: '0',
+          },
+        ],
+      };
+    }
+
+    return {
+      server: [],
+      accessKeys: [
+        {
+          accessKeyId: '0',
+        },
+      ],
+    };
   }
 }
 

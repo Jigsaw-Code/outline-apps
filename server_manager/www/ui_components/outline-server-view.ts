@@ -33,6 +33,8 @@ import './outline-server-progress-step';
 import './outline-server-settings';
 import './outline-share-dialog';
 import './outline-sort-span';
+import '../views/server_view/server_stat_grid';
+import '../views/server_view/server_stat_card';
 import {html, PolymerElement} from '@polymer/polymer';
 import type {PolymerElementProperties} from '@polymer/polymer/interfaces';
 import type {DomRepeat} from '@polymer/polymer/lib/elements/dom-repeat';
@@ -394,6 +396,16 @@ export class ServerView extends DirMixin(PolymerElement) {
         .flex-1 {
           flex: 1;
         }
+
+        div[name='metrics'] {
+          margin-top: 15px;
+        }
+
+        :host {
+          --server-stat-card-background: var(--background-contrast-color);
+          --server-stat-card-foreground: var(--medium-gray);
+          --server-stat-card-highlight: var(--light-gray);
+        }
         /* Mirror icons */
         :host(:dir(rtl)) iron-icon,
         :host(:dir(rtl)) .share-button,
@@ -536,10 +548,15 @@ export class ServerView extends DirMixin(PolymerElement) {
           attr-for-selected="name"
           noink=""
         >
-          <paper-tab name="connections"
-            >[[localize('server-connections')]]</paper-tab
-          >
+          <template is="dom-if" if="{{!featureFlags.serverMetricsTab}}">
+            <paper-tab name="connections"
+              >[[localize('server-connections')]]</paper-tab
+            >
+          </template>
           <template is="dom-if" if="{{featureFlags.serverMetricsTab}}">
+            <paper-tab name="connections">
+              [[localize('server-access-key-tab', accessKeyRows.length)]]
+            </paper-tab>
             <paper-tab name="metrics">[[localize('server-metrics')]]</paper-tab>
           </template>
           <paper-tab name="settings" id="settingsTab"
@@ -554,45 +571,49 @@ export class ServerView extends DirMixin(PolymerElement) {
         on-selected-changed="_selectedTabChanged"
       >
         <div name="connections">
-          <div class="stats-container">
-            <div class="stats-card transfer-stats card-section">
-              <iron-icon icon="icons:swap-horiz"></iron-icon>
-              <div class="stats">
-                <h3>
-                  [[_formatInboundBytesValue(totalInboundBytes, language)]]
-                </h3>
-                <p>[[_formatInboundBytesUnit(totalInboundBytes, language)]]</p>
+          <template is="dom-if" if="{{!featureFlags.serverMetricsTab}}">
+            <div class="stats-container">
+              <div class="stats-card transfer-stats card-section">
+                <iron-icon icon="icons:swap-horiz"></iron-icon>
+                <div class="stats">
+                  <h3>
+                    [[_formatInboundBytesValue(totalInboundBytes, language)]]
+                  </h3>
+                  <p>
+                    [[_formatInboundBytesUnit(totalInboundBytes, language)]]
+                  </p>
+                </div>
+                <p>[[localize('server-data-transfer')]]</p>
               </div>
-              <p>[[localize('server-data-transfer')]]</p>
+              <div
+                hidden$="[[!monthlyOutboundTransferBytes]]"
+                class="stats-card card-section"
+              >
+                <div>
+                  <img class="cloud-icon" src="[[getCloudIcon(cloudId)]]" />
+                </div>
+                <div class="stats">
+                  <h3>
+                    [[_computeManagedServerUtilizationPercentage(totalInboundBytes,
+                    monthlyOutboundTransferBytes)]]
+                  </h3>
+                  <p>
+                    /[[_formatBytesTransferred(monthlyOutboundTransferBytes,
+                    language)]]
+                  </p>
+                </div>
+                <p>[[localize('server-data-used')]]</p>
+              </div>
+              <div class="stats-card card-section">
+                <iron-icon icon="outline-iconset:key"></iron-icon>
+                <div class="stats">
+                  <h3>[[accessKeyRows.length]]</h3>
+                  <p>[[localize('server-keys')]]</p>
+                </div>
+                <p>[[localize('server-access')]]</p>
+              </div>
             </div>
-            <div
-              hidden$="[[!monthlyOutboundTransferBytes]]"
-              class="stats-card card-section"
-            >
-              <div>
-                <img class="cloud-icon" src="[[getCloudIcon(cloudId)]]" />
-              </div>
-              <div class="stats">
-                <h3>
-                  [[_computeManagedServerUtilizationPercentage(totalInboundBytes,
-                  monthlyOutboundTransferBytes)]]
-                </h3>
-                <p>
-                  /[[_formatBytesTransferred(monthlyOutboundTransferBytes,
-                  language)]]
-                </p>
-              </div>
-              <p>[[localize('server-data-used')]]</p>
-            </div>
-            <div class="stats-card card-section">
-              <iron-icon icon="outline-iconset:key"></iron-icon>
-              <div class="stats">
-                <h3>[[accessKeyRows.length]]</h3>
-                <p>[[localize('server-keys')]]</p>
-              </div>
-              <p>[[localize('server-access')]]</p>
-            </div>
-          </div>
+          </template>
 
           <div class="access-key-list card-section">
             <!-- header row -->
@@ -727,7 +748,13 @@ export class ServerView extends DirMixin(PolymerElement) {
           </div>
         </div>
         <template is="dom-if" if="{{featureFlags.serverMetricsTab}}">
-          <div name="metrics"></div>
+          <div name="metrics">
+            <server-stat-grid
+              columns="3"
+              rows="1"
+              stats="[[serverMetrics]]"
+            ></server-stat-grid>
+          </div>
         </template>
         <div name="settings">
           <outline-server-settings
@@ -784,6 +811,8 @@ export class ServerView extends DirMixin(PolymerElement) {
       isServerReachable: Boolean,
       retryDisplayingServer: Function,
       totalInboundBytes: Number,
+      totalUserHours: Number,
+      totalAverageDevices: Number,
       baselineDataTransfer: Number,
       accessKeyRows: Array,
       hasNonAdminAccessKeys: Boolean,
@@ -797,6 +826,11 @@ export class ServerView extends DirMixin(PolymerElement) {
       selectedPage: String,
       selectedTab: String,
       featureFlags: Object,
+      serverMetrics: {
+        type: Array,
+        computed:
+          '_computeServerMetrics(totalAverageDevices, totalUserHours, totalInboundBytes, language)',
+      },
     };
   }
 
@@ -829,6 +863,8 @@ export class ServerView extends DirMixin(PolymerElement) {
   /** Callback for retrying to display an unreachable server. */
   retryDisplayingServer: () => void = null;
   totalInboundBytes = 0;
+  totalUserHours = 0;
+  totalAverageDevices = 0;
   /** The number to which access key transfer amounts are compared for progress bar display */
   baselineDataTransfer = Number.POSITIVE_INFINITY;
   accessKeyRows: DisplayAccessKey[] = [];
@@ -920,6 +956,33 @@ export class ServerView extends DirMixin(PolymerElement) {
   /** Returns the UI access key with the given ID. */
   findUiKey(id: AccessKeyId): DisplayAccessKey {
     return this.accessKeyRows.find(key => key.id === id);
+  }
+
+  _computeServerMetrics(
+    totalAverageDevices: number,
+    totalUserHours: number,
+    totalInboundBytes: number,
+    language: string
+  ) {
+    return [
+      {
+        icon: 'devices',
+        name: this.localize('server-metrics-average-devices'),
+        value: totalAverageDevices.toFixed(2),
+      },
+      {
+        icon: 'timer',
+        name: this.localize('server-metrics-user-hours'),
+        units: this._formatHourUnits(totalUserHours, language),
+        value: this._formatHourValue(totalUserHours, language),
+      },
+      {
+        icon: 'swap_horiz',
+        name: this.localize('server-metrics-data-transferred'),
+        units: this._formatInboundBytesUnit(totalInboundBytes, language),
+        value: this._formatInboundBytesValue(totalInboundBytes, language),
+      },
+    ];
   }
 
   _closeAddAccessKeyHelpBubble() {
@@ -1064,6 +1127,35 @@ export class ServerView extends DirMixin(PolymerElement) {
       return '';
     }
     return formatting.formatBytesParts(totalBytes, language).value;
+  }
+
+  _formatHourUnits(hours: number, language: string) {
+    // This happens during app startup before we set the language
+    if (!language) {
+      return '';
+    }
+
+    const formattedValue = this._formatHourValue(hours, language);
+    const formattedValueAndUnit = new Intl.NumberFormat(language, {
+      style: 'unit',
+      unit: 'hour',
+      unitDisplay: 'long',
+    }).format(hours);
+
+    return formattedValueAndUnit
+      .split(formattedValue)
+      .find(_ => _)
+      .trim();
+  }
+
+  _formatHourValue(hours: number, language: string) {
+    // This happens during app startup before we set the language
+    if (!language) {
+      return '';
+    }
+    return new Intl.NumberFormat(language, {
+      unit: 'hour',
+    }).format(hours);
   }
 
   _formatBytesTransferred(numBytes: number, language: string, emptyValue = '') {
