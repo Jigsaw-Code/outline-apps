@@ -25,6 +25,8 @@ const {cordova} = cordovaLib;
 
 import {getBuildParameters} from '../../build/get_build_parameters.mjs';
 
+const CORDOVA_PLATFORMS = ['android', 'ios', 'macos'];
+
 /**
  * @description Builds the parameterized cordova binary (ios, macos, maccatalyst, android).
  *
@@ -32,6 +34,14 @@ import {getBuildParameters} from '../../build/get_build_parameters.mjs';
  */
 export async function main(...parameters) {
   const {platform, buildMode, verbose} = getBuildParameters(parameters);
+
+  if (!CORDOVA_PLATFORMS.includes(platform)) {
+    throw new TypeError(
+      `The platform "${platform}" is not a valid Cordova platform. It must be one of: ${CORDOVA_PLATFORMS.join(
+        ', '
+      )}.`
+    );
+  }
 
   await runAction('client/src/www/build', ...parameters);
   await runAction('client/go/build', ...parameters);
