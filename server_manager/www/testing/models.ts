@@ -273,8 +273,7 @@ export class FakeManualServer
             location: 'US',
             asn: 10000,
             asOrg: 'Fake AS',
-            userHours: 0,
-            averageDevices: 0,
+            devices: 0,
           },
         ],
         accessKeys: [

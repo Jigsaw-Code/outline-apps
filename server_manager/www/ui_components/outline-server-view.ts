@@ -856,6 +856,15 @@ export class ServerView extends DirMixin(PolymerElement) {
     return ['_accessKeysAddedOrRemoved(accessKeyRows.splices)'];
   }
 
+  bandwidthUsageTotal = '';
+  bandwidthUsageRegions: {}[] = [];
+
+  devicesTotal = '';
+  devicesRegions: {}[] = [];
+
+  tunnelTimeTotal = '';
+  tunnelTimeRegions: {}[] = [];
+
   serverId = '';
   metricsId = '';
   serverName = '';
@@ -881,7 +890,6 @@ export class ServerView extends DirMixin(PolymerElement) {
   /** Callback for retrying to display an unreachable server. */
   retryDisplayingServer: () => void = null;
   totalInboundBytes = 0;
-  tunnelTimeTotal = 0;
   totalAverageDevices = 0;
   /** The number to which access key transfer amounts are compared for progress bar display */
   baselineDataTransfer = Number.POSITIVE_INFINITY;

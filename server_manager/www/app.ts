@@ -44,6 +44,8 @@ const CHANGE_KEYS_PORT_VERSION = '1.0.0';
 const DATA_LIMITS_VERSION = '1.1.0';
 const CHANGE_HOSTNAME_VERSION = '1.2.0';
 const KEY_SETTINGS_VERSION = '1.6.0';
+const SECONDS_IN_HOUR = 60 * 60;
+const BYTES_IN_GIGABYTES = 10 ** 9;
 const MAX_ACCESS_KEY_DATA_LIMIT_BYTES = 50 * 10 ** 9; // 50GB
 const CANCELLED_ERROR = new Error('Cancelled');
 export const LAST_DISPLAYED_SERVER_STORAGE_KEY = 'lastDisplayedServer';
@@ -1078,44 +1080,56 @@ export class App {
       // TODO: format totals;
       const bandwidthUsageFormatter = Intl.NumberFormat(this.appRoot.language, {
         style: 'unit',
-        unit: 'byte',
-        unitDisplay: 'narrow',
+        unit: 'gigabyte',
+        unitDisplay: 'short',
       });
 
-      serverView.bandwidthUsageTotal =
-        bandwidthUsageFormatter.format(bandwidthUsageTotal);
+      serverView.bandwidthUsageTotal = bandwidthUsageFormatter.format(
+        bandwidthUsageTotal / BYTES_IN_GIGABYTES
+      );
       serverView.bandwidthUsageRegions = bandwidthUsageHeap
         .top(4)
+        .reverse()
         .map(server => ({
           title: server.asOrg,
           subtitle: `${server.asn}AS`,
           icon: this.countryCodeToEmoji(server.location),
           highlight: bandwidthUsageFormatter.format(
-            server.dataTransferred.bytes
+            server.dataTransferred.bytes / BYTES_IN_GIGABYTES
           ),
         }));
 
       const tunnelTimeFomatter = Intl.NumberFormat(this.appRoot.language, {
         style: 'unit',
-        unit: 'second',
-        unitDisplay: 'narrow',
+        unit: 'hour',
+        unitDisplay: 'short',
       });
 
-      serverView.tunnelTimeTotal = tunnelTimeFomatter.format(tunnelTimeTotal);
-      serverView.tunnelTimeRegions = tunnelTimeHeap.top(4).map(server => ({
-        title: server.asOrg,
-        subtitle: `${server.asn}AS`,
-        icon: this.countryCodeToEmoji(server.location),
-        highlight: tunnelTimeFomatter.format(server.tunnelTime.seconds),
-      }));
+      serverView.tunnelTimeTotal = tunnelTimeFomatter.format(
+        tunnelTimeTotal / SECONDS_IN_HOUR
+      );
+      serverView.tunnelTimeRegions = tunnelTimeHeap
+        .top(4)
+        .reverse()
+        .map(server => ({
+          title: server.asOrg,
+          subtitle: `${server.asn}AS`,
+          icon: this.countryCodeToEmoji(server.location),
+          highlight: tunnelTimeFomatter.format(
+            server.tunnelTime.seconds / SECONDS_IN_HOUR
+          ),
+        }));
 
-      serverView.devicesTotal = devicesTotal;
-      serverView.devicesRegions = devicesHeap.top(4).map(server => ({
-        title: server.asOrg,
-        subtitle: `${server.asn}AS`,
-        icon: this.countryCodeToEmoji(server.location),
-        highlight: `${server.devices} ${this.appRoot.localize('')}`,
-      }));
+      serverView.devicesTotal = devicesTotal.toFixed(3);
+      serverView.devicesRegions = devicesHeap
+        .top(4)
+        .reverse()
+        .map(server => ({
+          title: server.asOrg,
+          subtitle: `${server.asn}AS`,
+          icon: this.countryCodeToEmoji(server.location),
+          highlight: `${server.devices.toFixed(3)} ${this.appRoot.localize('server-view-server-metrics-devices-as-breakdown-unit-label')}`,
+        }));
 
       // Update all the displayed access keys, even if usage didn't change, in case data limits did.
       const keyDataTransferMap = serverMetrics.accessKeys.reduce(
