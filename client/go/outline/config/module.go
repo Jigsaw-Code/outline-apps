@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"net"
+	"runtime"
 
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
@@ -112,12 +113,15 @@ func NewDefaultTransportProvider(tcpDialer transport.StreamDialer, udpDialer tra
 	})
 
 	// Websocket support.
-	streamEndpoints.RegisterSubParser("websocket", func(ctx context.Context, input map[string]any) (*Endpoint[transport.StreamConn], error) {
-		return parseWebsocketStreamEndpoint(ctx, input, streamEndpoints.Parse)
-	})
-	packetEndpoints.RegisterSubParser("websocket", func(ctx context.Context, input map[string]any) (*Endpoint[net.Conn], error) {
-		return parseWebsocketPacketEndpoint(ctx, input, streamEndpoints.Parse)
-	})
+	// TODO: make it available on Windows.
+	if runtime.GOOS != "windows" {
+		streamEndpoints.RegisterSubParser("websocket", func(ctx context.Context, input map[string]any) (*Endpoint[transport.StreamConn], error) {
+			return parseWebsocketStreamEndpoint(ctx, input, streamEndpoints.Parse)
+		})
+		packetEndpoints.RegisterSubParser("websocket", func(ctx context.Context, input map[string]any) (*Endpoint[net.Conn], error) {
+			return parseWebsocketPacketEndpoint(ctx, input, streamEndpoints.Parse)
+		})
+	}
 
 	// Support distinct TCP and UDP configuration.
 	transports.RegisterSubParser("tcpudp", func(ctx context.Context, config map[string]any) (*TransportPair, error) {
