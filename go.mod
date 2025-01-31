@@ -3,7 +3,8 @@ module github.com/Jigsaw-Code/outline-apps
 go 1.22.0
 
 require (
-	github.com/Jigsaw-Code/outline-sdk v0.0.14-0.20240216220040-f741c57bf854
+	github.com/Jigsaw-Code/outline-sdk v0.0.18-0.20241106233708-faffebb12629
+	github.com/Jigsaw-Code/outline-sdk/x v0.0.0-20250131142109-b32720fa2c3e
 	github.com/Wifx/gonetworkmanager/v2 v2.1.0
 	github.com/eycorsican/go-tun2socks v1.16.11
 	github.com/go-task/task/v3 v3.36.0
@@ -27,6 +28,7 @@ require (
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/google/licenseclassifier v0.0.0-20210722185704-3043a050f148 // indirect
+	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
