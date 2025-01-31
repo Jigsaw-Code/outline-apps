@@ -95,10 +95,10 @@ func Test_NewTransport_Multihop_URL(t *testing.T) {
 endpoint:
     $type: dial
     address: exit.example.com:4321
-    dialer: ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@entry.example.com:4321/
+    dialer: ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@example.com:4321/
 cipher: chacha20-ietf-poly1305
 secret: SECRET`
-	firstHop := "entry.example.com:4321"
+	firstHop := "example.com:4321"
 
 	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
@@ -113,12 +113,12 @@ endpoint:
     address: exit.example.com:4321
     dialer: 
       $type: shadowsocks
-      endpoint: entry.example.com:4321
+      endpoint: example.com:4321
       cipher: chacha20-ietf-poly1305
       secret: ENTRY_SECRET
 cipher: chacha20-ietf-poly1305
 secret: EXIT_SECRET`
-	firstHop := "entry.example.com:4321"
+	firstHop := "example.com:4321"
 
 	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
@@ -201,15 +201,15 @@ tcp: &base
     $type: shadowsocks
     endpoint:
         $type: websocket
-        url: https://entrypoint.cdn.example.com/tcp
+        url: https://example.com/tcp
     cipher: chacha20-ietf-poly1305
     secret: SECRET
 udp:
     <<: *base
     endpoint:
         $type: websocket
-        url: https://entrypoint.cdn.example.com/udp`
-	firstHop := "entrypoint.cdn.example.com:443"
+        url: https://example.com/udp`
+	firstHop := "example.com:443"
 
 	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
