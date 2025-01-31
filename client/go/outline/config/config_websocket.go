@@ -39,7 +39,7 @@ func parseWebsocketPacketEndpoint(ctx context.Context, configMap map[string]any,
 	return parseWebsocketEndpoint[net.Conn](ctx, configMap, parseSE, websocket.NewPacketEndpoint)
 }
 
-type newWebsocketEndpoint[ConnType any] func(urlStr string, sd transport.StreamDialer, opts ...websocket.Option) (func(context.Context) (ConnType, error), error)
+type newWebsocketEndpoint[ConnType any] func(urlStr string, se transport.StreamEndpoint, opts ...websocket.Option) (func(context.Context) (ConnType, error), error)
 
 func parseWebsocketEndpoint[ConnType any](ctx context.Context, configMap map[string]any, parseSE ParseFunc[*Endpoint[transport.StreamConn]], newWE newWebsocketEndpoint[ConnType]) (*Endpoint[ConnType], error) {
 	var config WebsocketEndpointConfig

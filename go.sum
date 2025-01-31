@@ -63,6 +63,8 @@ github.com/Jigsaw-Code/outline-sdk v0.0.18-0.20241106233708-faffebb12629 h1:sHi1
 github.com/Jigsaw-Code/outline-sdk v0.0.18-0.20241106233708-faffebb12629/go.mod h1:CFDKyGZA4zatKE4vMLe8TyQpZCyINOeRFbMAmYHxodw=
 github.com/Jigsaw-Code/outline-sdk/x v0.0.0-20250130191133-1f7340826841 h1:1tpY2KX6a9/1/uyN0riQVxQHqNthyAvzIhoWWmdYOBA=
 github.com/Jigsaw-Code/outline-sdk/x v0.0.0-20250130191133-1f7340826841/go.mod h1:9iEpNbKBsNU3WJs2XzhlI2AOf6DH018bjWxOC38o1Zc=
+github.com/Jigsaw-Code/outline-sdk/x v0.0.0-20250131142109-b32720fa2c3e h1:JN3TZFpi98BTw/CZuQWxovFsgqjQ79gGrbvZE1wFIIc=
+github.com/Jigsaw-Code/outline-sdk/x v0.0.0-20250131142109-b32720fa2c3e/go.mod h1:aFUEz6Z/eD0NS3c3fEIX+JO2D9aIrXCmWTb1zJFlItw=
 github.com/Masterminds/semver/v3 v3.2.1 h1:RN9w6+7QoMeJVGyfmbcgs28Br8cvmnucEXnY0rYXWg0=
 github.com/Masterminds/semver/v3 v3.2.1/go.mod h1:qvl/7zhW3nngYb5+80sSMF+FG2BjYrf8m9wsX0PNOMQ=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
