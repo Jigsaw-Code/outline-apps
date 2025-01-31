@@ -23,64 +23,64 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_New(t *testing.T) {
-	curID := nextCbID
-	token := New(&testCallback{})
-	require.Equal(t, curID, token)
-	require.Contains(t, callbacks, token)
-	require.Equal(t, curID+1, nextCbID)
+func Test_Register(t *testing.T) {
+	mgr := NewManager()
+	token := mgr.Register(&testCallback{})
+	require.Equal(t, Token(1), token)
+	require.Contains(t, mgr.callbacks, token)
+	require.Equal(t, Token(2), mgr.nextCbID)
 }
 
-func Test_Delete(t *testing.T) {
-	curID := nextCbID
-	token := New(&testCallback{})
-	require.Equal(t, curID, token)
-	require.Contains(t, callbacks, token)
+func Test_Unregister(t *testing.T) {
+	mgr := NewManager()
+	token := mgr.Register(&testCallback{})
+	require.Equal(t, Token(1), token)
+	require.Contains(t, mgr.callbacks, token)
 
-	Delete(token)
-	require.NotContains(t, callbacks, token)
-	require.Equal(t, curID+1, nextCbID)
+	mgr.Unregister(token)
+	require.NotContains(t, mgr.callbacks, token)
+	require.Equal(t, Token(2), mgr.nextCbID)
 
-	Delete(0)
-	require.NotContains(t, callbacks, token)
-	require.Equal(t, curID+1, nextCbID)
+	mgr.Unregister(0)
+	require.NotContains(t, mgr.callbacks, token)
+	require.Equal(t, Token(2), mgr.nextCbID)
 
-	Delete(-1)
-	require.NotContains(t, callbacks, token)
-	require.Equal(t, curID+1, nextCbID)
+	mgr.Unregister(-1)
+	require.NotContains(t, mgr.callbacks, token)
+	require.Equal(t, Token(2), mgr.nextCbID)
 
-	Delete(99999999)
-	require.NotContains(t, callbacks, token)
-	require.Equal(t, curID+1, nextCbID)
+	mgr.Unregister(99999999)
+	require.NotContains(t, mgr.callbacks, token)
+	require.Equal(t, Token(2), mgr.nextCbID)
 }
 
 func Test_Call(t *testing.T) {
+	mgr := NewManager()
 	c := &testCallback{}
-	token := New(c)
+	token := mgr.Register(c)
 	c.requireEqual(t, 0, "")
 
-	ret := Call(token, "arg1")
+	ret := mgr.Call(token, "arg1")
 	require.Equal(t, ret, "ret-arg1")
 	c.requireEqual(t, 1, "arg1")
 
-	ret = Call(-1, "arg1")
+	ret = mgr.Call(-1, "arg1")
 	require.Empty(t, ret)
 	c.requireEqual(t, 1, "arg1") // No change
 
-	ret = Call(token, "arg2")
+	ret = mgr.Call(token, "arg2")
 	require.Equal(t, ret, "ret-arg2")
 	c.requireEqual(t, 2, "arg2")
 
-	ret = Call(99999999, "arg3")
+	ret = mgr.Call(99999999, "arg3")
 	require.Empty(t, ret)
 	c.requireEqual(t, 2, "arg2") // No change
 }
 
-func Test_ConcurrentCreate(t *testing.T) {
+func Test_ConcurrentRegister(t *testing.T) {
 	const numTokens = 1000
 
-	curID := nextCbID
-	originalLen := len(callbacks)
+	mgr := NewManager()
 	var wg sync.WaitGroup
 
 	tokens := make([]Token, numTokens)
@@ -88,37 +88,35 @@ func Test_ConcurrentCreate(t *testing.T) {
 	for i := 0; i < numTokens; i++ {
 		go func(i int) {
 			defer wg.Done()
-			tokens[i] = New(&testCallback{})
+			tokens[i] = mgr.Register(&testCallback{})
 			require.Greater(t, tokens[i], 0)
 		}(i)
 	}
 	wg.Wait()
 
-	require.Len(t, callbacks, originalLen+numTokens)
-	require.Equal(t, curID+numTokens, nextCbID)
+	require.Len(t, mgr.callbacks, numTokens)
+	require.Equal(t, Token(numTokens+1), mgr.nextCbID)
 	tokenSet := make(map[Token]bool)
 	for _, token := range tokens {
 		require.False(t, tokenSet[token], "Duplicate token found: %s", token)
 		tokenSet[token] = true
-		require.Contains(t, callbacks, token)
+		require.Contains(t, mgr.callbacks, token)
 	}
 }
 
 func Test_ConcurrentCall(t *testing.T) {
 	const numInvocations = 1000
 
-	curID := nextCbID
-	originalLen := len(callbacks)
-
+	mgr := NewManager()
 	c := &testCallback{}
-	token := New(c)
+	token := mgr.Register(c)
 
 	var wg sync.WaitGroup
 	wg.Add(numInvocations)
 	for i := 0; i < numInvocations; i++ {
 		go func(i int) {
 			defer wg.Done()
-			ret := Call(token, fmt.Sprintf("data-%d", i))
+			ret := mgr.Call(token, fmt.Sprintf("data-%d", i))
 			require.Equal(t, ret, fmt.Sprintf("ret-data-%d", i))
 		}(i)
 	}
@@ -127,38 +125,36 @@ func Test_ConcurrentCall(t *testing.T) {
 	require.Equal(t, int32(numInvocations), c.cnt.Load())
 	require.Regexp(t, `^data-\d+$`, c.lastData.Load())
 
-	require.Len(t, callbacks, originalLen+1)
-	require.Equal(t, curID+1, nextCbID)
+	require.Len(t, mgr.callbacks, 1)
+	require.Equal(t, Token(2), mgr.nextCbID)
 }
 
-func Test_ConcurrentDelete(t *testing.T) {
+func Test_ConcurrentUnregister(t *testing.T) {
 	const (
 		numTokens  = 50
 		numDeletes = 1000
 	)
 
-	curID := nextCbID
-	originalLen := len(callbacks)
-
+	mgr := NewManager()
 	tokens := make([]Token, numTokens)
 	for i := 0; i < numTokens; i++ {
-		tokens[i] = New(&testCallback{})
+		tokens[i] = mgr.Register(&testCallback{})
 	}
-	require.Len(t, callbacks, originalLen+numTokens)
-	require.Equal(t, curID+numTokens, nextCbID)
+	require.Len(t, mgr.callbacks, numTokens)
+	require.Equal(t, Token(numTokens+1), mgr.nextCbID)
 
 	var wg sync.WaitGroup
 	wg.Add(numDeletes)
 	for i := 0; i < numDeletes; i++ {
 		go func(i int) {
 			defer wg.Done()
-			Delete(tokens[i%numTokens])
+			mgr.Unregister(tokens[i%numTokens])
 		}(i)
 	}
 	wg.Wait()
 
-	require.Len(t, callbacks, originalLen)
-	require.Equal(t, curID+numTokens, nextCbID)
+	require.Len(t, mgr.callbacks, 0)
+	require.Equal(t, Token(numTokens+1), mgr.nextCbID)
 }
 
 // testCallback is a mock implementation of callback.Callback for testing.

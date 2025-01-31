@@ -21,7 +21,7 @@ import (
 	"log/slog"
 	"sync"
 
-	"github.com/Jigsaw-Code/outline-apps/client/go/outline/event"
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/callback"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
@@ -59,9 +59,6 @@ const (
 	ConnectionDisconnecting ConnectionStatus = "Disconnecting"
 )
 
-// ConnectionStatusChanged event will be raised when the status of a [VPNConnection] changes.
-const ConnectionStatusChanged event.EventName = "VPNConnStatusChanged"
-
 // VPNConnection represents a system-wide VPN connection.
 type VPNConnection struct {
 	ID     string           `json:"id"`
@@ -78,15 +75,23 @@ type VPNConnection struct {
 // This package allows at most one active VPN connection at the same time.
 var mu sync.Mutex
 var conn *VPNConnection
+var stateChangeCb callback.Token
 
-// SetStatus sets the [VPNConnection] Status and raises the [ConnectionStatusChanged] event.
+// SetStatus sets the [VPNConnection] Status and calls the stateChangeCb callback.
 func (c *VPNConnection) SetStatus(status ConnectionStatus) {
 	c.Status = status
 	if connJson, err := json.Marshal(c); err == nil {
-		event.Fire(ConnectionStatusChanged, string(connJson))
+		callback.DefaultManager().Call(stateChangeCb, string(connJson))
 	} else {
 		slog.Warn("failed to marshal VPN connection", "err", err)
 	}
+}
+
+// SetStateChangeListener sets the given [callback.Token] as a global VPN connection
+// state change listener.
+// The token should have already been registered with the [callback.DefaultManager].
+func SetStateChangeListener(token callback.Token) {
+	stateChangeCb = token
 }
 
 // EstablishVPN establishes a new active [VPNConnection] connecting to a [ProxyDevice]

@@ -22,11 +22,15 @@ import (
 
 // API name constants
 const (
-	// AddEventListener registers a callback for a specific event.
+	// SetVPNStateChangeListener sets a callback to be invoked when the VPN state changes.
 	//
-	//  - Input: a JSON string of eventListenerJSON
+	// We recommend the caller to set this listener at app startup to catch all VPN state changes.
+	// Users might start the VPN from system settings, bypassing the app;
+	// so setting the listener when connecting within the app might miss some events.
+	//
+	//  - Input: A callback token string.
 	//  - Output: null
-	MethodAddEventListener = "AddEventListener"
+	MethodSetVPNStateChangeListener = "SetVPNStateChangeListener"
 
 	// CloseVPN closes an existing VPN connection and restores network traffic to the default
 	// network interface.
@@ -45,12 +49,6 @@ const (
 	//  - Input: the URL string of the resource to fetch
 	//  - Output: the content in raw string of the fetched resource
 	MethodFetchResource = "FetchResource"
-
-	// RemoveEventListener unregisters a callback from a specific event.
-	//
-	//  - Input: a JSON string of eventListenerJSON
-	//  - Output: null
-	MethodRemoveEventListener = "RemoveEventListener"
 )
 
 // InvokeMethodResult represents the result of an InvokeMethod call.
@@ -64,8 +62,8 @@ type InvokeMethodResult struct {
 // InvokeMethod calls a method by name.
 func InvokeMethod(method string, input string) *InvokeMethodResult {
 	switch method {
-	case MethodAddEventListener:
-		err := addEventListener(input)
+	case MethodSetVPNStateChangeListener:
+		err := setVPNStateChangeListener(input)
 		return &InvokeMethodResult{
 			Error: platerrors.ToPlatformError(err),
 		}
@@ -87,12 +85,6 @@ func InvokeMethod(method string, input string) *InvokeMethodResult {
 		content, err := fetchResource(url)
 		return &InvokeMethodResult{
 			Value: content,
-			Error: platerrors.ToPlatformError(err),
-		}
-
-	case MethodRemoveEventListener:
-		err := removeEventListener(input)
-		return &InvokeMethodResult{
 			Error: platerrors.ToPlatformError(err),
 		}
 

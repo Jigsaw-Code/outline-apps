@@ -21,56 +21,85 @@ import (
 )
 
 // Token can be used to uniquely identify a registered callback.
+//
+// This token is designed to be used across language boundaries.
+// For example, TypeScript code can use this token to reference a callback.
 type Token int
 
-// Callback is an interface that can be implemented to receive callbacks.
-//
-// It accepts an input and returns an output, allowing communication back to the caller.
-type Callback interface {
+// Handler is an interface that can be implemented to receive callbacks.
+type Handler interface {
+	// OnCall is called when the callback is invoked. It accepts an input string and
+	// optionally returns an output string.
 	OnCall(data string) string
 }
 
-var (
+// Manager manages the registration, unregistration, and invocation of callbacks.
+type Manager struct {
 	mu        sync.RWMutex
-	callbacks       = make(map[Token]Callback)
-	nextCbID  Token = 1
+	callbacks map[Token]Handler
+	nextCbID  Token
+}
+
+// variables defining the DefaultManager.
+var (
+	mgrInstance *Manager
+	initMgrOnce sync.Once
 )
 
-// New registers a new callback and returns a unique callback token.
-func New(c Callback) Token {
-	mu.Lock()
-	defer mu.Unlock()
+// DefaultManager returns the shared default callback [Manager] that can be used across
+// all compoenents.
+func DefaultManager() *Manager {
+	initMgrOnce.Do(func() {
+		mgrInstance = NewManager()
+	})
+	return mgrInstance
+}
 
-	token := nextCbID
-	nextCbID++
-	callbacks[token] = c
-	slog.Debug("callback created", "token", token)
+// NewManager creates a new callback [Manager].
+func NewManager() *Manager {
+	return &Manager{
+		callbacks: make(map[Token]Handler),
+		nextCbID:  1,
+	}
+}
+
+// Register registers a new callback to the [Manager].
+//
+// It returns a unique [Token] that can be used to unregister or invoke the callback.
+func (m *Manager) Register(c Handler) Token {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	token := m.nextCbID
+	m.nextCbID++
+	m.callbacks[token] = c
+	slog.Debug("callback created", "manager", m, "token", token)
 	return token
 }
 
-// Delete removes a callback identified by the token.
+// Unregister removes a previously registered callback from the [Manager].
 //
-// Calling this function is safe even if the callback has not been registered.
-func Delete(token Token) {
-	mu.Lock()
-	defer mu.Unlock()
+// It is safe to call this function with a non-registered [Token].
+func (m *Manager) Unregister(token Token) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 
-	delete(callbacks, token)
-	slog.Debug("callback deleted", "token", token)
+	delete(m.callbacks, token)
+	slog.Debug("callback deleted", "manager", m, "token", token)
 }
 
-// Call executes a callback identified by the token.
+// Call invokes the callback identified by the given [Token].
 //
-// It passes the data string to the [Callback].OnCall and returns the string returned by OnCall.
+// It passes data to the [Handler]'s OnCall method and returns the result.
 //
-// Calling this function is safe even if the callback has not been registered.
-func Call(token Token, data string) string {
-	mu.RLock()
-	defer mu.RUnlock()
+// It is safe to call this function with a non-registered [Token].
+func (m *Manager) Call(token Token, data string) string {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
 
-	cb, ok := callbacks[token]
+	cb, ok := m.callbacks[token]
 	if !ok {
-		slog.Warn("callback not yet created", "token", token)
+		slog.Warn("callback not yet registered", "token", token)
 		return ""
 	}
 	slog.Debug("invoking callback", "token", token, "data", data)

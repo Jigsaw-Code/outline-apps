@@ -74,13 +74,13 @@ func InvokeMethod(method *C.char, input *C.char) C.InvokeMethodResult {
 	}
 }
 
-// cgoCallback implements the [callback.Callback] interface and bridges the Go callback
+// cgoCallback implements the [callback.Handler] interface and bridges the Go callback
 // to a C function pointer.
 type cgoCallback struct {
 	ptr C.CallbackFuncPtr
 }
 
-var _ callback.Callback = (*cgoCallback)(nil)
+var _ callback.Handler = (*cgoCallback)(nil)
 
 // OnCall forwards the data to the C callback function pointer.
 func (ccb *cgoCallback) OnCall(data string) string {
@@ -88,21 +88,23 @@ func (ccb *cgoCallback) OnCall(data string) string {
 	return C.GoString(ret)
 }
 
-// NewCallback registers a new callback function and returns a [callback.Token] number.
+// RegisterCallback registers a new callback function with the [callback.DefaultManager]
+// and returns a [callback.Token] number.
 //
-// The caller can delete the callback by calling [DeleteCallback] with the returned token.
+// The caller can delete the callback by calling [UnregisterCallback] with the returned token.
 //
-//export NewCallback
-func NewCallback(cb C.CallbackFuncPtr) C.int {
-	token := callback.New(&cgoCallback{cb})
+//export RegisterCallback
+func RegisterCallback(cb C.CallbackFuncPtr) C.int {
+	token := callback.DefaultManager().Register(&cgoCallback{cb})
 	return C.int(token)
 }
 
-// DeleteCallback deletes the callback identified by the token returned by [NewCallback].
+// UnregisterCallback unregisters the callback from the [callback.DefaultManager]
+// identified by the token returned by [RegisterCallback].
 //
-//export DeleteCallback
-func DeleteCallback(token C.int) {
-	callback.Delete(callback.Token(token))
+//export UnregisterCallback
+func UnregisterCallback(token C.int) {
+	callback.DefaultManager().Unregister(callback.Token(token))
 }
 
 // newCGoString allocates memory for a C string based on the given Go string.

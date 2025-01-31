@@ -35,7 +35,7 @@ export async function invokeGoMethod(
   input: string
 ): Promise<string> {
   console.debug(`[Backend] - calling InvokeMethod "${method}" ...`);
-  const result = await ensureCgo().invokeMethod(method, input);
+  const result = await getDefaultBackendChannel().invokeMethod(method, input);
   console.debug(`[Backend] - InvokeMethod "${method}" returned`, result);
   if (result.ErrorJson) {
     throw new Error(result.ErrorJson);
@@ -50,115 +50,146 @@ export async function invokeGoMethod(
  */
 export type CallbackFunction = (data: string) => string;
 
-/** A unique token for a callback created by `newCallback`. */
+/** A token to uniquely identify a callback. */
 export type CallbackToken = number;
-
-/**
- * Koffi requires us to register all persistent callbacks; we track the registrations here.
- * @see https://koffi.dev/callbacks#registered-callbacks
- */
-const koffiCallbacks = new Map<CallbackToken, koffi.IKoffiRegisteredCallback>();
 
 /**
  * Registers a callback function in TypeScript, making it invokable from Go.
  *
- * The caller can delete the callback by calling `deleteCallback`.
+ * The caller can unregister the callback by calling `unregisterCallback`.
  *
  * @param callback The callback function to be registered.
  * @returns A Promise resolves to the callback token, which can be used to refer to the callback.
  */
-export async function newCallback(
+export async function registerCallback(
   callback: CallbackFunction
 ): Promise<CallbackToken> {
-  console.debug('[Backend] - calling newCallback ...');
-  const persistentCallback = koffi.register(
-    callback,
-    ensureCgo().callbackFuncPtr
-  );
-  const token = await ensureCgo().newCallback(persistentCallback);
-  console.debug('[Backend] - newCallback done, token:', token);
-  koffiCallbacks.set(token, persistentCallback);
+  console.debug('[Backend] - calling registerCallback ...');
+  const token = await getDefaultCallbackManager().register(callback);
+  console.debug('[Backend] - registerCallback done, token:', token);
   return token;
 }
 
 /**
- * Unregisters a specified callback function from the Go backend.
+ * Unregisters a specified callback function from the Go backend to release resources.
  *
- * @param token The callback token returned from `newCallback`.
+ * @param token The callback token returned from `registerCallback`.
  * @returns A Promise that resolves when the unregistration is done.
  */
-export async function deleteCallback(token: CallbackToken): Promise<void> {
-  console.debug('[Backend] - calling deleteCallback:', token);
-  await ensureCgo().deleteCallback(token);
-  console.debug('[Backend] - deleteCallback done');
-  const persistentCallback = koffiCallbacks.get(token);
-  if (persistentCallback) {
-    koffi.unregister(persistentCallback);
-    koffiCallbacks.delete(token);
-    console.debug(
-      `[Backend] - unregistered persistent callback ${token} from koffi`
+export async function unregisterCallback(token: CallbackToken): Promise<void> {
+  console.debug('[Backend] - calling unregisterCallback, token:', token);
+  await getDefaultCallbackManager().unregister(token);
+  console.debug('[Backend] - unregisterCallback done, token:', token);
+}
+
+/** Singleton of the CGo backend channel. */
+let callback: CallbackManager | undefined;
+
+function getDefaultCallbackManager(): CallbackManager {
+  if (!callback) {
+    callback = new CallbackManager(getDefaultBackendChannel());
+  }
+  return callback;
+}
+
+class CallbackManager {
+  /** `void (*CallbackFuncPtr)(const char *data);` */
+  private readonly callbackFuncPtr: koffi.IKoffiCType;
+
+  /** `int RegisterCallback(CallbackFuncPtr cb);` */
+  private readonly registerCallback: Function;
+
+  /** `void UnregisterCallback(int token);` */
+  private readonly unregisterCallback: Function;
+
+  /**
+   * Koffi requires us to register all persistent callbacks; we track the registrations here.
+   * @see https://koffi.dev/callbacks#registered-callbacks
+   */
+  private readonly koffiCallbacks = new Map<
+    CallbackToken,
+    koffi.IKoffiRegisteredCallback
+  >();
+
+  constructor(backend: BackendChannel) {
+    this.callbackFuncPtr = koffi.pointer(
+      koffi.proto('CallbackFuncPtr', 'str', [backend.cgoString])
     );
+    this.registerCallback = backend.declareCGoFunction(
+      'RegisterCallback',
+      'int',
+      [this.callbackFuncPtr]
+    );
+    this.unregisterCallback = backend.declareCGoFunction(
+      'UnregisterCallback',
+      'void',
+      ['int']
+    );
+  }
+
+  async register(callback: CallbackFunction): Promise<CallbackToken> {
+    const persistentCallback = koffi.register(callback, this.callbackFuncPtr);
+    const token = await this.registerCallback(persistentCallback);
+    this.koffiCallbacks.set(token, persistentCallback);
+    return token;
+  }
+
+  async unregister(token: CallbackToken): Promise<void> {
+    await this.unregisterCallback(token);
+    const persistentCallback = this.koffiCallbacks.get(token);
+    if (persistentCallback) {
+      koffi.unregister(persistentCallback);
+      this.koffiCallbacks.delete(token);
+    }
   }
 }
 
-/** Interface containing the exported native CGo functions. */
-interface CgoFunctions {
-  // InvokeMethodResult InvokeMethod(char* method, char* input);
-  invokeMethod: Function;
+/** Singleton of the CGo backend channel. */
+let backend: BackendChannel | undefined;
 
-  // void (*CallbackFuncPtr)(const char *data);
-  callbackFuncPtr: koffi.IKoffiCType;
-
-  // InvokeMethodResult NewCallback(CallbackFuncPtr cb);
-  newCallback: Function;
-
-  // void DeleteCallback(char* token);
-  deleteCallback: Function;
+function getDefaultBackendChannel(): BackendChannel {
+  if (!backend) {
+    backend = new BackendChannel();
+  }
+  return backend;
 }
 
-/** Singleton of the loaded native CGo functions. */
-let cgo: CgoFunctions | undefined;
+class BackendChannel {
+  /** The backend library instance of koffi */
+  private readonly library: koffi.IKoffiLib;
 
-/**
- * Ensures that the CGo functions are loaded and initialized, returning the singleton instance.
- *
- * @returns The loaded CGo functions singleton.
- */
-function ensureCgo(): CgoFunctions {
-  if (!cgo) {
-    console.debug('[Backend] - initializing cgo environment ...');
-    const backendLib = koffi.load(pathToBackendLibrary());
+  /** An auto releasable `const char *` type in koffi */
+  readonly cgoString: koffi.IKoffiCType;
 
-    // Define C strings and setup auto release
-    const cgoString = koffi.disposable(
+  /** `InvokeMethodResult InvokeMethod(char* method, char* input);` */
+  readonly invokeMethod: Function;
+
+  constructor() {
+    this.library = koffi.load(pathToBackendLibrary());
+
+    // Define shared types
+    this.cgoString = koffi.disposable(
       'CGoAutoReleaseString',
       'str',
-      backendLib.func('FreeCGoString', 'void', ['str'])
+      this.library.func('FreeCGoString', 'void', ['str'])
     );
 
-    // Define InvokeMethod data structures and function
     const invokeMethodResult = koffi.struct('InvokeMethodResult', {
-      Output: cgoString,
-      ErrorJson: cgoString,
+      Output: this.cgoString,
+      ErrorJson: this.cgoString,
     });
-    const invokeMethod = promisify(
-      backendLib.func('InvokeMethod', invokeMethodResult, ['str', 'str']).async
+    this.invokeMethod = this.declareCGoFunction(
+      'InvokeMethod',
+      invokeMethodResult,
+      ['str', 'str']
     );
-
-    // Define callback data structures and functions
-    const callbackFuncPtr = koffi.pointer(
-      koffi.proto('CallbackFuncPtr', 'str', [cgoString])
-    );
-    const newCallback = promisify(
-      backendLib.func('NewCallback', 'int', [callbackFuncPtr]).async
-    );
-    const deleteCallback = promisify(
-      backendLib.func('DeleteCallback', 'void', ['int']).async
-    );
-
-    // Cache them so we don't have to reload these functions
-    cgo = {invokeMethod, callbackFuncPtr, newCallback, deleteCallback};
-    console.debug('[Backend] - cgo environment initialized');
   }
-  return cgo;
+
+  declareCGoFunction(
+    name: string,
+    result: koffi.TypeSpec,
+    args: koffi.TypeSpec[]
+  ): Function {
+    return promisify(this.library.func(name, result, args));
+  }
 }
