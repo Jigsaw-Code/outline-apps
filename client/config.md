@@ -238,7 +238,7 @@ The _string_ Endpoint is the host:port address of the desired endpoint. The conn
 Supported Interface types for Stream and Packet Endpoints:
 
 - `dial`: [DialEndpointConfig](#DialEndpointConfig)
-- `first-supported`: [FirstSupportedEndpointConfig](#FirstSupportedEndpointConfig)
+- `first-supported`: [FirstSupportedConfig](#FirstSupportedConfig)
 - `websocket`: [WebsocketEndpointConfig](#WebsocketEndpointConfig)
 <!-- TODO(fortuna): Add Shadowsocks endpoint
 - `shadowsocks`: [ShadowsocksConfig](#ShadowsocksConfig)
@@ -253,17 +253,7 @@ Establishes connections by dialing a fixed address. It can take a dialer, which 
 **Fields:**
 
 - `address` (_string_): the endpoint address to dial
-- `dialer` ([DialerConfig](#dialers)): the dialer to use to dial the address
-
-### <a id=FirstSupportedEndpointConfig></a>FirstSupportedEndpointConfig
-
-Uses the first endpoint that is supported by the application. This is a way to incorporate new configs while being backwards-compatible with old configs.
-
-**Format:** _struct_
-
-**Fields:**
-
-- `endpoints` ([EndpointConfig[]](#EndpointConfig)): list of endpoints to consider
+- `dialer` ([DialerConfig](#DialerConfig)): the dialer to use to dial the address
 
 ### <a id=WebsocketEndpointConfig></a>WebsocketEndpointConfig
 
@@ -291,6 +281,7 @@ The _null_ (absent) Dialer means the default Dialer, which uses direct TCP conne
 
 Supported Interface types for Stream and Packer Dialers:
 
+- `first-supported`: [FirstSupportedConfig](#FirstSupportedConfig)
 - `shadowsocks`: [ShadowsocksConfig](#ShadowsocksConfig)
 
 ## Packet Listeners
@@ -305,6 +296,7 @@ The _null_ (absent) Packet Listener means the default Packet Listener, which is 
 
 Supported Interface types:
 
+- `first-supported`: [FirstSupportedConfig](#FirstSupportedConfig)
 - `shadowsocks`: [ShadowsocksPacketListenerConfig](#ShadowsocksConfig)
 
 ## Strategies
@@ -372,6 +364,16 @@ prefix: "POST "
 ```
 
 ## Meta Definitions
+
+### <a id=FirstSupportedConfig></a>FirstSupportedConfig
+
+Uses the first config that is supported by the application. This is a way to incorporate new configs while being backwards-compatible with old configs.
+
+**Format:** _struct_
+
+**Fields:**
+
+- `options` ([EndpointConfig[]](#EndpointConfig) | [DialerConfig[]](#DialerConfig) | [PacketListenerConfig[]](#PacketListenerConfig)): list of options to consider
 
 ### <a id=Interface></a>Interface
 

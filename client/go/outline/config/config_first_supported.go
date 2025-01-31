@@ -20,26 +20,27 @@ import (
 	"fmt"
 )
 
-type FirstSupportedEndpointConfig struct {
-	Endpoints []any
+type FirstSupportedConfig struct {
+	Options []any
 }
 
-func parseFirstSupportedEndpoint[ConnType any](ctx context.Context, configMap map[string]any, parseE ParseFunc[*Endpoint[ConnType]]) (*Endpoint[ConnType], error) {
-	var config FirstSupportedEndpointConfig
+func parseFirstSupported[Output any](ctx context.Context, configMap map[string]any, parseE ParseFunc[Output]) (Output, error) {
+	var zero Output
+	var config FirstSupportedConfig
 	if err := mapToAny(configMap, &config); err != nil {
-		return nil, fmt.Errorf("invalid config format: %w", err)
+		return zero, fmt.Errorf("invalid config format: %w", err)
 	}
 
-	if len(config.Endpoints) == 0 {
-		return nil, errors.New("empty list of endpoints")
+	if len(config.Options) == 0 {
+		return zero, errors.New("empty list of options")
 	}
 
-	for _, ec := range config.Endpoints {
+	for _, ec := range config.Options {
 		endpoint, err := parseE(ctx, ec)
 		if errors.Is(err, errors.ErrUnsupported) {
 			continue
 		}
 		return endpoint, err
 	}
-	return nil, fmt.Errorf("no suported endpoint found: %w", errors.ErrUnsupported)
+	return zero, fmt.Errorf("no suported option found: %w", errors.ErrUnsupported)
 }
