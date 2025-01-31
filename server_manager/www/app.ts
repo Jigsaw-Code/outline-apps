@@ -1102,7 +1102,7 @@ export class App {
       const tunnelTimeFomatter = Intl.NumberFormat(this.appRoot.language, {
         style: 'unit',
         unit: 'hour',
-        unitDisplay: 'short',
+        unitDisplay: 'long',
       });
 
       serverView.tunnelTimeTotal = tunnelTimeFomatter.format(

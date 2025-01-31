@@ -752,7 +752,8 @@ export class ServerView extends DirMixin(PolymerElement) {
               titleIcon="data_usage"
               tooltip="[[localize('server-view-server-metrics-bandwidth-tooltip')]]"
               value="[[_computeManagedServerUtilizationPercentage(totalInboundBytes, monthlyOutboundTransferBytes)]]"
-              value-label="TODO"
+              value-label="[[bandwidthUsageTotal]] /[[_formatBytesTransferred(monthlyOutboundTransferBytes,
+                    language)]]"
               subtitle="[[localize('server-view-server-metrics-bandwidth-as-breakdown')]]"
               subcards="[[bandwidthUsageRegions]]"
             ></server-metrics-row>
