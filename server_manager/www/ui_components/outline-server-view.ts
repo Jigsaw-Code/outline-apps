@@ -752,23 +752,27 @@ export class ServerView extends DirMixin(PolymerElement) {
               titleIcon="data_usage"
               tooltip="[[localize('server-view-server-metrics-bandwidth-tooltip')]]"
               value="[[_computeManagedServerUtilizationPercentage(totalInboundBytes, monthlyOutboundTransferBytes)]]"
+              value-label="TODO"
               subtitle="[[localize('server-view-server-metrics-bandwidth-as-breakdown')]]"
+              subcards="[[bandwidthUsageRegions]]"
             ></server-metrics-row>
             <server-metrics-row
               title="[[localize('server-view-server-metrics-tunnel-time-title')]]"
               titleIcon="timer"
               tooltip="[[localize('server-view-server-metrics-tunnel-time-tooltip')]]"
-              value="[[_formatFloatLength(totalUserHours)]]"
-              value-label="[[_formatHourUnits(totalUserHours, language)]]"
+              value="[[tunnelTimeTotal]]"
+              value-label="[[_formatHourUnits(tunnelTimeTotal, language)]]"
               subtitle="[[localize('server-view-server-metrics-tunnel-time-as-breakdown')]]"
+              subcards="[[tunnelTimeRegions]]"
             ></server-metrics-row>
             <server-metrics-row
               title="[[localize('server-view-server-metrics-devices-title')]]"
               titleIcon="devices"
               tooltip="[[localize('server-view-server-metrics-devices-toolitp')]]"
-              value="[[_formatFloatLength(totalAverageDevices)]]"
+              value="[[devicesTotal]]"
               value-label="[[localize('server-view-server-metrics-devices-unit-label')]]"
               subtitle="[[localize('server-view-server-metrics-devices-as-breakdown')]]"
+              subcards="[[devicesRegions]]"
             ></server-metrics-row>
           </div>
         </template>
@@ -807,41 +811,44 @@ export class ServerView extends DirMixin(PolymerElement) {
 
   static get properties(): PolymerElementProperties {
     return {
-      metricsId: String,
-      serverId: String,
-      serverName: String,
-      serverHostname: String,
-      serverVersion: String,
-      isHostnameEditable: Boolean,
-      serverManagementApiUrl: String,
-      serverPortForNewAccessKeys: Number,
-      isAccessKeyPortEditable: Boolean,
-      serverCreationDate: Date,
-      cloudLocation: Object,
-      cloudId: String,
-      defaultDataLimitBytes: Number,
-      isDefaultDataLimitEnabled: Boolean,
-      supportsDefaultDataLimit: Boolean,
-      showFeatureMetricsDisclaimer: Boolean,
-      installProgress: Number,
-      isServerReachable: Boolean,
-      retryDisplayingServer: Function,
-      totalInboundBytes: Number,
-      totalUserHours: Number,
-      totalAverageDevices: Number,
-      baselineDataTransfer: Number,
       accessKeyRows: Array,
-      hasNonAdminAccessKeys: Boolean,
-      metricsEnabled: Boolean,
-      monthlyOutboundTransferBytes: Number,
-      monthlyCost: Number,
       accessKeySortBy: String,
       accessKeySortDirection: Number,
+      bandwidthUsage: String,
+      bandwidthUsageRegions: Array,
+      baselineDataTransfer: Number,
+      cloudId: String,
+      cloudLocation: Object,
+      defaultDataLimitBytes: Number,
+      devicesRegions: Array,
+      devicesTotal: String,
+      featureFlags: Object,
+      hasNonAdminAccessKeys: Boolean,
+      installProgress: Number,
+      isAccessKeyPortEditable: Boolean,
+      isDefaultDataLimitEnabled: Boolean,
+      isHostnameEditable: Boolean,
+      isServerReachable: Boolean,
       language: String,
       localize: Function,
+      metricsEnabled: Boolean,
+      metricsId: String,
+      monthlyCost: Number,
+      monthlyOutboundTransferBytes: Number,
+      retryDisplayingServer: Function,
       selectedPage: String,
       selectedTab: String,
-      featureFlags: Object,
+      serverCreationDate: Date,
+      serverHostname: String,
+      serverId: String,
+      serverManagementApiUrl: String,
+      serverName: String,
+      serverPortForNewAccessKeys: Number,
+      serverVersion: String,
+      showFeatureMetricsDisclaimer: Boolean,
+      supportsDefaultDataLimit: Boolean,
+      tunnelTimeRegions: Array,
+      tunnelTimeTotal: String,
     };
   }
 
@@ -874,7 +881,7 @@ export class ServerView extends DirMixin(PolymerElement) {
   /** Callback for retrying to display an unreachable server. */
   retryDisplayingServer: () => void = null;
   totalInboundBytes = 0;
-  totalUserHours = 0;
+  tunnelTimeTotal = 0;
   totalAverageDevices = 0;
   /** The number to which access key transfer amounts are compared for progress bar display */
   baselineDataTransfer = Number.POSITIVE_INFINITY;
@@ -1113,35 +1120,6 @@ export class ServerView extends DirMixin(PolymerElement) {
     return formatting.formatBytesParts(totalBytes, language).value;
   }
 
-  _formatHourUnits(hours: number, language: string) {
-    // This happens during app startup before we set the language
-    if (!language) {
-      return '';
-    }
-
-    const formattedValue = this._formatHourValue(hours, language);
-    const formattedValueAndUnit = new Intl.NumberFormat(language, {
-      style: 'unit',
-      unit: 'hour',
-      unitDisplay: 'long',
-    }).format(hours);
-
-    return formattedValueAndUnit
-      .split(formattedValue)
-      .find(_ => _)
-      .trim();
-  }
-
-  _formatHourValue(hours: number, language: string) {
-    // This happens during app startup before we set the language
-    if (!language) {
-      return '';
-    }
-    return new Intl.NumberFormat(language, {
-      unit: 'hour',
-    }).format(hours);
-  }
-
   _formatBytesTransferred(numBytes: number, language: string, emptyValue = '') {
     if (!numBytes) {
       // numBytes may not be set for manual servers, or may be 0 for
@@ -1160,10 +1138,6 @@ export class ServerView extends DirMixin(PolymerElement) {
       currency: 'USD',
       currencyDisplay: 'code',
     }).format(monthlyCost);
-  }
-
-  _formatFloatLength(value: number, length: number = 2) {
-    return value.toFixed(length);
   }
 
   _computeManagedServerUtilizationPercentage(

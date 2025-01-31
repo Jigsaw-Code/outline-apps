@@ -201,8 +201,7 @@ export interface ServerMetrics {
   location: string;
   asn: number;
   asOrg: string;
-  averageDevices: number;
-  userHours: number;
+  devices: number;
   tunnelTime?: Duration;
   dataTransferred?: Data;
 }

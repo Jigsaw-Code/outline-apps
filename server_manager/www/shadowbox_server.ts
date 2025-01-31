@@ -197,8 +197,7 @@ export class ShadowboxServer implements server.Server {
             asOrg: server.asOrg,
             tunnelTime: server.tunnelTime,
             dataTransferred: server.dataTransferred,
-            userHours,
-            averageDevices: userHours / (timeRangeInDays * DAY_IN_HOURS),
+            devices: userHours / (timeRangeInDays * DAY_IN_HOURS),
           };
         }),
         accessKeys: json.accessKeys.map(key => ({

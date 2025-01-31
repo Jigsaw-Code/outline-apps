@@ -16,6 +16,7 @@ import {CustomError} from '@outline/infrastructure/custom_error';
 import * as path_api from '@outline/infrastructure/path_api';
 import {sleep} from '@outline/infrastructure/sleep';
 import * as Sentry from '@sentry/electron/renderer';
+import {Comparator, Heap} from 'heap-js';
 import * as semver from 'semver';
 
 import {DisplayDataAmount, displayDataAmountToBytes} from './data_formatting';
@@ -1035,31 +1036,86 @@ export class App {
     }
   }
 
-  private async refreshServerMetrics(
+  private async refreshServerMetricsUI(
     selectedServer: server_model.Server,
     serverView: ServerView
   ) {
     try {
       const serverMetrics = await selectedServer.getServerMetrics();
 
-      let totalUserHours = 0;
-      let totalAverageDevices = 0;
-      for (const {averageDevices, userHours} of serverMetrics.server) {
-        totalAverageDevices += averageDevices;
-        totalUserHours += userHours;
+      let bandwidthUsageTotal = 0;
+      const bandwidthUsageComparator: Comparator<server_model.ServerMetrics> = (
+        server1,
+        server2
+      ) => server2.dataTransferred.bytes - server1.dataTransferred.bytes;
+      const bandwidthUsageHeap = new Heap(bandwidthUsageComparator);
+
+      let tunnelTimeTotal = 0;
+      const tunnelTimeComparator: Comparator<server_model.ServerMetrics> = (
+        server1,
+        server2
+      ) => server2.tunnelTime.seconds - server1.tunnelTime.seconds;
+      const tunnelTimeHeap = new Heap(tunnelTimeComparator);
+
+      let devicesTotal = 0;
+      const devicesComparator: Comparator<server_model.ServerMetrics> = (
+        server1,
+        server2
+      ) => server2.devices - server1.devices;
+      const devicesHeap = new Heap(devicesComparator);
+
+      for (const server of serverMetrics.server) {
+        bandwidthUsageTotal += server.dataTransferred.bytes;
+        bandwidthUsageHeap.push(server);
+
+        tunnelTimeTotal += server.tunnelTime.seconds;
+        tunnelTimeHeap.push(server);
+
+        devicesTotal += server.devices;
+        devicesHeap.push(server);
       }
 
-      serverView.totalUserHours = totalUserHours;
-      serverView.totalAverageDevices = totalAverageDevices;
+      // TODO: format totals;
+      const bandwidthUsageFormatter = Intl.NumberFormat(this.appRoot.language, {
+        style: 'unit',
+        unit: 'byte',
+        unitDisplay: 'narrow',
+      });
 
-      let totalInboundBytes = 0;
-      for (const {dataTransferred} of serverMetrics.accessKeys) {
-        if (!dataTransferred) continue;
+      serverView.bandwidthUsageTotal =
+        bandwidthUsageFormatter.format(bandwidthUsageTotal);
+      serverView.bandwidthUsageRegions = bandwidthUsageHeap
+        .top(4)
+        .map(server => ({
+          title: server.asOrg,
+          subtitle: `${server.asn}AS`,
+          icon: this.countryCodeToEmoji(server.location),
+          highlight: bandwidthUsageFormatter.format(
+            server.dataTransferred.bytes
+          ),
+        }));
 
-        totalInboundBytes += dataTransferred.bytes;
-      }
+      const tunnelTimeFomatter = Intl.NumberFormat(this.appRoot.language, {
+        style: 'unit',
+        unit: 'second',
+        unitDisplay: 'narrow',
+      });
 
-      serverView.totalInboundBytes = totalInboundBytes;
+      serverView.tunnelTimeTotal = tunnelTimeFomatter.format(tunnelTimeTotal);
+      serverView.tunnelTimeRegions = tunnelTimeHeap.top(4).map(server => ({
+        title: server.asOrg,
+        subtitle: `${server.asn}AS`,
+        icon: this.countryCodeToEmoji(server.location),
+        highlight: tunnelTimeFomatter.format(server.tunnelTime.seconds),
+      }));
+
+      serverView.devicesTotal = devicesTotal;
+      serverView.devicesRegions = devicesHeap.top(4).map(server => ({
+        title: server.asOrg,
+        subtitle: `${server.asn}AS`,
+        icon: this.countryCodeToEmoji(server.location),
+        highlight: `${server.devices} ${this.appRoot.localize('')}`,
+      }));
 
       // Update all the displayed access keys, even if usage didn't change, in case data limits did.
       const keyDataTransferMap = serverMetrics.accessKeys.reduce(
@@ -1101,11 +1157,30 @@ export class App {
     }
   }
 
+  private countryCodeToEmoji(countryCode: string) {
+    // Check if the country code is valid (2 letters, uppercase)
+    if (
+      !countryCode ||
+      countryCode.length !== 2 ||
+      !/^[A-Z]{2}$/.test(countryCode)
+    ) {
+      return 'Invalid country code';
+    }
+
+    // Convert the country code to an emoji using Unicode regional indicator symbols
+    const codePoints = countryCode
+      .toUpperCase()
+      .split('')
+      .map(char => 127397 + char.charCodeAt(0)); // 127397 is the offset for regional indicator symbols
+
+    return String.fromCodePoint(...codePoints);
+  }
+
   private showServerMetrics(
     selectedServer: server_model.Server,
     serverView: ServerView
   ) {
-    this.refreshServerMetrics(selectedServer, serverView);
+    this.refreshServerMetricsUI(selectedServer, serverView);
     // Get transfer stats once per minute for as long as server is selected.
     const statsRefreshRateMs = 60 * 1000;
     const intervalId = setInterval(() => {
@@ -1114,7 +1189,7 @@ export class App {
         clearInterval(intervalId);
         return;
       }
-      this.refreshServerMetrics(selectedServer, serverView);
+      this.refreshServerMetricsUI(selectedServer, serverView);
     }, statsRefreshRateMs);
   }
 
@@ -1185,7 +1260,7 @@ export class App {
       this.appRoot.showNotification(this.appRoot.localize('saved'));
       serverView.defaultDataLimitBytes = limit?.bytes;
       serverView.isDefaultDataLimitEnabled = true;
-      this.refreshServerMetrics(this.selectedServer, serverView);
+      this.refreshServerMetricsUI(this.selectedServer, serverView);
       // Don't display the feature collection disclaimer anymore.
       serverView.showFeatureMetricsDisclaimer = false;
       window.localStorage.setItem(
@@ -1211,7 +1286,7 @@ export class App {
       await this.selectedServer.removeDefaultDataLimit();
       serverView.isDefaultDataLimitEnabled = false;
       this.appRoot.showNotification(this.appRoot.localize('saved'));
-      this.refreshServerMetrics(this.selectedServer, serverView);
+      this.refreshServerMetricsUI(this.selectedServer, serverView);
     } catch (error) {
       console.error(`Failed to remove server default data limit: ${error}`);
       this.appRoot.showError(this.appRoot.localize('error-remove-data-limit'));
@@ -1259,7 +1334,7 @@ export class App {
     const serverView = await this.appRoot.getServerView(server.getId());
     try {
       await server.setAccessKeyDataLimit(keyId, {bytes: dataLimitBytes});
-      this.refreshServerMetrics(server, serverView);
+      this.refreshServerMetricsUI(server, serverView);
       this.appRoot.showNotification(this.appRoot.localize('saved'));
       return true;
     } catch (error) {
@@ -1280,7 +1355,7 @@ export class App {
     const serverView = await this.appRoot.getServerView(server.getId());
     try {
       await server.removeAccessKeyDataLimit(keyId);
-      this.refreshServerMetrics(server, serverView);
+      this.refreshServerMetricsUI(server, serverView);
       this.appRoot.showNotification(this.appRoot.localize('saved'));
       return true;
     } catch (error) {
