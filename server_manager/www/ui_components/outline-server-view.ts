@@ -400,6 +400,7 @@ export class ServerView extends DirMixin(PolymerElement) {
           display: flex;
           flex-direction: column;
           gap: 1rem;
+          margin-top: 1rem;
         }
 
         /* Mirror icons */

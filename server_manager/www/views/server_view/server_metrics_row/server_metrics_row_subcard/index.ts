@@ -35,13 +35,14 @@ export class ServerMetricsRowSubcard extends LitElement {
       --server-metrics-row-subcard-highlight-border: 2px solid
         hsl(167, 49%, 56%);
       --server-metrics-row-subcard-highlight-color: hsl(172, 22%, 34%);
-      --server-metrics-row-subcard-highlight-margin-bottom: 1rem;
-      --server-metrics-row-subcard-highlight-padding: 0.25rem 0.5rem;
+      --server-metrics-row-subcard-highlight-font-size: 0.75rem;
+      --server-metrics-row-subcard-highlight-margin-bottom: 0.6rem;
+      --server-metrics-row-subcard-highlight-padding: 0.2rem 0.375rem;
 
-      --server-metrics-row-subcard-title-font-size: 1rem;
-      --server-metrics-row-subcard-title-margin-bottom: 0.25rem;
+      --server-metrics-row-subcard-title-font-size: 0.75rem;
+      --server-metrics-row-subcard-title-margin-bottom: 0.2rem;
 
-      --server-metrics-row-subcard-subtitle-font-size: 0.9rem;
+      --server-metrics-row-subcard-subtitle-font-size: 0.675rem;
 
       background-color: var(--server-metrics-row-subcard-background);
       border-radius: var(--server-metrics-row-subcard-border-radius);
@@ -65,6 +66,7 @@ export class ServerMetricsRowSubcard extends LitElement {
       border-radius: var(--server-metrics-row-subcard-border-radius);
       border: var(--server-metrics-row-subcard-highlight-border);
       display: inline-block;
+      font-size: var(--server-metrics-row-subcard-highlight-font-size);
       margin-bottom: var(--server-metrics-row-subcard-highlight-margin-bottom);
       padding: var(--server-metrics-row-subcard-highlight-padding);
     }
