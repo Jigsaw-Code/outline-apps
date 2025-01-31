@@ -117,7 +117,7 @@ transport:
     secret: SS_SECRET
 ```
 
-Note that Websockets is not yet supported on Windows. In order to have a single config for all platforms, use a first-supported endpoint:
+Note that Websockets is not yet supported on Windows. In order to have a single config for all platforms, use a `first-supported` for backwards-compatibility:
 
 ```yaml
 transport:
