@@ -82,7 +82,7 @@ export async function unregisterCallback(token: CallbackToken): Promise<void> {
   console.debug('[Backend] - unregisterCallback done, token:', token);
 }
 
-/** Singleton of the CGo backend channel. */
+/** Singleton of the CGo callback manager. */
 let callback: CallbackManager | undefined;
 
 function getDefaultCallbackManager(): CallbackManager {
