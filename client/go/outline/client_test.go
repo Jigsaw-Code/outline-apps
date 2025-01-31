@@ -194,8 +194,6 @@ func Test_NewTransport_Unsupported(t *testing.T) {
 	require.Equal(t, "unsupported config", result.Error.Message)
 }
 
-/*
-TODO: Add Websocket support
 func Test_NewTransport_Websocket(t *testing.T) {
 	config := `
 $type: tcpudp
@@ -218,7 +216,6 @@ udp:
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
 	require.Equal(t, firstHop, result.Client.pl.FirstHop)
 }
-*/
 
 func Test_NewClientFromJSON_Errors(t *testing.T) {
 	tests := []struct {
