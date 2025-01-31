@@ -80,7 +80,7 @@ func parseWebsocketEndpoint[ConnType any](ctx context.Context, configMap map[str
 	}
 
 	return &Endpoint[ConnType]{
-		ConnectionProviderInfo: ConnectionProviderInfo{ConnType: ConnTypeDirect, FirstHop: net.JoinHostPort(url.Hostname(), port)},
+		ConnectionProviderInfo: se.ConnectionProviderInfo,
 		Connect:                connect,
 	}, nil
 }
