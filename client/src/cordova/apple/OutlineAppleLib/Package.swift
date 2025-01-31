@@ -24,7 +24,7 @@ let package = Package(
         // CocoaLumberjack 3.8.0 dropped support for iOS < 11 and macOS < 10.13.
         // See https://github.com/CocoaLumberjack/CocoaLumberjack/releases/tag/3.8.0.
         // These cannot be upgraded without also upgrading the entire project.
-       .iOS(.v13),
+       .iOS("15.5"),
        .macOS(.v12),
     ],
     products: [
