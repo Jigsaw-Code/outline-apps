@@ -84,7 +84,7 @@ func (c *linuxVPNConn) Establish(ctx context.Context) (err error) {
 	}
 
 	if c.tun, err = newTUNDevice(c.nmOpts.TUNName); err != nil {
-		return errSetupVPN("failed to create tun device", err, "name", c.nmOpts.Name)
+		return errSetupVPN("failed to create tun device", err, "name", c.nmOpts.TUNName)
 	}
 	slog.Info("tun device created", "name", c.nmOpts.TUNName)
 
