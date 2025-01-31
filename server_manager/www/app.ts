@@ -1084,6 +1084,8 @@ export class App {
         unitDisplay: 'short',
       });
 
+      // support legacy metrics view
+      serverView.totalInboundBytes = bandwidthUsageTotal;
       serverView.bandwidthUsageTotal = bandwidthUsageFormatter.format(
         bandwidthUsageTotal / BYTES_IN_GIGABYTES
       );

@@ -848,6 +848,7 @@ export class ServerView extends DirMixin(PolymerElement) {
       serverVersion: String,
       showFeatureMetricsDisclaimer: Boolean,
       supportsDefaultDataLimit: Boolean,
+      totalInboundBytes: Number,
       tunnelTimeRegions: Array,
       tunnelTimeTotal: String,
     };
