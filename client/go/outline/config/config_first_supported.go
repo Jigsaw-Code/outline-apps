@@ -41,5 +41,5 @@ func parseFirstSupportedEndpoint[ConnType any](ctx context.Context, configMap ma
 		}
 		return endpoint, err
 	}
-	return nil, errors.New("no suported endpoint found")
+	return nil, fmt.Errorf("no suported endpoint found: %w", errors.ErrUnsupported)
 }
