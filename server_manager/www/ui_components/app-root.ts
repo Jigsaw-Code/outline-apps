@@ -372,7 +372,7 @@ export class AppRoot extends polymerElementWithLocalize {
 
     <div hidden\$="{{!hasAcceptedTos}}">
       <!-- This responsive width sets the minimum layout area to 648px.  -->
-      <app-drawer-layout id="drawerLayout" responsive-width="886px" on-narrow-changed="_computeShouldShowSideBar" class\$="[[sideBarMarginClass]]">
+      <app-drawer-layout id="drawerLayout" responsive-width="1255px" on-narrow-changed="_computeShouldShowSideBar" class\$="[[sideBarMarginClass]]">
         <app-drawer id="appDrawer" slot="drawer" on-opened-changed="_computeShouldShowSideBar">
           <app-toolbar class="toolbar" hidden\$="[[shouldShowSideBar]]">
             <paper-icon-button icon="menu" on-click="_toggleAppDrawer"></paper-icon-button>

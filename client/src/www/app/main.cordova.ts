@@ -31,11 +31,7 @@ import {installDefaultMethodChannel, MethodChannel} from './method_channel';
 import {VpnApi} from './outline_server_repository/vpn';
 import {CordovaVpnApi} from './outline_server_repository/vpn.cordova';
 import {OutlinePlatform} from './platform';
-import {
-  OUTLINE_PLUGIN_NAME,
-  pluginExec,
-  pluginExecWithErrorCode,
-} from './plugin.cordova';
+import {OUTLINE_PLUGIN_NAME, pluginExec} from './plugin.cordova';
 import {AbstractUpdater} from './updater';
 import * as interceptors from './url_interceptor';
 import {NoOpVpnInstaller, VpnInstaller} from './vpn_installer';
@@ -75,8 +71,13 @@ class CordovaErrorReporter extends SentryErrorReporter {
 }
 
 class CordovaMethodChannel implements MethodChannel {
-  invokeMethod(methodName: string, params: string): Promise<string> {
-    return pluginExecWithErrorCode('invokeMethod', methodName, params);
+  async invokeMethod(methodName: string, params: string): Promise<string> {
+    try {
+      return await pluginExec('invokeMethod', methodName, params);
+    } catch (e) {
+      console.debug('invokeMethod failed', methodName, e);
+      throw e;
+    }
   }
 }
 

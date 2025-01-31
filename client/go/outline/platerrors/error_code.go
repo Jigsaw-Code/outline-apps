@@ -97,6 +97,9 @@ const (
 	// FetchConfigFailed means we failed to fetch a config from a remote location.
 	FetchConfigFailed ErrorCode = "ERR_FETCH_CONFIG_FAILURE"
 
-	// IllegalConfig indicates an invalid config to connect to a remote server.
-	IllegalConfig ErrorCode = "ERR_ILLEGAL_CONFIG"
+	// ProviderError indicates an error returned by the provider in the Dynamic Config.
+	ProviderError ErrorCode = "ERR_PROVIDER"
+
+	// InvalidConfig indicates an invalid config to connect to a remote server.
+	InvalidConfig ErrorCode = "ERR_INVALID_CONFIG"
 )

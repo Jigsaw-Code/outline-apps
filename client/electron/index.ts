@@ -19,6 +19,7 @@ import * as path from 'path';
 import * as process from 'process';
 import * as url from 'url';
 
+import * as net from '@outline/infrastructure/net';
 import * as Sentry from '@sentry/electron/main';
 import autoLaunch = require('auto-launch'); // tslint:disable-line
 import {
@@ -34,7 +35,7 @@ import {
 import {autoUpdater} from 'electron-updater';
 
 import {lookupIp} from './connectivity';
-import {invokeMethod} from './go_plugin';
+import {invokeGoMethod} from './go_plugin';
 import {GoVpnTunnel} from './go_vpn_tunnel';
 import {installRoutingServices, RoutingDaemon} from './routing_service';
 import {TunnelStore} from './tunnel_store';
@@ -352,23 +353,26 @@ async function createVpnTunnel(
   // because startVpn will add a routing table entry that prefixed with this
   // host (e.g. "<host>/32"), therefore <host> must be an IP address.
   // TODO: make sure we resolve it in the native code
-  const host = tunnelConfig.firstHop.host;
+  const {host} = net.splitHostPort(tunnelConfig.firstHop);
   if (!host) {
     throw new errors.IllegalServerConfiguration('host is missing');
   }
   const hostIp = await lookupIp(host);
   const routing = new RoutingDaemon(hostIp || '', isAutoConnect);
   // Make sure the transport will use the IP we will allowlist.
-  const resolvedTransport =
-    config.setTransportConfigHost(tunnelConfig.transport, hostIp) ??
-    tunnelConfig.transport;
-  const tunnel = new GoVpnTunnel(routing, resolvedTransport);
+  // HACK: We do a simple string replacement in the config here. This may not always work with general configs
+  // but it works for simple configs.
+  // TODO: Remove the need to allowlisting the host IP.
+  tunnelConfig.transport = tunnelConfig.transport.replaceAll(host, hostIp);
+  const tunnel = new GoVpnTunnel(routing, tunnelConfig.transport);
   routing.onNetworkChange = tunnel.networkChanged.bind(tunnel);
   return tunnel;
 }
 
 // Invoked by both the start-proxying event handler and auto-connect.
 async function startVpn(request: StartRequestJson, isAutoConnect: boolean) {
+  console.debug('startVpn called with request ', JSON.stringify(request));
+
   if (IS_LINUX && !process.env.APPIMAGE) {
     onVpnStatusChanged((id, status) => {
       setUiTunnelStatus(status, id);
@@ -525,52 +529,58 @@ function main() {
   // If the function encounters an error, it throws an Error that can be parsed by the `PlatformError`.
   ipcMain.handle(
     'outline-ipc-invoke-method',
-    (_, method: string, params: string): Promise<string> =>
-      invokeMethod(method, params)
-  );
+    async (_, method: string, params: string): Promise<string> => {
+      // TODO(fortuna): move all other IPCs here.
+      switch (method) {
+        case 'StartProxying': {
+          // Connects to a proxy server specified by a config.
+          //
+          // If any issues occur, an Error will be thrown, which you can try-catch around
+          // `ipcRenderer.invoke`. But you should avoid depending on the specific error type.
+          // Instead, you should use its message property (which would probably be a JSON representation
+          // of a PlatformError). See https://github.com/electron/electron/issues/24427.
+          //
+          // TODO: refactor channel name and namespace to a constant
+          const request = JSON.parse(params) as StartRequestJson;
+          // TODO: Rather than first disconnecting, implement a more efficient switchover (as well as
+          //       being faster, this would help prevent traffic leaks - the Cordova clients already do
+          //       this).
+          if (currentTunnel) {
+            console.log('disconnecting from current server...');
+            currentTunnel.disconnect();
+            await currentTunnel.onceDisconnected;
+          }
 
-  // Connects to a proxy server specified by a config.
-  //
-  // If any issues occur, an Error will be thrown, which you can try-catch around
-  // `ipcRenderer.invoke`. But you should avoid depending on the specific error type.
-  // Instead, you should use its message property (which would probably be a JSON representation
-  // of a PlatformError). See https://github.com/electron/electron/issues/24427.
-  //
-  // TODO: refactor channel name and namespace to a constant
-  ipcMain.handle(
-    'outline-ipc-start-proxying',
-    async (_, request: StartRequestJson): Promise<void> => {
-      // TODO: Rather than first disconnecting, implement a more efficient switchover (as well as
-      //       being faster, this would help prevent traffic leaks - the Cordova clients already do
-      //       this).
-      if (currentTunnel) {
-        console.log('disconnecting from current server...');
-        currentTunnel.disconnect();
-        await currentTunnel.onceDisconnected;
-      }
+          console.log(`connecting to ${request.name} (${request.id})...`);
 
-      console.log(`connecting to ${request.name} (${request.id})...`);
+          try {
+            await startVpn(request, false);
+            console.log(`connected to ${request.name} (${request.id})`);
+            await setupAutoLaunch(request);
+            // Auto-connect requires IPs; the hostname in here has already been resolved (see above).
+            tunnelStore.save(request).catch(() => {
+              console.error('Failed to store tunnel.');
+            });
+          } catch (e) {
+            console.error('could not connect:', e);
+            // clean up the state, no need to await because stopVpn might throw another error which can be ignored
+            stopVpn();
+            throw e;
+          }
+          break;
+        }
 
-      try {
-        await startVpn(request, false);
-        console.log(`connected to ${request.name} (${request.id})`);
-        await setupAutoLaunch(request);
-        // Auto-connect requires IPs; the hostname in here has already been resolved (see above).
-        tunnelStore.save(request).catch(() => {
-          console.error('Failed to store tunnel.');
-        });
-      } catch (e) {
-        console.error('could not connect:', e);
-        // clean up the state, no need to await because stopVpn might throw another error which can be ignored
-        stopVpn();
-        throw e;
+        case 'StopProxying':
+          // Disconnects from the current server, if any.
+          // TODO: refactor channel name and namespace to a constant
+          await stopVpn();
+          return '';
+
+        default:
+          return await invokeGoMethod(method, params);
       }
     }
   );
-
-  // Disconnects from the current server, if any.
-  // TODO: refactor channel name and namespace to a constant
-  ipcMain.handle('outline-ipc-stop-proxying', stopVpn);
 
   // Install backend services and return the error code
   // TODO: refactor channel name and namespace to a constant

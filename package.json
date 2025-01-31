@@ -8,8 +8,8 @@
     "action:list": "npm run action list",
     "action": "node ./infrastructure/build/run_action.mjs",
     "clean": "npm run clean --workspaces && rm -rf output node_modules third_party/jsign/*.jar && go run github.com/go-task/task/v3/cmd/task clean",
-    "format:all": "gts fix",
-    "lint:all": "gts lint",
+    "format:all": "echo 'WARNING! Currently works on Linux only. Pass filepaths to fix specific files on MacOS.' && gts fix",
+    "lint:all": "echo 'WARNING! Currently works on Linux only. Pass filepaths to lint specific files on MacOS.' && gts lint",
     "reset": "npm run clean && npm ci",
     "storybook": "storybook dev -p 6006"
   },
@@ -40,7 +40,7 @@
     "eslint-plugin-prettier": "^5.2.1",
     "eslint-plugin-storybook": "^0.8.0",
     "gts": "^5.3.1",
-    "lit": "^3.1.4",
+    "lit": "^3.2.1",
     "node-fetch": "^2.6.7",
     "storybook": "^8.2.6",
     "typescript": "^5.4.5"

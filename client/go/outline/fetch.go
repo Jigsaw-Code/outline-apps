@@ -17,16 +17,22 @@ package outline
 import (
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 )
+
+const fetchTimeout = 10 * time.Second
 
 // fetchResource fetches a resource from the given URL.
 //
 // The function makes an HTTP GET request to the specified URL and returns the response body as a
 // string. If the request fails or the server returns a non-2xx status code, an error is returned.
 func fetchResource(url string) (string, error) {
-	resp, err := http.Get(url)
+	client := &http.Client{
+		Timeout: fetchTimeout,
+	}
+	resp, err := client.Get(url)
 	if err != nil {
 		return "", platerrors.PlatformError{
 			Code:    platerrors.FetchConfigFailed,

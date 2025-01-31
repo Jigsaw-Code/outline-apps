@@ -28,6 +28,7 @@ import {AbstractUpdater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
 import {ErrorCode, OutlinePluginError} from '../model/errors';
+import {deserializeError} from '../model/platform_error';
 import {
   getSentryBrowserIntegrations,
   OutlineErrorReporter,
@@ -128,12 +129,16 @@ class ElectronErrorReporter implements OutlineErrorReporter {
 }
 
 class ElectronMethodChannel implements MethodChannel {
-  invokeMethod(methodName: string, params: string): Promise<string> {
-    return window.electron.methodChannel.invoke(
-      'invoke-method',
-      methodName,
-      params
-    );
+  async invokeMethod(methodName: string, params: string): Promise<string> {
+    try {
+      return await window.electron.methodChannel.invoke(
+        'invoke-method',
+        methodName,
+        params
+      );
+    } catch (e) {
+      throw deserializeError(e);
+    }
   }
 }
 
