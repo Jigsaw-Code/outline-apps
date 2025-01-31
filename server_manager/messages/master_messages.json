@@ -1164,7 +1164,7 @@
     "description": "This string appears within a server view as a header. Displayed when a server's information cannot be displayed because it is not reachable. Prompts the user to retry contacting the server or destroy it."
   },
   "server_view_access_keys_tab": {
-    "description": "Tab title",
+    "description": "The title of the Access Keys tab, displayed to the user to navigate to the access key management section.",
     "message": "Access Keys ($ACCESS_KEY_COUNT$)",
     "placeholders": {
       "ACCESS_KEY_COUNT": {
@@ -1174,23 +1174,23 @@
     }
   },
   "server_view_access_keys_privacy_statement": {
-    "description": "Privacy line",
+    "description": "The privacy statement text displayed to the user on the Access Keys tab, explaining data collection practices.",
     "message": "We are committed to protecting the privacy and security of our users. Each Outline server automatically collects aggregated and anonymized usage data. This data does not include information about the websites users visit or their communications. It is also not shared with the Outline team unless you"
   },
   "server_view_access_keys_key_column_header": {
-    "description": "Header: Key name",
+    "description": "The header for the Key name column in the Access Keys table, labeling the column containing access key identifiers.",
     "message": "Key"
   },
   "server_view_access_keys_last_connected_column_header": {
-    "description": "Header: Last connected",
+    "description": "The header for the Last connected column in the Access Keys table, labeling the column showing the last successful connection time for each key.",
     "message": "Last connected"
   },
   "server_view_access_keys_last_active_column_header": {
-    "description": "Header: Traffic last seen",
+    "description": "The header for the Traffic last seen column in the Access Keys table, labeling the column indicating the last time data was sent or received using each key.",
     "message": "Last active"
   },
   "server_view_access_keys_usage_column_header": {
-    "description": "Header: Usage",
+    "description": "The header for the Usage column in the Access Keys table, labeling the column displaying data transfer volume for each key over the past 30 days.",
     "message": "Usage $START_OF_ITALICS$(last 30 days)$END_OF_ITALICS$",
     "placeholders": {
       "END_OF_ITALICS": {
@@ -1202,9 +1202,9 @@
     }
   },
   "server_view_access_keys_peak_devices_column_header": {
-    "description": "Header: Peak devices",
+    "description": "The header for the Peak devices column in the Access Keys table, labeling the column showing the maximum number of devices connected simultaneously using each key in the past 30 days.",
     "message": "Peak devices $START_OF_ITALICS$(last 30 days)$END_OF_ITALICS$",
-        "placeholders": {
+    "placeholders": {
       "END_OF_ITALICS": {
         "content": "{closeItalics}"
       },
@@ -1214,9 +1214,9 @@
     }
   },
   "server_view_access_keys_as_count_column_header": {
-    "description": "Header: Total ASes",
+    "description": "The header for the Unique ASes column in the Access Keys table, labeling the column showing the number of unique Autonomous Systems - or administrative internet regions - connected using each key in the past 30 days.",
     "message": "Unique ASes $START_OF_ITALICS$(last 30 days)$END_OF_ITALICS$",
-        "placeholders": {
+    "placeholders": {
       "END_OF_ITALICS": {
         "content": "{closeItalics}"
       },
@@ -1226,45 +1226,45 @@
     }
   },
   "server_view_access_keys_last_connected_tooltip": {
-    "description": "Tooltip: Last connected",
+    "description": "The tooltip displayed when hovering over the Last connected column in the Access Keys table, providing additional information about the last connection time.",
     "message": "This shows the last time the key successfully connected to the server."
   },
   "server_view_access_keys_last_active_tooltip": {
-    "description": "Tooltip: Traffic last seen",
+    "description": "The tooltip displayed when hovering over the Traffic last seen column in the Access Keys table, providing additional information about the last activity time.",
     "message": "This shows the last time the key sent or received data through the server. If this time is significantly earlier than the last connected time"
   },
   "server_view_access_keys_usage_tooltip": {
-    "description": "Tooltip: Usage",
+    "description": "The tooltip displayed when hovering over the Usage column in the Access Keys table, providing additional information about data transfer volume.",
     "message": "This shows how much data the key transferred through the server over the last 30 days."
   },
   "server_view_access_keys_peak_devices_tooltip": {
-    "description": "Tooltip: Peak devices",
+    "description": "The tooltip displayed when hovering over the Peak devices column in the Access Keys table, providing additional information about maximum simultaneous connections.",
     "message": "This shows the most devices connected to the server using this key at one time"
   },
   "server_view_access_keys_as_count_tooltip": {
-    "description": "Tooltip: Total ASes",
+    "description": "The tooltip displayed when hovering over the Unique ASes column in the Access Keys table, providing additional information about Autonomous Systems - or administrative internet regions.",
     "message": "This shows the number of different Autonomous Systems (ASes) that connected to the server using this key over the last 30 days. An AS is a network that’s typically run by one organization"
   },
   "server_view_access_keys_usage_limit": {
-    "description": "80%+ used",
+    "description": "The text displayed to the user when their access key usage approaches a defined limit (e.g., 80%).",
     "message": ">80% used"
   },
   "server_view_access_keys_add_key_action": {
-    "description": "Add new key",
+    "description": "The text on the button or link that allows the user to create a new access key.",
     "message": "Create key"
   },
   "server_view_server_metrics_tab": {
-    "description": "Tab title",
+    "description": "The title of the Server Metrics tab, displayed to the user to navigate to the server performance statistics section.",
     "message": "Server Metrics"
   },
   "server_view_server_metrics_privacy_statement": {
-    "description": "Privacy line",
+    "description": "The privacy statement text displayed to the user on the Server Metrics tab, explaining data collection practices.",
     "message": "We are committed to protecting the privacy and security of our users. Each Outline server automatically collects aggregated and anonymized usage data. This data does not include information about the websites users visit or their communications. It is also not shared with the Outline team unless you"
   },
   "server_view_server_metrics_bandwidth_title": {
-    "description": "Total bandwidth used",
+    "description": "The title displayed for the total bandwidth usage metric, showing the overall data transfer volume for the server.",
     "message": "Total bandwidth usage $START_OF_ITALICS$(last 30 days)$END_OF_ITALICS$",
-        "placeholders": {
+    "placeholders": {
       "END_OF_ITALICS": {
         "content": "{closeItalics}"
       },
@@ -1274,17 +1274,17 @@
     }
   },
   "server_view_server_metrics_bandwidth_tooltip": {
-    "description": "Total bandwidth tooltip",
+    "description": "The tooltip displayed when hovering over the total bandwidth usage metric, providing additional details about the data transfer volume.",
     "message": "This shows the total amount of data transferred through the server over the last 30 days."
   },
   "server_view_server_metrics_bandwidth_usage": {
-    "description": "Current bandwidth usage",
+    "description": "The label displayed for the current bandwidth usage metric, showing the real-time data transfer rate.",
     "message": "Current bandwidth usage"
   },
   "server_view_server_metrics_bandwidth_usage_max": {
-    "description": "Max bandwidth used",
+    "description": "The label displayed for the maximum bandwidth usage metric, showing the highest data transfer rate recorded over the past 30 days.",
     "message": "Maximum bandwidth usage $START_OF_ITALICS$(last 30 days)$END_OF_ITALICS$",
-        "placeholders": {
+    "placeholders": {
       "END_OF_ITALICS": {
         "content": "{closeItalics}"
       },
@@ -1294,9 +1294,9 @@
     }
   },
   "server_view_server_metrics_bandwidth_as_breakdown": {
-    "description": "Total bandwidth AS breakdown",
+    "description": "The title or label for the bandwidth usage breakdown by Autonomous System - or administrative internet regions - showing the data transfer volume attributed to different ASes.",
     "message": "ASes with most bandwidth usage $START_OF_ITALICS$(last 30 days)$END_OF_ITALICS$",
-        "placeholders": {
+    "placeholders": {
       "END_OF_ITALICS": {
         "content": "{closeItalics}"
       },
@@ -1306,9 +1306,9 @@
     }
   },
   "server_view_server_metrics_tunnel_time_title": {
-    "description": "Total Tunnel Time",
+    "description": "The title displayed for the total tunnel time metric, showing the cumulative connection time for all users.",
     "message": "Total Tunnel Time $START_OF_ITALICS$(last 30 days)$END_OF_ITALICS$",
-        "placeholders": {
+    "placeholders": {
       "END_OF_ITALICS": {
         "content": "{closeItalics}"
       },
@@ -1318,13 +1318,13 @@
     }
   },
   "server_view_server_metrics_tunnel_time_tooltip": {
-    "description": "Tunnel Time tooltip",
+    "description": "The tooltip displayed when hovering over the total tunnel time metric, providing additional details about the cumulative connection time.",
     "message": "This shows the total time users were connected to the server over the last 30 days. It is calculated by adding up the connection time (Tunnel Time) for each device."
   },
   "server_view_server_metrics_tunnel_time_as_breakdown": {
-    "description": "Tunnel Time AS breakdown",
+    "description": "The title or label for the tunnel time breakdown by Autonomous System - or administrative internet regions - showing the cumulative connection time attributed to different ASes.",
     "message": "ASes with highest Tunnel Time $START_OF_ITALICS$(last 30 days)$END_OF_ITALICS$",
-        "placeholders": {
+    "placeholders": {
       "END_OF_ITALICS": {
         "content": "{closeItalics}"
       },
@@ -1334,9 +1334,9 @@
     }
   },
   "server_view_server_metrics_devices_title": {
-    "description": "Total devices connected",
+    "description": "The title displayed for the total devices connected metric, showing the minimum number of unique devices connected to the server.",
     "message": "Total devices connected $START_OF_ITALICS$(last 30 days)$END_OF_ITALICS$",
-        "placeholders": {
+    "placeholders": {
       "END_OF_ITALICS": {
         "content": "{closeItalics}"
       },
@@ -1346,9 +1346,9 @@
     }
   },
   "server_view_server_metrics_devices_tooltip": {
-    "description": "Devices tooltip",
+    "description": "The tooltip displayed when hovering over the total devices connected metric, clarifying that it represents a minimum count.",
     "message": "At least this many devices connected to the server in the last 30 days. This is a $START_OF_ITALICS$minimum$END_OF_ITALICS$ count",
-        "placeholders": {
+    "placeholders": {
       "END_OF_ITALICS": {
         "content": "{closeItalics}"
       },
@@ -1358,13 +1358,13 @@
     }
   },
   "server_view_server_metrics_devices_unit_label": {
-    "description": "Devices unit",
+    "description": "The unit label displayed alongside the total devices connected metric.",
     "message": "Devices"
   },
   "server_view_server_metrics_devices_as_breakdown": {
-    "description": "Devices AS breakdown",
+    "description": "The title or label for the devices connected breakdown by Autonomous System - or administrative internet regions - showing the number of devices connected from different ASes.",
     "message": "ASes with the most devices connected $START_OF_ITALICS$(last 30 days)$END_OF_ITALICS$",
-        "placeholders": {
+    "placeholders": {
       "END_OF_ITALICS": {
         "content": "{closeItalics}"
       },
@@ -1374,11 +1374,11 @@
     }
   },
   "server_view_server_metrics_devices_as_breakdown_unit_label": {
-    "description": "Devices AS unit",
+    "description": "The unit label displayed alongside the devices connected breakdown by AS.",
     "message": "Devices"
   },
-  "server_view_server_metrics_detailed_server_metrics_link": {
-    "description": "Pointer to HC for 3P metrics",
+  "server_view_server_metrics_advanced_metrics_link": {
+    "description": "The text of a link that directs the user to a help center article with more detailed information about accessing advanced server metrics.",
     "message": "Learn how to view detailed server metrics"
   },
   "server_usage": {
