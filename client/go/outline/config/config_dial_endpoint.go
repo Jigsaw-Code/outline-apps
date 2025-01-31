@@ -21,6 +21,7 @@ import (
 	"net"
 	"runtime"
 	"strconv"
+	"testing"
 )
 
 // DialEndpointConfig is the format for the Dial Endpoint config.
@@ -48,7 +49,7 @@ func parseDirectDialerEndpoint[ConnType any](ctx context.Context, config any, ne
 	// This is because we cannot protect the system DNS resolution connection
 	// with our FW_MARK. Therefore, as a workaround in Linux, we resolve the address first.
 	ipPortStr := dialParams.Address
-	if dialer.ConnType == ConnTypeDirect && runtime.GOOS == "linux" {
+	if dialer.ConnType == ConnTypeDirect && runtime.GOOS == "linux" && !testing.Testing() {
 		ipPort, err := net.ResolveTCPAddr("tcp", ipPortStr)
 		if err != nil {
 			return nil, fmt.Errorf("failed to resolve endpoint address %s: %w", ipPortStr, err)
