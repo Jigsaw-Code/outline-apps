@@ -1077,60 +1077,59 @@ export class App {
         devicesHeap.push(server);
       }
 
-      // TODO: format totals;
-      const bandwidthUsageFormatter = Intl.NumberFormat(this.appRoot.language, {
-        style: 'unit',
-        unit: 'gigabyte',
-        unitDisplay: 'short',
-      });
-
       // support legacy metrics view
       serverView.totalInboundBytes = bandwidthUsageTotal;
-      serverView.bandwidthUsageTotal = bandwidthUsageFormatter.format(
+
+      const NUMBER_OF_ASES_TO_SHOW = 4;
+      serverView.bandwidthUsageTotal = this.formatGigabyteValueAndUnit(
         bandwidthUsageTotal / BYTES_IN_GIGABYTES
       );
       serverView.bandwidthUsageRegions = bandwidthUsageHeap
-        .top(4)
+        .top(NUMBER_OF_ASES_TO_SHOW)
         .reverse()
         .map(server => ({
           title: server.asOrg,
           subtitle: `${server.asn}AS`,
           icon: this.countryCodeToEmoji(server.location),
-          highlight: bandwidthUsageFormatter.format(
+          highlight: this.formatGigabyteValueAndUnit(
             server.dataTransferred.bytes / BYTES_IN_GIGABYTES
           ),
         }));
 
-      const tunnelTimeFomatter = Intl.NumberFormat(this.appRoot.language, {
-        style: 'unit',
-        unit: 'hour',
-        unitDisplay: 'long',
-      });
-
-      serverView.tunnelTimeTotal = tunnelTimeFomatter.format(
+      serverView.tunnelTimeTotal = this.formatHourValue(
+        tunnelTimeTotal / SECONDS_IN_HOUR
+      );
+      serverView.tunnelTimeTotalLabel = this.formatHourUnits(
         tunnelTimeTotal / SECONDS_IN_HOUR
       );
       serverView.tunnelTimeRegions = tunnelTimeHeap
-        .top(4)
+        .top(NUMBER_OF_ASES_TO_SHOW)
         .reverse()
         .map(server => ({
           title: server.asOrg,
           subtitle: `${server.asn}AS`,
           icon: this.countryCodeToEmoji(server.location),
-          highlight: tunnelTimeFomatter.format(
+          highlight: this.formatHourValueAndUnit(
             server.tunnelTime.seconds / SECONDS_IN_HOUR
           ),
         }));
 
-      serverView.devicesTotal = devicesTotal.toFixed(3);
+      const NUMBER_OF_DEVICES_SIGNIFICANT_DIGITS = 3;
+      serverView.devicesTotal = devicesTotal.toFixed(
+        NUMBER_OF_DEVICES_SIGNIFICANT_DIGITS
+      );
       serverView.devicesRegions = devicesHeap
-        .top(4)
+        .top(NUMBER_OF_ASES_TO_SHOW)
         .reverse()
         .map(server => ({
           title: server.asOrg,
           subtitle: `${server.asn}AS`,
           icon: this.countryCodeToEmoji(server.location),
-          highlight: `${server.devices.toFixed(3)} ${this.appRoot.localize('server-view-server-metrics-devices-as-breakdown-unit-label')}`,
+          highlight: `${server.devices.toFixed(
+            NUMBER_OF_DEVICES_SIGNIFICANT_DIGITS
+          )} ${this.appRoot.localize(
+            'server-view-server-metrics-devices-as-breakdown-unit-label'
+          )}`,
         }));
 
       // Update all the displayed access keys, even if usage didn't change, in case data limits did.
@@ -1173,8 +1172,58 @@ export class App {
     }
   }
 
+  private formatGigabyteValueAndUnit(data: number) {
+    // This happens during app startup before we set the language
+    if (!this.appRoot.language) {
+      return '';
+    }
+
+    return new Intl.NumberFormat(this.appRoot.language, {
+      style: 'unit',
+      unit: 'gigabyte',
+      unitDisplay: 'short',
+    }).format(data);
+  }
+
+  private formatHourValueAndUnit(hours: number) {
+    // This happens during app startup before we set the language
+    if (!this.appRoot.language) {
+      return '';
+    }
+
+    return new Intl.NumberFormat(this.appRoot.language, {
+      style: 'unit',
+      unit: 'hour',
+      unitDisplay: 'long',
+    }).format(hours);
+  }
+
+  private formatHourUnits(hours: number) {
+    // This happens during app startup before we set the language
+    if (!this.appRoot.language) {
+      return '';
+    }
+
+    const formattedValue = this.formatHourValue(hours);
+    const formattedValueAndUnit = this.formatHourValueAndUnit(hours);
+
+    return formattedValueAndUnit
+      .split(formattedValue)
+      .find(_ => _)
+      .trim();
+  }
+
+  private formatHourValue(hours: number) {
+    // This happens during app startup before we set the language
+    if (!this.appRoot.language) {
+      return '';
+    }
+    return new Intl.NumberFormat(this.appRoot.language, {
+      unit: 'hour',
+    }).format(hours);
+  }
+
   private countryCodeToEmoji(countryCode: string) {
-    // Check if the country code is valid (2 letters, uppercase)
     if (
       !countryCode ||
       countryCode.length !== 2 ||

@@ -46,6 +46,7 @@ import type {CloudLocation} from '../../model/location';
 import type {AccessKeyId} from '../../model/server';
 import * as formatting from '../data_formatting';
 import {getShortName} from '../location_formatting';
+import type {ServerMetricsRowSubcard} from '../views/server_view/server_metrics_row/server_metrics_row_subcard';
 
 export const MY_CONNECTION_USER_ID = '0';
 
@@ -763,7 +764,7 @@ export class ServerView extends DirMixin(PolymerElement) {
               titleIcon="timer"
               tooltip="[[localize('server-view-server-metrics-tunnel-time-tooltip')]]"
               value="[[tunnelTimeTotal]]"
-              value-label="[[_formatHourUnits(tunnelTimeTotal, language)]]"
+              value-label="[[tunnelTimeTotalLabel]]"
               subtitle="[[localize('server-view-server-metrics-tunnel-time-as-breakdown')]]"
               subcards="[[tunnelTimeRegions]]"
             ></server-metrics-row>
@@ -860,13 +861,14 @@ export class ServerView extends DirMixin(PolymerElement) {
   }
 
   bandwidthUsageTotal = '';
-  bandwidthUsageRegions: {}[] = [];
+  bandwidthUsageRegions: Partial<ServerMetricsRowSubcard>[] = [];
 
   devicesTotal = '';
-  devicesRegions: {}[] = [];
+  devicesRegions: Partial<ServerMetricsRowSubcard>[] = [];
 
   tunnelTimeTotal = '';
-  tunnelTimeRegions: {}[] = [];
+  tunnelTimeTotalLabel = '';
+  tunnelTimeRegions: Partial<ServerMetricsRowSubcard>[] = [];
 
   serverId = '';
   metricsId = '';
