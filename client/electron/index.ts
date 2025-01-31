@@ -39,7 +39,7 @@ import {invokeGoMethod} from './go_plugin';
 import {GoVpnTunnel} from './go_vpn_tunnel';
 import {installRoutingServices, RoutingDaemon} from './routing_service';
 import {TunnelStore} from './tunnel_store';
-import {closeVpn, establishVpn, onVpnStatusChanged} from './vpn_service';
+import {closeVpn, establishVpn, onVpnStateChanged} from './vpn_service';
 import {VpnTunnel} from './vpn_tunnel';
 import * as config from '../src/www/app/outline_server_repository/config';
 import {
@@ -370,15 +370,6 @@ async function createVpnTunnel(
   return tunnel;
 }
 
-/**
- * Initializes the VPN service. For example, subscribing to global events.
- */
-async function initVpnService() {
-  if (USE_MODERN_ROUTING) {
-    onVpnStatusChanged((id, status) => setUiTunnelStatus(status, id));
-  }
-}
-
 // Invoked by both the start-proxying event handler and auto-connect.
 async function startVpn(request: StartRequestJson, isAutoConnect: boolean) {
   console.debug('startVpn called with request ', JSON.stringify(request));
@@ -477,7 +468,9 @@ function main() {
     // TODO(fortuna): Start the app with the window hidden on auto-start?
     setupWindow();
 
-    await initVpnService();
+    if (USE_MODERN_ROUTING) {
+      await onVpnStateChanged(setUiTunnelStatus);
+    }
 
     let requestAtShutdown: StartRequestJson | undefined;
     try {

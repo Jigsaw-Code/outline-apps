@@ -93,7 +93,7 @@ function getDefaultCallbackManager(): CallbackManager {
 }
 
 class CallbackManager {
-  /** `void (*CallbackFuncPtr)(const char *data);` */
+  /** `const char* (*CallbackFuncPtr)(const char *data);` */
   private readonly callbackFuncPtr: koffi.IKoffiCType;
 
   /** `int RegisterCallback(CallbackFuncPtr cb);` */
@@ -190,6 +190,6 @@ class BackendChannel {
     result: koffi.TypeSpec,
     args: koffi.TypeSpec[]
   ): Function {
-    return promisify(this.library.func(name, result, args));
+    return promisify(this.library.func(name, result, args).async);
   }
 }

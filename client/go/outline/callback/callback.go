@@ -73,7 +73,7 @@ func (m *Manager) Register(c Handler) Token {
 	token := m.nextCbID
 	m.nextCbID++
 	m.callbacks[token] = c
-	slog.Debug("callback created", "manager", m, "token", token)
+	slog.Debug("callback created", "token", token)
 	return token
 }
 
@@ -85,7 +85,7 @@ func (m *Manager) Unregister(token Token) {
 	defer m.mu.Unlock()
 
 	delete(m.callbacks, token)
-	slog.Debug("callback deleted", "manager", m, "token", token)
+	slog.Debug("callback deleted", "token", token)
 }
 
 // Call invokes the callback identified by the given [Token].
