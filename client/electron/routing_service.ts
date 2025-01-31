@@ -23,10 +23,7 @@ import * as sudo from 'sudo-prompt';
 import {pathToEmbeddedOutlineService} from './app_paths';
 import {TunnelStatus} from '../src/www/app/outline_server_repository/vpn';
 import {ErrorCode} from '../src/www/model/errors';
-import {
-  PlatformError,
-  ROUTING_SERVICE_NOT_RUNNING,
-} from '../src/www/model/platform_error';
+import {PlatformError, GoErrorCode} from '../src/www/model/platform_error';
 
 const isLinux = platform() === 'linux';
 const isWindows = platform() === 'win32';
@@ -135,7 +132,7 @@ export class RoutingDaemon {
             cleanup();
             newSocket.destroy();
             const perr = new PlatformError(
-              ROUTING_SERVICE_NOT_RUNNING,
+              GoErrorCode.ROUTING_SERVICE_NOT_RUNNING,
               'routing daemon service stopped before started'
             );
             reject(new Error(perr.toJSON()));
@@ -159,7 +156,7 @@ export class RoutingDaemon {
         console.error('Routing daemon socket setup failed', err);
         this.socket = null;
         const perr = new PlatformError(
-          ROUTING_SERVICE_NOT_RUNNING,
+          GoErrorCode.ROUTING_SERVICE_NOT_RUNNING,
           'routing daemon is not running',
           {cause: err}
         );

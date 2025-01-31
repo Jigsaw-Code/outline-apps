@@ -24,7 +24,7 @@ import {
 } from '.';
 import * as config from './config';
 import {FakeVpnApi} from './vpn.fake';
-import {ServerAccessKeyInvalid} from '../../model/errors';
+import {InvalidServiceConfiguration} from '../../model/errors';
 import {
   EventQueue,
   ServerAdded,
@@ -162,10 +162,10 @@ describe('OutlineServerRepository', () => {
   it('add throws on invalid access keys', async () => {
     const repo = await newTestRepo(new EventQueue(), new InMemoryStorage());
     await expectAsync(repo.add('ss://invalid')).toBeRejectedWithError(
-      ServerAccessKeyInvalid
+      InvalidServiceConfiguration
     );
     await expectAsync(repo.add('')).toBeRejectedWithError(
-      ServerAccessKeyInvalid
+      InvalidServiceConfiguration
     );
   });
 
@@ -310,11 +310,11 @@ describe('OutlineServerRepository', () => {
   it('validates static access keys', async () => {
     // Invalid access keys.
     await expectAsync(config.parseAccessKey('')).toBeRejectedWithError(
-      ServerAccessKeyInvalid
+      InvalidServiceConfiguration
     );
     await expectAsync(
       config.parseAccessKey('ss://invalid')
-    ).toBeRejectedWithError(ServerAccessKeyInvalid);
+    ).toBeRejectedWithError(InvalidServiceConfiguration);
     // IPv6 host.
     expect(
       await config.parseAccessKey(

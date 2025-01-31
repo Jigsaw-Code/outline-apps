@@ -62,7 +62,7 @@ Sentry.init({
 
 function displayDataAmountToDataLimit(
   dataAmount: DisplayDataAmount
-): server_model.DataLimit | null {
+): server_model.Data | null {
   if (!dataAmount) {
     return null;
   }
@@ -75,7 +75,7 @@ function displayDataAmountToDataLimit(
 async function computeDefaultDataLimit(
   server: server_model.Server,
   accessKeys?: server_model.AccessKey[]
-): Promise<server_model.DataLimit> {
+): Promise<server_model.Data> {
   try {
     // Assume non-managed servers have a data transfer capacity of 1TB.
     let serverTransferCapacity: server_model.DataAmount = {terabytes: 1};
@@ -970,7 +970,7 @@ export class App {
         console.error(`Failed to load access keys: ${error}`);
         this.appRoot.showError(this.appRoot.localize('error-keys-get'));
       }
-      this.showTransferStats(server, view);
+      this.showServerMetrics(server, view);
     }, 0);
   }
 
@@ -1035,30 +1035,57 @@ export class App {
     }
   }
 
-  private async refreshTransferStats(
+  private async refreshServerMetrics(
     selectedServer: server_model.Server,
     serverView: ServerView
   ) {
     try {
-      const usageMap = await selectedServer.getDataUsage();
-      const keyTransfers = [...usageMap.values()];
-      let totalInboundBytes = 0;
-      for (const accessKeyBytes of keyTransfers) {
-        totalInboundBytes += accessKeyBytes;
+      const serverMetrics = await selectedServer.getServerMetrics();
+
+      let totalUserHours = 0;
+      let totalAverageDevices = 0;
+      for (const {averageDevices, userHours} of serverMetrics.server) {
+        totalAverageDevices += averageDevices;
+        totalUserHours += userHours;
       }
+
+      serverView.totalUserHours = totalUserHours;
+      serverView.totalAverageDevices = totalAverageDevices;
+
+      let totalInboundBytes = 0;
+      for (const {dataTransferred} of serverMetrics.accessKeys) {
+        if (!dataTransferred) continue;
+
+        totalInboundBytes += dataTransferred.bytes;
+      }
+
       serverView.totalInboundBytes = totalInboundBytes;
 
       // Update all the displayed access keys, even if usage didn't change, in case data limits did.
+      const keyDataTransferMap = serverMetrics.accessKeys.reduce(
+        (map, {accessKeyId, dataTransferred}) => {
+          if (dataTransferred) {
+            map.set(String(accessKeyId), dataTransferred.bytes);
+          }
+          return map;
+        },
+        new Map<string, number>()
+      );
+
       let keyTransferMax = 0;
       let dataLimitMax = selectedServer.getDefaultDataLimit()?.bytes ?? 0;
-      for (const key of await selectedServer.listAccessKeys()) {
-        serverView.updateAccessKeyRow(key.id, {
-          transferredBytes: usageMap.get(key.id) ?? 0,
-          dataLimitBytes: key.dataLimit?.bytes,
+      for (const accessKey of await selectedServer.listAccessKeys()) {
+        serverView.updateAccessKeyRow(accessKey.id, {
+          transferredBytes: keyDataTransferMap.get(accessKey.id) ?? 0,
+          dataLimitBytes: accessKey.dataLimit?.bytes,
         });
-        keyTransferMax = Math.max(keyTransferMax, usageMap.get(key.id) ?? 0);
-        dataLimitMax = Math.max(dataLimitMax, key.dataLimit?.bytes ?? 0);
+        keyTransferMax = Math.max(
+          keyTransferMax,
+          keyDataTransferMap.get(accessKey.id) ?? 0
+        );
+        dataLimitMax = Math.max(dataLimitMax, accessKey.dataLimit?.bytes ?? 0);
       }
+
       serverView.baselineDataTransfer = Math.max(keyTransferMax, dataLimitMax);
     } catch (e) {
       // Since failures are invisible to users we generally want exceptions here to bubble
@@ -1074,11 +1101,11 @@ export class App {
     }
   }
 
-  private showTransferStats(
+  private showServerMetrics(
     selectedServer: server_model.Server,
     serverView: ServerView
   ) {
-    this.refreshTransferStats(selectedServer, serverView);
+    this.refreshServerMetrics(selectedServer, serverView);
     // Get transfer stats once per minute for as long as server is selected.
     const statsRefreshRateMs = 60 * 1000;
     const intervalId = setInterval(() => {
@@ -1087,7 +1114,7 @@ export class App {
         clearInterval(intervalId);
         return;
       }
-      this.refreshTransferStats(selectedServer, serverView);
+      this.refreshServerMetrics(selectedServer, serverView);
     }, statsRefreshRateMs);
   }
 
@@ -1142,7 +1169,7 @@ export class App {
       });
   }
 
-  private async setDefaultDataLimit(limit: server_model.DataLimit) {
+  private async setDefaultDataLimit(limit: server_model.Data) {
     if (!limit) {
       return;
     }
@@ -1158,7 +1185,7 @@ export class App {
       this.appRoot.showNotification(this.appRoot.localize('saved'));
       serverView.defaultDataLimitBytes = limit?.bytes;
       serverView.isDefaultDataLimitEnabled = true;
-      this.refreshTransferStats(this.selectedServer, serverView);
+      this.refreshServerMetrics(this.selectedServer, serverView);
       // Don't display the feature collection disclaimer anymore.
       serverView.showFeatureMetricsDisclaimer = false;
       window.localStorage.setItem(
@@ -1184,7 +1211,7 @@ export class App {
       await this.selectedServer.removeDefaultDataLimit();
       serverView.isDefaultDataLimitEnabled = false;
       this.appRoot.showNotification(this.appRoot.localize('saved'));
-      this.refreshTransferStats(this.selectedServer, serverView);
+      this.refreshServerMetrics(this.selectedServer, serverView);
     } catch (error) {
       console.error(`Failed to remove server default data limit: ${error}`);
       this.appRoot.showError(this.appRoot.localize('error-remove-data-limit'));
@@ -1232,7 +1259,7 @@ export class App {
     const serverView = await this.appRoot.getServerView(server.getId());
     try {
       await server.setAccessKeyDataLimit(keyId, {bytes: dataLimitBytes});
-      this.refreshTransferStats(server, serverView);
+      this.refreshServerMetrics(server, serverView);
       this.appRoot.showNotification(this.appRoot.localize('saved'));
       return true;
     } catch (error) {
@@ -1253,7 +1280,7 @@ export class App {
     const serverView = await this.appRoot.getServerView(server.getId());
     try {
       await server.removeAccessKeyDataLimit(keyId);
-      this.refreshTransferStats(server, serverView);
+      this.refreshServerMetrics(server, serverView);
       this.appRoot.showNotification(this.appRoot.localize('saved'));
       return true;
     } catch (error) {

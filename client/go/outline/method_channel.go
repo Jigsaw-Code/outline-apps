@@ -20,18 +20,8 @@ import (
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 )
 
-// API name constants
+// API name constants. Keep sorted by name.
 const (
-	// SetVPNStateChangeListener sets a callback to be invoked when the VPN state changes.
-	//
-	// We recommend the caller to set this listener at app startup to catch all VPN state changes.
-	// Users might start the VPN from system settings, bypassing the app;
-	// so setting the listener when connecting within the app might miss some events.
-	//
-	//  - Input: A callback token string.
-	//  - Output: null
-	MethodSetVPNStateChangeListener = "SetVPNStateChangeListener"
-
 	// CloseVPN closes an existing VPN connection and restores network traffic to the default
 	// network interface.
 	//
@@ -41,14 +31,19 @@ const (
 
 	// EstablishVPN initiates a VPN connection and directs all network traffic through Outline.
 	//
-	//  - Input: a JSON string of vpnConfigJSON
+	//  - Input: A callback token string.
 	//  - Output: null
-	MethodEstablishVPN = "EstablishVPN"
+	MethodSetVPNStateChangeListener = "SetVPNStateChangeListener"
 
 	// FetchResource fetches a resource located at a given URL.
 	//  - Input: the URL string of the resource to fetch
 	//  - Output: the content in raw string of the fetched resource
 	MethodFetchResource = "FetchResource"
+
+	// Parses the TunnelConfig and extracts the first hop or provider error as needed.
+	//  - Input: the transport config text
+	//  - Output: the TunnelConfigJson that Typescript needs
+	MethodParseTunnelConfig = "ParseTunnelConfig"
 )
 
 // InvokeMethodResult represents the result of an InvokeMethod call.
@@ -62,12 +57,6 @@ type InvokeMethodResult struct {
 // InvokeMethod calls a method by name.
 func InvokeMethod(method string, input string) *InvokeMethodResult {
 	switch method {
-	case MethodSetVPNStateChangeListener:
-		err := setVPNStateChangeListener(input)
-		return &InvokeMethodResult{
-			Error: platerrors.ToPlatformError(err),
-		}
-
 	case MethodCloseVPN:
 		err := closeVPN()
 		return &InvokeMethodResult{
@@ -87,6 +76,9 @@ func InvokeMethod(method string, input string) *InvokeMethodResult {
 			Value: content,
 			Error: platerrors.ToPlatformError(err),
 		}
+
+	case MethodParseTunnelConfig:
+		return doParseTunnelConfig(input)
 
 	default:
 		return &InvokeMethodResult{Error: &platerrors.PlatformError{

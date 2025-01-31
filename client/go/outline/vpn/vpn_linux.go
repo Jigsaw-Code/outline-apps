@@ -50,18 +50,18 @@ func newPlatformVPNConn(conf *Config) (_ platformVPNConn, err error) {
 	}
 
 	if c.nmOpts.Name == "" {
-		return nil, errIllegalConfig("must provide a valid connection name")
+		return nil, errInvalidConfig("must provide a valid connection name")
 	}
 	if c.nmOpts.TUNName == "" {
-		return nil, errIllegalConfig("must provide a valid TUN interface name")
+		return nil, errInvalidConfig("must provide a valid TUN interface name")
 	}
 	if c.nmOpts.TUNAddr4 == nil {
-		return nil, errIllegalConfig("must provide a valid TUN interface IP(v4)")
+		return nil, errInvalidConfig("must provide a valid TUN interface IP(v4)")
 	}
 	for _, dns := range conf.DNSServers {
 		dnsIP := net.ParseIP(dns).To4()
 		if dnsIP == nil {
-			return nil, errIllegalConfig("DNS server must be a valid IP(v4)", "dns", dns)
+			return nil, errInvalidConfig("DNS server must be a valid IP(v4)", "dns", dns)
 		}
 		c.nmOpts.DNSServers4 = append(c.nmOpts.DNSServers4, dnsIP)
 	}
