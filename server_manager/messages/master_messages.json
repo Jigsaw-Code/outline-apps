@@ -1322,7 +1322,7 @@
     "message": "This shows the total time users were connected to the server over the last 30 days. It is calculated by adding up the connection time (Tunnel Time) for each device."
   },
   "server_view_server_metrics_tunnel_time_as_breakdown": {
-    "description": "Tunnel Time ASl breakdown",
+    "description": "Tunnel Time AS breakdown",
     "message": "ASes with highest Tunnel Time $START_OF_ITALICS$(last 30 days)$END_OF_ITALICS$",
         "placeholders": {
       "END_OF_ITALICS": {
