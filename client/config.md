@@ -7,6 +7,7 @@ Outline uses a YAML-based configuration to define VPN parameters and handle TCP/
 The top-level configuration specifies a [TunnelConfig](#TunnelConfig).
 
 ## Examples
+
 A typical Shadowsocks configuration will look like this:
 
 ```yaml
@@ -93,6 +94,7 @@ transport:
 ```
 
 Note that the Websocket endpoint can, in turn, take an endpoint, which can be leveraged to bypass DNS-based blocking:
+
 ```yaml
 transport:
   $type: tcpudp
@@ -111,6 +113,34 @@ transport:
         $type: websocket
         url: wss://legendary-faster-packs-und.trycloudflare.com/SECRET_PATH/udp
         endpoint: cloudflare.net:443
+    cipher: chacha20-ietf-poly1305
+    secret: SS_SECRET
+```
+
+Note that Websockets is not yet supported on Windows. In order to have a single config for all platforms, use a first-supported endpoint:
+
+```yaml
+transport:
+  $type: tcpudp
+  tcp:
+    $type: shadowsocks
+    endpoint:
+      $type: first-supported
+      endpoints:
+        - $type: websocket
+          url: wss://legendary-faster-packs-und.trycloudflare.com/SECRET_PATH/tcp
+        - ss.example.com:4321
+    cipher: chacha20-ietf-poly1305
+    secret: SS_SECRET
+
+  udp:
+    $type: shadowsocks
+    endpoint:
+      $type: first-supported
+      endpoints:
+        - $type: websocket
+          url: wss://legendary-faster-packs-und.trycloudflare.com/SECRET_PATH/udp
+        - ss.example.com:4321
     cipher: chacha20-ietf-poly1305
     secret: SS_SECRET
 ```
@@ -208,6 +238,7 @@ The _string_ Endpoint is the host:port address of the desired endpoint. The conn
 Supported Interface types for Stream and Packet Endpoints:
 
 - `dial`: [DialEndpointConfig](#DialEndpointConfig)
+- `first-supported`: [FirstSupportedEndpointConfig](#FirstSupportedEndpointConfig)
 - `websocket`: [WebsocketEndpointConfig](#WebsocketEndpointConfig)
 <!-- TODO(fortuna): Add Shadowsocks endpoint
 - `shadowsocks`: [ShadowsocksConfig](#ShadowsocksConfig)
@@ -223,6 +254,16 @@ Establishes connections by dialing a fixed address. It can take a dialer, which 
 
 - `address` (_string_): the endpoint address to dial
 - `dialer` ([DialerConfig](#dialers)): the dialer to use to dial the address
+
+### <a id=FirstSupportedEndpointConfig></a>FirstSupportedEndpointConfig
+
+Uses the first endpoint that is supported by the application. This is a way to incorporate new configs while being backwards-compatible with old configs.
+
+**Format:** _struct_
+
+**Fields:**
+
+- `endpoints` ([EndpointConfig[]](#EndpointConfig)): list of endpoints to consider
 
 ### <a id=WebsocketEndpointConfig></a>WebsocketEndpointConfig
 
