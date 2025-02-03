@@ -16,6 +16,9 @@
 
 import {css, html, LitElement, TemplateResult} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
+import {unsafeHTML} from 'lit/directives/unsafe-html.js';
+
+import '@material/mwc-icon';
 
 const DEFAULT_COMPARATOR = (value1: string, value2: string): -1 | 0 | 1 => {
   if (value1 === value2) return 0;
@@ -46,16 +49,17 @@ export class DataTable extends LitElement {
       --data-table-font-family: 'Roboto', system-ui;
 
       --data-table-cell-padding: 1rem;
+      --data-table-cell-border-bottom: 1px solid hsl(0, 0%, 79%);
     }
 
     section {
       display: grid;
       grid-template-columns: repeat(var(--data-table-columns), auto);
+      background-color: var(--data-table-background-color);
     }
 
     .header,
     .row {
-      background-color: var(--data-table-background-color);
       box-sizing: border-box;
       color: var(--data-table-text-color);
       content-visibility: auto;
@@ -65,9 +69,14 @@ export class DataTable extends LitElement {
 
     .header {
       font-weight: bold;
+      background-color: var(--data-table-background-color);
       position: sticky;
       top: 0;
       z-index: 1;
+    }
+
+    .row {
+      border-bottom: var(--data-table-cell-border-bottom);
     }
   `;
 
@@ -103,7 +112,9 @@ export class DataTable extends LitElement {
           }
         </style>
         <section>
-          ${this.columnNames.map(this.renderHeaderCell)}
+          ${this.columnNames.map(columnName =>
+            this.renderHeaderCell(columnName)
+          )}
           ${this.transformedData.flatMap(row =>
             this.columnNames.map(columnName =>
               this.renderDataCell(columnName, row[columnName])
@@ -116,7 +127,7 @@ export class DataTable extends LitElement {
 
   renderHeaderCell(columnName: string) {
     if (this.sortColumn !== columnName) {
-      return html`<div class="header">${columnName}</div>`;
+      return html`<div class="header">${unsafeHTML(columnName)}</div>`;
     }
 
     return html`<div class="header">
@@ -129,7 +140,7 @@ export class DataTable extends LitElement {
 
   renderDataCell(columnName: string, rowValue: string) {
     return html`<div class="row">
-      ${this.columns.get(columnName)?.render ?? DEFAULT_RENDERER(rowValue)}
+      ${(this.columns.get(columnName)?.render ?? DEFAULT_RENDERER)(rowValue)}
     </div>`;
   }
 }

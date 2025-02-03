@@ -27,7 +27,7 @@ export const BasicExample = ({
   sortColumn,
   sortDescending,
 }: DataTable) => {
-  return html`<server-data-table
+  return html`<data-table
     .columns=${new Map(columns)}
     .data=${data}
     .sortColumn=${sortColumn}
@@ -36,7 +36,7 @@ export const BasicExample = ({
 };
 
 export const RenderExample = () => {
-  return html`<server-data-table
+  return html`<data-table
     .columns=${new Map([
       ['Employee Name', {}],
       [
@@ -48,7 +48,7 @@ export const RenderExample = () => {
             return html`${tags.map(
               tag =>
                 html`<span
-                  style="background-color: hsl(200, 19%, 18%); color: white; padding: 2px 6px; margin: 2px; border-radius: 5px;"
+                  style="background-color: hsl(200, 9%, 48%); color: white; padding: 2px 6px; margin: 2px; border-radius: 5px;"
                   >${tag}</span
                 >`
             )}`;
@@ -78,7 +78,7 @@ export const RenderExample = () => {
 };
 
 export const ComparatorExample = () => {
-  return html`<server-data-table
+  return html`<data-table
     .columns=${new Map([
       ['Player Name', {}],
       [
@@ -120,7 +120,7 @@ export const HeavyDataExample = () => {
     });
   }
 
-  return html`<server-data-table
+  return html`<data-table
     .columns=${new Map([
       ['id', {}],
       ['value', {}],
