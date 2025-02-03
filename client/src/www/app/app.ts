@@ -17,8 +17,6 @@ import {OperationTimedOut} from '@outline/infrastructure/timeout_promise';
 
 import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
-import {localizeErrorCode} from './error_localizer';
-import {OutlineServerRepository} from './outline_server_repository';
 import * as config from './outline_server_repository/config';
 import {Settings, SettingsKey} from './settings';
 import {Updater} from './updater';
@@ -26,11 +24,8 @@ import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
 import * as errors from '../model/errors';
 import * as events from '../model/events';
-import {
-  PlatformError,
-  ROUTING_SERVICE_NOT_RUNNING,
-} from '../model/platform_error';
-import {Server} from '../model/server';
+import {PlatformError, GoErrorCode} from '../model/platform_error';
+import {Server, ServerRepository} from '../model/server';
 import {OutlineErrorReporter} from '../shared/error_reporter';
 import {ServerConnectionState, ServerListItem} from '../views/servers_view';
 import {SERVER_CONNECTION_INDICATOR_DURATION_MS} from '../views/servers_view/server_connection_indicator';
@@ -94,7 +89,7 @@ export class App {
 
   constructor(
     private eventQueue: events.EventQueue,
-    private serverRepo: OutlineServerRepository,
+    private serverRepo: ServerRepository,
     private rootEl: polymer.Base,
     private debugMode: boolean,
     urlInterceptor: UrlInterceptor | undefined,
@@ -227,9 +222,11 @@ export class App {
 
     this.eventQueue.startPublishing();
 
-    this.rootEl.$.addServerView.isValidAccessKey = (accessKey: string) => {
+    this.rootEl.$.addServerView.validateAccessKey = async (
+      accessKey: string
+    ): Promise<boolean> => {
       try {
-        config.parseAccessKey(accessKey);
+        await config.parseAccessKey(accessKey);
         return true;
       } catch {
         return false;
@@ -301,7 +298,7 @@ export class App {
         'cipher',
         error.cipher
       );
-    } else if (error instanceof errors.ServerAccessKeyInvalid) {
+    } else if (error instanceof errors.InvalidServiceConfiguration) {
       toastMessage = this.localize('error-connection-configuration');
       buttonMessage = this.localize('error-details');
       buttonHandler = () => {
@@ -319,20 +316,15 @@ export class App {
       buttonHandler = () => {
         this.showErrorCauseDialog(error);
       };
-    } else if (error instanceof errors.SessionConfigError) {
-      toastMessage = error.message;
     } else if (error instanceof errors.SessionProviderError) {
       toastMessage = error.message;
-      buttonMessage = this.localize('error-details');
-
       console.log(error, error.message, error.details);
-      buttonHandler = () => {
-        this.showErrorDetailsDialog(error.details);
-      };
-    } else if (error instanceof PlatformError) {
-      toastMessage = localizeErrorCode(error.code, this.localize);
-      buttonMessage = this.localize('error-details');
-      buttonHandler = () => this.showErrorDetailsDialog(error.toString());
+      if (error.details) {
+        buttonMessage = this.localize('error-details');
+        buttonHandler = () => {
+          alert(error.details);
+        };
+      }
     } else {
       const hasErrorDetails = Boolean(error.message || error.cause);
       toastMessage = this.localize('error-unexpected');
@@ -363,7 +355,7 @@ export class App {
   private async pullClipboardText() {
     try {
       const text = await this.clipboard.getContents();
-      this.handleClipboardText(text);
+      await this.handleClipboardText(text);
     } catch (e) {
       console.warn('cannot read clipboard, system may lack clipboard support');
     }
@@ -416,13 +408,13 @@ export class App {
     this.rootEl.changePage(event.detail.page);
   }
 
-  private handleClipboardText(text: string) {
+  private async handleClipboardText(text: string) {
     // Shorten, sanitise.
     // Note that we always check the text, even if the contents are same as last time, because we
     // keep an in-memory cache of user-ignored access keys.
     text = text.substring(0, 1000).trim();
     try {
-      this.confirmAddServer(text, true);
+      await this.confirmAddServer(text, true);
     } catch (err) {
       // Don't alert the user; high false positive rate.
     }
@@ -444,28 +436,29 @@ export class App {
   }
 
   private requestAddServer(event: CustomEvent) {
-    try {
-      this.serverRepo.add(event.detail.accessKey);
-    } catch (err) {
-      this.changeToDefaultPage();
-      this.showLocalizedError(err);
-    } finally {
-      this.rootEl.$.addServerView.open = false;
-    }
+    this.serverRepo
+      .add(event.detail.accessKey)
+      .catch(err => {
+        this.changeToDefaultPage();
+        this.showLocalizedError(err);
+      })
+      .finally(() => {
+        this.rootEl.$.addServerView.open = false;
+      });
   }
 
-  private requestAddServerConfirmation(event: CustomEvent) {
+  private async requestAddServerConfirmation(event: CustomEvent) {
     const accessKey = event.detail.accessKey;
     console.debug('Got add server confirmation request from UI');
     try {
-      this.confirmAddServer(accessKey);
+      await this.confirmAddServer(accessKey);
     } catch (err) {
       console.error('Failed to confirm add sever.', err);
       this.showLocalizedError(err);
     }
   }
 
-  private confirmAddServer(accessKey: string, fromClipboard = false) {
+  private async confirmAddServer(accessKey: string, fromClipboard = false) {
     const addServerView = this.rootEl.$.addServerView;
     accessKey = unwrapInvite(accessKey);
     if (fromClipboard && !addServerView.open) {
@@ -478,7 +471,7 @@ export class App {
       }
     }
     try {
-      config.validateAccessKey(accessKey);
+      await config.parseAccessKey(accessKey);
       addServerView.accessKey = accessKey;
       addServerView.open = true;
     } catch (e) {
@@ -557,7 +550,7 @@ export class App {
       console.error(`could not connect to server ${serverId}: ${e}`);
       if (
         e instanceof PlatformError &&
-        e.code === ROUTING_SERVICE_NOT_RUNNING
+        e.code === GoErrorCode.ROUTING_SERVICE_NOT_RUNNING
       ) {
         const confirmation =
           this.localize('outline-services-installation-confirmation') +
@@ -752,22 +745,16 @@ export class App {
   }
 
   private showErrorCauseDialog(error: Error) {
-    let message = error.toString();
-
-    if (error.cause) {
-      message += '\nCause: ';
-      message += error.cause.toString();
-    }
-
-    return alert(message);
+    const makeString = (error: unknown, indent: string): string => {
+      let message = indent + String(error);
+      if (error instanceof Object && 'cause' in error && error.cause) {
+        message += `\n${indent}Cause: `;
+        message += makeString(error.cause, indent + '  ');
+      }
+      return message;
+    };
+    return alert(makeString(error, ''));
   }
-
-  private showErrorDetailsDialog(details: string) {
-    if (!details) return;
-
-    return alert(details);
-  }
-
   //#endregion UI dialogs
 
   // Helpers:
@@ -821,7 +808,7 @@ export class App {
   }
 
   private registerUrlInterceptionListener(urlInterceptor: UrlInterceptor) {
-    urlInterceptor.registerListener(url => {
+    urlInterceptor.registerListener(async url => {
       if (!isOutlineAccessKey(unwrapInvite(url))) {
         // This check is necessary to ignore empty and malformed install-referrer URLs in Android
         // while allowing ss://, ssconf:// and invite URLs.
@@ -830,7 +817,7 @@ export class App {
       }
 
       try {
-        this.confirmAddServer(url);
+        await this.confirmAddServer(url);
       } catch (err) {
         this.showLocalizedErrorInDefaultPage(err);
       }

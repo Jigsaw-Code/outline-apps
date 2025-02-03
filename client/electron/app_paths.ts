@@ -17,7 +17,7 @@ import * as path from 'path';
 
 import {app} from 'electron';
 
-const isWindows = os.platform() === 'win32';
+const IS_WINDOWS = os.platform() === 'win32';
 
 /**
  * Get the unpacked asar folder path.
@@ -39,7 +39,7 @@ function unpackedAppPath() {
  */
 export function getAppPath() {
   const electronAppPath = app.getAppPath();
-  if (isWindows && electronAppPath.includes('app.asar')) {
+  if (IS_WINDOWS && electronAppPath.includes('app.asar')) {
     return path.dirname(app.getPath('exe'));
   }
   return electronAppPath;
@@ -51,8 +51,19 @@ export function pathToEmbeddedTun2socksBinary() {
     'client',
     'output',
     'build',
-    isWindows ? 'windows' : 'linux',
-    'tun2socks' + (isWindows ? '.exe' : '')
+    IS_WINDOWS ? 'windows' : 'linux',
+    'tun2socks' + (IS_WINDOWS ? '.exe' : '')
+  );
+}
+
+export function pathToBackendLibrary() {
+  return path.join(
+    unpackedAppPath(),
+    'client',
+    'output',
+    'build',
+    IS_WINDOWS ? 'windows' : 'linux',
+    IS_WINDOWS ? 'backend.dll' : 'libbackend.so'
   );
 }
 
@@ -63,7 +74,7 @@ export function pathToEmbeddedTun2socksBinary() {
  * @returns A string representing the path of the directory that contains service binaries.
  */
 export function pathToEmbeddedOutlineService() {
-  if (isWindows) {
+  if (IS_WINDOWS) {
     return getAppPath();
   }
   return path.join(

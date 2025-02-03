@@ -36,7 +36,7 @@ public enum OutlineError: Error, CustomNSError {
   case internalError(message: String)
 
   /// Indicates the VPN config is not valid.
-  case illegalConfig(message: String)
+  case invalidConfig(message: String)
 
   /// Indicates the user did not grant VPN permissions.
   case vpnPermissionNotGranted(cause: Error)
@@ -55,8 +55,8 @@ public enum OutlineError: Error, CustomNSError {
       return error.code
     case .internalError(_):
       return PlaterrorsInternalError
-    case .illegalConfig(_):
-      return PlaterrorsIllegalConfig
+    case .invalidConfig(_):
+      return PlaterrorsInvalidConfig
     case .vpnPermissionNotGranted(_):
       return PlaterrorsVPNPermissionNotGranted
     case .setupSystemVPNFailed(_):
@@ -143,7 +143,7 @@ private func marshalErrorJson(outlineError: OutlineError) -> String {
     }
     return errorJson
 
-  case .internalError(let message), .illegalConfig(let message):
+  case .internalError(let message), .invalidConfig(let message):
     return marshalErrorJson(code: outlineError.code, message: message)
 
   case .vpnPermissionNotGranted(let cause), .setupSystemVPNFailed(let cause):

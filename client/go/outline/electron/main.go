@@ -69,8 +69,6 @@ var args struct {
 	checkConnectivity *bool
 	dnsFallback       *bool
 	version           *bool
-
-	fetchUrl *string
 }
 
 var version string // Populated at build time through `-X main.version=...`
@@ -86,8 +84,6 @@ var version string // Populated at build time through `-X main.version=...`
 //
 //   - Connectivity Check: If you run the app with `-checkConnectivity`, it will test the proxy's connectivity
 //     and exit with the result printed out to standard output.
-//   - Fetch Resource: If you run the app with `-fetchUrl`, it will fetch the content from the specified
-//     URL and exit with the content printed out to standard output.
 func main() {
 	// VPN routing configs
 	args.tunAddr = flag.String("tunAddr", "10.0.85.2", "TUN interface IP address")
@@ -103,9 +99,6 @@ func main() {
 	// Check connectivity of transportConfig and exit
 	args.checkConnectivity = flag.Bool("checkConnectivity", false, "Check the proxy TCP and UDP connectivity and exit.")
 
-	// Fetch content of the given URL value and exit
-	args.fetchUrl = flag.String("fetchUrl", "", "Fetch the content from the given URL and exit.")
-
 	// Misc
 	args.logLevel = flag.String("logLevel", "info", "Logging level: debug|info|warn|error|none")
 	args.version = flag.Bool("version", false, "Print the version and exit.")
@@ -117,19 +110,10 @@ func main() {
 		os.Exit(exitCodeSuccess)
 	}
 
-	if *args.fetchUrl != "" {
-		result := outline.FetchResource(*args.fetchUrl)
-		if result.Error != nil {
-			printErrorAndExit(result.Error, exitCodeFailure)
-		}
-		fmt.Println(result.Content)
-		os.Exit(exitCodeSuccess)
-	}
-
 	setLogLevel(*args.logLevel)
 
 	if len(*args.transportConfig) == 0 {
-		printErrorAndExit(platerrors.PlatformError{Code: platerrors.IllegalConfig, Message: "transport config missing"}, exitCodeFailure)
+		printErrorAndExit(platerrors.PlatformError{Code: platerrors.InvalidConfig, Message: "transport config missing"}, exitCodeFailure)
 	}
 	clientResult := outline.NewClient(*args.transportConfig)
 	if clientResult.Error != nil {

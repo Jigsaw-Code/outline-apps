@@ -12,14 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {pluginExecWithErrorCode} from './plugin.cordova';
-import {ResourceFetcher} from './resource_fetcher';
+//go:build !linux
 
-/**
- * Fetches resources using Cordova plugin.
- */
-export class CordovaResourceFetcher implements ResourceFetcher {
-  fetch(url: string): Promise<string> {
-    return pluginExecWithErrorCode<string>('fetchResource', url);
-  }
-}
+package outline
+
+import "errors"
+
+func establishVPN(configStr string) error               { return errors.ErrUnsupported }
+func closeVPN() error                                   { return errors.ErrUnsupported }
+func setVPNStateChangeListener(cbTokenStr string) error { return errors.ErrUnsupported }

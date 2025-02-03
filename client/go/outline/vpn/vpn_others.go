@@ -12,18 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {ResourceFetcher} from './resource_fetcher';
-import {PlatformError} from '../model/platform_error';
+//go:build !linux
 
-/**
- * Fetches resources using Electron's IPC to communicate with the main process.
- */
-export class ElectronResourceFetcher implements ResourceFetcher {
-  async fetch(url: string): Promise<string> {
-    try {
-      return await window.electron.methodChannel.invoke('fetch-resource', url);
-    } catch (e) {
-      throw PlatformError.parseFrom(e);
-    }
-  }
+package vpn
+
+func newPlatformVPNConn(conf *Config) (_ platformVPNConn, err error) {
+	panic("VPN connection not supported on non-Linux OS")
 }

@@ -21,13 +21,14 @@ import * as Sentry from '@sentry/electron/renderer';
 
 import {AbstractClipboard} from './clipboard';
 import {getLocalizationFunction, main} from './main';
+import {installDefaultMethodChannel, MethodChannel} from './method_channel';
 import {VpnApi} from './outline_server_repository/vpn';
 import {ElectronVpnApi} from './outline_server_repository/vpn.electron';
-import {ElectronResourceFetcher} from './resource_fetcher.electron';
 import {AbstractUpdater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
 import {ErrorCode, OutlinePluginError} from '../model/errors';
+import {deserializeError} from '../model/platform_error';
 import {
   getSentryBrowserIntegrations,
   OutlineErrorReporter,
@@ -127,6 +128,22 @@ class ElectronErrorReporter implements OutlineErrorReporter {
   }
 }
 
+class ElectronMethodChannel implements MethodChannel {
+  async invokeMethod(methodName: string, params: string): Promise<string> {
+    try {
+      return await window.electron.methodChannel.invoke(
+        'invoke-method',
+        methodName,
+        params
+      );
+    } catch (e) {
+      throw deserializeError(e);
+    }
+  }
+}
+
+installDefaultMethodChannel(new ElectronMethodChannel());
+
 main({
   getVpnApi(): VpnApi | undefined {
     if (isOsSupported) {
@@ -138,6 +155,5 @@ main({
   getErrorReporter: _ => new ElectronErrorReporter(),
   getUpdater: () => new ElectronUpdater(),
   getVpnServiceInstaller: () => new ElectronVpnInstaller(),
-  getResourceFetcher: () => new ElectronResourceFetcher(),
   quitApplication: () => window.electron.methodChannel.send('quit-app'),
 });

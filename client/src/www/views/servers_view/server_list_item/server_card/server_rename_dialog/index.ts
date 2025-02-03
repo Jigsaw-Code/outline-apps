@@ -13,6 +13,8 @@
 
 import type {MdFilledTextField} from '@material/web/all.js';
 
+import '@material/mwc-textfield';
+
 import {LitElement, html, css} from 'lit';
 import {customElement, property, state, query} from 'lit/decorators.js';
 import '@material/web/all.js';
@@ -54,14 +56,18 @@ export class ServerRenameDialog extends LitElement {
     return html`
       <md-dialog .open=${this.open} @close=${this.handleClose} quick>
         <header slot="headline">${this.localize('server-rename')}</header>
-        <md-filled-text-field
+        <!-- 
+          On older versions of iOS, md-textfield triggers itself indefinitely here,
+          so we must use mwc-textfield
+        -->
+        <mwc-textfield
           slot="content"
-          maxlength="100"
+          maxLength="100"
           value="${this.internalServerName}"
           @input=${(e: Event) => {
             this.internalServerName = (e.target as HTMLInputElement).value;
           }}
-        ></md-filled-text-field>
+        ></mwc-textfield>
         <fieldset slot="actions">
           <md-text-button @click=${this.handleClose}
             >${this.localize('cancel')}</md-text-button

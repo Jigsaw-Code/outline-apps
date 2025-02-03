@@ -19,16 +19,16 @@ import {makeConfig, SIP002_URI} from 'ShadowsocksConfig';
 
 import {App} from './app';
 import {onceEnvVars} from './environment';
-import {OutlineServerRepository} from './outline_server_repository';
+import {newOutlineServerRepository} from './outline_server_repository';
 import {
   FAKE_BROKEN_HOSTNAME,
   FAKE_UNREACHABLE_HOSTNAME,
   FakeVpnApi,
 } from './outline_server_repository/vpn.fake';
 import {OutlinePlatform} from './platform';
-import {BrowserResourceFetcher} from './resource_fetcher';
 import {Settings} from './settings';
 import {EventQueue} from '../model/events';
+import {ServerRepository} from '../model/server.js';
 
 // Used to determine whether to use Polymer functionality on app initialization failure.
 let webComponentsAreReady = false;
@@ -53,26 +53,27 @@ function getRootEl() {
   return document.querySelector('app-root') as {} as polymer.Base;
 }
 
-function createServerRepo(platform: OutlinePlatform, eventQueue: EventQueue) {
+async function createServerRepo(
+  platform: OutlinePlatform,
+  eventQueue: EventQueue
+): Promise<ServerRepository> {
   const localize = getLocalizationFunction();
   const vpnApi = platform.getVpnApi();
   if (vpnApi) {
-    return new OutlineServerRepository(
+    return await newOutlineServerRepository(
       vpnApi,
       eventQueue,
       window.localStorage,
-      localize,
-      platform.getResourceFetcher()
+      localize
     );
   }
 
   console.debug('Platform not supported, using fake servers.');
-  const repo = new OutlineServerRepository(
+  const repo = await newOutlineServerRepository(
     new FakeVpnApi(),
     eventQueue,
     window.localStorage,
-    localize,
-    new BrowserResourceFetcher()
+    localize
   );
 
   if (repo.getAll().length === 0) {
@@ -112,14 +113,14 @@ function createServerRepo(platform: OutlinePlatform, eventQueue: EventQueue) {
 
 export function main(platform: OutlinePlatform) {
   return Promise.all([onceEnvVars, oncePolymerIsReady]).then(
-    ([environmentVars]) => {
+    async ([environmentVars]) => {
       console.debug('running main() function');
 
       const queryParams = new URL(document.URL).searchParams;
       const debugMode = queryParams.get('debug') === 'true';
 
       const eventQueue = new EventQueue();
-      const serverRepo = createServerRepo(platform, eventQueue);
+      const serverRepo = await createServerRepo(platform, eventQueue);
       const settings = new Settings();
       new App(
         eventQueue,

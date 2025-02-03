@@ -72,7 +72,7 @@ NSString *const kDefaultPathKey = @"defaultPath";
   // MARK: Process Config.
   if (self.protocolConfiguration == nil) {
     DDLogError(@"Failed to retrieve NETunnelProviderProtocol.");
-    return startDone([SwiftBridge newIllegalConfigOutlineErrorWithMessage:@"no config specified"]);
+    return startDone([SwiftBridge newInvalidConfigOutlineErrorWithMessage:@"no config specified"]);
   }
   NETunnelProviderProtocol *protocol = (NETunnelProviderProtocol *)self.protocolConfiguration;
   NSString *tunnelId = protocol.providerConfiguration[@"id"];
@@ -84,7 +84,7 @@ NSString *const kDefaultPathKey = @"defaultPath";
   NSString *transportConfig = protocol.providerConfiguration[@"transport"];
   if (![transportConfig isKindOfClass:[NSString class]]) {
     DDLogError(@"Failed to retrieve the transport configuration.");
-    return startDone([SwiftBridge newIllegalConfigOutlineErrorWithMessage:@"config is not a String"]);
+    return startDone([SwiftBridge newInvalidConfigOutlineErrorWithMessage:@"config is not a String"]);
   }
   self.transportConfig = transportConfig;
 
