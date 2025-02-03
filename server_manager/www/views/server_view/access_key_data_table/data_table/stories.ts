@@ -1,11 +1,11 @@
 import {html} from 'lit';
 
 import './index';
-import {ServerDataTable} from './index';
+import {DataTable} from './index';
 
 export default {
-  title: 'Manager/Server View/Server Data Table',
-  component: 'server-data-table',
+  title: 'Manager/Server View/Access Key Data Table/Data Table',
+  component: 'data-table',
   args: {
     columns: [
       ['id', {}],
@@ -26,7 +26,7 @@ export const BasicExample = ({
   data,
   sortColumn,
   sortDescending,
-}: ServerDataTable) => {
+}: DataTable) => {
   return html`<server-data-table
     .columns=${new Map(columns)}
     .data=${data}
