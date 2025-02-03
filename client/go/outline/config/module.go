@@ -101,6 +101,23 @@ func NewDefaultTransportProvider(tcpDialer transport.StreamDialer, udpDialer tra
 		return parseShadowsocksTransport(ctx, input, streamEndpoints.Parse, packetEndpoints.Parse)
 	})
 
+	// First-Supported support.
+	streamEndpoints.RegisterSubParser("first-supported", func(ctx context.Context, input map[string]any) (*Endpoint[transport.StreamConn], error) {
+		return parseFirstSupported(ctx, input, streamEndpoints.Parse)
+	})
+	packetEndpoints.RegisterSubParser("first-supported", func(ctx context.Context, input map[string]any) (*Endpoint[net.Conn], error) {
+		return parseFirstSupported(ctx, input, packetEndpoints.Parse)
+	})
+	streamDialers.RegisterSubParser("first-supported", func(ctx context.Context, input map[string]any) (*Dialer[transport.StreamConn], error) {
+		return parseFirstSupported(ctx, input, streamDialers.Parse)
+	})
+	packetDialers.RegisterSubParser("first-supported", func(ctx context.Context, input map[string]any) (*Dialer[net.Conn], error) {
+		return parseFirstSupported(ctx, input, packetDialers.Parse)
+	})
+	packetListeners.RegisterSubParser("first-supported", func(ctx context.Context, input map[string]any) (*PacketListener, error) {
+		return parseFirstSupported(ctx, input, packetListeners.Parse)
+	})
+
 	// Shadowsocks support.
 	streamDialers.RegisterSubParser("shadowsocks", func(ctx context.Context, input map[string]any) (*Dialer[transport.StreamConn], error) {
 		return parseShadowsocksStreamDialer(ctx, input, streamEndpoints.Parse)
