@@ -19,7 +19,11 @@ import * as Sentry from '@sentry/electron/renderer';
 import {Comparator, Heap} from 'heap-js';
 import * as semver from 'semver';
 
-import {DisplayDataAmount, displayDataAmountToBytes} from './data_formatting';
+import {
+  DisplayDataAmount,
+  displayDataAmountToBytes,
+  formatBytes,
+} from './data_formatting';
 import {filterOptions, getShortName} from './location_formatting';
 import {parseManualServerConfig} from './management_urls';
 import type {AppRoot, ServerListEntry} from './ui_components/app-root';
@@ -45,7 +49,6 @@ const DATA_LIMITS_VERSION = '1.1.0';
 const CHANGE_HOSTNAME_VERSION = '1.2.0';
 const KEY_SETTINGS_VERSION = '1.6.0';
 const SECONDS_IN_HOUR = 60 * 60;
-const BYTES_IN_GIGABYTES = 10 ** 9;
 const MAX_ACCESS_KEY_DATA_LIMIT_BYTES = 50 * 10 ** 9; // 50GB
 const CANCELLED_ERROR = new Error('Cancelled');
 export const LAST_DISPLAYED_SERVER_STORAGE_KEY = 'lastDisplayedServer';
@@ -1081,18 +1084,21 @@ export class App {
       serverView.totalInboundBytes = bandwidthUsageTotal;
 
       const NUMBER_OF_ASES_TO_SHOW = 4;
-      serverView.bandwidthUsageTotal = this.formatGigabyteValueAndUnit(
-        bandwidthUsageTotal / BYTES_IN_GIGABYTES
+      serverView.bandwidthUsageTotal = formatBytes(
+        bandwidthUsageTotal,
+        this.appRoot.language
       );
+
       serverView.bandwidthUsageRegions = bandwidthUsageHeap
         .top(NUMBER_OF_ASES_TO_SHOW)
         .reverse()
         .map(server => ({
           title: server.asOrg,
-          subtitle: `${server.asn}AS`,
+          subtitle: `ASN${server.asn}`,
           icon: this.countryCodeToEmoji(server.location),
-          highlight: this.formatGigabyteValueAndUnit(
-            server.dataTransferred.bytes / BYTES_IN_GIGABYTES
+          highlight: formatBytes(
+            server.dataTransferred.bytes,
+            this.appRoot.language
           ),
         }));
 
@@ -1172,19 +1178,6 @@ export class App {
     }
   }
 
-  private formatGigabyteValueAndUnit(data: number) {
-    // This happens during app startup before we set the language
-    if (!this.appRoot.language) {
-      return '';
-    }
-
-    return new Intl.NumberFormat(this.appRoot.language, {
-      style: 'unit',
-      unit: 'gigabyte',
-      unitDisplay: 'short',
-    }).format(data);
-  }
-
   private formatHourValueAndUnit(hours: number) {
     // This happens during app startup before we set the language
     if (!this.appRoot.language) {
@@ -1224,12 +1217,8 @@ export class App {
   }
 
   private countryCodeToEmoji(countryCode: string) {
-    if (
-      !countryCode ||
-      countryCode.length !== 2 ||
-      !/^[A-Z]{2}$/.test(countryCode)
-    ) {
-      return 'Invalid country code';
+    if (!countryCode || !/^[A-Z]{2}$/.test(countryCode)) {
+      return '';
     }
 
     // Convert the country code to an emoji using Unicode regional indicator symbols

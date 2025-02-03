@@ -89,7 +89,7 @@ export class ServerMetricsRowSubcard extends LitElement {
         ${this.highlight
           ? html`<mark class="highlight">${this.highlight}</mark>`
           : nothing}
-        <h4 class="title">${this.title}</h4>
+        ${this.title ? html`<h4 class="title">${this.title}</h4>` : nothing}
         ${this.subtitle
           ? html`<p class="subtitle">
               <span>${this.subtitle}</span>
