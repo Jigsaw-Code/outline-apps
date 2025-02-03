@@ -768,15 +768,6 @@ export class ServerView extends DirMixin(PolymerElement) {
               subtitle="[[localize('server-view-server-metrics-tunnel-time-as-breakdown')]]"
               subcards="[[tunnelTimeRegions]]"
             ></server-metrics-row>
-            <server-metrics-row
-              title="[[localize('server-view-server-metrics-devices-title')]]"
-              titleIcon="devices"
-              tooltip="[[localize('server-view-server-metrics-devices-toolitp')]]"
-              value="[[devicesTotal]]"
-              value-label="[[localize('server-view-server-metrics-devices-unit-label')]]"
-              subtitle="[[localize('server-view-server-metrics-devices-as-breakdown')]]"
-              subcards="[[devicesRegions]]"
-            ></server-metrics-row>
           </div>
         </template>
         <div name="settings">
@@ -823,8 +814,6 @@ export class ServerView extends DirMixin(PolymerElement) {
       cloudId: String,
       cloudLocation: Object,
       defaultDataLimitBytes: Number,
-      devicesRegions: Array,
-      devicesTotal: String,
       featureFlags: Object,
       hasNonAdminAccessKeys: Boolean,
       installProgress: Number,
@@ -862,9 +851,6 @@ export class ServerView extends DirMixin(PolymerElement) {
 
   bandwidthUsageTotal = '';
   bandwidthUsageRegions: Partial<ServerMetricsRowSubcard>[] = [];
-
-  devicesTotal = '';
-  devicesRegions: Partial<ServerMetricsRowSubcard>[] = [];
 
   tunnelTimeTotal = '';
   tunnelTimeTotalLabel = '';

@@ -1062,22 +1062,12 @@ export class App {
       ) => server2.tunnelTime.seconds - server1.tunnelTime.seconds;
       const tunnelTimeHeap = new Heap(tunnelTimeComparator);
 
-      let devicesTotal = 0;
-      const devicesComparator: Comparator<server_model.ServerMetrics> = (
-        server1,
-        server2
-      ) => server2.devices - server1.devices;
-      const devicesHeap = new Heap(devicesComparator);
-
       for (const server of serverMetrics.server) {
         bandwidthUsageTotal += server.dataTransferred.bytes;
         bandwidthUsageHeap.push(server);
 
         tunnelTimeTotal += server.tunnelTime.seconds;
         tunnelTimeHeap.push(server);
-
-        devicesTotal += server.devices;
-        devicesHeap.push(server);
       }
 
       // support legacy metrics view
@@ -1118,24 +1108,6 @@ export class App {
           highlight: this.formatHourValueAndUnit(
             server.tunnelTime.seconds / SECONDS_IN_HOUR
           ),
-        }));
-
-      const NUMBER_OF_DEVICES_SIGNIFICANT_DIGITS = 3;
-      serverView.devicesTotal = devicesTotal.toFixed(
-        NUMBER_OF_DEVICES_SIGNIFICANT_DIGITS
-      );
-      serverView.devicesRegions = devicesHeap
-        .top(NUMBER_OF_ASES_TO_SHOW)
-        .reverse()
-        .map(server => ({
-          title: server.asOrg,
-          subtitle: `ASN${server.asn}`,
-          icon: this.countryCodeToEmoji(server.location),
-          highlight: `${server.devices.toFixed(
-            NUMBER_OF_DEVICES_SIGNIFICANT_DIGITS
-          )} ${this.appRoot.localize(
-            'server-view-server-metrics-devices-as-breakdown-unit-label'
-          )}`,
         }));
 
       // Update all the displayed access keys, even if usage didn't change, in case data limits did.
