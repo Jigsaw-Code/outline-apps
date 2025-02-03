@@ -1113,7 +1113,7 @@ export class App {
         .reverse()
         .map(server => ({
           title: server.asOrg,
-          subtitle: `${server.asn}AS`,
+          subtitle: `ASN${server.asn}`,
           icon: this.countryCodeToEmoji(server.location),
           highlight: this.formatHourValueAndUnit(
             server.tunnelTime.seconds / SECONDS_IN_HOUR
@@ -1129,7 +1129,7 @@ export class App {
         .reverse()
         .map(server => ({
           title: server.asOrg,
-          subtitle: `${server.asn}AS`,
+          subtitle: `ASN${server.asn}`,
           icon: this.countryCodeToEmoji(server.location),
           highlight: `${server.devices.toFixed(
             NUMBER_OF_DEVICES_SIGNIFICANT_DIGITS
