@@ -1174,8 +1174,12 @@
     }
   },
   "server_view_privacy_statement": {
-    "description": "The privacy statement text displayed to the user on the Access Keys tab, explaining data collection practices.",
-    "message": "We are committed to protecting the privacy and security of our users. Each Outline server automatically collects aggregated and anonymized usage data. This data does not include information about the websites users visit or their communications. It is also not shared with the Outline team unless you, as the server administrator, explicitly opt in to sharing. Learn more."
+    "description": "The privacy statement text displayed to the user on the Access Keys and Server Metrics tabs, explaining data collection practices.",
+    "message": "We are committed to protecting the privacy and security of our users. Each Outline server automatically collects aggregated and anonymized usage data. This data does not include information about the websites users visit or their communications. It is also not shared with the Outline team unless you, as the server administrator, explicitly opt in to sharing."
+  },
+  "server_view_privacy_statement_link": {
+    "description": "This is a link that apprears at the end of the privacy statement which explains data collection practices, calling them to learn more about our policies.",
+    "message": "Learn more."
   },
   "server_view_access_keys_key_column_header": {
     "description": "The header for the Key name column in the Access Keys table, labeling the column containing access key identifiers.",
