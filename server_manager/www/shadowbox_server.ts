@@ -17,9 +17,6 @@ import * as semver from 'semver';
 
 import * as server from '../model/server';
 
-const HOUR_IN_SECS = 60 * 60;
-const DAY_IN_HOURS = 24;
-
 interface AccessKeyJson {
   id: string;
   name: string;
