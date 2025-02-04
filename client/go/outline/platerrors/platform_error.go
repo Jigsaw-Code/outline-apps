@@ -82,6 +82,11 @@ func (e PlatformError) Error() string {
 
 // Unwrap returns the cause of this [PlatformError].
 func (e PlatformError) Unwrap() error {
+	// Make sure we return a nil value, not an interface value with type `*PlatformError` pointing to nil.
+	// Otherwise nil equality fails and recursive unwrapping panics.
+	if e.Cause == nil {
+		return nil
+	}
 	return e.Cause
 }
 

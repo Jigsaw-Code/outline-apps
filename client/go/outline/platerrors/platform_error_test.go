@@ -113,6 +113,11 @@ func TestPlatformErrorWrapsCause(t *testing.T) {
 	require.Nil(t, err.Unwrap())
 }
 
+func TestPlatformErrorUnrapsNil(t *testing.T) {
+	err := PlatformError{Code: InternalError, Message: "some message"}
+	require.Equal(t, nil, err.Unwrap())
+}
+
 func TestEmptyErrorCode(t *testing.T) {
 	pe := &PlatformError{}
 
