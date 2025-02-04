@@ -33,28 +33,44 @@ export default {
           'server-view-access-keys-as-count-column-header':
             'Total ASes seen <i>(last 30 days)</i>',
           'server-view-access-keys-as-count-tooltip': 'Lorem ipsum',
+          // 'server-view-access-keys-usage-limit': '(80%+ used)',
         } as {[key: string]: string}
       )[key];
     },
     accessKeys: [
-      {name: 'Key#1', dataUsageAndLimit: '30,1000', asCount: '3'},
-      {name: 'Key#2', dataUsageAndLimit: '12,1000', asCount: '5'},
-      {name: 'Key#3', dataUsageAndLimit: '10,1000', asCount: '2'},
+      {
+        nameAndStatus: 'Key#1',
+        dataUsageAndLimit: '100000000,10000000000',
+        asCount: '3',
+      },
+      {
+        nameAndStatus: 'Key#2,true',
+        dataUsageAndLimit: '8000000000,10000000000',
+        asCount: '5',
+      },
+      {
+        nameAndStatus: 'Key#3',
+        dataUsageAndLimit: '6500000000,10000000000',
+        asCount: '2',
+      },
     ],
-    sortColumn: 'name',
+    sortColumn: 'nameAndStatus',
     sortDescending: true,
+    language: 'en',
   },
 };
 
 export const Example = ({
   accessKeys,
   localize,
+  language,
   sortColumn,
   sortDescending,
 }: AccessKeyDataTable) => {
   return html`<access-key-data-table
     .accessKeys=${accessKeys}
     .localize=${localize}
+    language=${language}
     .sortColumn=${sortColumn}
     .sortDescending=${sortDescending}
   />`;

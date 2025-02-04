@@ -6,6 +6,6 @@ export default {
   component: 'info-tooltip',
 };
 
-export const Basic = () => html`
+export const Example = () => html`
   <info-tooltip text="Tooltip text here"></info-tooltip>
 `;

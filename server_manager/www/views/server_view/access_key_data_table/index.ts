@@ -19,9 +19,14 @@ import {customElement, property} from 'lit/decorators.js';
 
 import './data_table';
 import {NUMERIC_COMPARATOR} from './data_table';
+import type {DataTableColumnProperties} from './data_table';
+
+import './access_key_status';
+import './access_key_controls';
+import './access_key_usage_meter';
 
 export interface AccessKeyDataTableRow {
-  name: string;
+  nameAndStatus: string;
   dataUsageAndLimit: string;
   asCount: string;
   // ???
@@ -31,6 +36,7 @@ export interface AccessKeyDataTableRow {
 export class AccessKeyDataTable extends LitElement {
   @property({type: Array}) accessKeys: AccessKeyDataTableRow[];
   @property({type: Object}) localize: (messageId: string) => string;
+  @property({type: String}) language: string;
   @property({type: String}) sortColumn: string;
   @property({type: Boolean}) sortDescending: boolean;
 
@@ -55,12 +61,19 @@ export class AccessKeyDataTable extends LitElement {
   render() {
     return html`
       <data-table
-        .columns=${new Map([
+        .columns=${new Map<string, DataTableColumnProperties>([
           [
-            'name',
+            'nameAndStatus',
             {
               name: this.localize('server-view-access-keys-key-column-header'),
-              render: this.renderKey,
+              render: nameAndStatus => {
+                const [name, status] = nameAndStatus.split(',');
+
+                return html`<access-key-status
+                  name=${name}
+                  .connected=${Boolean(status)}
+                ></access-key-status>`;
+              },
             },
           ],
           [
@@ -70,7 +83,17 @@ export class AccessKeyDataTable extends LitElement {
                 'server-view-access-keys-usage-column-header'
               ),
               tooltip: this.localize('server-view-access-keys-usage-tooltip'),
-              render: this.renderUsage,
+              render: dataUsageAndLimit => {
+                const [dataUsageBytes, dataLimitBytes] =
+                  dataUsageAndLimit.split(',');
+
+                return html`<access-key-usage-meter
+                  dataUsageBytes=${Number(dataUsageBytes)}
+                  dataLimitBytes=${Number(dataLimitBytes)}
+                  .localize=${this.localize}
+                  language=${this.language}
+                ></access-key-usage-meter>`;
+              },
             },
           ],
           [
@@ -97,52 +120,6 @@ export class AccessKeyDataTable extends LitElement {
         sortDescending=${this.sortDescending}
       ></data-table>
     `;
-  }
-
-  renderKey(name: string) {
-    return html` <style>
-        .key {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-        }
-
-        .key-icon {
-          display: inline-flex;
-          height: 2rem;
-          width: 2rem;
-          background: gray;
-          border-radius: 50%;
-          align-items: center;
-          justify-content: center;
-        }
-      </style>
-      <div class="key">
-        <div class="key-icon"><mwc-icon>vpn_key</mwc-icon></div>
-        ${name}
-      </div>`;
-  }
-
-  renderUsage(dataUsageAndLimit: string) {
-    const [dataUsage, dataLimit] = dataUsageAndLimit.split(',');
-
-    return html` <style>
-        progress {
-          width: 100%;
-          height: 1rem;
-          appearance: none;
-        }
-        progress[value]::-webkit-progress-bar {
-          border-radius: 5px;
-          background: gray;
-        }
-        progress[value]::-webkit-progress-value {
-          border-radius: 5px;
-          background: green;
-        }
-      </style>
-      <progress value=${dataUsage} max=${dataLimit}></progress>
-      <div>${dataUsage} / ${dataLimit}</div>`;
   }
 
   renderControls() {
