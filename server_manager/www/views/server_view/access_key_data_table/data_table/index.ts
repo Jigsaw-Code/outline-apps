@@ -69,6 +69,9 @@ export class DataTable extends LitElement {
 
       --data-table-header-icon-size: 1.2rem;
       --data-table-header-gap: 0.5rem;
+      --data-table-header-border-bottom: 0.7rem solid hsla(200, 16%, 19%, 1);
+
+      --data-table-row-border-bottom: 1px solid hsla(0, 0%, 100%, 0.2);
     }
 
     table,
@@ -114,8 +117,15 @@ export class DataTable extends LitElement {
       display: flex;
       font-weight: bold;
       gap: var(--data-table-header-gap);
+      border-bottom: var(--data-table-header-border-bottom);
 
       --mdc-icon-size: var(--data-table-header-icon-size);
+    }
+
+    td {
+      border-bottom: var(--data-table-row-border-bottom);
+      display: flex;
+      align-items: center;
     }
   `;
 

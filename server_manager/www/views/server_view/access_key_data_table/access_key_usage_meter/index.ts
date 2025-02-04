@@ -38,6 +38,8 @@ export class AccessKeyUsageMeter extends LitElement {
 
       --access-key-usage-meter-warning-color: white;
       --access-key-usage-meter-warning-text-color: hsla(39, 77%, 53%, 1);
+
+      flex-grow: 1;
     }
 
     label {

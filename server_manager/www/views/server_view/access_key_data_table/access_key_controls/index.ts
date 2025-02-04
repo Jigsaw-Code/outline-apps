@@ -33,6 +33,10 @@ export class AccessKeyControls extends LitElement {
   @query('#menu') menu: Menu;
 
   static styles = css`
+    :host {
+      flex-grow: 1;
+    }
+
     .wrapper {
       float: right;
     }
