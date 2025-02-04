@@ -53,6 +53,7 @@ export const RenderExample = () => {
                 >`
             )}`;
           },
+          tooltip: 'Tooltip for the employee tags',
         },
       ],
     ])}

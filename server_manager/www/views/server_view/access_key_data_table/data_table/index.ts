@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-import {css, html, LitElement, TemplateResult} from 'lit';
+import {css, html, LitElement, TemplateResult, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
 import '@material/mwc-icon';
+import '../../info_tooltip';
 
 const DEFAULT_COMPARATOR = (value1: string, value2: string): -1 | 0 | 1 => {
   if (value1 === value2) return 0;
@@ -35,6 +36,8 @@ export class DataTable extends LitElement {
     {
       comparator?: (_value1: string, _value2: string) => -1 | 0 | 1;
       render?: (_value: string) => TemplateResult<1>;
+      tooltip?: string;
+      hidden?: boolean;
     }
   >;
   @property({type: Array}) data: {[columnName: string]: string}[];
@@ -55,7 +58,6 @@ export class DataTable extends LitElement {
     section {
       display: grid;
       grid-template-columns: repeat(var(--data-table-columns), auto);
-      background-color: var(--data-table-background-color);
     }
 
     .header,
@@ -68,23 +70,77 @@ export class DataTable extends LitElement {
     }
 
     .header {
+      align-items: center;
+      gap: 0.5rem;
+      display: flex;
       font-weight: bold;
       background-color: var(--data-table-background-color);
       position: sticky;
       top: 0;
       z-index: 1;
+      margin-bottom: 1rem;
+    }
+
+    .header-sort {
+      font-size: 1.2rem;
+    }
+
+    .header info-tooltip {
+      --info-tooltip-icon-size: 1.2rem;
     }
 
     .row {
       border-bottom: var(--data-table-cell-border-bottom);
+      background-color: var(--data-table-background-color);
+      margin-bottom: 2px;
     }
   `;
+
+  render() {
+    return html`
+      <style>
+        :host {
+          --data-table-columns: ${this.columnNames.length};
+        }
+      </style>
+      <section>
+        ${this.columnNames.map(columnName => this.renderHeaderCell(columnName))}
+        ${this.sortedData.flatMap(row =>
+          this.columnNames.map(columnName =>
+            this.renderDataCell(columnName, row[columnName])
+          )
+        )}
+      </section>
+    `;
+  }
+
+  renderHeaderCell(columnName: string) {
+    const column = this.columns.get(columnName);
+
+    return html`<div class="header">
+      ${column?.hidden ? nothing : unsafeHTML(columnName)}
+      ${column?.tooltip
+        ? html`<info-tooltip text=${column?.tooltip}></info-tooltip>`
+        : nothing}
+      ${this.sortColumn === columnName
+        ? html`<mwc-icon class="header-sort">
+            ${this.sortDescending ? 'arrow_upward' : 'arrow_downward'}
+          </mwc-icon>`
+        : nothing}
+    </div>`;
+  }
+
+  renderDataCell(columnName: string, rowValue: string) {
+    return html`<div class="row">
+      ${(this.columns.get(columnName)?.render ?? DEFAULT_RENDERER)(rowValue)}
+    </div>`;
+  }
 
   private get columnNames() {
     return [...this.columns.keys()];
   }
 
-  private get transformedData() {
+  private get sortedData() {
     if (!this.sortColumn) {
       return this.data;
     }
@@ -101,46 +157,5 @@ export class DataTable extends LitElement {
 
       return comparator(value1, value2);
     });
-  }
-
-  render() {
-    return html`
-      <div class="container">
-        <style>
-          :host {
-            --data-table-columns: ${this.columnNames.length};
-          }
-        </style>
-        <section>
-          ${this.columnNames.map(columnName =>
-            this.renderHeaderCell(columnName)
-          )}
-          ${this.transformedData.flatMap(row =>
-            this.columnNames.map(columnName =>
-              this.renderDataCell(columnName, row[columnName])
-            )
-          )}
-        </section>
-      </div>
-    `;
-  }
-
-  renderHeaderCell(columnName: string) {
-    if (this.sortColumn !== columnName) {
-      return html`<div class="header">${unsafeHTML(columnName)}</div>`;
-    }
-
-    return html`<div class="header">
-      ${columnName}
-      <mwc-icon
-        >${this.sortDescending ? 'arrow_upward' : 'arrow_downward'}</mwc-icon
-      >
-    </div>`;
-  }
-
-  renderDataCell(columnName: string, rowValue: string) {
-    return html`<div class="row">
-      ${(this.columns.get(columnName)?.render ?? DEFAULT_RENDERER)(rowValue)}
-    </div>`;
   }
 }
