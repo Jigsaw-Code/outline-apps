@@ -23,13 +23,25 @@ export default {
   title: 'Manager/Server View/Access Key Data Table',
   component: 'access-keydata-table',
   args: {
-    localize: () => 'Translation pending...',
+    localize: (key: string) => {
+      return (
+        {
+          'server-view-access-keys-key-column-header': 'Key',
+          'server-view-access-keys-usage-column-header':
+            'Usage <i>(last 30 days)</i>',
+          'server-view-access-keys-usage-tooltip': 'Lorem ipsum',
+          'server-view-access-keys-as-count-column-header':
+            'Total ASes seen <i>(last 30 days)</i>',
+          'server-view-access-keys-as-count-tooltip': 'Lorem ipsum',
+        } as {[key: string]: string}
+      )[key];
+    },
     accessKeys: [
-      {name: 'Key#1', dataUsage: '30 GB', dataLimit: '1 TB', asCount: '3'},
-      {name: 'Key#2', dataUsage: '12 GB', dataLimit: '1 TB', asCount: '5'},
-      {name: 'Key#3', dataUsage: '10 GB', dataLimit: '1 TB', asCount: '2'},
+      {name: 'Key#1', dataUsageAndLimit: '30,1000', asCount: '3'},
+      {name: 'Key#2', dataUsageAndLimit: '12,1000', asCount: '5'},
+      {name: 'Key#3', dataUsageAndLimit: '10,1000', asCount: '2'},
     ],
-    sortColumn: 'key',
+    sortColumn: 'name',
     sortDescending: true,
   },
 };

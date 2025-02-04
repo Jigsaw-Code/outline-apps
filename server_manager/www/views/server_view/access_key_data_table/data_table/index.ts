@@ -21,6 +21,13 @@ import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 import '@material/mwc-icon';
 import '../../info_tooltip';
 
+export interface DataTableColumnProperties {
+  comparator?: (_value1: string, _value2: string) => -1 | 0 | 1;
+  name?: string;
+  render?: (_value: string) => TemplateResult<1>;
+  tooltip?: string;
+}
+
 export const DEFAULT_COMPARATOR = (
   value1: string,
   value2: string
@@ -46,18 +53,7 @@ export const DEFAULT_RENDERER = (value: string): TemplateResult<1> =>
 
 @customElement('data-table')
 export class DataTable extends LitElement {
-  @property({type: Object}) columns: Map<
-    string,
-    {
-      comparator?: (_value1: string, _value2: string) => -1 | 0 | 1;
-      name?: string;
-      render?: (
-        _value: string,
-        _row: {[columnName: string]: string}
-      ) => TemplateResult<1>;
-      tooltip?: string;
-    }
-  >;
+  @property({type: Object}) columns: Map<string, DataTableColumnProperties>;
   @property({type: Array}) data: {[columnName: string]: string}[];
 
   @property({type: String}) sortColumn?: string;
@@ -70,47 +66,89 @@ export class DataTable extends LitElement {
       --data-table-font-family: 'Roboto', system-ui;
 
       --data-table-cell-padding: 1rem;
-      --data-table-cell-border-bottom: 1px solid hsl(0, 0%, 79%);
     }
 
-    section {
+    .table-container {
+      container-type: size;
+    }
+
+    table,
+    thead,
+    tbody,
+    tr,
+    td,
+    th {
+      all: initial;
+    }
+
+    thead,
+    tbody,
+    tr {
+      display: contents;
+    }
+
+    table {
       display: grid;
       grid-template-columns: repeat(var(--data-table-columns), auto);
+      background-color: var(--data-table-background-color);
     }
 
-    .header,
-    .row {
+    th {
+      font-weight: bold;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    th,
+    td {
       box-sizing: border-box;
       color: var(--data-table-text-color);
-      content-visibility: auto;
       font-family: var(--data-table-font-family);
       padding: var(--data-table-cell-padding);
     }
 
-    .header {
+    td {
+      content-visibility: auto;
+    }
+
+    label {
+      display: none;
+      font-weight: bold;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      margin: 0.25rem 0;
+    }
+
+    th {
       align-items: center;
       gap: 0.5rem;
+
       display: flex;
       font-weight: bold;
-      background-color: var(--data-table-background-color);
-      position: sticky;
-      top: 0;
-      z-index: 1;
-      margin-bottom: 1rem;
+
+      --mdc-icon-size: 1.2rem;
     }
 
-    .header-sort {
-      font-size: 1.2rem;
-    }
-
-    .header info-tooltip {
-      --info-tooltip-icon-size: 1.2rem;
-    }
-
-    .row {
-      border-bottom: var(--data-table-cell-border-bottom);
-      background-color: var(--data-table-background-color);
-      margin-bottom: 2px;
+    @container (max-width: 540px) {
+      table {
+        grid-template-columns: auto;
+      }
+      th {
+        display: none;
+      }
+      td {
+        padding: 0.25rem 1rem;
+      }
+      td:first-child {
+        padding-top: 1rem;
+      }
+      td:last-child {
+        padding-bottom: 1rem;
+      }
+      label {
+        display: block;
+      }
     }
   `;
 
@@ -121,41 +159,50 @@ export class DataTable extends LitElement {
           --data-table-columns: ${this.columnIds.length};
         }
       </style>
-      <section>
-        ${this.columnIds.map(columnName => this.renderHeaderCell(columnName))}
-        ${this.sortedData.flatMap(row =>
-          this.columnIds.map(columnId =>
-            this.renderDataCell(columnId, row[columnId], row)
-          )
-        )}
-      </section>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              ${this.columnIds.map(columnName =>
+                this.renderHeaderCell(columnName)
+              )}
+            </tr>
+          </thead>
+          <tbody>
+            ${this.sortedData.map(row => {
+              return html`<tr>
+                ${this.columnIds.map(columnId => {
+                  return this.renderDataCell(columnId, row[columnId]);
+                })}
+              </tr>`;
+            })}
+          </tbody>
+        </table>
+      </div>
     `;
   }
 
   renderHeaderCell(columnId: string) {
     const column = this.columns.get(columnId);
 
-    return html`<div class="header">
-      ${unsafeHTML(column.name)}
+    return html`<th>
+      <span>${unsafeHTML(column.name)}</span>
       ${column?.tooltip
         ? html`<info-tooltip text=${column?.tooltip}></info-tooltip>`
         : nothing}
       ${this.sortColumn === columnId
-        ? html`<mwc-icon class="header-sort">
+        ? html`<mwc-icon>
             ${this.sortDescending ? 'arrow_upward' : 'arrow_downward'}
           </mwc-icon>`
         : nothing}
-    </div>`;
+    </th>`;
   }
 
-  renderDataCell(
-    columnId: string,
-    rowValue: string,
-    row: {[columnName: string]: string}
-  ) {
-    return html`<div class="row">
-      ${(this.columns.get(columnId)?.render ?? DEFAULT_RENDERER)(rowValue, row)}
-    </div>`;
+  renderDataCell(columnId: string, rowValue: string) {
+    return html`<td>
+      <label>${unsafeHTML(this.columns.get(columnId)?.name)}</label>
+      ${(this.columns.get(columnId)?.render ?? DEFAULT_RENDERER)(rowValue)}
+    </td>`;
   }
 
   private get columnIds() {

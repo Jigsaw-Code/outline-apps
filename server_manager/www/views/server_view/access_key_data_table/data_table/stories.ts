@@ -17,15 +17,16 @@
 import {html} from 'lit';
 
 import './index';
-import {DataTable} from './index';
+import {DataTable, NUMERIC_COMPARATOR} from './index';
+import type {DataTableColumnProperties} from './index';
 
 export default {
   title: 'Manager/Server View/Access Key Data Table/Data Table',
   component: 'data-table',
   args: {
     columns: [
-      ['id', {}],
-      ['value', {}],
+      ['id', {name: 'ID'}],
+      ['value', {name: 'Value'}],
     ],
     data: [
       {id: '0', value: 'value-0'},
@@ -53,10 +54,10 @@ export const BasicExample = ({
 
 export const RenderExample = () => {
   return html`<data-table
-    .columns=${new Map([
-      ['Employee Name', {}],
+    .columns=${new Map<string, DataTableColumnProperties>([
+      ['name', {name: 'Employee Name'}],
       [
-        'Tags',
+        'tags',
         {
           render(value: string) {
             const tags = value.split(',');
@@ -69,26 +70,27 @@ export const RenderExample = () => {
                 >`
             )}`;
           },
+          name: 'Tags',
           tooltip: 'Tooltip for the employee tags',
         },
       ],
     ])}
     .data=${[
       {
-        'Employee Name': 'Vini',
-        Tags: 'Lead,IC,Manager',
+        name: 'Vini',
+        tags: 'Lead,IC,Manager',
       },
       {
-        'Employee Name': 'Sander',
-        Tags: 'Lead,IC',
+        name: 'Sander',
+        tags: 'Lead,IC',
       },
       {
-        'Employee Name': 'Jyyi',
-        Tags: 'IC',
+        name: 'Jyyi',
+        tags: 'IC',
       },
       {
-        'Employee Name': 'Daniel',
-        Tags: 'IC',
+        name: 'Daniel',
+        tags: 'IC',
       },
     ]}
   />`;
@@ -97,31 +99,35 @@ export const RenderExample = () => {
 export const ComparatorExample = () => {
   return html`<data-table
     .columns=${new Map([
-      ['Player Name', {}],
       [
-        'Score',
+        'name',
         {
-          comparator(value1: string, value2: string) {
-            return Number(value1) - Number(value2);
-          },
+          name: 'Player Name',
+        },
+      ],
+      [
+        'score',
+        {
+          name: 'Score',
+          comparator: NUMERIC_COMPARATOR,
         },
       ],
     ])}
     .data=${[
       {
-        'Player Name': 'graxxxor23',
-        Score: '32342',
+        name: 'graxxxor23',
+        score: '32342',
       },
       {
-        'Player Name': 'kron3_killa',
-        Score: '123',
+        name: 'kron3_killa',
+        score: '123',
       },
       {
-        'Player Name': 'bigbungus1007',
-        Score: '123432',
+        name: 'bigbungus1007',
+        score: '123432',
       },
     ]}
-    .sortColumn=${'Score'}
+    .sortColumn=${'score'}
     .sortDescending=${true}
   />`;
 };
@@ -139,8 +145,8 @@ export const HeavyDataExample = () => {
 
   return html`<data-table
     .columns=${new Map([
-      ['id', {}],
-      ['value', {}],
+      ['id', {name: 'ID'}],
+      ['value', {name: 'Value'}],
     ])}
     .data=${data}
   />`;

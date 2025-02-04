@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {LitElement, html} from 'lit';
+import {LitElement, html, css} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 
 import './data_table';
@@ -22,8 +22,7 @@ import {NUMERIC_COMPARATOR} from './data_table';
 
 export interface AccessKeyDataTableRow {
   name: string;
-  dataUsage: string;
-  dataLimit: string;
+  dataUsageAndLimit: string;
   asCount: string;
   // ???
 }
@@ -34,6 +33,24 @@ export class AccessKeyDataTable extends LitElement {
   @property({type: Object}) localize: (messageId: string) => string;
   @property({type: String}) sortColumn: string;
   @property({type: Boolean}) sortDescending: boolean;
+
+  static style = css`
+    .key {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .key-icon {
+      display: inline-flex;
+      height: 2rem;
+      width: 2rem;
+      background: gray;
+      border-radius: 50%;
+      align-items: center;
+      justify-content: center;
+    }
+  `;
 
   render() {
     return html`
@@ -47,7 +64,7 @@ export class AccessKeyDataTable extends LitElement {
             },
           ],
           [
-            'dataUsage',
+            'dataUsageAndLimit',
             {
               name: this.localize(
                 'server-view-access-keys-usage-column-header'
@@ -83,14 +100,52 @@ export class AccessKeyDataTable extends LitElement {
   }
 
   renderKey(name: string) {
-    return html`<mwc-icon>vpn_key</mwc-icon> ${name}`;
+    return html` <style>
+        .key {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+
+        .key-icon {
+          display: inline-flex;
+          height: 2rem;
+          width: 2rem;
+          background: gray;
+          border-radius: 50%;
+          align-items: center;
+          justify-content: center;
+        }
+      </style>
+      <div class="key">
+        <div class="key-icon"><mwc-icon>vpn_key</mwc-icon></div>
+        ${name}
+      </div>`;
   }
 
-  renderUsage(dataUsage: string, {dataLimit}: AccessKeyDataTableRow) {
-    return html`${dataUsage} (${dataLimit})`;
+  renderUsage(dataUsageAndLimit: string) {
+    const [dataUsage, dataLimit] = dataUsageAndLimit.split(',');
+
+    return html` <style>
+        progress {
+          width: 100%;
+          height: 1rem;
+          appearance: none;
+        }
+        progress[value]::-webkit-progress-bar {
+          border-radius: 5px;
+          background: gray;
+        }
+        progress[value]::-webkit-progress-value {
+          border-radius: 5px;
+          background: green;
+        }
+      </style>
+      <progress value=${dataUsage} max=${dataLimit}></progress>
+      <div>${dataUsage} / ${dataLimit}</div>`;
   }
 
   renderControls() {
-    return html`<mwc-icon>more_vert</mwc-icon>`;
+    return html`<mwc-icon style="float: right;">more_vert</mwc-icon>`;
   }
 }

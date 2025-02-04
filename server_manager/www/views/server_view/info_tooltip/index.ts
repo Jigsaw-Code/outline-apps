@@ -9,25 +9,50 @@ export class InformationTooltip extends LitElement {
 
   static styles = css`
     :host {
+      --server-metrics-row-tooltip-background: hsl(0, 0%, 94%);
+      --server-metrics-row-tooltip-border-radius: 0.3rem;
+      --server-metrics-row-tooltip-padding: 0.3rem;
+      --server-metrics-row-tooltip-text-color: hsl(0, 0%, 20%);
+      --server-metrics-row-tooltip-max-width: 320px;
+
       --info-tooltip-icon-size: 1.85rem;
 
       --mdc-icon-size: var(--info-tooltip-icon-size);
     }
 
     .tooltip-container {
-      display: flex;
       cursor: help;
+      position: relative;
+      display: inline-flex;
+    }
+
+    .tooltip {
+      background-color: var(--server-metrics-row-tooltip-background);
+      border-radius: var(--server-metrics-row-tooltip-border-radius);
+      color: var(--server-metrics-row-tooltip-text-color);
+      font-family: var(--server-metrics-row-font-family);
+      left: 50%;
+      max-width: var(--server-metrics-row-tooltip-max-width);
+      padding: var(--server-metrics-row-tooltip-padding);
+      position: absolute;
+      top: 150%;
+      transform: translateX(-50%);
+      visibility: hidden;
+      white-space: pre-line;
+      width: max-content;
+      word-wrap: break-word;
+    }
+
+    .tooltip-container:hover .tooltip {
+      visibility: visible;
+      opacity: 1;
     }
   `;
 
   render() {
     return html`<div class="tooltip-container">
-      <!-- 
-        TODO: Absolute positioning doesn't work in all contexts, including parents with overflow: hidden and CSS Grid.
-        In order to style the tooltip text, we need to use the Popover API, which is not supported in the current version
-        of Electron we ship. Once we upgrade Electron V25, we can then update this tooltip to use the Popover API.
-      -->
-      <mwc-icon title=${this.text}>info</mwc-icon>
+      <mwc-icon>info</mwc-icon>
+      <span class="tooltip">${this.text}</span>
     </div>`;
   }
 }
