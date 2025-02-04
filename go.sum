@@ -59,8 +59,8 @@ cloud.google.com/go/storage v1.22.1/go.mod h1:S8N1cAStu7BOeFfE8KAQzmyyLkK8p/vmRq
 dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7gZCb22OMCxBHrMx7a5I7Hp++hsVxbQ4BYO7hU=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
-github.com/Jigsaw-Code/outline-sdk v0.0.18-0.20250204010905-2dbe44f6664a h1:i2axCGTHnko41m9DBTYg8LInuEGseVQ/IY9rEUIgzX0=
-github.com/Jigsaw-Code/outline-sdk v0.0.18-0.20250204010905-2dbe44f6664a/go.mod h1:CFDKyGZA4zatKE4vMLe8TyQpZCyINOeRFbMAmYHxodw=
+github.com/Jigsaw-Code/outline-sdk v0.0.18 h1:xGzbag/jWGVQl5wGy0szr1jb+P8nVDFMcR2mWmgQnqc=
+github.com/Jigsaw-Code/outline-sdk v0.0.18/go.mod h1:CFDKyGZA4zatKE4vMLe8TyQpZCyINOeRFbMAmYHxodw=
 github.com/Jigsaw-Code/outline-sdk/x v0.0.0-20250131142109-b32720fa2c3e h1:JN3TZFpi98BTw/CZuQWxovFsgqjQ79gGrbvZE1wFIIc=
 github.com/Jigsaw-Code/outline-sdk/x v0.0.0-20250131142109-b32720fa2c3e/go.mod h1:aFUEz6Z/eD0NS3c3fEIX+JO2D9aIrXCmWTb1zJFlItw=
 github.com/Masterminds/semver/v3 v3.2.1 h1:RN9w6+7QoMeJVGyfmbcgs28Br8cvmnucEXnY0rYXWg0=
