@@ -124,7 +124,9 @@ func parseShadowsocksPacketListener(ctx context.Context, config ConfigNode, pars
 	if err != nil {
 		return nil, err
 	}
-	// TODO: support UDP prefix.
+	if params.SaltGenerator != nil {
+		pl.SetSaltGenerator(params.SaltGenerator)
+	}
 	return &PacketListener{ConnectionProviderInfo{ConnTypeTunneled, pe.FirstHop}, pl}, nil
 }
 
