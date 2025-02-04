@@ -1,5 +1,5 @@
 /**
- * Copyright 2024 The Outline Authors
+ * Copyright 2025 The Outline Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,28 @@ import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 import '@material/mwc-icon';
 import '../../info_tooltip';
 
-const DEFAULT_COMPARATOR = (value1: string, value2: string): -1 | 0 | 1 => {
+export const DEFAULT_COMPARATOR = (
+  value1: string,
+  value2: string
+): -1 | 0 | 1 => {
   if (value1 === value2) return 0;
   if (value1 < value2) return -1;
   if (value1 > value2) return 1;
 };
 
-const DEFAULT_RENDERER = (value: string): TemplateResult<1> => html`${value}`;
+export const NUMERIC_COMPARATOR = (
+  value1: string | number,
+  value2: string | number
+): -1 | 0 | 1 => {
+  [value1, value2] = [Number(value1), Number(value2)];
+
+  if (value1 === value2) return 0;
+  if (value1 < value2) return -1;
+  if (value1 > value2) return 1;
+};
+
+export const DEFAULT_RENDERER = (value: string): TemplateResult<1> =>
+  html`${value}`;
 
 @customElement('data-table')
 export class DataTable extends LitElement {
@@ -35,9 +50,12 @@ export class DataTable extends LitElement {
     string,
     {
       comparator?: (_value1: string, _value2: string) => -1 | 0 | 1;
-      render?: (_value: string) => TemplateResult<1>;
+      name?: string;
+      render?: (
+        _value: string,
+        _row: {[columnName: string]: string}
+      ) => TemplateResult<1>;
       tooltip?: string;
-      hidden?: boolean;
     }
   >;
   @property({type: Array}) data: {[columnName: string]: string}[];
@@ -100,29 +118,29 @@ export class DataTable extends LitElement {
     return html`
       <style>
         :host {
-          --data-table-columns: ${this.columnNames.length};
+          --data-table-columns: ${this.columnIds.length};
         }
       </style>
       <section>
-        ${this.columnNames.map(columnName => this.renderHeaderCell(columnName))}
+        ${this.columnIds.map(columnName => this.renderHeaderCell(columnName))}
         ${this.sortedData.flatMap(row =>
-          this.columnNames.map(columnName =>
-            this.renderDataCell(columnName, row[columnName])
+          this.columnIds.map(columnId =>
+            this.renderDataCell(columnId, row[columnId], row)
           )
         )}
       </section>
     `;
   }
 
-  renderHeaderCell(columnName: string) {
-    const column = this.columns.get(columnName);
+  renderHeaderCell(columnId: string) {
+    const column = this.columns.get(columnId);
 
     return html`<div class="header">
-      ${column?.hidden ? nothing : unsafeHTML(columnName)}
+      ${unsafeHTML(column.name)}
       ${column?.tooltip
         ? html`<info-tooltip text=${column?.tooltip}></info-tooltip>`
         : nothing}
-      ${this.sortColumn === columnName
+      ${this.sortColumn === columnId
         ? html`<mwc-icon class="header-sort">
             ${this.sortDescending ? 'arrow_upward' : 'arrow_downward'}
           </mwc-icon>`
@@ -130,13 +148,17 @@ export class DataTable extends LitElement {
     </div>`;
   }
 
-  renderDataCell(columnName: string, rowValue: string) {
+  renderDataCell(
+    columnId: string,
+    rowValue: string,
+    row: {[columnName: string]: string}
+  ) {
     return html`<div class="row">
-      ${(this.columns.get(columnName)?.render ?? DEFAULT_RENDERER)(rowValue)}
+      ${(this.columns.get(columnId)?.render ?? DEFAULT_RENDERER)(rowValue, row)}
     </div>`;
   }
 
-  private get columnNames() {
+  private get columnIds() {
     return [...this.columns.keys()];
   }
 
