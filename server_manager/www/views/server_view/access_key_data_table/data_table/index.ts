@@ -63,13 +63,12 @@ export class DataTable extends LitElement {
     :host {
       --data-table-background-color: hsl(197, 13%, 22%);
       --data-table-text-color: hsl(0, 0%, 79%);
-      --data-table-font-family: 'Roboto', system-ui;
+      --data-table-font-family: 'Inter', system-ui;
 
       --data-table-cell-padding: 1rem;
-    }
 
-    .table-container {
-      container-type: size;
+      --data-table-header-icon-size: 1.2rem;
+      --data-table-header-gap: 0.5rem;
     }
 
     table,
@@ -108,47 +107,15 @@ export class DataTable extends LitElement {
       padding: var(--data-table-cell-padding);
     }
 
-    td {
-      content-visibility: auto;
-    }
-
-    label {
-      display: none;
-      font-weight: bold;
-      text-transform: uppercase;
-      font-size: 0.75rem;
-      margin: 0.25rem 0;
-    }
-
     th {
       align-items: center;
-      gap: 0.5rem;
-
+      background-color: var(--data-table-background-color);
+      cursor: pointer;
       display: flex;
       font-weight: bold;
+      gap: var(--data-table-header-gap);
 
-      --mdc-icon-size: 1.2rem;
-    }
-
-    @container (max-width: 540px) {
-      table {
-        grid-template-columns: auto;
-      }
-      th {
-        display: none;
-      }
-      td {
-        padding: 0.25rem 1rem;
-      }
-      td:first-child {
-        padding-top: 1rem;
-      }
-      td:last-child {
-        padding-bottom: 1rem;
-      }
-      label {
-        display: block;
-      }
+      --mdc-icon-size: var(--data-table-header-icon-size);
     }
   `;
 
@@ -185,7 +152,7 @@ export class DataTable extends LitElement {
   renderHeaderCell(columnId: string) {
     const column = this.columns.get(columnId);
 
-    return html`<th>
+    return html`<th @click=${() => this.fireSortEvent(columnId)}>
       <span>${unsafeHTML(column.name)}</span>
       ${column?.tooltip
         ? html`<info-tooltip text=${column?.tooltip}></info-tooltip>`
@@ -200,9 +167,21 @@ export class DataTable extends LitElement {
 
   renderDataCell(columnId: string, rowValue: string) {
     return html`<td>
-      <label>${unsafeHTML(this.columns.get(columnId)?.name)}</label>
       ${(this.columns.get(columnId)?.render ?? DEFAULT_RENDERER)(rowValue)}
     </td>`;
+  }
+
+  fireSortEvent(columnId: string) {
+    this.dispatchEvent(
+      new CustomEvent('DataTable::Sort', {
+        detail: {
+          columnId,
+          sortDescending: !this.sortDescending,
+        },
+        bubbles: true,
+        composed: true,
+      })
+    );
   }
 
   private get columnIds() {

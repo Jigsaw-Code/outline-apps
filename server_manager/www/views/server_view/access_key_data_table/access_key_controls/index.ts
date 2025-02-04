@@ -14,8 +14,101 @@
  * limitations under the License.
  */
 
-import {LitElement} from 'lit';
-import {customElement} from 'lit/decorators.js';
+import type {IconButton} from '@material/mwc-icon-button';
+import type {Menu} from '@material/mwc-menu';
+
+import {LitElement, html, css} from 'lit';
+import {customElement, property, query} from 'lit/decorators.js';
+
+import '@material/mwc-icon-button';
+import '@material/mwc-icon';
+import '@material/mwc-menu';
 
 @customElement('access-key-controls')
-export class AccessKeyControls extends LitElement {}
+export class AccessKeyControls extends LitElement {
+  @property({type: Object}) localize: (messageId: string) => string;
+  @property({type: String}) id: string;
+
+  @query('#menuButton') menuButton: IconButton;
+  @query('#menu') menu: Menu;
+
+  static styles = css`
+    .wrapper {
+      float: right;
+    }
+  `;
+
+  render() {
+    return html`
+      <span class="wrapper">
+        <mwc-icon-button
+          icon="share"
+          @click=${this.fireShareEvent}
+        ></mwc-icon-button>
+        <mwc-icon-button
+          icon="more_vert"
+          id="menuButton"
+          @click=${() => {
+            this.menu.anchor = this.menuButton;
+            this.menu.show();
+          }}
+        ></mwc-icon-button>
+        <mwc-menu id="menu" corner="TOP_LEFT" menuCorner="END">
+          <mwc-list-item @click=${this.fireEditNameEvent} graphic="icon">
+            <mwc-icon slot="graphic">create</mwc-icon>
+            ${this.localize('server-access-key-rename')}
+          </mwc-list-item>
+          <mwc-list-item @click=${this.fireDeleteEvent} graphic="icon">
+            <mwc-icon slot="graphic">delete</mwc-icon>
+            ${this.localize('remove')}
+          </mwc-list-item>
+          <!-- TODO: hide this on versions 1.6 or earlier? -->
+          <mwc-list-item @click=${this.fireEditDataLimitEvent} graphic="icon">
+            <mwc-icon slot="graphic">perm_data_setting</mwc-icon>
+            ${this.localize('data-limit')}
+          </mwc-list-item>
+        </mwc-menu>
+      </span>
+    `;
+  }
+
+  fireDeleteEvent() {
+    this.dispatchEvent(
+      new CustomEvent('AccessKeyControls::Delete', {
+        bubbles: true,
+        composed: true,
+        detail: {id: this.id},
+      })
+    );
+  }
+
+  fireEditDataLimitEvent() {
+    this.dispatchEvent(
+      new CustomEvent('AccessKeyControls::EditDataLimit', {
+        bubbles: true,
+        composed: true,
+        detail: {id: this.id},
+      })
+    );
+  }
+
+  fireEditNameEvent() {
+    this.dispatchEvent(
+      new CustomEvent('AccessKeyControls::EditName', {
+        bubbles: true,
+        composed: true,
+        detail: {id: this.id},
+      })
+    );
+  }
+
+  fireShareEvent() {
+    this.dispatchEvent(
+      new CustomEvent('AccessKeyControls::Share', {
+        bubbles: true,
+        composed: true,
+        detail: {id: this.id},
+      })
+    );
+  }
+}

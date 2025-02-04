@@ -33,7 +33,10 @@ export default {
           'server-view-access-keys-as-count-column-header':
             'Total ASes seen <i>(last 30 days)</i>',
           'server-view-access-keys-as-count-tooltip': 'Lorem ipsum',
-          // 'server-view-access-keys-usage-limit': '(80%+ used)',
+          'server-view-access-keys-usage-limit': '(80%+ used)',
+          'server-access-key-rename': 'Rename',
+          remove: 'Remove',
+          'data-limit': 'Data Limit',
         } as {[key: string]: string}
       )[key];
     },
@@ -42,16 +45,19 @@ export default {
         nameAndStatus: 'Key#1',
         dataUsageAndLimit: '100000000,10000000000',
         asCount: '3',
+        controlsForId: 'ss://key1.com:3000',
       },
       {
         nameAndStatus: 'Key#2,true',
         dataUsageAndLimit: '8000000000,10000000000',
         asCount: '5',
+        controlsForId: 'ss://key2.com:3000',
       },
       {
         nameAndStatus: 'Key#3',
         dataUsageAndLimit: '6500000000,10000000000',
         asCount: '2',
+        controlsForId: 'ss://key3.com:3000',
       },
     ],
     sortColumn: 'nameAndStatus',

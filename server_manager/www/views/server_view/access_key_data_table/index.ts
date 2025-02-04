@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {LitElement, html, css} from 'lit';
+import {LitElement, html} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 
 import './data_table';
@@ -29,7 +29,7 @@ export interface AccessKeyDataTableRow {
   nameAndStatus: string;
   dataUsageAndLimit: string;
   asCount: string;
-  // ???
+  controlsForId: string;
 }
 
 @customElement('access-key-data-table')
@@ -39,24 +39,6 @@ export class AccessKeyDataTable extends LitElement {
   @property({type: String}) language: string;
   @property({type: String}) sortColumn: string;
   @property({type: Boolean}) sortDescending: boolean;
-
-  static style = css`
-    .key {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .key-icon {
-      display: inline-flex;
-      height: 2rem;
-      width: 2rem;
-      background: gray;
-      border-radius: 50%;
-      align-items: center;
-      justify-content: center;
-    }
-  `;
 
   render() {
     return html`
@@ -109,9 +91,13 @@ export class AccessKeyDataTable extends LitElement {
             },
           ],
           [
-            'controls',
+            'controlsForId',
             {
-              render: this.renderControls,
+              render: controlsForId =>
+                html`<access-key-controls
+                  id=${controlsForId}
+                  .localize=${this.localize}
+                ></access-key-controls>`,
             },
           ],
         ])}
@@ -120,9 +106,5 @@ export class AccessKeyDataTable extends LitElement {
         sortDescending=${this.sortDescending}
       ></data-table>
     `;
-  }
-
-  renderControls() {
-    return html`<mwc-icon style="float: right;">more_vert</mwc-icon>`;
   }
 }

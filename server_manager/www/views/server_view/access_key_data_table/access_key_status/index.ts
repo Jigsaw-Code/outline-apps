@@ -29,6 +29,7 @@ export class AccessKeyStatus extends LitElement {
       --access-key-status-text-color: hsl(0, 0%, 79%);
       --access-key-status-font-family: 'Inter', system-ui;
       --access-key-status-indicator-size: 0.5rem;
+      --access-key-status-indicator-color: hsla(127, 67%, 59%, 1);
 
       font-family: var(--access-key-status-font-family);
       color: var(--access-key-status-text-color);
@@ -52,7 +53,7 @@ export class AccessKeyStatus extends LitElement {
     }
 
     .key-icon-indicator {
-      background: green;
+      background: var(--access-key-status-indicator-color);
       border-radius: 50%;
       bottom: 0;
       display: inline-block;
