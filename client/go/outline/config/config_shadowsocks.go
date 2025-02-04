@@ -114,10 +114,6 @@ func parseShadowsocksPacketListener(ctx context.Context, config ConfigNode, pars
 	if err != nil {
 		return nil, err
 	}
-	if params.SaltGenerator != nil {
-		return nil, fmt.Errorf("prefix is not yet supported for PacketDialers")
-	}
-
 	pe, err := parsePE(ctx, params.Endpoint)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create PacketEndpoint: %w", err)
