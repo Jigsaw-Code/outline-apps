@@ -1373,10 +1373,6 @@
       }
     }
   },
-  "server_view_server_metrics_devices_as_breakdown_unit_label": {
-    "description": "The unit label displayed alongside the devices connected breakdown by AS.",
-    "message": "Devices"
-  },
   "server_view_server_metrics_advanced_metrics_link": {
     "description": "The text of a link that directs the user to a help center article with more detailed information about accessing advanced server metrics.",
     "message": "Learn how to view detailed server metrics"
