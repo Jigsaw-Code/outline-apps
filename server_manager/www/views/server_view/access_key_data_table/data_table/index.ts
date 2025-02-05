@@ -21,21 +21,14 @@ import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 import '@material/mwc-icon';
 import '../../info_tooltip';
 
-export interface DataTableColumnProperties {
-  comparator?: (_value1: string, _value2: string) => -1 | 0 | 1;
+const INTERNAL_LIT_ENUM_HTML_RESULT = 1;
+
+export interface DataTableColumnProperties<T> {
+  comparator?: (_value1: T, _value2: T) => -1 | 0 | 1;
   name?: string;
-  render?: (_value: string) => TemplateResult<1>;
+  render: (_value: T) => TemplateResult<typeof INTERNAL_LIT_ENUM_HTML_RESULT>;
   tooltip?: string;
 }
-
-export const DEFAULT_COMPARATOR = (
-  value1: string,
-  value2: string
-): -1 | 0 | 1 => {
-  if (value1 === value2) return 0;
-  if (value1 < value2) return -1;
-  if (value1 > value2) return 1;
-};
 
 export const NUMERIC_COMPARATOR = (
   value1: string | number,
@@ -48,13 +41,10 @@ export const NUMERIC_COMPARATOR = (
   if (value1 > value2) return 1;
 };
 
-export const DEFAULT_RENDERER = (value: string): TemplateResult<1> =>
-  html`${value}`;
-
 @customElement('data-table')
-export class DataTable extends LitElement {
-  @property({type: Object}) columns: Map<string, DataTableColumnProperties>;
-  @property({type: Array}) data: {[columnName: string]: string}[];
+export class DataTable<T extends object> extends LitElement {
+  @property({type: Array}) columns: DataTableColumnProperties<T>[];
+  @property({type: Array}) data: T[];
 
   @property({type: String}) sortColumn?: string;
   @property({type: Boolean}) sortDescending?: boolean;
@@ -133,23 +123,21 @@ export class DataTable extends LitElement {
     return html`
       <style>
         :host {
-          --data-table-columns: ${this.columnIds.length};
+          --data-table-columns: ${this.columns.length};
         }
       </style>
       <div class="table-container">
         <table>
           <thead>
             <tr>
-              ${this.columnIds.map(columnName =>
-                this.renderHeaderCell(columnName)
-              )}
+              ${this.columns.map(column => this.renderHeaderCell(column))}
             </tr>
           </thead>
           <tbody>
             ${this.sortedData.map(row => {
               return html`<tr>
-                ${this.columnIds.map(columnId => {
-                  return this.renderDataCell(columnId, row[columnId]);
+                ${this.columns.map(column => {
+                  return html`<td>${column.render(row)}</td>`;
                 })}
               </tr>`;
             })}
@@ -159,15 +147,13 @@ export class DataTable extends LitElement {
     `;
   }
 
-  renderHeaderCell(columnId: string) {
-    const column = this.columns.get(columnId);
-
-    return html`<th @click=${() => this.fireSortEvent(columnId)}>
-      <span>${unsafeHTML(column.name)}</span>
-      ${column?.tooltip
-        ? html`<info-tooltip text=${column?.tooltip}></info-tooltip>`
+  renderHeaderCell(columnProperties: DataTableColumnProperties<T>) {
+    return html`<th @click=${() => this.fireSortEvent(columnProperties)}>
+      <span>${unsafeHTML(columnProperties.name)}</span>
+      ${columnProperties?.tooltip
+        ? html`<info-tooltip text=${columnProperties?.tooltip}></info-tooltip>`
         : nothing}
-      ${this.sortColumn === columnId
+      ${this.sortColumn === columnProperties.name
         ? html`<mwc-icon>
             ${this.sortDescending ? 'arrow_upward' : 'arrow_downward'}
           </mwc-icon>`
@@ -175,17 +161,15 @@ export class DataTable extends LitElement {
     </th>`;
   }
 
-  renderDataCell(columnId: string, rowValue: string) {
-    return html`<td>
-      ${(this.columns.get(columnId)?.render ?? DEFAULT_RENDERER)(rowValue)}
-    </td>`;
-  }
+  fireSortEvent(columnProperties: DataTableColumnProperties<T>) {
+    if (!columnProperties.comparator) {
+      return;
+    }
 
-  fireSortEvent(columnId: string) {
     this.dispatchEvent(
       new CustomEvent('DataTable::Sort', {
         detail: {
-          columnId,
+          columnName: columnProperties.name,
           sortDescending: !this.sortDescending,
         },
         bubbles: true,
@@ -194,26 +178,25 @@ export class DataTable extends LitElement {
     );
   }
 
-  private get columnIds() {
-    return [...this.columns.keys()];
-  }
-
   private get sortedData() {
     if (!this.sortColumn) {
       return this.data;
     }
 
-    const comparator =
-      this.columns.get(this.sortColumn)?.comparator ?? DEFAULT_COMPARATOR;
+    const comparator = this.columns.find(
+      ({name}) => name === this.sortColumn
+    )?.comparator;
+
+    if (!comparator) {
+      return this.data;
+    }
 
     return this.data.sort((row1, row2) => {
-      const [value1, value2] = [row1[this.sortColumn], row2[this.sortColumn]];
-
       if (this.sortDescending) {
-        return comparator(value2, value1);
+        return comparator(row2, row1);
       }
 
-      return comparator(value1, value2);
+      return comparator(row1, row2);
     });
   }
 }

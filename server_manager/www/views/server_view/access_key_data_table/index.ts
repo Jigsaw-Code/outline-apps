@@ -19,17 +19,18 @@ import {customElement, property} from 'lit/decorators.js';
 
 import './data_table';
 import {NUMERIC_COMPARATOR} from './data_table';
-import type {DataTableColumnProperties} from './data_table';
 
 import './access_key_status';
 import './access_key_controls';
 import './access_key_usage_meter';
 
 export interface AccessKeyDataTableRow {
-  nameAndStatus: string;
-  dataUsageAndLimit: string;
-  asCount: string;
-  controlsForId: string;
+  id: string;
+  name: string;
+  connected: boolean;
+  dataUsageBytes: number;
+  dataLimitBytes: number;
+  asCount: number;
 }
 
 @customElement('access-key-data-table')
@@ -43,67 +44,48 @@ export class AccessKeyDataTable extends LitElement {
   render() {
     return html`
       <data-table
-        .columns=${new Map<string, DataTableColumnProperties>([
-          [
-            'nameAndStatus',
-            {
-              name: this.localize('server-view-access-keys-key-column-header'),
-              render: nameAndStatus => {
-                const [name, status] = nameAndStatus.split(',');
-
-                return html`<access-key-status
-                  name=${name}
-                  .connected=${Boolean(status)}
-                ></access-key-status>`;
-              },
-            },
-          ],
-          [
-            'dataUsageAndLimit',
-            {
-              name: this.localize(
-                'server-view-access-keys-usage-column-header'
-              ),
-              tooltip: this.localize('server-view-access-keys-usage-tooltip'),
-              render: dataUsageAndLimit => {
-                const [dataUsageBytes, dataLimitBytes] =
-                  dataUsageAndLimit.split(',');
-
-                return html`<access-key-usage-meter
-                  dataUsageBytes=${Number(dataUsageBytes)}
-                  dataLimitBytes=${Number(dataLimitBytes)}
-                  .localize=${this.localize}
-                  language=${this.language}
-                ></access-key-usage-meter>`;
-              },
-            },
-          ],
-          [
-            'asCount',
-            {
-              name: this.localize(
-                'server-view-access-keys-as-count-column-header'
-              ),
-              tooltip: this.localize(
-                'server-view-access-keys-as-count-tooltip'
-              ),
-              comparator: NUMERIC_COMPARATOR,
-            },
-          ],
-          [
-            'controlsForId',
-            {
-              render: controlsForId =>
-                html`<access-key-controls
-                  id=${controlsForId}
-                  .localize=${this.localize}
-                ></access-key-controls>`,
-            },
-          ],
-        ])}
+        .columns=${[
+          {
+            name: this.localize('server-view-access-keys-key-column-header'),
+            render: ({name, connected}: AccessKeyDataTableRow) =>
+              html`<access-key-status
+                name=${name}
+                .connected=${connected}
+              ></access-key-status>`,
+          },
+          {
+            name: this.localize('server-view-access-keys-usage-column-header'),
+            tooltip: this.localize('server-view-access-keys-usage-tooltip'),
+            render: ({dataUsageBytes, dataLimitBytes}: AccessKeyDataTableRow) =>
+              html`<access-key-usage-meter
+                dataUsageBytes=${dataUsageBytes}
+                dataLimitBytes=${dataLimitBytes}
+                .localize=${this.localize}
+                language=${this.language}
+              ></access-key-usage-meter>`,
+          },
+          {
+            name: this.localize(
+              'server-view-access-keys-as-count-column-header'
+            ),
+            tooltip: this.localize('server-view-access-keys-as-count-tooltip'),
+            render: ({asCount}: AccessKeyDataTableRow) => html`${asCount}`,
+            comparator: (
+              row1: AccessKeyDataTableRow,
+              row2: AccessKeyDataTableRow
+            ) => NUMERIC_COMPARATOR(row1.asCount, row2.asCount),
+          },
+          {
+            render: ({id}: AccessKeyDataTableRow) =>
+              html`<access-key-controls
+                id=${id}
+                .localize=${this.localize}
+              ></access-key-controls>`,
+          },
+        ]}
         .data=${this.accessKeys}
         sortColumn=${this.sortColumn}
-        sortDescending=${this.sortDescending}
+        .sortDescending=${this.sortDescending}
       ></data-table>
     `;
   }

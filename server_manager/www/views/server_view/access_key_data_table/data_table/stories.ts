@@ -17,80 +17,50 @@
 import {html} from 'lit';
 
 import './index';
-import {DataTable, NUMERIC_COMPARATOR} from './index';
-import type {DataTableColumnProperties} from './index';
+import {NUMERIC_COMPARATOR} from './index';
 
 export default {
   title: 'Manager/Server View/Access Key Data Table/Data Table',
   component: 'data-table',
-  args: {
-    columns: [
-      ['id', {name: 'ID'}],
-      ['value', {name: 'Value'}],
-    ],
-    data: [
-      {id: '0', value: 'value-0'},
-      {id: '1', value: 'value-1'},
-      {id: '2', value: 'value-2'},
-    ],
-    sortColumn: 'id',
-    sortDescending: true,
-  },
-};
-
-export const BasicExample = ({
-  columns,
-  data,
-  sortColumn,
-  sortDescending,
-}: DataTable) => {
-  return html`<data-table
-    .columns=${new Map(columns)}
-    .data=${data}
-    .sortColumn=${sortColumn}
-    .sortDescending=${sortDescending}
-  />`;
 };
 
 export const RenderExample = () => {
   return html`<data-table
-    .columns=${new Map<string, DataTableColumnProperties>([
-      ['name', {name: 'Employee Name'}],
-      [
-        'tags',
-        {
-          render(value: string) {
-            const tags = value.split(',');
-
-            return html`${tags.map(
-              tag =>
-                html`<span
-                  style="background-color: hsl(200, 9%, 48%); color: white; padding: 2px 6px; margin: 2px; border-radius: 5px;"
-                  >${tag}</span
-                >`
-            )}`;
-          },
-          name: 'Tags',
-          tooltip: 'Tooltip for the employee tags',
+    .columns=${[
+      {
+        name: 'Employee Name',
+        render: ({name}: {name: string}) => html`${name}`,
+      },
+      {
+        name: 'Tags',
+        tooltip: 'Tooltip for the employee tags',
+        render({tags}: {tags: Array<string>}) {
+          return html`${tags.map(
+            tag =>
+              html`<span
+                style="background-color: hsl(200, 9%, 48%); color: white; padding: 2px 6px; margin: 2px; border-radius: 5px;"
+                >${tag}</span
+              >`
+          )}`;
         },
-      ],
-    ])}
+      },
+    ]}
     .data=${[
       {
         name: 'Vini',
-        tags: 'Lead,IC,Manager',
+        tags: ['Lead', 'IC', 'Manager'],
       },
       {
         name: 'Sander',
-        tags: 'Lead,IC',
+        tags: ['Lead', 'IC'],
       },
       {
         name: 'Jyyi',
-        tags: 'IC',
+        tags: ['IC'],
       },
       {
         name: 'Daniel',
-        tags: 'IC',
+        tags: ['IC'],
       },
     ]}
   />`;
@@ -98,36 +68,33 @@ export const RenderExample = () => {
 
 export const ComparatorExample = () => {
   return html`<data-table
-    .columns=${new Map([
-      [
-        'name',
-        {
-          name: 'Player Name',
-        },
-      ],
-      [
-        'score',
-        {
-          name: 'Score',
-          comparator: NUMERIC_COMPARATOR,
-        },
-      ],
-    ])}
+    .columns=${[
+      {
+        name: 'Player Name',
+        render: ({name}: {name: string}) => html`${name}`,
+      },
+      {
+        name: 'Score',
+        render: ({score}: {score: number}) => html`${score}`,
+        comparator: (row1: {score: number}, row2: {score: number}) =>
+          NUMERIC_COMPARATOR(row1.score, row2.score),
+      },
+    ]}
     .data=${[
       {
         name: 'graxxxor23',
-        score: '32342',
+        score: 32342,
       },
       {
         name: 'kron3_killa',
-        score: '123',
+        score: 123,
       },
       {
         name: 'bigbungus1007',
-        score: '123432',
+        score: 123432,
       },
     ]}
-    .sortColumn=${'score'}
+    .sortColumn=${'Score'}
     .sortDescending=${true}
   />`;
 };
@@ -144,10 +111,10 @@ export const HeavyDataExample = () => {
   }
 
   return html`<data-table
-    .columns=${new Map([
-      ['id', {name: 'ID'}],
-      ['value', {name: 'Value'}],
-    ])}
+    .columns=${[
+      {name: 'ID', render: ({id}: {id: string}) => html`${id}`},
+      {name: 'Value', render: ({value}: {value: string}) => html`${value}`},
+    ]}
     .data=${data}
   />`;
 };
