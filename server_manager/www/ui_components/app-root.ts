@@ -709,7 +709,7 @@ export class AppRoot extends polymerElementWithLocalize {
   static get properties(): PolymerElementProperties {
     return {
       // Properties language and useKeyIfMissing are used by Polymer.AppLocalizeBehavior.
-      language: {type: String},
+      language: {type: String, value: 'en'},
       supportedLanguages: {type: Array},
       useKeyIfMissing: {type: Boolean},
       serverList: {type: Array},
