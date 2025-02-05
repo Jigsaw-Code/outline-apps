@@ -35,21 +35,21 @@ export class ServerMetricsRow extends LitElement {
 
   static styles = css`
     :host {
-      --server-metrics-row-background: hsl(200, 15%, 18%);
+      --server-metrics-row-background: hsl(200, 10.7%, 22%);
       --server-metrics-row-font-family: 'Inter', system-ui;
-      --server-metrics-row-icon-size: 1.85rem;
-      --server-metrics-row-padding: 1.25rem 2rem;
+      --server-metrics-row-icon-size: 1.38rem;
+      --server-metrics-row-padding: 0.9rem 1.5rem;
       --server-metrics-row-text-color: hsla(0, 0%, 100%, 0.8);
 
       --server-metrics-row-title-color: hsla(0, 0%, 100%, 0.7);
-      --server-metrics-row-value-container-margin-top: 1rem;
-      --server-metrics-row-title-container-gap: 0.35rem;
-      --server-metrics-row-title-font-size: 1.3rem;
+      --server-metrics-row-value-container-margin-top: 0.75rem;
+      --server-metrics-row-title-container-gap: 0.25rem;
+      --server-metrics-row-title-font-size: 1rem;
 
-      --server-metrics-row-value-font-size: 3rem;
+      --server-metrics-row-value-font-size: 2.25rem;
       --server-metrics-row-value-font-family: 'Roboto', system-ui;
-      --server-metrics-row-value-label-font-size: 1.1rem;
-      --server-metrics-row-value-label-margin-left: 0.25rem;
+      --server-metrics-row-value-label-font-size: 0.825rem;
+      --server-metrics-row-value-label-margin-left: 0.2rem;
 
       --server-metrics-row-tooltip-background: hsl(0, 0%, 94%);
       --server-metrics-row-tooltip-border-radius: 0.3rem;
@@ -59,11 +59,11 @@ export class ServerMetricsRow extends LitElement {
 
       --server-metrics-row-footer-top-border: 1px solid hsla(0, 0%, 100%, 0.35);
 
-      --server-metrics-row-subtitle-font-size: 1rem;
-      --server-metrics-row-subtitle-margin-bottom: 1rem;
+      --server-metrics-row-subtitle-font-size: 0.75rem;
+      --server-metrics-row-subtitle-margin-bottom: 0.75rem;
 
-      --server-metrics-row-subcards-gap: 0.75rem;
-      --server-metrics-row-subcards-min-width: 320px;
+      --server-metrics-row-subcards-gap: 0.56rem;
+      --server-metrics-row-subcards-min-width: 180px;
     }
 
     section {

@@ -33,8 +33,7 @@ import './outline-server-progress-step';
 import './outline-server-settings';
 import './outline-share-dialog';
 import './outline-sort-span';
-import '../views/server_view/server_stat_grid';
-import '../views/server_view/server_stat_card';
+import '../views/server_view/server_metrics_row';
 import {html, PolymerElement} from '@polymer/polymer';
 import type {PolymerElementProperties} from '@polymer/polymer/interfaces';
 import type {DomRepeat} from '@polymer/polymer/lib/elements/dom-repeat';
@@ -47,6 +46,7 @@ import type {CloudLocation} from '../../model/location';
 import type {AccessKeyId} from '../../model/server';
 import * as formatting from '../data_formatting';
 import {getShortName} from '../location_formatting';
+import type {ServerMetricsRowSubcard} from '../views/server_view/server_metrics_row/server_metrics_row_subcard';
 
 export const MY_CONNECTION_USER_ID = '0';
 
@@ -398,14 +398,12 @@ export class ServerView extends DirMixin(PolymerElement) {
         }
 
         div[name='metrics'] {
-          margin-top: 15px;
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+          margin-top: 1rem;
         }
 
-        :host {
-          --server-stat-card-background: var(--background-contrast-color);
-          --server-stat-card-foreground: var(--medium-gray);
-          --server-stat-card-highlight: var(--light-gray);
-        }
         /* Mirror icons */
         :host(:dir(rtl)) iron-icon,
         :host(:dir(rtl)) .share-button,
@@ -586,9 +584,11 @@ export class ServerView extends DirMixin(PolymerElement) {
           </template>
           <template is="dom-if" if="{{featureFlags.serverMetricsTab}}">
             <paper-tab name="connections">
-              [[localize('server-access-key-tab', accessKeyRows.length)]]
+              [[localize('server-view-access-keys-tab', accessKeyRows.length)]]
             </paper-tab>
-            <paper-tab name="metrics">[[localize('server-metrics')]]</paper-tab>
+            <paper-tab name="metrics"
+              >[[localize('server-view-server-metrics-tab')]]</paper-tab
+            >
           </template>
           <paper-tab name="settings" id="settingsTab"
             >[[localize('server-settings')]]</paper-tab
@@ -819,11 +819,25 @@ export class ServerView extends DirMixin(PolymerElement) {
                 ></iron-icon>
               </a>
             </aside>
-            <server-stat-grid
-              columns="3"
-              rows="1"
-              stats="[[serverMetrics]]"
-            ></server-stat-grid>
+            <server-metrics-row
+              title="[[localize('server-view-server-metrics-bandwidth-title')]]"
+              titleIcon="data_usage"
+              tooltip="[[localize('server-view-server-metrics-bandwidth-tooltip')]]"
+              value="[[_computeManagedServerUtilizationPercentage(totalInboundBytes, monthlyOutboundTransferBytes)]]"
+              value-label="[[bandwidthUsageTotal]] /[[_formatBytesTransferred(monthlyOutboundTransferBytes,
+                    language)]]"
+              subtitle="[[localize('server-view-server-metrics-bandwidth-as-breakdown')]]"
+              subcards="[[bandwidthUsageRegions]]"
+            ></server-metrics-row>
+            <server-metrics-row
+              title="[[localize('server-view-server-metrics-tunnel-time-title')]]"
+              titleIcon="timer"
+              tooltip="[[localize('server-view-server-metrics-tunnel-time-tooltip')]]"
+              value="[[tunnelTimeTotal]]"
+              value-label="[[tunnelTimeTotalLabel]]"
+              subtitle="[[localize('server-view-server-metrics-tunnel-time-as-breakdown')]]"
+              subcards="[[tunnelTimeRegions]]"
+            ></server-metrics-row>
           </div>
         </template>
         <div name="settings">
@@ -861,52 +875,56 @@ export class ServerView extends DirMixin(PolymerElement) {
 
   static get properties(): PolymerElementProperties {
     return {
-      metricsId: String,
-      serverId: String,
-      serverName: String,
-      serverHostname: String,
-      serverVersion: String,
-      isHostnameEditable: Boolean,
-      serverManagementApiUrl: String,
-      serverPortForNewAccessKeys: Number,
-      isAccessKeyPortEditable: Boolean,
-      serverCreationDate: Date,
-      cloudLocation: Object,
-      cloudId: String,
-      defaultDataLimitBytes: Number,
-      isDefaultDataLimitEnabled: Boolean,
-      supportsDefaultDataLimit: Boolean,
-      showFeatureMetricsDisclaimer: Boolean,
-      installProgress: Number,
-      isServerReachable: Boolean,
-      retryDisplayingServer: Function,
-      totalInboundBytes: Number,
-      totalUserHours: Number,
-      totalAverageDevices: Number,
-      baselineDataTransfer: Number,
       accessKeyRows: Array,
-      hasNonAdminAccessKeys: Boolean,
-      metricsEnabled: Boolean,
-      monthlyOutboundTransferBytes: Number,
-      monthlyCost: Number,
       accessKeySortBy: String,
       accessKeySortDirection: Number,
+      bandwidthUsage: String,
+      bandwidthUsageRegions: Array,
+      baselineDataTransfer: Number,
+      cloudId: String,
+      cloudLocation: Object,
+      defaultDataLimitBytes: Number,
+      featureFlags: Object,
+      hasNonAdminAccessKeys: Boolean,
+      installProgress: Number,
+      isAccessKeyPortEditable: Boolean,
+      isDefaultDataLimitEnabled: Boolean,
+      isHostnameEditable: Boolean,
+      isServerReachable: Boolean,
       language: String,
       localize: Function,
+      metricsEnabled: Boolean,
+      metricsId: String,
+      monthlyCost: Number,
+      monthlyOutboundTransferBytes: Number,
+      retryDisplayingServer: Function,
       selectedPage: String,
       selectedTab: String,
-      featureFlags: Object,
-      serverMetrics: {
-        type: Array,
-        computed:
-          '_computeServerMetrics(totalAverageDevices, totalUserHours, totalInboundBytes, language)',
-      },
+      serverCreationDate: Date,
+      serverHostname: String,
+      serverId: String,
+      serverManagementApiUrl: String,
+      serverName: String,
+      serverPortForNewAccessKeys: Number,
+      serverVersion: String,
+      showFeatureMetricsDisclaimer: Boolean,
+      supportsDefaultDataLimit: Boolean,
+      totalInboundBytes: Number,
+      tunnelTimeRegions: Array,
+      tunnelTimeTotal: String,
     };
   }
 
   static get observers() {
     return ['_accessKeysAddedOrRemoved(accessKeyRows.splices)'];
   }
+
+  bandwidthUsageTotal = '';
+  bandwidthUsageRegions: Partial<ServerMetricsRowSubcard>[] = [];
+
+  tunnelTimeTotal = '';
+  tunnelTimeTotalLabel = '';
+  tunnelTimeRegions: Partial<ServerMetricsRowSubcard>[] = [];
 
   serverId = '';
   metricsId = '';
@@ -933,7 +951,6 @@ export class ServerView extends DirMixin(PolymerElement) {
   /** Callback for retrying to display an unreachable server. */
   retryDisplayingServer: () => void = null;
   totalInboundBytes = 0;
-  totalUserHours = 0;
   totalAverageDevices = 0;
   /** The number to which access key transfer amounts are compared for progress bar display */
   baselineDataTransfer = Number.POSITIVE_INFINITY;
@@ -1026,33 +1043,6 @@ export class ServerView extends DirMixin(PolymerElement) {
   /** Returns the UI access key with the given ID. */
   findUiKey(id: AccessKeyId): DisplayAccessKey {
     return this.accessKeyRows.find(key => key.id === id);
-  }
-
-  _computeServerMetrics(
-    totalAverageDevices: number,
-    totalUserHours: number,
-    totalInboundBytes: number,
-    language: string
-  ) {
-    return [
-      {
-        icon: 'devices',
-        name: this.localize('server-metrics-average-devices'),
-        value: totalAverageDevices.toFixed(2),
-      },
-      {
-        icon: 'timer',
-        name: this.localize('server-metrics-user-hours'),
-        units: this._formatHourUnits(totalUserHours, language),
-        value: this._formatHourValue(totalUserHours, language),
-      },
-      {
-        icon: 'swap_horiz',
-        name: this.localize('server-metrics-data-transferred'),
-        units: this._formatInboundBytesUnit(totalInboundBytes, language),
-        value: this._formatInboundBytesValue(totalInboundBytes, language),
-      },
-    ];
   }
 
   _closeAddAccessKeyHelpBubble() {
@@ -1197,35 +1187,6 @@ export class ServerView extends DirMixin(PolymerElement) {
       return '';
     }
     return formatting.formatBytesParts(totalBytes, language).value;
-  }
-
-  _formatHourUnits(hours: number, language: string) {
-    // This happens during app startup before we set the language
-    if (!language) {
-      return '';
-    }
-
-    const formattedValue = this._formatHourValue(hours, language);
-    const formattedValueAndUnit = new Intl.NumberFormat(language, {
-      style: 'unit',
-      unit: 'hour',
-      unitDisplay: 'long',
-    }).format(hours);
-
-    return formattedValueAndUnit
-      .split(formattedValue)
-      .find(_ => _)
-      .trim();
-  }
-
-  _formatHourValue(hours: number, language: string) {
-    // This happens during app startup before we set the language
-    if (!language) {
-      return '';
-    }
-    return new Intl.NumberFormat(language, {
-      unit: 'hour',
-    }).format(hours);
   }
 
   _formatBytesTransferred(numBytes: number, language: string, emptyValue = '') {
