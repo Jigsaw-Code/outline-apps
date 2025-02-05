@@ -24,8 +24,16 @@ export class AccessKeyUsageMeter extends LitElement {
   @property({type: String}) language: string;
   @property({type: Number}) dataUsageBytes: number;
   @property({type: Number}) dataLimitBytes: number;
-  @property({type: Number}) dataLimitWarningThreshold: number = 80;
+  @property({type: Number}) dataLimitWarningThreshold: number = 0.8;
   @property({type: Object}) localize: (messageId: string) => string;
+
+  @property({type: Boolean, reflect: true})
+  get dataLimitWarning() {
+    return (
+      this.dataUsageBytes / this.dataLimitBytes >=
+      this.dataLimitWarningThreshold
+    );
+  }
 
   static styles = css`
     :host {
@@ -47,7 +55,7 @@ export class AccessKeyUsageMeter extends LitElement {
       font-family: var(--access-key-usage-meter-font-family);
     }
 
-    .warning > label {
+    :host([dataLimitWarning]) > label {
       color: var(--access-key-usage-meter-warning-text-color);
     }
 
@@ -67,18 +75,13 @@ export class AccessKeyUsageMeter extends LitElement {
       background: var(--access-key-usage-meter-color);
     }
 
-    .warning > progress[value]::-webkit-progress-value {
+    :host([dataLimitWarning]) > progress[value]::-webkit-progress-value {
       background: var(--access-key-usage-meter-warning-color);
     }
   `;
 
   render() {
-    const isApproachingDataLimit =
-      (this.dataUsageBytes / this.dataLimitBytes) * 100 >=
-      this.dataLimitWarningThreshold;
-
-    return html`<div class=${isApproachingDataLimit ? 'warning' : ''}>
-      <progress
+    return html`<progress
         id="progress"
         max=${this.dataLimitBytes}
         value=${this.dataUsageBytes}
@@ -86,10 +89,9 @@ export class AccessKeyUsageMeter extends LitElement {
       <label for="progress">
         ${formatBytes(this.dataUsageBytes, this.language)} /
         ${formatBytes(this.dataLimitBytes, this.language)}
-        ${isApproachingDataLimit
+        ${this.dataLimitWarning
           ? this.localize('server-view-access-keys-usage-limit')
           : nothing}
-      </label>
-    </div>`;
+      </label>`;
   }
 }

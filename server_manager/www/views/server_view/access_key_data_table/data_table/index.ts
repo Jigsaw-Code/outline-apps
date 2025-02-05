@@ -23,36 +23,64 @@ import '../../info_tooltip';
 
 const INTERNAL_LIT_ENUM_HTML_RESULT = 1;
 
-export interface DataTableColumnProperties<T> {
-  comparator?: (_value1: T, _value2: T) => -1 | 0 | 1;
-  name?: string;
-  render: (_value: T) => TemplateResult<typeof INTERNAL_LIT_ENUM_HTML_RESULT>;
-  tooltip?: string;
-}
+/**
+ * A function that compares two values of type T and returns a number indicating their relative order.
+ *
+ * @template T The type of the values being compared.
+ * @param {T} value1 The first value to compare.
+ * @param {T} value2 The second value to compare.
+ * @returns {-1 | 0 | 1} A negative number if value1 is less than value2, zero if they are equal, or a positive number if value1 is greater than value2.
+ */
+export type Comparator<T> = (value1: T, value2: T) => -1 | 0 | 1;
 
-export const NUMERIC_COMPARATOR = (
-  value1: string | number,
-  value2: string | number
+/**
+ * A default comparator function for numerical data.
+ *
+ * @param {number} value1 The first numerical value.
+ * @param {number} value2 The second numerical value.
+ * @returns {-1 | 0 | 1}  -1 if value1 < value2, 0 if value1 === value2, 1 if value1 > value2.
+ */
+export const defaultNumericComparator: Comparator<number> = (
+  value1: number,
+  value2: number
 ): -1 | 0 | 1 => {
-  [value1, value2] = [Number(value1), Number(value2)];
-
   if (value1 === value2) return 0;
   if (value1 < value2) return -1;
   if (value1 > value2) return 1;
 };
 
+/**
+ * Enum representing the sort direction of a DataTable column.
+ */
 export enum DataTableSortDirection {
   ASCENDING = 'ascending',
   DESCENDING = 'descending',
   NONE = 'none',
 }
 
+/**
+ * Properties describing a column in a DataTable.
+ *
+ * @template T The type of data represented in the column.
+ */
+export interface DataTableColumnProperties<T> {
+  comparator?: Comparator<T>;
+  displayName?: string;
+  id: string;
+  render: (_value: T) => TemplateResult<typeof INTERNAL_LIT_ENUM_HTML_RESULT>;
+  tooltip?: string;
+}
+
+// TODO: this table is meant to collapse when a certain container size is reached, but
+// our current version of Electron dosen't support it. Add a container query once
+// electron is upgraded.
+
 @customElement('data-table')
 export class DataTable<T extends object> extends LitElement {
   @property({type: Array}) columns: DataTableColumnProperties<T>[];
   @property({type: Array}) data: T[];
 
-  @property({type: String}) sortColumn?: string;
+  @property({type: String}) sortColumnId?: string;
   @property({type: String}) sortDirection: DataTableSortDirection =
     DataTableSortDirection.NONE;
 
@@ -96,7 +124,6 @@ export class DataTable<T extends object> extends LitElement {
       font-weight: bold;
       position: sticky;
       top: 0;
-      z-index: 1;
     }
 
     th,
@@ -133,24 +160,22 @@ export class DataTable<T extends object> extends LitElement {
           --data-table-columns: ${this.columns.length};
         }
       </style>
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              ${this.columns.map(column => this.renderHeaderCell(column))}
-            </tr>
-          </thead>
-          <tbody>
-            ${this.sortedData.map(row => {
-              return html`<tr>
-                ${this.columns.map(column => {
-                  return html`<td>${column.render(row)}</td>`;
-                })}
-              </tr>`;
-            })}
-          </tbody>
-        </table>
-      </div>
+      <table>
+        <thead>
+          <tr>
+            ${this.columns.map(column => this.renderHeaderCell(column))}
+          </tr>
+        </thead>
+        <tbody>
+          ${this.sortedData.map(row => {
+            return html`<tr>
+              ${this.columns.map(column => {
+                return html`<td>${column.render(row)}</td>`;
+              })}
+            </tr>`;
+          })}
+        </tbody>
+      </table>
     `;
   }
 
@@ -169,24 +194,24 @@ export class DataTable<T extends object> extends LitElement {
         sortIcon = nothing;
     }
 
-    return html`<th @click=${() => this.fireSortEvent(columnProperties)}>
-      <span>${unsafeHTML(columnProperties.name)}</span>
+    return html`<th @click=${() => this.sort(columnProperties)}>
+      <span>${unsafeHTML(columnProperties.displayName)}</span>
       ${columnProperties?.tooltip
         ? html`<info-tooltip text=${columnProperties?.tooltip}></info-tooltip>`
         : nothing}
-      ${this.sortColumn === columnProperties.name ? sortIcon : nothing}
+      ${this.sortColumnId === columnProperties.id ? sortIcon : nothing}
     </th>`;
   }
 
-  fireSortEvent(columnProperties: DataTableColumnProperties<T>) {
+  sort(columnProperties: DataTableColumnProperties<T>) {
     if (!columnProperties.comparator) {
       return;
     }
 
     this.dispatchEvent(
-      new CustomEvent('DataTable::Sort', {
+      new CustomEvent('DataTable.Sort', {
         detail: {
-          columnName: columnProperties.name,
+          columnId: columnProperties.id,
           sortDirection: this.sortDirection,
         },
         bubbles: true,
@@ -197,14 +222,14 @@ export class DataTable<T extends object> extends LitElement {
 
   private get sortedData() {
     if (
-      !this.sortColumn ||
+      !this.sortColumnId ||
       this.sortDirection === DataTableSortDirection.NONE
     ) {
       return this.data;
     }
 
     const comparator = this.columns.find(
-      ({name}) => name === this.sortColumn
+      ({id}) => id === this.sortColumnId
     )?.comparator;
 
     if (!comparator) {

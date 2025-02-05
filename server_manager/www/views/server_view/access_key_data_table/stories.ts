@@ -77,14 +77,14 @@ export const Example = ({
   accessKeys,
   localize,
   language,
-  sortColumn,
+  sortColumnId,
   sortDirection,
 }: AccessKeyDataTable) => {
   return html`<access-key-data-table
     .accessKeys=${accessKeys}
     .localize=${localize}
     language=${language}
-    sortColumn=${sortColumn}
+    sortColumnId=${sortColumnId}
     sortDirection=${sortDirection}
   />`;
 };

@@ -19,6 +19,7 @@ import {customElement, property} from 'lit/decorators.js';
 
 import '@material/mwc-icon';
 
+// TODO: this tooltip is naive - we should switch to the Popover API once we upgrade Electron
 @customElement('info-tooltip')
 export class InformationTooltip extends LitElement {
   @property({type: String}) text: string;
@@ -34,9 +35,7 @@ export class InformationTooltip extends LitElement {
       --info-tooltip-icon-size: 1.85rem;
 
       --mdc-icon-size: var(--info-tooltip-icon-size);
-    }
 
-    .tooltip-container {
       cursor: help;
       position: relative;
       display: inline-flex;
@@ -59,16 +58,16 @@ export class InformationTooltip extends LitElement {
       word-wrap: break-word;
     }
 
-    .tooltip-container:hover .tooltip {
+    :host:hover .tooltip {
       visibility: visible;
       opacity: 1;
     }
   `;
 
   render() {
-    return html`<div class="tooltip-container">
+    return html`
       <mwc-icon>info</mwc-icon>
       <span class="tooltip">${this.text}</span>
-    </div>`;
+    `;
   }
 }

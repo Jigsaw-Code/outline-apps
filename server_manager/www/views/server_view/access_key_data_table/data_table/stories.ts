@@ -17,7 +17,7 @@
 import {html} from 'lit';
 
 import './index';
-import {DataTableSortDirection, NUMERIC_COMPARATOR} from './index';
+import {DataTableSortDirection, defaultNumericComparator} from './index';
 
 export default {
   title: 'Manager/Server View/Access Key Data Table/Data Table',
@@ -28,11 +28,13 @@ export const RenderExample = () => {
   return html`<data-table
     .columns=${[
       {
-        name: 'Employee Name',
+        id: 'name',
+        displayName: 'Employee Name',
         render: ({name}: {name: string}) => html`${name}`,
       },
       {
-        name: 'Tags',
+        id: 'tags',
+        displayName: 'Tags',
         tooltip: 'Tooltip for the employee tags',
         render({tags}: {tags: Array<string>}) {
           return html`${tags.map(
@@ -70,14 +72,16 @@ export const ComparatorExample = () => {
   return html`<data-table
     .columns=${[
       {
-        name: 'Player Name',
+        id: 'name',
+        displayName: 'Player Name',
         render: ({name}: {name: string}) => html`${name}`,
       },
       {
-        name: 'Score',
+        id: 'score',
+        displayName: 'Score',
         render: ({score}: {score: number}) => html`${score}`,
         comparator: (row1: {score: number}, row2: {score: number}) =>
-          NUMERIC_COMPARATOR(row1.score, row2.score),
+          defaultNumericComparator(row1.score, row2.score),
       },
     ]}
     .data=${[
@@ -94,8 +98,8 @@ export const ComparatorExample = () => {
         score: 123432,
       },
     ]}
-    .sortColumn=${'Score'}
-    .sortDirection=${DataTableSortDirection.ASCENDING}
+    sortColumnId="score"
+    sortDirection=${DataTableSortDirection.ASCENDING}
   />`;
 };
 
@@ -112,8 +116,16 @@ export const HeavyDataExample = () => {
 
   return html`<data-table
     .columns=${[
-      {name: 'ID', render: ({id}: {id: string}) => html`${id}`},
-      {name: 'Value', render: ({value}: {value: string}) => html`${value}`},
+      {
+        id: 'id',
+        displayName: 'ID',
+        render: ({id}: {id: string}) => html`${id}`,
+      },
+      {
+        id: 'value',
+        displayName: 'Value',
+        render: ({value}: {value: string}) => html`${value}`,
+      },
     ]}
     .data=${data}
   />`;

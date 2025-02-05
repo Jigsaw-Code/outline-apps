@@ -17,17 +17,28 @@
 import type {IconButton} from '@material/mwc-icon-button';
 import type {Menu} from '@material/mwc-menu';
 
-import {LitElement, html, css} from 'lit';
+import {LitElement, html, css, nothing} from 'lit';
 import {customElement, property, query} from 'lit/decorators.js';
+import {gte as versionGreaterThanOrEqualTo} from 'semver';
 
 import '@material/mwc-icon-button';
 import '@material/mwc-icon';
 import '@material/mwc-menu';
 
+/**
+ * The version at which the outline server starts supporting data limits.
+ * Don't show options having to do with data limits if they aren't supported.
+ *
+ * @type {string}
+ */
+export const SERVER_DATA_LIMITS_SUPPORT_VERSION = '1.6.0';
+
 @customElement('access-key-controls')
 export class AccessKeyControls extends LitElement {
   @property({type: Object}) localize: (messageId: string) => string;
   @property({type: String}) id: string;
+  @property({type: String}) serverVersion: string =
+    SERVER_DATA_LIMITS_SUPPORT_VERSION;
 
   @query('#menuButton') menuButton: IconButton;
   @query('#menu') menu: Menu;
@@ -45,10 +56,7 @@ export class AccessKeyControls extends LitElement {
   render() {
     return html`
       <span class="wrapper">
-        <mwc-icon-button
-          icon="share"
-          @click=${this.fireShareEvent}
-        ></mwc-icon-button>
+        <mwc-icon-button icon="share" @click=${this.share}></mwc-icon-button>
         <mwc-icon-button
           icon="more_vert"
           id="menuButton"
@@ -58,27 +66,31 @@ export class AccessKeyControls extends LitElement {
           }}
         ></mwc-icon-button>
         <mwc-menu id="menu" corner="TOP_LEFT" menuCorner="END">
-          <mwc-list-item @click=${this.fireEditNameEvent} graphic="icon">
+          <mwc-list-item @click=${this.editName} graphic="icon">
             <mwc-icon slot="graphic">create</mwc-icon>
             ${this.localize('server-access-key-rename')}
           </mwc-list-item>
-          <mwc-list-item @click=${this.fireDeleteEvent} graphic="icon">
+          <mwc-list-item @click=${this.delete} graphic="icon">
             <mwc-icon slot="graphic">delete</mwc-icon>
             ${this.localize('remove')}
           </mwc-list-item>
-          <!-- TODO: hide this on versions 1.6 or earlier? -->
-          <mwc-list-item @click=${this.fireEditDataLimitEvent} graphic="icon">
-            <mwc-icon slot="graphic">perm_data_setting</mwc-icon>
-            ${this.localize('data-limit')}
-          </mwc-list-item>
+          ${versionGreaterThanOrEqualTo(
+            this.serverVersion,
+            SERVER_DATA_LIMITS_SUPPORT_VERSION
+          )
+            ? html`<mwc-list-item @click=${this.editDataLimit} graphic="icon">
+                <mwc-icon slot="graphic">perm_data_setting</mwc-icon>
+                ${this.localize('data-limit')}
+              </mwc-list-item>`
+            : nothing}
         </mwc-menu>
       </span>
     `;
   }
 
-  fireDeleteEvent() {
+  delete() {
     this.dispatchEvent(
-      new CustomEvent('AccessKeyControls::Delete', {
+      new CustomEvent('AccessKeyControls.Delete', {
         bubbles: true,
         composed: true,
         detail: {id: this.id},
@@ -86,9 +98,9 @@ export class AccessKeyControls extends LitElement {
     );
   }
 
-  fireEditDataLimitEvent() {
+  editDataLimit() {
     this.dispatchEvent(
-      new CustomEvent('AccessKeyControls::EditDataLimit', {
+      new CustomEvent('AccessKeyControls.EditDataLimit', {
         bubbles: true,
         composed: true,
         detail: {id: this.id},
@@ -96,9 +108,9 @@ export class AccessKeyControls extends LitElement {
     );
   }
 
-  fireEditNameEvent() {
+  editName() {
     this.dispatchEvent(
-      new CustomEvent('AccessKeyControls::EditName', {
+      new CustomEvent('AccessKeyControls.EditName', {
         bubbles: true,
         composed: true,
         detail: {id: this.id},
@@ -106,9 +118,9 @@ export class AccessKeyControls extends LitElement {
     );
   }
 
-  fireShareEvent() {
+  share() {
     this.dispatchEvent(
-      new CustomEvent('AccessKeyControls::Share', {
+      new CustomEvent('AccessKeyControls.Share', {
         bubbles: true,
         composed: true,
         detail: {id: this.id},

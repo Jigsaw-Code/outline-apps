@@ -33,5 +33,6 @@ export const Example = {
         } as {[key: string]: string}
       )[key];
     },
+    serverVersion: '1.6.0',
   },
 };

@@ -17,12 +17,12 @@
 import {LitElement, html} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 
-import './data_table';
-import {DataTableSortDirection, NUMERIC_COMPARATOR} from './data_table';
-
-import './access_key_status';
 import './access_key_controls';
+import {SERVER_DATA_LIMITS_SUPPORT_VERSION} from './access_key_controls';
+import './access_key_status';
 import './access_key_usage_meter';
+import './data_table';
+import {DataTableSortDirection, defaultNumericComparator} from './data_table';
 
 export interface AccessKeyDataTableRow {
   id: string;
@@ -30,7 +30,7 @@ export interface AccessKeyDataTableRow {
   connected: boolean;
   dataUsageBytes: number;
   dataLimitBytes: number;
-  asCount: number;
+  asnCount: number;
 }
 
 @customElement('access-key-data-table')
@@ -38,7 +38,9 @@ export class AccessKeyDataTable extends LitElement {
   @property({type: Array}) accessKeys: AccessKeyDataTableRow[];
   @property({type: Object}) localize: (messageId: string) => string;
   @property({type: String}) language: string;
-  @property({type: String}) sortColumn: string;
+  @property({type: String}) serverVersion: string =
+    SERVER_DATA_LIMITS_SUPPORT_VERSION;
+  @property({type: String}) sortColumnId: string;
   @property({type: String}) sortDirection: DataTableSortDirection =
     DataTableSortDirection.NONE;
 
@@ -47,7 +49,10 @@ export class AccessKeyDataTable extends LitElement {
       <data-table
         .columns=${[
           {
-            name: this.localize('server-view-access-keys-key-column-header'),
+            id: 'name',
+            displayName: this.localize(
+              'server-view-access-keys-key-column-header'
+            ),
             render: ({name, connected}: AccessKeyDataTableRow) =>
               html`<access-key-status
                 name=${name}
@@ -55,7 +60,10 @@ export class AccessKeyDataTable extends LitElement {
               ></access-key-status>`,
           },
           {
-            name: this.localize('server-view-access-keys-usage-column-header'),
+            id: 'usage',
+            displayName: this.localize(
+              'server-view-access-keys-usage-column-header'
+            ),
             tooltip: this.localize('server-view-access-keys-usage-tooltip'),
             render: ({dataUsageBytes, dataLimitBytes}: AccessKeyDataTableRow) =>
               html`<access-key-usage-meter
@@ -66,26 +74,29 @@ export class AccessKeyDataTable extends LitElement {
               ></access-key-usage-meter>`,
           },
           {
-            name: this.localize(
+            id: 'asnCount',
+            displayName: this.localize(
               'server-view-access-keys-as-count-column-header'
             ),
             tooltip: this.localize('server-view-access-keys-as-count-tooltip'),
-            render: ({asCount}: AccessKeyDataTableRow) => html`${asCount}`,
+            render: ({asnCount}: AccessKeyDataTableRow) => html`${asnCount}`,
             comparator: (
               row1: AccessKeyDataTableRow,
               row2: AccessKeyDataTableRow
-            ) => NUMERIC_COMPARATOR(row1.asCount, row2.asCount),
+            ) => defaultNumericComparator(row1.asnCount, row2.asnCount),
           },
           {
+            id: 'controls',
             render: ({id}: AccessKeyDataTableRow) =>
               html`<access-key-controls
                 id=${id}
                 .localize=${this.localize}
+                serverVersion=${this.serverVersion}
               ></access-key-controls>`,
           },
         ]}
         .data=${this.accessKeys}
-        sortColumn=${this.sortColumn}
+        sortColumnId=${this.sortColumnId}
         sortDirection=${this.sortDirection}
       ></data-table>
     `;
