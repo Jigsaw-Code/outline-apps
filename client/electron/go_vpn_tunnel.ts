@@ -54,6 +54,9 @@ export class GoVpnTunnel implements VpnTunnel {
 
   private isUdpEnabled = false;
 
+  private gatewayAdapterIp?: string;
+  private gatewayAdapterIndex?: string;
+
   private readonly onAllHelpersStopped: Promise<void>;
   private resolveAllHelpersStopped: () => void;
 
@@ -109,21 +112,31 @@ export class GoVpnTunnel implements VpnTunnel {
     console.log(`UDP support: ${this.isUdpEnabled}`);
 
     console.log('starting routing daemon');
-    await Promise.all([
-      this.tun2socks.start(this.transportConfig, this.isUdpEnabled),
-      this.routing.start(),
-    ]);
+    const gateway = await this.routing.start();
+    this.gatewayAdapterIp = gateway?.gatewayIp;
+    this.gatewayAdapterIndex = gateway?.gatewayIndex;
+    await this.startTun2socks();
   }
 
-  networkChanged(status: TunnelStatus) {
+  networkChanged(
+    status: TunnelStatus,
+    gatewayIp?: string,
+    gatewayIndex?: string
+  ) {
     if (status === TunnelStatus.CONNECTED) {
+      if (gatewayIp) {
+        this.gatewayAdapterIp = gatewayIp;
+      }
+      if (gatewayIndex) {
+        this.gatewayAdapterIndex = gatewayIndex;
+      }
       if (this.reconnectedListener) {
         this.reconnectedListener();
       }
 
       // Test whether UDP availability has changed; since it won't change 99% of the time, do this
       // *after* we've informed the client we've reconnected.
-      this.updateUdpSupport();
+      this.updateUdpAndRestartTun2socks();
     } else if (status === TunnelStatus.RECONNECTING) {
       if (this.reconnectingListener) {
         this.reconnectingListener();
@@ -151,32 +164,32 @@ export class GoVpnTunnel implements VpnTunnel {
     }
 
     console.log('restarting tun2socks after resume');
-    await Promise.all([
-      this.tun2socks.start(this.transportConfig, this.isUdpEnabled),
-      this.updateUdpSupport(), // Check if UDP support has changed; if so, silently restart.
-    ]);
+    await this.updateUdpAndRestartTun2socks();
   }
 
-  private async updateUdpSupport() {
-    const wasUdpEnabled = this.isUdpEnabled;
+  private startTun2socks(): Promise<void> {
+    return this.tun2socks.start(
+      this.transportConfig,
+      this.isUdpEnabled,
+      this.gatewayAdapterIp,
+      this.gatewayAdapterIndex
+    );
+  }
+
+  private async updateUdpAndRestartTun2socks() {
     try {
       this.isUdpEnabled = await checkUDPConnectivity(
         this.transportConfig,
         this.isDebugMode
       );
+      console.log(`UDP support now ${this.isUdpEnabled}`);
     } catch (e) {
       console.error(`connectivity check failed: ${e}`);
-      return;
     }
-    if (this.isUdpEnabled === wasUdpEnabled) {
-      return;
-    }
-
-    console.log(`UDP support change: now ${this.isUdpEnabled}`);
 
     // Restart tun2socks.
     await this.tun2socks.stop();
-    await this.tun2socks.start(this.transportConfig, this.isUdpEnabled);
+    await this.startTun2socks();
   }
 
   // Use #onceDisconnected to be notified when the tunnel terminates.
@@ -247,7 +260,12 @@ class GoTun2socks {
    * Otherwise, an error containing a JSON-formatted message will be thrown.
    * @param isUdpEnabled Indicates whether the remote Outline server supports UDP.
    */
-  async start(transportConfig: string, isUdpEnabled: boolean): Promise<void> {
+  async start(
+    transportConfig: string,
+    isUdpEnabled: boolean,
+    gatewayIp?: string,
+    gatewayIndex?: string
+  ): Promise<void> {
     // ./tun2socks.exe \
     //   -tunName outline-tap0 -tunDNS 1.1.1.1,9.9.9.9 \
     //   -tunAddr 10.0.85.2 -tunGw 10.0.85.1 -tunMask 255.255.255.0 \
@@ -263,6 +281,12 @@ class GoTun2socks {
     args.push('-logLevel', this.process.isDebugModeEnabled ? 'debug' : 'info');
     if (!isUdpEnabled) {
       args.push('-dnsFallback');
+    }
+    if (gatewayIp) {
+      args.push('-gatewayIp', gatewayIp);
+    }
+    if (gatewayIndex) {
+      args.push('-gatewayIndex', gatewayIndex);
     }
 
     const whenProcessEnded = this.launchWithAutoRestart(args);
@@ -284,7 +308,7 @@ class GoTun2socks {
   }
 
   private async launchWithAutoRestart(args: string[]): Promise<void> {
-    console.debug('[tun2socks] - starting to route network traffic ...');
+    console.debug('[tun2socks] - starting to route network traffic ...', args);
     let restarting = false;
     let lastError: Error | null = null;
     do {
