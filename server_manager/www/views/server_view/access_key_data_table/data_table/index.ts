@@ -59,6 +59,13 @@ export enum DataTableSortDirection {
 }
 
 /**
+ * Events that the data table can emit.
+ */
+export enum DataTableEvent {
+  SORT = 'DataTable.Sort',
+}
+
+/**
  * Properties describing a column in a DataTable.
  *
  * @template T The type of data represented in the column.

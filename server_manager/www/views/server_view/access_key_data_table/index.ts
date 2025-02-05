@@ -18,12 +18,22 @@ import {LitElement, html} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 
 import './access_key_controls';
-import {SERVER_DATA_LIMITS_SUPPORT_VERSION} from './access_key_controls';
+import {
+  AccessKeyControlsEvent,
+  SERVER_DATA_LIMITS_SUPPORT_VERSION,
+} from './access_key_controls';
 import './access_key_status';
 import './access_key_usage_meter';
 import './data_table';
-import {DataTableSortDirection, defaultNumericComparator} from './data_table';
+import {
+  DataTableEvent,
+  DataTableSortDirection,
+  defaultNumericComparator,
+} from './data_table';
 
+/**
+ * Data expected in the access key table.
+ */
 export interface AccessKeyDataTableRow {
   id: string;
   name: string;
@@ -33,6 +43,16 @@ export interface AccessKeyDataTableRow {
   asnCount: number;
 }
 
+/**
+ * Events that can be emitted by the access key table.
+ */
+export enum AccessKeyDataTableEvent {
+  SORT = 'AccessKeyDataTable.Sort',
+  DELETE_KEY = 'AccessKeyDataTable.DeleteKey',
+  EDIT_KEY_DATA_LIMIT = 'AccessKeyDataTable.EditKeyDataLimit',
+  EDIT_KEY_NAME = 'AccessKeyDataTable.EditKeyName',
+  SHARE_KEY = 'AccessKeyDataTable.ShareKey',
+}
 @customElement('access-key-data-table')
 export class AccessKeyDataTable extends LitElement {
   @property({type: Array}) accessKeys: AccessKeyDataTableRow[];
@@ -43,6 +63,42 @@ export class AccessKeyDataTable extends LitElement {
   @property({type: String}) sortColumnId: string;
   @property({type: String}) sortDirection: DataTableSortDirection =
     DataTableSortDirection.NONE;
+
+  connectedCallback() {
+    super.connectedCallback();
+
+    this.addEventListener(DataTableEvent.SORT, (event: CustomEvent) => {
+      this.forwardEvent(event, AccessKeyDataTableEvent.SORT);
+    });
+
+    this.addEventListener(
+      AccessKeyControlsEvent.DELETE,
+      (event: CustomEvent) => {
+        this.forwardEvent(event, AccessKeyDataTableEvent.DELETE_KEY);
+      }
+    );
+
+    this.addEventListener(
+      AccessKeyControlsEvent.EDIT_DATA_LIMIT,
+      (event: CustomEvent) => {
+        this.forwardEvent(event, AccessKeyDataTableEvent.EDIT_KEY_DATA_LIMIT);
+      }
+    );
+
+    this.addEventListener(
+      AccessKeyControlsEvent.EDIT_NAME,
+      (event: CustomEvent) => {
+        this.forwardEvent(event, AccessKeyDataTableEvent.EDIT_KEY_NAME);
+      }
+    );
+
+    this.addEventListener(
+      AccessKeyControlsEvent.SHARE,
+      (event: CustomEvent) => {
+        this.forwardEvent(event, AccessKeyDataTableEvent.SHARE_KEY);
+      }
+    );
+  }
 
   render() {
     return html`
@@ -100,5 +156,17 @@ export class AccessKeyDataTable extends LitElement {
         sortDirection=${this.sortDirection}
       ></data-table>
     `;
+  }
+
+  private forwardEvent(sourceEvent: CustomEvent, forwardedEventName: string) {
+    sourceEvent.stopImmediatePropagation();
+
+    this.dispatchEvent(
+      new CustomEvent(forwardedEventName, {
+        detail: sourceEvent.detail,
+        bubbles: true,
+        composed: true,
+      })
+    );
   }
 }
