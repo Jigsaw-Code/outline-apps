@@ -15,26 +15,23 @@
  */
 
 import {LitElement, css, html} from 'lit';
-import {customElement, property} from 'lit/decorators.js';
+import {customElement} from 'lit/decorators.js';
 
 import '@material/mwc-icon';
 
 // TODO: this tooltip is naive - we should switch to the Popover API once we upgrade Electron
-@customElement('info-tooltip')
-export class InformationTooltip extends LitElement {
-  @property({type: String}) text: string;
-
+@customElement('help-tooltip')
+export class HelpTooltip extends LitElement {
   static styles = css`
     :host {
-      --server-metrics-row-tooltip-background: hsl(0, 0%, 94%);
-      --server-metrics-row-tooltip-border-radius: 0.3rem;
-      --server-metrics-row-tooltip-padding: 0.3rem;
-      --server-metrics-row-tooltip-text-color: hsl(0, 0%, 20%);
-      --server-metrics-row-tooltip-max-width: 320px;
+      --help-tooltip-background: hsl(0, 0%, 94%);
+      --help-tooltip-border-radius: 0.3rem;
+      --help-tooltip-padding: 0.3rem;
+      --help-tooltip-text-color: hsl(0, 0%, 20%);
+      --help-tooltip-max-width: 320px;
+      --help-tooltip-icon-size: 1.85rem;
 
-      --info-tooltip-icon-size: 1.85rem;
-
-      --mdc-icon-size: var(--info-tooltip-icon-size);
+      --mdc-icon-size: var(--help-tooltip-icon-size);
 
       cursor: help;
       position: relative;
@@ -42,13 +39,13 @@ export class InformationTooltip extends LitElement {
     }
 
     .tooltip {
-      background-color: var(--server-metrics-row-tooltip-background);
-      border-radius: var(--server-metrics-row-tooltip-border-radius);
-      color: var(--server-metrics-row-tooltip-text-color);
-      font-family: var(--server-metrics-row-font-family);
+      background-color: var(--help-tooltip-background);
+      border-radius: var(--help-tooltip-border-radius);
+      color: var(--help-tooltip-text-color);
+      font-family: var(--info-font-family);
       left: 50%;
-      max-width: var(--server-metrics-row-tooltip-max-width);
-      padding: var(--server-metrics-row-tooltip-padding);
+      max-width: var(--help-tooltip-max-width);
+      padding: var(--help-tooltip-padding);
       position: absolute;
       top: 150%;
       transform: translateX(-50%);
@@ -58,7 +55,7 @@ export class InformationTooltip extends LitElement {
       word-wrap: break-word;
     }
 
-    :host:hover .tooltip {
+    :host(:hover) .tooltip {
       visibility: visible;
       opacity: 1;
     }
@@ -66,8 +63,8 @@ export class InformationTooltip extends LitElement {
 
   render() {
     return html`
-      <mwc-icon>info</mwc-icon>
-      <span class="tooltip">${this.text}</span>
+      <mwc-icon>help</mwc-icon>
+      <span class="tooltip"><slot></slot></span>
     `;
   }
 }

@@ -18,7 +18,7 @@ import {LitElement, html, css, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
-import '../info_tooltip';
+import '../help_tooltip';
 import '@material/mwc-icon';
 
 import './server_metrics_row_subcard';
@@ -143,7 +143,7 @@ export class ServerMetricsRow extends LitElement {
               : nothing}
             <h2 class="title">${unsafeHTML(this.title)}</h2>
             ${this.tooltip
-              ? html`<info-tooltip text=${this.tooltip}></info-tooltip>`
+              ? html`<help-tooltip>${this.tooltip}</help-tooltip>`
               : nothing}
           </div>
           <div class="value-container">

@@ -19,7 +19,7 @@ import {customElement, property} from 'lit/decorators.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
 import '@material/mwc-icon';
-import '../../info_tooltip';
+import '../../help_tooltip';
 
 const INTERNAL_LIT_ENUM_HTML_RESULT = 1;
 
@@ -120,12 +120,6 @@ export class DataTable<T extends object> extends LitElement {
       background-color: var(--data-table-background-color);
     }
 
-    th {
-      font-weight: bold;
-      position: sticky;
-      top: 0;
-    }
-
     th,
     td {
       box-sizing: border-box;
@@ -137,13 +131,18 @@ export class DataTable<T extends object> extends LitElement {
     th {
       align-items: center;
       background-color: var(--data-table-background-color);
+      border-bottom: var(--data-table-header-border-bottom);
       cursor: pointer;
       display: flex;
-      font-weight: bold;
       gap: var(--data-table-header-gap);
-      border-bottom: var(--data-table-header-border-bottom);
+      position: sticky;
+      top: 0;
 
       --mdc-icon-size: var(--data-table-header-icon-size);
+    }
+
+    th > help-tooltip {
+      --help-tooltip-icon-size: var(--data-table-header-icon-size);
     }
 
     td {
@@ -197,7 +196,7 @@ export class DataTable<T extends object> extends LitElement {
     return html`<th @click=${() => this.sort(columnProperties)}>
       <span>${unsafeHTML(columnProperties.displayName)}</span>
       ${columnProperties?.tooltip
-        ? html`<info-tooltip text=${columnProperties?.tooltip}></info-tooltip>`
+        ? html`<help-tooltip>${columnProperties.tooltip}</help-tooltip>`
         : nothing}
       ${this.sortColumnId === columnProperties.id ? sortIcon : nothing}
     </th>`;

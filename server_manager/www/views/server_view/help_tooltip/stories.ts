@@ -15,13 +15,13 @@
  */
 
 import {html} from 'lit';
-import '../info_tooltip';
+import '.';
 
 export default {
-  title: 'Manager/Server View/Info Tooltip',
-  component: 'info-tooltip',
+  title: 'Manager/Server View/Help Tooltip',
+  component: 'help-tooltip',
 };
 
 export const Example = () => html`
-  <info-tooltip text="Tooltip text here"></info-tooltip>
+  <help-tooltip>Tooltip text here</help-tooltip>
 `;
