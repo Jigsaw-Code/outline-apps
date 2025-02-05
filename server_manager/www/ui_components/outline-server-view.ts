@@ -412,6 +412,37 @@ export class ServerView extends DirMixin(PolymerElement) {
         :host(:dir(rtl)) .access-key-icon {
           transform: scaleX(-1);
         }
+
+        .privacy-statement-text {
+          color: var(--medium-gray);
+          font-style: italic;
+        }
+
+        .privacy-statement-link {
+          color: var(--primary-green);
+          cursor: pointer;
+          font-weight: bold;
+          text-decoration: underline;
+        }
+
+        .advanced-metrics-link {
+          align-items: center;
+          border-radius: 2px;
+          border: 1px solid var(--border-color);
+          cursor: pointer;
+          display: inline-flex;
+          gap: 2px;
+          margin-bottom: 8px;
+          padding: 8px 12px;
+        }
+
+        .advanced-metrics-link-icon {
+          width: 16px;
+        }
+
+        .advanced-metrics-link-text {
+          color: var(--medium-gray);
+        }
       </style>
 
       <div class="container">
@@ -615,6 +646,21 @@ export class ServerView extends DirMixin(PolymerElement) {
             </div>
           </template>
 
+          <template is="dom-if" if="{{featureFlags.serverMetricsTab}}">
+            <aside>
+              <p class="privacy-statement">
+                <span class="privacy-statement-text"
+                  >[[localize('server-view-privacy-statement')]]</span
+                >
+                <a
+                  class="privacy-statement-link"
+                  href="https://support.google.com/outline/answer/15331222"
+                  >[[localize('server-view-privacy-statement-link')]]</a
+                >
+              </p>
+            </aside>
+          </template>
+
           <div class="access-key-list card-section">
             <!-- header row -->
             <div class="access-key-row header-row">
@@ -749,6 +795,30 @@ export class ServerView extends DirMixin(PolymerElement) {
         </div>
         <template is="dom-if" if="{{featureFlags.serverMetricsTab}}">
           <div name="metrics">
+            <aside>
+              <p class="privacy-statement">
+                <span class="privacy-statement-text"
+                  >[[localize('server-view-privacy-statement')]]</span
+                >
+                <a
+                  class="privacy-statement-link"
+                  href="https://support.google.com/outline/answer/15331222"
+                  >[[localize('server-view-privacy-statement-link')]]</a
+                >
+              </p>
+              <a
+                class="advanced-metrics-link"
+                href="https://developers.google.com/outline/docs/guides/service-providers/metrics"
+              >
+                <span class="advanced-metrics-link-text"
+                  >[[localize('server-view-server-metrics-advanced-metrics-link')]]</span
+                >
+                <iron-icon
+                  class="advanced-metrics-link-icon"
+                  icon="open-in-new"
+                ></iron-icon>
+              </a>
+            </aside>
             <server-stat-grid
               columns="3"
               rows="1"
