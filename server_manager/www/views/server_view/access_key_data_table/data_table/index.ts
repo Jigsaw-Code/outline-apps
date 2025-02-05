@@ -41,13 +41,20 @@ export const NUMERIC_COMPARATOR = (
   if (value1 > value2) return 1;
 };
 
+export enum DataTableSortDirection {
+  ASCENDING = 'ascending',
+  DESCENDING = 'descending',
+  NONE = 'none',
+}
+
 @customElement('data-table')
 export class DataTable<T extends object> extends LitElement {
   @property({type: Array}) columns: DataTableColumnProperties<T>[];
   @property({type: Array}) data: T[];
 
   @property({type: String}) sortColumn?: string;
-  @property({type: Boolean}) sortDescending?: boolean;
+  @property({type: String}) sortDirection: DataTableSortDirection =
+    DataTableSortDirection.NONE;
 
   static styles = css`
     :host {
@@ -148,16 +155,26 @@ export class DataTable<T extends object> extends LitElement {
   }
 
   renderHeaderCell(columnProperties: DataTableColumnProperties<T>) {
+    let sortIcon;
+
+    switch (this.sortDirection) {
+      case DataTableSortDirection.ASCENDING:
+        sortIcon = html`<mwc-icon>arrow_upward</mwc-icon>`;
+        break;
+      case DataTableSortDirection.DESCENDING:
+        sortIcon = html`<mwc-icon>arrow_downward</mwc-icon>`;
+        break;
+      case DataTableSortDirection.NONE:
+      default:
+        sortIcon = nothing;
+    }
+
     return html`<th @click=${() => this.fireSortEvent(columnProperties)}>
       <span>${unsafeHTML(columnProperties.name)}</span>
       ${columnProperties?.tooltip
         ? html`<info-tooltip text=${columnProperties?.tooltip}></info-tooltip>`
         : nothing}
-      ${this.sortColumn === columnProperties.name
-        ? html`<mwc-icon>
-            ${this.sortDescending ? 'arrow_upward' : 'arrow_downward'}
-          </mwc-icon>`
-        : nothing}
+      ${this.sortColumn === columnProperties.name ? sortIcon : nothing}
     </th>`;
   }
 
@@ -170,7 +187,7 @@ export class DataTable<T extends object> extends LitElement {
       new CustomEvent('DataTable::Sort', {
         detail: {
           columnName: columnProperties.name,
-          sortDescending: !this.sortDescending,
+          sortDirection: this.sortDirection,
         },
         bubbles: true,
         composed: true,
@@ -179,7 +196,10 @@ export class DataTable<T extends object> extends LitElement {
   }
 
   private get sortedData() {
-    if (!this.sortColumn) {
+    if (
+      !this.sortColumn ||
+      this.sortDirection === DataTableSortDirection.NONE
+    ) {
       return this.data;
     }
 
@@ -192,7 +212,7 @@ export class DataTable<T extends object> extends LitElement {
     }
 
     return this.data.sort((row1, row2) => {
-      if (this.sortDescending) {
+      if (this.sortDirection === DataTableSortDirection.DESCENDING) {
         return comparator(row2, row1);
       }
 

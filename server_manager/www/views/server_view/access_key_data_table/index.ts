@@ -18,7 +18,7 @@ import {LitElement, html} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 
 import './data_table';
-import {NUMERIC_COMPARATOR} from './data_table';
+import {DataTableSortDirection, NUMERIC_COMPARATOR} from './data_table';
 
 import './access_key_status';
 import './access_key_controls';
@@ -39,7 +39,8 @@ export class AccessKeyDataTable extends LitElement {
   @property({type: Object}) localize: (messageId: string) => string;
   @property({type: String}) language: string;
   @property({type: String}) sortColumn: string;
-  @property({type: Boolean}) sortDescending: boolean;
+  @property({type: String}) sortDirection: DataTableSortDirection =
+    DataTableSortDirection.NONE;
 
   render() {
     return html`
@@ -85,7 +86,7 @@ export class AccessKeyDataTable extends LitElement {
         ]}
         .data=${this.accessKeys}
         sortColumn=${this.sortColumn}
-        .sortDescending=${this.sortDescending}
+        sortDirection=${this.sortDirection}
       ></data-table>
     `;
   }

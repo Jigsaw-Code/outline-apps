@@ -17,7 +17,7 @@
 import {html} from 'lit';
 
 import './index';
-import {NUMERIC_COMPARATOR} from './index';
+import {DataTableSortDirection, NUMERIC_COMPARATOR} from './index';
 
 export default {
   title: 'Manager/Server View/Access Key Data Table/Data Table',
@@ -95,7 +95,7 @@ export const ComparatorExample = () => {
       },
     ]}
     .sortColumn=${'Score'}
-    .sortDescending=${true}
+    .sortDirection=${DataTableSortDirection.ASCENDING}
   />`;
 };
 

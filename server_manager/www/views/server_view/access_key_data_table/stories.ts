@@ -17,6 +17,7 @@
 import {html} from 'lit';
 
 import './index';
+import {DataTableSortDirection} from './data_table';
 import {AccessKeyDataTable} from './index';
 
 export default {
@@ -66,8 +67,8 @@ export default {
         asCount: 2,
       },
     ],
-    sortColumn: 'nameAndStatus',
-    sortDescending: true,
+    sortColumn: 'Total ASes seen <i>(last 30 days)</i>',
+    sortDirection: DataTableSortDirection.DESCENDING,
     language: 'en',
   },
 };
@@ -77,13 +78,13 @@ export const Example = ({
   localize,
   language,
   sortColumn,
-  sortDescending,
+  sortDirection,
 }: AccessKeyDataTable) => {
   return html`<access-key-data-table
     .accessKeys=${accessKeys}
     .localize=${localize}
     language=${language}
-    .sortColumn=${sortColumn}
-    .sortDescending=${sortDescending}
+    sortColumn=${sortColumn}
+    sortDirection=${sortDirection}
   />`;
 };
