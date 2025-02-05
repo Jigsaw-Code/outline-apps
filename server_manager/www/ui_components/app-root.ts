@@ -743,7 +743,7 @@ export class AppRoot extends polymerElementWithLocalize {
   }
 
   selectedServerId = '';
-  language = '';
+  language = 'en';
   supportedLanguages: LanguageDef[] = [];
   useKeyIfMissing = true;
   serverList: ServerListEntry[] = [];

@@ -51,6 +51,7 @@ const KEY_SETTINGS_VERSION = '1.6.0';
 const SECONDS_IN_HOUR = 60 * 60;
 const MAX_ACCESS_KEY_DATA_LIMIT_BYTES = 50 * 10 ** 9; // 50GB
 const CANCELLED_ERROR = new Error('Cancelled');
+const CHARACTER_TABLE_FLAG_SYMBOL_OFFSET = 127397;
 export const LAST_DISPLAYED_SERVER_STORAGE_KEY = 'lastDisplayedServer';
 
 // todo (#1311): we are referencing `@sentry/electron` which won't work for
@@ -1084,7 +1085,7 @@ export class App {
         .reverse()
         .map(server => ({
           title: server.asOrg,
-          subtitle: `ASN${server.asn}`,
+          subtitle: `AS${server.asn}`,
           icon: this.countryCodeToEmoji(server.location),
           highlight: formatBytes(
             server.dataTransferred.bytes,
@@ -1151,11 +1152,6 @@ export class App {
   }
 
   private formatHourValueAndUnit(hours: number) {
-    // This happens during app startup before we set the language
-    if (!this.appRoot.language) {
-      return '';
-    }
-
     return new Intl.NumberFormat(this.appRoot.language, {
       style: 'unit',
       unit: 'hour',
@@ -1164,11 +1160,6 @@ export class App {
   }
 
   private formatHourUnits(hours: number) {
-    // This happens during app startup before we set the language
-    if (!this.appRoot.language) {
-      return '';
-    }
-
     const formattedValue = this.formatHourValue(hours);
     const formattedValueAndUnit = this.formatHourValueAndUnit(hours);
 
@@ -1179,10 +1170,6 @@ export class App {
   }
 
   private formatHourValue(hours: number) {
-    // This happens during app startup before we set the language
-    if (!this.appRoot.language) {
-      return '';
-    }
     return new Intl.NumberFormat(this.appRoot.language, {
       unit: 'hour',
     }).format(hours);
@@ -1197,7 +1184,7 @@ export class App {
     const codePoints = countryCode
       .toUpperCase()
       .split('')
-      .map(char => 127397 + char.charCodeAt(0)); // 127397 is the offset for regional indicator symbols
+      .map(char => CHARACTER_TABLE_FLAG_SYMBOL_OFFSET + char.charCodeAt(0));
 
     return String.fromCodePoint(...codePoints);
   }
