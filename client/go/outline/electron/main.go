@@ -63,6 +63,9 @@ var args struct {
 	tunName *string
 	tunDNS  *string
 
+	adapterIP    *string
+	adapterIndex *int
+
 	transportConfig *string
 
 	logLevel          *string
@@ -93,6 +96,10 @@ func main() {
 	args.tunName = flag.String("tunName", "tun0", "TUN interface name")
 	args.dnsFallback = flag.Bool("dnsFallback", false, "Enable DNS fallback over TCP (overrides the UDP handler).")
 
+	// Windows Network Adapter Index and IP
+	args.adapterIP = flag.String("adapterIP", "", "Windows network adapter IP for proxy connections")
+	args.adapterIndex = flag.Int("adapterIndex", -1, "Windows network adapter index for proxy connection")
+
 	// Proxy transport config
 	args.transportConfig = flag.String("transport", "", "A JSON object containing the transport config, UTF8-encoded")
 
@@ -116,7 +123,7 @@ func main() {
 		printErrorAndExit(platerrors.PlatformError{Code: platerrors.InvalidConfig, Message: "transport config missing"}, exitCodeFailure)
 	}
 
-	client, err := newOutlineClient(*args.transportConfig)
+	client, err := newOutlineClient(*args.transportConfig, *args.adapterIP, *args.adapterIndex)
 	if err != nil {
 		printErrorAndExit(err, exitCodeFailure)
 	}

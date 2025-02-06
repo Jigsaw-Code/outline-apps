@@ -18,7 +18,11 @@ package main
 
 import "github.com/Jigsaw-Code/outline-apps/client/go/outline"
 
-func newOutlineClient(transportConfig string) (*outline.Client, error) {
+func newOutlineClient(transportConfig string, adapterIp string, adapterIndex int) (*outline.Client, error) {
 	result := outline.NewClient(transportConfig)
-	return result.Client, result.Error
+	if result.Error == nil {
+		// nil *PlatformError is not nil error, need to guard here
+		return result.Client, nil
+	}
+	return nil, result.Error
 }

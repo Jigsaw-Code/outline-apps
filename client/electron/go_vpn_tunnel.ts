@@ -263,8 +263,8 @@ class GoTun2socks {
   async start(
     transportConfig: string,
     isUdpEnabled: boolean,
-    gatewayIp?: string,
-    gatewayIndex?: string
+    adapterIp?: string,
+    adapterIndex?: string
   ): Promise<void> {
     // ./tun2socks.exe \
     //   -tunName outline-tap0 -tunDNS 1.1.1.1,9.9.9.9 \
@@ -282,11 +282,11 @@ class GoTun2socks {
     if (!isUdpEnabled) {
       args.push('-dnsFallback');
     }
-    if (gatewayIp) {
-      args.push('-gatewayIp', gatewayIp);
+    if (adapterIp) {
+      args.push('-adapterIP', adapterIp);
     }
-    if (gatewayIndex) {
-      args.push('-gatewayIndex', gatewayIndex);
+    if (adapterIndex) {
+      args.push('-adapterIndex', adapterIndex);
     }
 
     const whenProcessEnded = this.launchWithAutoRestart(args);

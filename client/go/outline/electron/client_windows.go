@@ -15,41 +15,67 @@
 package main
 
 import (
-	"log/slog"
+	"encoding/binary"
+	"errors"
 	"net"
+	"syscall"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 	"golang.org/x/sys/windows"
 )
 
-const (
-	findNetInterfaceIP   = "1.1.1.1"
-	findNetInterfacePort = 53
-)
+// Define missing Windows constants
+const IP_UNICAST_IF = 31
 
-func newOutlineClient(transportConfig string) (*outline.Client, error) {
-	nicIdx := findActiveNetInterface()
-	tcp := newNetInterfaceBoundTCPDialer(nicIdx)
-	udp := newNetInterfaceBoundUDPDialer(nicIdx)
+func newOutlineClient(transportConfig string, adapterIP string, adapterIndex int) (*outline.Client, error) {
+	if adapterIP == "" || adapterIndex < 0 {
+		// Check connectivity, ignore these parameters
+		result := outline.NewClient(transportConfig)
+		if result.Error == nil {
+			// nil *PlatformError is not nil error, need to guard here
+			return result.Client, nil
+		}
+		return nil, result.Error
+	}
+	tcp := newNetInterfaceBoundTCPDialer(uint32(adapterIndex))
+	udp := newNetInterfaceBoundUDPDialer(uint32(adapterIndex), adapterIP)
 	return outline.NewClientWithBaseDialers(transportConfig, tcp, udp)
 }
 
 func newNetInterfaceBoundTCPDialer(nicIdx uint32) transport.StreamDialer {
-	return &transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
+	nicIdx = htonl(nicIdx)
+	return &transport.TCPDialer{Dialer: net.Dialer{
+		KeepAlive: -1,
+		Control: func(network, address string, conn syscall.RawConn) error {
+			var operr error
+			err := conn.Control(func(fd uintptr) {
+				operr = windows.SetsockoptInt(windows.Handle(fd), syscall.IPPROTO_IP, IP_UNICAST_IF, int(nicIdx))
+			})
+			return errors.Join(err, operr)
+		},
+	}}
 }
 
-func newNetInterfaceBoundUDPDialer(nicIdx uint32) transport.PacketDialer {
-	return &transport.UDPDialer{}
+func newNetInterfaceBoundUDPDialer(nicIdx uint32, nicIP string) transport.PacketDialer {
+	nicIdx = htonl(nicIdx)
+	addr := windows.SockaddrInet4{Port: 0}
+	copy(addr.Addr[:], net.ParseIP(nicIP).To4())
+	return &transport.UDPDialer{Dialer: net.Dialer{
+		Control: func(network, address string, conn syscall.RawConn) error {
+			var operr error
+			err := conn.Control(func(fd uintptr) {
+				err1 := windows.Bind(windows.Handle(fd), &addr)
+				err2 := windows.SetsockoptInt(windows.Handle(fd), syscall.IPPROTO_IP, IP_UNICAST_IF, int(nicIdx))
+				operr = errors.Join(err1, err2)
+			})
+			return errors.Join(err, operr)
+		},
+	}}
 }
 
-func findActiveNetInterface() uint32 {
-	addr := &windows.SockaddrInet4{
-		Addr: [4]byte{8, 8, 8, 8},
-		Port: findNetInterfacePort,
-	}
-	var idx uint32
-	err := windows.GetBestInterfaceEx(addr, &idx)
-	slog.Info("GetBestInterfaceEx:", "addr", addr, "idx", idx, "err", err)
-	return idx
+func htonl(v uint32) uint32 {
+	bigEndianBytes := make([]byte, 4)
+	binary.NativeEndian.PutUint32(bigEndianBytes, v)
+	return binary.BigEndian.Uint32(bigEndianBytes)
 }
