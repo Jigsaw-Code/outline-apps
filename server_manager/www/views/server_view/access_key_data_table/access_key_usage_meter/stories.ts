@@ -1,5 +1,5 @@
 /**
- * Copyright 2024 The Outline Authors
+ * Copyright 2025 The Outline Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,24 +14,22 @@
  * limitations under the License.
  */
 
-import {html} from 'lit';
-
 import './index';
-import {ServerStatCard} from './index';
 
 export default {
-  title: 'Manager/Server View/Server Stat Card',
-  component: 'server-stats-card',
-  args: {
-    icon: 'swap_horiz',
-    name: 'Data transferred / last 30 days',
-    units: 'Bytes',
-    value: 0,
+  title: 'Manager/Server View/Access Key Data Table/Access Key Usage Meter',
+  component: 'access-key-usage-meter',
+  argTypes: {
+    dataUsageBytes: {control: 'number'},
+    dataLimitBytes: {control: 'number'},
   },
 };
 
-export const Example = ({icon, name, value, units}: ServerStatCard) => html`
-  <div style="height: 300px;">
-    <server-stat-card icon=${icon} name=${name} value=${value} units=${units} />
-  </div>
-`;
+export const Example = {
+  args: {
+    dataUsageBytes: 1000000,
+    dataLimitBytes: 10000000,
+    language: 'en',
+    localize: () => '(80%+ used)',
+  },
+};

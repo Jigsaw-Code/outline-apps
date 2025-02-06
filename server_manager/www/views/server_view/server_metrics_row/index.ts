@@ -18,6 +18,7 @@ import {LitElement, html, css, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
+import '../help_tooltip';
 import '@material/mwc-icon';
 
 import './server_metrics_row_subcard';
@@ -35,35 +36,29 @@ export class ServerMetricsRow extends LitElement {
 
   static styles = css`
     :host {
-      --server-metrics-row-background: hsl(200, 15%, 18%);
+      --server-metrics-row-background: hsl(200, 10.7%, 22%);
       --server-metrics-row-font-family: 'Inter', system-ui;
-      --server-metrics-row-icon-size: 1.85rem;
-      --server-metrics-row-padding: 1.25rem 2rem;
+      --server-metrics-row-icon-size: 1.38rem;
+      --server-metrics-row-padding: 0.9rem 1.5rem;
       --server-metrics-row-text-color: hsla(0, 0%, 100%, 0.8);
 
       --server-metrics-row-title-color: hsla(0, 0%, 100%, 0.7);
-      --server-metrics-row-value-container-margin-top: 1rem;
-      --server-metrics-row-title-container-gap: 0.35rem;
-      --server-metrics-row-title-font-size: 1.3rem;
+      --server-metrics-row-value-container-margin-top: 0.75rem;
+      --server-metrics-row-title-container-gap: 0.25rem;
+      --server-metrics-row-title-font-size: 1rem;
 
-      --server-metrics-row-value-font-size: 3rem;
+      --server-metrics-row-value-font-size: 2.25rem;
       --server-metrics-row-value-font-family: 'Roboto', system-ui;
-      --server-metrics-row-value-label-font-size: 1.1rem;
-      --server-metrics-row-value-label-margin-left: 0.25rem;
-
-      --server-metrics-row-tooltip-background: hsl(0, 0%, 94%);
-      --server-metrics-row-tooltip-border-radius: 0.3rem;
-      --server-metrics-row-tooltip-padding: 0.3rem;
-      --server-metrics-row-tooltip-text-color: hsl(0, 0%, 20%);
-      --server-metrics-row-tooltip-max-width: 320px;
+      --server-metrics-row-value-label-font-size: 0.825rem;
+      --server-metrics-row-value-label-margin-left: 0.2rem;
 
       --server-metrics-row-footer-top-border: 1px solid hsla(0, 0%, 100%, 0.35);
 
-      --server-metrics-row-subtitle-font-size: 1rem;
-      --server-metrics-row-subtitle-margin-bottom: 1rem;
+      --server-metrics-row-subtitle-font-size: 0.75rem;
+      --server-metrics-row-subtitle-margin-bottom: 0.75rem;
 
-      --server-metrics-row-subcards-gap: 0.75rem;
-      --server-metrics-row-subcards-min-width: 320px;
+      --server-metrics-row-subcards-gap: 0.56rem;
+      --server-metrics-row-subcards-min-width: 180px;
     }
 
     section {
@@ -114,34 +109,6 @@ export class ServerMetricsRow extends LitElement {
       margin-left: var(--server-metrics-row-value-label-margin-left);
     }
 
-    .tooltip-container {
-      cursor: help;
-      position: relative;
-      display: inline-flex;
-    }
-
-    .tooltip {
-      background-color: var(--server-metrics-row-tooltip-background);
-      border-radius: var(--server-metrics-row-tooltip-border-radius);
-      color: var(--server-metrics-row-tooltip-text-color);
-      font-family: var(--server-metrics-row-font-family);
-      left: 50%;
-      max-width: var(--server-metrics-row-tooltip-max-width);
-      padding: var(--server-metrics-row-tooltip-padding);
-      position: absolute;
-      top: 150%;
-      transform: translateX(-50%);
-      visibility: hidden;
-      white-space: pre-line;
-      width: max-content;
-      word-wrap: break-word;
-    }
-
-    .tooltip-container:hover .tooltip {
-      visibility: visible;
-      opacity: 1;
-    }
-
     aside {
       border-top: var(--server-metrics-row-footer-top-border);
       padding: var(--server-metrics-row-padding);
@@ -176,10 +143,7 @@ export class ServerMetricsRow extends LitElement {
               : nothing}
             <h2 class="title">${unsafeHTML(this.title)}</h2>
             ${this.tooltip
-              ? html`<div class="tooltip-container">
-                  <mwc-icon>info</mwc-icon>
-                  <span class="tooltip">${this.tooltip}</span>
-                </div>`
+              ? html`<help-tooltip>${this.tooltip}</help-tooltip>`
               : nothing}
           </div>
           <div class="value-container">

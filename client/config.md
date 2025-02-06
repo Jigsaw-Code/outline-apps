@@ -7,6 +7,7 @@ Outline uses a YAML-based configuration to define VPN parameters and handle TCP/
 The top-level configuration specifies a [TunnelConfig](#TunnelConfig).
 
 ## Examples
+
 A typical Shadowsocks configuration will look like this:
 
 ```yaml
@@ -68,6 +69,80 @@ transport:
     secret: EXIT_SECRET
 
   udp: *shared
+```
+
+In case of blocking of "look-like-nothing" protocols like Shadowsocks, you can use Shadowsocks over Websockets. See the [server examnple configuration](https://github.com/Jigsaw-Code/outline-ss-server/blob/master/cmd/outline-ss-server/config_example.yml) on how to deploy it. A client configuration will look like:
+
+```yaml
+transport:
+  $type: tcpudp
+  tcp:
+    $type: shadowsocks
+    endpoint:
+        $type: websocket
+        url: wss://legendary-faster-packs-und.trycloudflare.com/SECRET_PATH/tcp
+    cipher: chacha20-ietf-poly1305
+    secret: SS_SECRET
+
+  udp:
+    $type: shadowsocks
+    endpoint:
+        $type: websocket
+        url: wss://legendary-faster-packs-und.trycloudflare.com/SECRET_PATH/udp
+    cipher: chacha20-ietf-poly1305
+    secret: SS_SECRET
+```
+
+Note that the Websocket endpoint can, in turn, take an endpoint, which can be leveraged to bypass DNS-based blocking:
+
+```yaml
+transport:
+  $type: tcpudp
+  tcp:
+    $type: shadowsocks
+    endpoint:
+        $type: websocket
+        url: wss://legendary-faster-packs-und.trycloudflare.com/SECRET_PATH/tcp
+        endpoint: cloudflare.net:443
+    cipher: chacha20-ietf-poly1305
+    secret: SS_SECRET
+
+  udp:
+    $type: shadowsocks
+    endpoint:
+        $type: websocket
+        url: wss://legendary-faster-packs-und.trycloudflare.com/SECRET_PATH/udp
+        endpoint: cloudflare.net:443
+    cipher: chacha20-ietf-poly1305
+    secret: SS_SECRET
+```
+
+Note that Websockets is not yet supported on Windows. In order to have a single config for all platforms, use a `first-supported` for backwards-compatibility:
+
+```yaml
+transport:
+  $type: tcpudp
+  tcp:
+    $type: shadowsocks
+    endpoint:
+      $type: first-supported
+      endpoints:
+        - $type: websocket
+          url: wss://legendary-faster-packs-und.trycloudflare.com/SECRET_PATH/tcp
+        - ss.example.com:4321
+    cipher: chacha20-ietf-poly1305
+    secret: SS_SECRET
+
+  udp:
+    $type: shadowsocks
+    endpoint:
+      $type: first-supported
+      endpoints:
+        - $type: websocket
+          url: wss://legendary-faster-packs-und.trycloudflare.com/SECRET_PATH/udp
+        - ss.example.com:4321
+    cipher: chacha20-ietf-poly1305
+    secret: SS_SECRET
 ```
 
 ## Tunnels
@@ -163,8 +238,11 @@ The _string_ Endpoint is the host:port address of the desired endpoint. The conn
 Supported Interface types for Stream and Packet Endpoints:
 
 - `dial`: [DialEndpointConfig](#DialEndpointConfig)
-<!-- - `shadowsocks`: [ShadowsocksConfig](#ShadowsocksConfig) -->
-<!-- - `websocket`: [WebsocketEndpointConfig](#WebsocketEndpointConfig) -->
+- `first-supported`: [FirstSupportedConfig](#FirstSupportedConfig)
+- `websocket`: [WebsocketEndpointConfig](#WebsocketEndpointConfig)
+<!-- TODO(fortuna): Add Shadowsocks endpoint
+- `shadowsocks`: [ShadowsocksConfig](#ShadowsocksConfig)
+-->
 
 ### <a id=DialEndpointConfig></a>DialEndpointConfig
 
@@ -175,7 +253,21 @@ Establishes connections by dialing a fixed address. It can take a dialer, which 
 **Fields:**
 
 - `address` (_string_): the endpoint address to dial
-- `dialer` ([DialerConfig](#dialers)): the dialer to use to dial the address
+- `dialer` ([DialerConfig](#DialerConfig)): the dialer to use to dial the address
+
+### <a id=WebsocketEndpointConfig></a>WebsocketEndpointConfig
+
+Tunnels stream and packet connections to an endpoint over Websockets.
+
+For stream connections, each write is turned into a Websocket message. For packet connections, each packet is turned into a Websocket message.
+
+**Format:** _struct_
+
+**Fields:**
+
+- `url` (_string_): the URL for the Websocket endpoint. The schema must be `https` or `wss` for Websocket over TLS, and `http` or `ws` for plaintext Websocket. 
+- `endpoint` ([EndpointConfig](#EndpointConfig)): the web server endpoint to connect to. If absent, is connects to the address specified in the URL.
+
 
 ## Dialers
 
@@ -189,6 +281,7 @@ The _null_ (absent) Dialer means the default Dialer, which uses direct TCP conne
 
 Supported Interface types for Stream and Packer Dialers:
 
+- `first-supported`: [FirstSupportedConfig](#FirstSupportedConfig)
 - `shadowsocks`: [ShadowsocksConfig](#ShadowsocksConfig)
 
 ## Packet Listeners
@@ -203,6 +296,7 @@ The _null_ (absent) Packet Listener means the default Packet Listener, which is 
 
 Supported Interface types:
 
+- `first-supported`: [FirstSupportedConfig](#FirstSupportedConfig)
 - `shadowsocks`: [ShadowsocksPacketListenerConfig](#ShadowsocksConfig)
 
 ## Strategies
@@ -270,6 +364,16 @@ prefix: "POST "
 ```
 
 ## Meta Definitions
+
+### <a id=FirstSupportedConfig></a>FirstSupportedConfig
+
+Uses the first config that is supported by the application. This is a way to incorporate new configs while being backwards-compatible with old configs.
+
+**Format:** _struct_
+
+**Fields:**
+
+- `options` ([EndpointConfig[]](#EndpointConfig) | [DialerConfig[]](#DialerConfig) | [PacketListenerConfig[]](#PacketListenerConfig)): list of options to consider
 
 ### <a id=Interface></a>Interface
 

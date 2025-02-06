@@ -18,5 +18,6 @@ package outline
 
 import "errors"
 
-func establishVPN(configStr string) error { return errors.ErrUnsupported }
-func closeVPN() error                     { return errors.ErrUnsupported }
+func establishVPN(configStr string) error               { return errors.ErrUnsupported }
+func closeVPN() error                                   { return errors.ErrUnsupported }
+func setVPNStateChangeListener(cbTokenStr string) error { return errors.ErrUnsupported }
