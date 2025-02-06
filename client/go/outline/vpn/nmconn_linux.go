@@ -119,7 +119,7 @@ func clearNMConnections(nm gonm.NetworkManager, name string) error {
 		// confirm deletion
 		conns, err = listConnectionsByName(nmSettings, name)
 		if err != nil || len(conns) > 0 {
-			return fmt.Errorf("NetworkManager `%s` still exists, will retry later", name)
+			return fmt.Errorf("NetworkManager connection `%s` still exists, will retry later", name)
 		}
 		slog.Info("all NetworkManager connections deleted", "name", name)
 		return nil
