@@ -32,5 +32,5 @@ func nmCallWithRetry(doWork func() error) (err error) {
 		}
 		time.Sleep(nmRetryDelay)
 	}
-	return fmt.Errorf("Exceeded maximum NetworkManager retry attempts: %w", err)
+	return fmt.Errorf("exceeds maximum NetworkManager retry attempts: %w", err)
 }
