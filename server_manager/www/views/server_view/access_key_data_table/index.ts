@@ -67,36 +67,29 @@ export class AccessKeyDataTable extends LitElement {
   connectedCallback() {
     super.connectedCallback();
 
-    this.addEventListener(DataTableEvent.SORT, (event: CustomEvent) => {
-      this.forwardEvent(event, AccessKeyDataTableEvent.SORT);
-    });
+    this.forwardEventListener(
+      DataTableEvent.SORT,
+      AccessKeyDataTableEvent.SORT
+    );
 
-    this.addEventListener(
+    this.forwardEventListener(
       AccessKeyControlsEvent.DELETE,
-      (event: CustomEvent) => {
-        this.forwardEvent(event, AccessKeyDataTableEvent.DELETE_KEY);
-      }
+      AccessKeyDataTableEvent.DELETE_KEY
     );
 
-    this.addEventListener(
+    this.forwardEventListener(
       AccessKeyControlsEvent.EDIT_DATA_LIMIT,
-      (event: CustomEvent) => {
-        this.forwardEvent(event, AccessKeyDataTableEvent.EDIT_KEY_DATA_LIMIT);
-      }
+      AccessKeyDataTableEvent.EDIT_KEY_DATA_LIMIT
     );
 
-    this.addEventListener(
+    this.forwardEventListener(
       AccessKeyControlsEvent.EDIT_NAME,
-      (event: CustomEvent) => {
-        this.forwardEvent(event, AccessKeyDataTableEvent.EDIT_KEY_NAME);
-      }
+      AccessKeyDataTableEvent.EDIT_KEY_NAME
     );
 
-    this.addEventListener(
+    this.forwardEventListener(
       AccessKeyControlsEvent.SHARE,
-      (event: CustomEvent) => {
-        this.forwardEvent(event, AccessKeyDataTableEvent.SHARE_KEY);
-      }
+      AccessKeyDataTableEvent.SHARE_KEY
     );
   }
 
@@ -158,15 +151,20 @@ export class AccessKeyDataTable extends LitElement {
     `;
   }
 
-  private forwardEvent(sourceEvent: CustomEvent, forwardedEventName: string) {
-    sourceEvent.stopImmediatePropagation();
+  private forwardEventListener(
+    sourceEventName: string,
+    forwardedEventName: string
+  ) {
+    this.addEventListener(sourceEventName, (sourceEvent: CustomEvent) => {
+      sourceEvent.stopImmediatePropagation();
 
-    this.dispatchEvent(
-      new CustomEvent(forwardedEventName, {
-        detail: sourceEvent.detail,
-        bubbles: true,
-        composed: true,
-      })
-    );
+      this.dispatchEvent(
+        new CustomEvent(forwardedEventName, {
+          detail: sourceEvent.detail,
+          bubbles: true,
+          composed: true,
+        })
+      );
+    });
   }
 }
