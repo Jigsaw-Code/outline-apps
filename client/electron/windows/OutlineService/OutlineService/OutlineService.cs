@@ -39,7 +39,7 @@ using Newtonsoft.Json;
  *
  * Requests
  *
- * configureRouting: Modifies the system's routing table to route all traffic through the TAP devicep.
+ * configureRouting: Modifies the system's routing table to route all traffic through the TAP device.
  * Disables IPv6 traffic. proxyIp is used to find the best gateway adapter.
  *    { action: "configureRouting", parameters: {"proxyIp": <IPv4 address>, "isAutoConnect": "false" }}
  *
