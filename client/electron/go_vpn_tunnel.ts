@@ -192,7 +192,11 @@ export class GoVpnTunnel implements VpnTunnel {
     }
 
     // Restart tun2socks.
-    await this.tun2socks.stop();
+    try {
+      await this.tun2socks.stop();
+    } catch {
+      // Ignore the errors
+    }
     await this.startTun2socks();
   }
 
