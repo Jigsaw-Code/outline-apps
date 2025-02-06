@@ -34,17 +34,19 @@ import {ChildProcessHelper} from './process';
  */
 export async function checkUDPConnectivity(
   config: string,
+  adapterIp: string = null,
+  adapterIndex: string = null,
   debugMode: boolean = false
 ): Promise<boolean> {
   const tun2socks = new ChildProcessHelper(pathToEmbeddedTun2socksBinary());
   tun2socks.isDebugModeEnabled = debugMode;
 
-  console.debug('[tun2socks] - checking connectivity ...');
-  const output = await tun2socks.launch([
-    '-transport',
-    config,
-    '-checkConnectivity',
-  ]);
+  const args = ['-transport', config, '-checkConnectivity'];
+  if (adapterIp && adapterIndex) {
+    args.push('-adapterIP', adapterIp, '-adapterIndex', adapterIndex);
+  }
+  console.debug('[tun2socks] - checking connectivity ...', args);
+  const output = await tun2socks.launch(args);
 
   // Only parse the first line, because sometimes Windows Crypto API adds warnings to stdout.
   const outObj = JSON.parse(output.split('\n')[0]);

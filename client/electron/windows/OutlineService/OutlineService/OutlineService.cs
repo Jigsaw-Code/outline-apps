@@ -922,6 +922,7 @@ namespace OutlineService
             }
 
             var previousGatewayIp = gatewayIp;
+            var previousGatewayAdapterIp = gatewayAdapterIp;
             var previousGatewayInterfaceIndex = gatewayInterfaceIndex;
 
             try
@@ -933,7 +934,9 @@ namespace OutlineService
                 eventLog.WriteEntry($"network changed but no gateway found: {e.Message}");
             }
 
-            if (previousGatewayIp == gatewayIp && previousGatewayInterfaceIndex == gatewayInterfaceIndex)
+            if (previousGatewayIp == gatewayIp &&
+                previousGatewayInterfaceIndex == gatewayInterfaceIndex &&
+                previousGatewayAdapterIp == gatewayAdapterIp)
             {
                 // Only send on actual change, to prevent duplicate notifications (mostly
                 // harmless but can make debugging harder).
@@ -973,9 +976,11 @@ namespace OutlineService
                 eventLog.WriteEntry($"could not refresh IPv4 redirect: {e.Message}");
                 return;
             }
-
-            // Send the status update now that the full-system VPN is connected.
-            SendConnectionStatusChange(ConnectionStatus.Connected);
+            finally
+            {
+                // Always send the status update since IP addresses might have been updated
+                SendConnectionStatusChange(ConnectionStatus.Connected);
+            }
 
             try
             {

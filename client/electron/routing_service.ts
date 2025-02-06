@@ -41,7 +41,7 @@ interface RoutingServiceResponse {
   statusCode: RoutingServiceStatusCode;
   errorMessage?: string;
   connectionStatus: TunnelStatus;
-  gatewayIp?: string;
+  gatewayAdapterIp?: string;
   gatewayAdapterIndex?: string;
 }
 
@@ -145,7 +145,7 @@ export class RoutingDaemon {
               reject(new Error(perr.toJSON()));
             } else {
               fulfill({
-                gatewayIp: message.gatewayIp,
+                gatewayIp: message.gatewayAdapterIp,
                 gatewayIndex: message.gatewayAdapterIndex,
               });
             }
@@ -187,7 +187,7 @@ export class RoutingDaemon {
         if (this.networkChangeListener) {
           this.networkChangeListener(
             message.connectionStatus,
-            message.gatewayIp,
+            message.gatewayAdapterIp,
             message.gatewayAdapterIndex
           );
         }

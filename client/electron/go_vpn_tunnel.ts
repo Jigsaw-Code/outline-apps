@@ -106,6 +106,8 @@ export class GoVpnTunnel implements VpnTunnel {
     if (checkProxyConnectivity) {
       this.isUdpEnabled = await checkUDPConnectivity(
         this.transportConfig,
+        this.gatewayAdapterIp,
+        this.gatewayAdapterIndex,
         this.isDebugMode
       );
     }
@@ -180,6 +182,8 @@ export class GoVpnTunnel implements VpnTunnel {
     try {
       this.isUdpEnabled = await checkUDPConnectivity(
         this.transportConfig,
+        this.gatewayAdapterIp,
+        this.gatewayAdapterIndex,
         this.isDebugMode
       );
       console.log(`UDP support now ${this.isUdpEnabled}`);
@@ -282,11 +286,8 @@ class GoTun2socks {
     if (!isUdpEnabled) {
       args.push('-dnsFallback');
     }
-    if (adapterIp) {
-      args.push('-adapterIP', adapterIp);
-    }
-    if (adapterIndex) {
-      args.push('-adapterIndex', adapterIndex);
+    if (adapterIp && adapterIndex) {
+      args.push('-adapterIP', adapterIp, '-adapterIndex', adapterIndex);
     }
 
     const whenProcessEnded = this.launchWithAutoRestart(args);
