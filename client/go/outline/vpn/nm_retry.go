@@ -21,16 +21,16 @@ import (
 
 // TODO: NetworkManager is async, use signals instead of polling in the future
 const (
-	nmPollingCount = 20
-	nmPollingDelay = 50 * time.Millisecond
+	nmRetryCount = 20
+	nmRetryDelay = 50 * time.Millisecond
 )
 
-func nmPolling(doWork func() error) (err error) {
-	for retries := nmPollingCount; retries > 0; retries-- {
+func nmCallWithRetry(doWork func() error) (err error) {
+	for retries := nmRetryCount; retries > 0; retries-- {
 		if err = doWork(); err == nil {
 			return nil
 		}
-		time.Sleep(nmPollingDelay)
+		time.Sleep(nmRetryDelay)
 	}
-	return fmt.Errorf("TUN device polling timed out: %w", err)
+	return fmt.Errorf("Exceeded maximum NetworkManager retry attempts: %w", err)
 }

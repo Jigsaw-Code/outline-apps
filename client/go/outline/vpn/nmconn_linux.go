@@ -68,7 +68,7 @@ func newNMConnection(nm gonm.NetworkManager, opts *nmConnectionOptions) (_ io.Cl
 		return nil, fmt.Errorf("failed to locate TUN device in NetworkManager: %w", err)
 	}
 
-	err = nmPolling(func() (e error) {
+	err = nmCallWithRetry(func() (e error) {
 		slog.Debug("trying to create NetworkManager connection for tun device...", "dev", dev.GetPath())
 		if c.ac, e = nm.AddAndActivateConnection(props, dev); e == nil {
 			slog.Info("successfully created NetworkManager connection", "conn", c.ac.GetPath())
@@ -104,7 +104,7 @@ func clearNMConnections(nm gonm.NetworkManager, name string) error {
 	if err != nil {
 		return fmt.Errorf("failed to connect to NetworkManager settings: %w", err)
 	}
-	return nmPolling(func() error {
+	return nmCallWithRetry(func() error {
 		conns, err := listConnectionsByName(nmSettings, name)
 		if err != nil {
 			return err

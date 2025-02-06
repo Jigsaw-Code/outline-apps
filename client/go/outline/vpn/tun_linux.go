@@ -83,7 +83,7 @@ func setTUNDeviceManaged(dev gonm.Device, value bool) error {
 		return fmt.Errorf("NetworkManager failed to set TUN device Managed=%v: %w", value, err)
 	}
 	// wait it to take effect
-	return nmPolling(func() error {
+	return nmCallWithRetry(func() error {
 		slog.Debug("waiting for TUN to be Managed", "dev", dev.GetPath(), "managed", value)
 		managed, err := dev.GetPropertyManaged()
 		if err == nil && managed != value {
@@ -95,7 +95,7 @@ func setTUNDeviceManaged(dev gonm.Device, value bool) error {
 
 // deleteTUNDevice deletes all TUN devices of a given name and confirms all of them are deleted.
 func deleteTUNDevice(nm gonm.NetworkManager, name string) error {
-	return nmPolling(func() error {
+	return nmCallWithRetry(func() error {
 		dev, err := nm.GetDeviceByIpIface(name)
 		if dev == nil {
 			slog.Debug("TUN device already deleted", "name", name, "msg", err)
@@ -117,7 +117,7 @@ func deleteTUNDevice(nm gonm.NetworkManager, name string) error {
 }
 
 func waitForTUNDeviceToBeAvailable(nm gonm.NetworkManager, name string) (dev gonm.Device, err error) {
-	err = nmPolling(func() error {
+	err = nmCallWithRetry(func() error {
 		slog.Debug("trying to locate TUN device in NetworkManager...", "tun", name)
 		dev, err = nm.GetDeviceByIpIface(name)
 		return err
