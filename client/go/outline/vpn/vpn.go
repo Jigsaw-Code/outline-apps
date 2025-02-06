@@ -240,8 +240,8 @@ func closeVPNNoLock() (err error) {
 
 	// Wait for traffic copy go routines to finish
 	go func() {
-		defer close(closeDone)
 		conn.wgCopy.Wait()
+		close(closeDone)
 	}()
 
 	select {
