@@ -3,7 +3,7 @@ module github.com/Jigsaw-Code/outline-apps
 go 1.22.0
 
 require (
-	github.com/Jigsaw-Code/outline-sdk v0.0.18-0.20241106233708-faffebb12629
+	github.com/Jigsaw-Code/outline-sdk v0.0.18
 	github.com/Jigsaw-Code/outline-sdk/x v0.0.0-20250131142109-b32720fa2c3e
 	github.com/Wifx/gonetworkmanager/v2 v2.1.0
 	github.com/eycorsican/go-tun2socks v1.16.11

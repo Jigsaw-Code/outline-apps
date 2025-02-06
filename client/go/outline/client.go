@@ -87,5 +87,19 @@ func NewClientWithBaseDialers(transportConfig string, tcpDialer transport.Stream
 		}
 	}
 
+	// Make sure the transport is not proxyless for now.
+	if transportPair.StreamDialer.ConnType == config.ConnTypeDirect {
+		return nil, &platerrors.PlatformError{
+			Code:    platerrors.InvalidConfig,
+			Message: "transport must tunnel TCP traffic",
+		}
+	}
+	if transportPair.PacketListener.ConnType == config.ConnTypeDirect {
+		return nil, &platerrors.PlatformError{
+			Code:    platerrors.InvalidConfig,
+			Message: "transport must tunnel UDP traffic",
+		}
+	}
+
 	return &Client{sd: transportPair.StreamDialer, pl: transportPair.PacketListener}, nil
 }
