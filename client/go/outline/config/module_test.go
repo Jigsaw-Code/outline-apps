@@ -18,6 +18,7 @@ import (
 	"context"
 	"net"
 	"testing"
+	"time"
 
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 	"github.com/stretchr/testify/require"
@@ -85,4 +86,35 @@ func TestRegisterParseURLInQuotes(t *testing.T) {
 	require.Equal(t, ConnTypeTunneled, d.StreamDialer.ConnType)
 	require.Equal(t, "example.com:4321", d.PacketListener.FirstHop)
 	require.Equal(t, ConnTypeTunneled, d.PacketListener.ConnType)
+}
+
+func TestRegisterUsageReporting(t *testing.T) {
+	provider := newTestTransportProvider()
+
+	node, err := ParseConfigYAML(`
+$type: tcpudp
+tcp: &shared
+  $type: shadowsocks
+  endpoint: example.com:1234
+  cipher: chacha20-ietf-poly1305
+  secret: SECRET
+udp: *shared
+usagereporter:
+  $type: usage-reporter
+  frequency: 1h
+  url: https://example.com/report`)
+	require.NoError(t, err)
+
+	d, err := provider.Parse(context.Background(), node)
+	require.NoError(t, err)
+
+	require.NotNil(t, d.StreamDialer)
+	require.NotNil(t, d.PacketListener)
+	require.Equal(t, "example.com:1234", d.StreamDialer.FirstHop)
+	require.Equal(t, ConnTypeTunneled, d.StreamDialer.ConnType)
+	require.Equal(t, "example.com:1234", d.PacketListener.FirstHop)
+	require.Equal(t, ConnTypeTunneled, d.PacketListener.ConnType)
+	require.NotNil(t, d.UsageReporter)
+	require.Equal(t, d.UsageReporter.frequency, 1*time.Hour)
+	require.Equal(t, d.UsageReporter.url, "https://example.com/report")
 }
