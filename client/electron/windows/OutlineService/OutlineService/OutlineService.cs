@@ -39,8 +39,8 @@ using Newtonsoft.Json;
  *
  * Requests
  *
- * configureRouting: Modifies the system's routing table to route all traffic through the TAP device
- * except that destined for proxyIp. Disables IPv6 traffic.
+ * configureRouting: Modifies the system's routing table to route all traffic through the TAP devicep.
+ * Disables IPv6 traffic. proxyIp is used to find the best gateway adapter.
  *    { action: "configureRouting", parameters: {"proxyIp": <IPv4 address>, "isAutoConnect": "false" }}
  *
  *  resetRouting: Restores the system's default routing.
@@ -48,12 +48,12 @@ using Newtonsoft.Json;
  *
  * Response
  *
- *  { statusCode: <int>, action: <string> errorMessage?: <string> }
+ *  { statusCode:<int>, action:<string>, errorMessage?:<string>, gatewayAdapterIp?:<string>, gatewayAdapterIndex?:<string> }
  *
  *  The service will send connection status updates if the pipe connection is kept
  *  open by the client. Such responses have the form:
  *
- *  { statusCode: <int>, action: "statusChanged", connectionStatus: <int> }
+ *  { statusCode:<int>, action:"statusChanged", connectionStatus:<int>, gatewayAdapterIp?:<string>, gatewayAdapterIndex?:<string> }
  *
  * View logs with this PowerShell query:
  * get-eventlog -logname Application -source OutlineService -newest 20 | format-table -property timegenerated,entrytype,message -autosize
@@ -103,7 +103,14 @@ namespace OutlineService
         private EventLog eventLog;
         private NamedPipeServerStream pipe;
         private string proxyIp;
+
+        // Next-hop of the network adapter connected to the internet
         private string gatewayIp;
+
+        // IPv4 of the network adapter connected to the internet
+        private string gatewayAdapterIp;
+
+        // Index of the network adapter connected to the internet
         private int gatewayInterfaceIndex;
 
         // Time, in ms, to wait until considering smartdnsblock.exe to have successfully launched.
@@ -242,7 +249,7 @@ namespace OutlineService
                         response.action = request.action;
                         try
                         {
-                            HandleRequest(request);
+                            HandleRequest(request, response);
                         }
                         catch (Exception e)
                         {
@@ -327,12 +334,14 @@ namespace OutlineService
             return null;
         }
 
-        private void HandleRequest(ServiceRequest request)
+        private void HandleRequest(ServiceRequest request, ServiceResponse response)
         {
             switch (request.action)
             {
                 case ACTION_CONFIGURE_ROUTING:
                     ConfigureRouting(request.parameters[PARAM_PROXY_IP], Boolean.Parse(request.parameters[PARAM_AUTO_CONNECT]));
+                    response.gatewayAdapterIp = gatewayAdapterIp;
+                    response.gatewayAdapterIndex = gatewayInterfaceIndex.ToString();
                     break;
                 case ACTION_RESET_ROUTING:
                     ResetRouting(proxyIp, gatewayInterfaceIndex);
@@ -407,17 +416,6 @@ namespace OutlineService
                 GetSystemIpv4Gateway(proxyIp);
 
                 eventLog.WriteEntry($"connecting via gateway at {gatewayIp} on interface {gatewayInterfaceIndex}");
-
-                // Set the proxy escape route first to prevent a routing loop when capturing all IPv4 traffic.
-                try
-                {
-                    AddOrUpdateProxyRoute(proxyIp, gatewayIp, gatewayInterfaceIndex);
-                    eventLog.WriteEntry($"created route to proxy");
-                }
-                catch (Exception e)
-                {
-                    throw new Exception($"could not create route to proxy: {e.Message}");
-                }
                 this.proxyIp = proxyIp;
 
                 try
@@ -502,19 +500,7 @@ namespace OutlineService
                 eventLog.WriteEntry($"failed to unblock IPv6: {e.Message}", EventLogEntryType.Error);
             }
 
-            if (proxyIp != null)
-            {
-                try
-                {
-                    DeleteProxyRoute(proxyIp);
-                    eventLog.WriteEntry($"deleted route to proxy");
-                }
-                catch (Exception e)
-                {
-                    eventLog.WriteEntry($"failed to delete route to proxy: {e.Message}", EventLogEntryType.Error);
-                }
-                this.proxyIp = null;
-            }
+            this.proxyIp = null;
 
             try
             {
@@ -625,27 +611,6 @@ namespace OutlineService
             {
                 throw new Exception($"could not stop smartdnsblock: {string.Join("; ", errors)}");
             }
-        }
-
-        private void AddOrUpdateProxyRoute(string proxyIp, string gatewayIp, int gatewayInterfaceIndex)
-        {
-            // "netsh interface ipv4 set route" does *not* work for us here
-            // because it can only be used to change a route's *metric*.
-            try
-            {
-                RunCommand(CMD_ROUTE, $"change {proxyIp} {gatewayIp} if {gatewayInterfaceIndex}");
-            }
-            catch (Exception)
-            {
-                RunCommand(CMD_NETSH, $"interface ipv4 add route {proxyIp}/32 nexthop={gatewayIp} interface=\"{gatewayInterfaceIndex}\" metric=0 store=active");
-            }
-        }
-
-        private void DeleteProxyRoute(string proxyIp)
-        {
-            // "route" doesn't need to know on which interface or through which
-            // gateway the route was created.
-            RunCommand(CMD_ROUTE, $"delete {proxyIp}");
         }
 
         // Route IPv4 traffic through the TAP device. Instead of deleting the
@@ -824,6 +789,7 @@ namespace OutlineService
         {
             gatewayIp = null;
             gatewayInterfaceIndex = -1;
+            gatewayAdapterIp = null;
 
             int tapInterfaceIndex;
             try
@@ -895,8 +861,33 @@ namespace OutlineService
                 throw new Exception("no gateway found");
             }
 
+            string gatewayInterfaceIp;
+            try
+            {
+                gatewayInterfaceIp = NetworkInterface.GetAllNetworkInterfaces()
+                    .Select(i => i.GetIPProperties())
+                    .FirstOrDefault(p => p.GetIPv4Properties().Index == bestRow.dwForwardIfIndex)
+                    .UnicastAddresses
+                    .FirstOrDefault(a => a.Address.AddressFamily == AddressFamily.InterNetwork)
+                    .Address.ToString();
+                if (string.IsNullOrEmpty(gatewayInterfaceIp))
+                {
+                    throw new Exception();
+                }
+                
+            }
+            catch (Exception ex)
+            {
+                eventLog.WriteEntry($"failed to locate gateway adapter: Index={bestRow.dwForwardIfIndex}, Err={ex}", EventLogEntryType.Error);
+                throw new Exception("failed to get gateway adapter IP address");
+            }
+
             gatewayIp = new IPAddress(BitConverter.GetBytes(bestRow.dwForwardNextHop)).ToString();
             gatewayInterfaceIndex = bestRow.dwForwardIfIndex;
+            gatewayAdapterIp = gatewayInterfaceIp;
+            eventLog.WriteEntry(
+                $"Network gateway adapter refreshed: Index={gatewayInterfaceIndex}, IP={gatewayAdapterIp}, NextHop={gatewayIp}"
+            );
         }
 
         // Updates, if Outline is connected, the routing table to reflect a new
@@ -971,18 +962,6 @@ namespace OutlineService
 
             eventLog.WriteEntry($"network changed - gateway is now {gatewayIp} on interface {gatewayInterfaceIndex}");
 
-            // Add the proxy escape route before capturing IPv4 traffic to prevent a routing loop in the TAP device.
-            try
-            {
-                AddOrUpdateProxyRoute(proxyIp, gatewayIp, gatewayInterfaceIndex);
-                eventLog.WriteEntry($"updated route to proxy");
-            }
-            catch (Exception e)
-            {
-                eventLog.WriteEntry($"could not update route to proxy: {e.Message}");
-                return;
-            }
-
             try
             {
                 AddIpv4TapRedirect();
@@ -1024,10 +1003,17 @@ namespace OutlineService
                 eventLog.WriteEntry("Cannot send connection status change, pipe not connected.", EventLogEntryType.Error);
                 return;
             }
-            ServiceResponse response = new ServiceResponse();
-            response.action = ACTION_STATUS_CHANGED;
-            response.statusCode = (int)ErrorCode.Success;
-            response.connectionStatus = (int)status;
+            ServiceResponse response = new ServiceResponse
+            {
+                action = ACTION_STATUS_CHANGED,
+                statusCode = (int)ErrorCode.Success,
+                connectionStatus = (int)status
+            };
+            if (status == ConnectionStatus.Connected)
+            {
+                response.gatewayAdapterIp = gatewayAdapterIp;
+                response.gatewayAdapterIndex = gatewayInterfaceIndex.ToString();
+            }
             try
             {
                 WriteResponse(response);
@@ -1085,6 +1071,10 @@ namespace OutlineService
         internal string errorMessage;
         [DataMember]
         internal int connectionStatus;
+        [DataMember]
+        internal string gatewayAdapterIp;
+        [DataMember]
+        internal string gatewayAdapterIndex;
     }
 
     public enum ErrorCode
