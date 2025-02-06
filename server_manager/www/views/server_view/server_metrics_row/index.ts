@@ -18,6 +18,7 @@ import {LitElement, html, css, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
+import '../help_tooltip';
 import '@material/mwc-icon';
 
 import './server_metrics_row_subcard';
@@ -50,12 +51,6 @@ export class ServerMetricsRow extends LitElement {
       --server-metrics-row-value-font-family: 'Roboto', system-ui;
       --server-metrics-row-value-label-font-size: 0.825rem;
       --server-metrics-row-value-label-margin-left: 0.2rem;
-
-      --server-metrics-row-tooltip-background: hsl(0, 0%, 94%);
-      --server-metrics-row-tooltip-border-radius: 0.3rem;
-      --server-metrics-row-tooltip-padding: 0.3rem;
-      --server-metrics-row-tooltip-text-color: hsl(0, 0%, 20%);
-      --server-metrics-row-tooltip-max-width: 320px;
 
       --server-metrics-row-footer-top-border: 1px solid hsla(0, 0%, 100%, 0.35);
 
@@ -114,34 +109,6 @@ export class ServerMetricsRow extends LitElement {
       margin-left: var(--server-metrics-row-value-label-margin-left);
     }
 
-    .tooltip-container {
-      cursor: help;
-      position: relative;
-      display: inline-flex;
-    }
-
-    .tooltip {
-      background-color: var(--server-metrics-row-tooltip-background);
-      border-radius: var(--server-metrics-row-tooltip-border-radius);
-      color: var(--server-metrics-row-tooltip-text-color);
-      font-family: var(--server-metrics-row-font-family);
-      left: 50%;
-      max-width: var(--server-metrics-row-tooltip-max-width);
-      padding: var(--server-metrics-row-tooltip-padding);
-      position: absolute;
-      top: 150%;
-      transform: translateX(-50%);
-      visibility: hidden;
-      white-space: pre-line;
-      width: max-content;
-      word-wrap: break-word;
-    }
-
-    .tooltip-container:hover .tooltip {
-      visibility: visible;
-      opacity: 1;
-    }
-
     aside {
       border-top: var(--server-metrics-row-footer-top-border);
       padding: var(--server-metrics-row-padding);
@@ -176,10 +143,7 @@ export class ServerMetricsRow extends LitElement {
               : nothing}
             <h2 class="title">${unsafeHTML(this.title)}</h2>
             ${this.tooltip
-              ? html`<div class="tooltip-container">
-                  <mwc-icon>info</mwc-icon>
-                  <span class="tooltip">${this.tooltip}</span>
-                </div>`
+              ? html`<help-tooltip>${this.tooltip}</help-tooltip>`
               : nothing}
           </div>
           <div class="value-container">
