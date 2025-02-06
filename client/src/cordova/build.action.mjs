@@ -25,7 +25,7 @@ const {cordova} = cordovaLib;
 
 import {getBuildParameters} from '../../build/get_build_parameters.mjs';
 
-const CORDOVA_PLATFORMS = ['android', 'ios', 'macos'];
+const CORDOVA_PLATFORMS = ['android', 'ios', 'maccatalyst', 'macos'];
 
 /**
  * @description Builds the parameterized cordova binary (ios, macos, maccatalyst, android).
