@@ -19,7 +19,7 @@ import (
 	"time"
 )
 
-// TODO: NetworkManager is async, use signals instead of polling in the future
+// TODO: NetworkManager is async, use signals instead of retries in the future
 const (
 	nmRetryCount = 20
 	nmRetryDelay = 50 * time.Millisecond
@@ -32,5 +32,5 @@ func nmCallWithRetry(doWork func() error) (err error) {
 		}
 		time.Sleep(nmRetryDelay)
 	}
-	return fmt.Errorf("exceeds maximum NetworkManager retry attempts: %w", err)
+	return fmt.Errorf("exceeds maximum retry attempts: %w", err)
 }
