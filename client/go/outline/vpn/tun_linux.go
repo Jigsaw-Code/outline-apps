@@ -98,7 +98,7 @@ func deleteTUNDevice(nm gonm.NetworkManager, name string) error {
 	return nmPolling(func() error {
 		dev, err := nm.GetDeviceByIpIface(name)
 		if dev == nil {
-			slog.Info("TUN device already deleted", "name", name, "msg", err)
+			slog.Debug("TUN device already deleted", "name", name, "msg", err)
 			return nil
 		}
 		slog.Debug("deleting TUN device ...", "dev", dev.GetPath(), "name", name)
@@ -111,7 +111,7 @@ func deleteTUNDevice(nm gonm.NetworkManager, name string) error {
 		if dev, err = nm.GetDeviceByIpIface(name); dev != nil {
 			return fmt.Errorf("TUN device `%s` still exists, will retry later", name)
 		}
-		slog.Info("TUN device deleted", "name", name, "msg", err)
+		slog.Debug("TUN device deleted", "name", name, "msg", err)
 		return nil
 	})
 }

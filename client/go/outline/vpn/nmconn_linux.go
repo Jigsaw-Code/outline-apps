@@ -99,7 +99,7 @@ func clearNMConnections(nm gonm.NetworkManager, name string) error {
 		return nil
 	}
 
-	slog.Debug("removing all NetworkManager connections with name ...", "name", name)
+	slog.Debug("deleting all NetworkManager connections with name ...", "name", name)
 	nmSettings, err := gonm.NewSettings()
 	if err != nil {
 		return fmt.Errorf("failed to connect to NetworkManager settings: %w", err)
@@ -110,6 +110,7 @@ func clearNMConnections(nm gonm.NetworkManager, name string) error {
 			return err
 		}
 		for _, conn := range conns {
+			slog.Debug("deleting connection", "conn", conn.GetPath())
 			if err := conn.Delete(); err != nil {
 				slog.Debug("failed to delete connection, will rety later", "conn", conn.GetPath())
 			}
