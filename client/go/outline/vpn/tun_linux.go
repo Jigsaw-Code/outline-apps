@@ -18,15 +18,9 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
-	"time"
 
 	gonm "github.com/Wifx/gonetworkmanager/v2"
 	"github.com/songgao/water"
-)
-
-const (
-	tunAPIRetryCount = 20
-	tunAPIRetryDelay = 50 * time.Millisecond
 )
 
 type tunDevice struct {
@@ -61,17 +55,8 @@ func newTUNDevice(nm gonm.NetworkManager, name string) (_ io.ReadWriteCloser, er
 	}
 
 	// Wait for the TUN device to be available in NetworkManager
-	for retries := tunAPIRetryCount; retries > 0; retries-- {
-		slog.Debug("trying to locate TUN device in NetworkManager...", "tun", name)
-		tun.nmDev, err = nm.GetDeviceByIpIface(name)
-		if tun.nmDev != nil && err == nil {
-			break
-		}
-		slog.Debug("waiting for TUN device to be available in NetworkManager", "err", err)
-		time.Sleep(tunAPIRetryDelay)
-	}
-	if tun.nmDev == nil {
-		return nil, fmt.Errorf("failed to locate the TUN device `%s` in NetworkManager", tun.Name())
+	if tun.nmDev, err = waitForTUNDeviceToBeAvailable(nm, tun.Name()); err != nil {
+		return nil, err
 	}
 	slog.Debug("found TUN device in NetworkManager", "dev", tun.nmDev.GetPath())
 
@@ -79,6 +64,7 @@ func newTUNDevice(nm gonm.NetworkManager, name string) (_ io.ReadWriteCloser, er
 	if err = setTUNDeviceManaged(tun.nmDev, true); err != nil {
 		return nil, err
 	}
+	slog.Debug("TUN device is now managed by NetworkManager", "dev", tun.nmDev.GetPath())
 
 	slog.Info("TUN device successfully created", "name", tun.Name(), "dev", tun.nmDev.GetPath())
 	return tun, nil
@@ -93,31 +79,48 @@ func (tun *tunDevice) Close() (err error) {
 }
 
 func setTUNDeviceManaged(dev gonm.Device, value bool) error {
-	for retries := tunAPIRetryCount; retries > 0; retries-- {
-		if err := dev.SetPropertyManaged(value); err != nil {
-			return fmt.Errorf("NetworkManager failed to set TUN device Managed=%v: %w", value, err)
-		}
-		if managed, err := dev.GetPropertyManaged(); err == nil && managed == value {
-			slog.Debug("NetworkManager updated TUN device Managed", "dev", dev.GetPath(), "managed", value)
-			return nil
-		}
-		time.Sleep(tunAPIRetryDelay)
+	if err := dev.SetPropertyManaged(value); err != nil {
+		return fmt.Errorf("NetworkManager failed to set TUN device Managed=%v: %w", value, err)
 	}
-	return fmt.Errorf("NetworkManager failed to set TUN device Managed=%v after retries", value)
+	// wait it to take effect
+	return nmPolling(func() error {
+		slog.Debug("waiting for TUN to be Managed", "dev", dev.GetPath(), "managed", value)
+		managed, err := dev.GetPropertyManaged()
+		if err == nil && managed != value {
+			err = fmt.Errorf("failed to confirm TUN device Managed=%v", value)
+		}
+		return err
+	})
 }
 
+// deleteTUNDevice deletes all TUN devices of a given name and confirms all of them are deleted.
 func deleteTUNDevice(nm gonm.NetworkManager, name string) error {
-	for retries := tunAPIRetryCount; retries > 0; retries-- {
+	return nmPolling(func() error {
 		dev, err := nm.GetDeviceByIpIface(name)
-		if err != nil {
-			slog.Debug("TUN device deleted", "name", name, "msg", err)
+		if dev == nil {
+			slog.Info("TUN device already deleted", "name", name, "msg", err)
 			return nil
 		}
 		slog.Debug("deleting TUN device ...", "dev", dev.GetPath(), "name", name)
 		if err := dev.Delete(); err != nil {
 			slog.Debug("failed to delete TUN device, will retry later", "dev", dev.GetPath(), "err", err)
+			return err
 		}
-		time.Sleep(tunAPIRetryDelay)
-	}
-	return fmt.Errorf("failed to delete TUN device %s", name)
+
+		// confirm deletion
+		if dev, err = nm.GetDeviceByIpIface(name); dev != nil {
+			return fmt.Errorf("TUN device `%s` still exists, will retry later", name)
+		}
+		slog.Info("TUN device deleted", "name", name, "msg", err)
+		return nil
+	})
+}
+
+func waitForTUNDeviceToBeAvailable(nm gonm.NetworkManager, name string) (dev gonm.Device, err error) {
+	err = nmPolling(func() error {
+		slog.Debug("trying to locate TUN device in NetworkManager...", "tun", name)
+		dev, err = nm.GetDeviceByIpIface(name)
+		return err
+	})
+	return
 }

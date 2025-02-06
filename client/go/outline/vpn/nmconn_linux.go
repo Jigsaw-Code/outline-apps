@@ -20,15 +20,10 @@ import (
 	"io"
 	"log/slog"
 	"net"
-	"time"
+	"slices"
 
 	gonm "github.com/Wifx/gonetworkmanager/v2"
 	"golang.org/x/sys/unix"
-)
-
-const (
-	nmAPIRetryCount = 20
-	nmAPIRetryDelay = 50 * time.Millisecond
 )
 
 type nmConnectionOptions struct {
@@ -73,16 +68,15 @@ func newNMConnection(nm gonm.NetworkManager, opts *nmConnectionOptions) (_ io.Cl
 		return nil, fmt.Errorf("failed to locate TUN device in NetworkManager: %w", err)
 	}
 
-	for retries := nmAPIRetryCount; retries > 0; retries-- {
+	err = nmPolling(func() (e error) {
 		slog.Debug("trying to create NetworkManager connection for tun device...", "dev", dev.GetPath())
-		c.ac, err = nm.AddAndActivateConnection(props, dev)
-		if err == nil {
+		if c.ac, e = nm.AddAndActivateConnection(props, dev); e == nil {
 			slog.Info("successfully created NetworkManager connection", "conn", c.ac.GetPath())
-			break
+		} else {
+			slog.Debug("failed to create NetworkManager connection, will retry later", "err", err)
 		}
-		slog.Debug("failed to create NetworkManager connection, will retry later", "err", err)
-		time.Sleep(nmAPIRetryDelay)
-	}
+		return e
+	})
 	return c, err
 }
 
@@ -110,41 +104,44 @@ func clearNMConnections(nm gonm.NetworkManager, name string) error {
 	if err != nil {
 		return fmt.Errorf("failed to connect to NetworkManager settings: %w", err)
 	}
-	for retries := nmAPIRetryCount; retries > 0; retries-- {
-		if conns, err := nmSettings.ListConnections(); err != nil {
-			slog.Debug("failed to list NetworkManager connections, will retry later", "err", err)
-		} else {
-			// Find all connections with the given name, and delete them all
-			found := false
-			for _, conn := range conns {
-				props, err := conn.GetSettings()
-				if err != nil {
-					slog.Debug("failed to read connection properties", "conn", conn.GetPath())
-					continue
-				}
-				connProps, ok := props["connection"]
-				if !ok {
-					slog.Debug("basic connection properties not found", "conn", conn.GetPath())
-					continue
-				}
-				if connProps["id"] == name {
-					found = true
-					slog.Debug("deleting NetworkManager connection", "conn", conn.GetPath(), "uuid", connProps["uuid"])
-					if err := conn.Delete(); err != nil {
-						slog.Debug("failed to delete connection, will rety later", "conn", conn.GetPath())
-						continue
-					}
-					slog.Debug("deleted NetworkManager connection", "conn", conn.GetPath())
-				}
-			}
-			if !found {
-				slog.Info("all NetworkManager connections deleted", "name", name)
-				return nil
+	return nmPolling(func() error {
+		conns, err := listConnectionsByName(nmSettings, name)
+		if err != nil {
+			return err
+		}
+		for _, conn := range conns {
+			if err := conn.Delete(); err != nil {
+				slog.Debug("failed to delete connection, will rety later", "conn", conn.GetPath())
 			}
 		}
-		time.Sleep(nmAPIRetryDelay)
+
+		// confirm deletion
+		conns, err = listConnectionsByName(nmSettings, name)
+		if err != nil || len(conns) > 0 {
+			return fmt.Errorf("NetworkManager `%s` still exists, will retry later", name)
+		}
+		slog.Info("all NetworkManager connections deleted", "name", name)
+		return nil
+	})
+}
+
+func listConnectionsByName(nmSettings gonm.Settings, name string) ([]gonm.Connection, error) {
+	conns, err := nmSettings.ListConnections()
+	if err != nil {
+		slog.Warn("failed to list NetworkManager connections", "err", err)
+		return nil, err
 	}
-	return fmt.Errorf("failed to delete NetworkManager connection: %s", name)
+	return slices.DeleteFunc(conns, func(conn gonm.Connection) bool {
+		props, err := conn.GetSettings()
+		if err != nil {
+			return true
+		}
+		connProps, ok := props["connection"]
+		if !ok {
+			return true
+		}
+		return connProps["id"] != name
+	}), nil
 }
 
 // NetworkManager settings reference:
