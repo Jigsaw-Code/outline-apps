@@ -1047,7 +1047,10 @@ export class App {
     serverView: ServerView
   ) {
     try {
-      const serverMetrics = await selectedServer.getServerMetrics();
+      const [serverMetrics, serverAccessKeys] = await Promise.all([
+        selectedServer.getServerMetrics(),
+        selectedServer.listAccessKeys(),
+      ]);
 
       let bandwidthUsageTotal = 0;
       const bandwidthUsageComparator: Comparator<server_model.ServerMetrics> = (
@@ -1121,6 +1124,14 @@ export class App {
         },
         new Map<string, number>()
       );
+
+      serverView.accessKeys = serverAccessKeys.map(accessKey => ({
+        id: accessKey.id,
+        name: accessKey.name,
+        accessUrl: accessKey.accessUrl,
+        dataUsageBytes: keyDataTransferMap.get(accessKey.id) ?? 0,
+        dataLimitBytes: accessKey.dataLimit?.bytes,
+      }));
 
       let keyTransferMax = 0;
       let dataLimitMax = selectedServer.getDefaultDataLimit()?.bytes ?? 0;

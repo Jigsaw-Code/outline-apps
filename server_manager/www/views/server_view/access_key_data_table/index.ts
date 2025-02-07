@@ -29,6 +29,7 @@ import {
   DataTableEvent,
   DataTableSortDirection,
   defaultNumericComparator,
+  defaultStringComparator,
 } from './data_table';
 
 /**
@@ -37,10 +38,9 @@ import {
 export interface AccessKeyDataTableRow {
   id: string;
   name: string;
-  connected: boolean;
+  accessUrl: string;
   dataUsageBytes: number;
   dataLimitBytes: number;
-  asnCount: number;
 }
 
 /**
@@ -102,11 +102,10 @@ export class AccessKeyDataTable extends LitElement {
             displayName: this.localize(
               'server-view-access-keys-key-column-header'
             ),
-            render: ({name, connected}: AccessKeyDataTableRow) =>
-              html`<access-key-status
-                name=${name}
-                .connected=${connected}
-              ></access-key-status>`,
+            render: ({name}: AccessKeyDataTableRow) =>
+              html`<access-key-status name=${name}></access-key-status>`,
+            comparator: (a: AccessKeyDataTableRow, b: AccessKeyDataTableRow) =>
+              defaultStringComparator(a.name, b.name),
           },
           {
             id: 'usage',
@@ -121,24 +120,14 @@ export class AccessKeyDataTable extends LitElement {
                 .localize=${this.localize}
                 language=${this.language}
               ></access-key-usage-meter>`,
-          },
-          {
-            id: 'asnCount',
-            displayName: this.localize(
-              'server-view-access-keys-as-count-column-header'
-            ),
-            tooltip: this.localize('server-view-access-keys-as-count-tooltip'),
-            render: ({asnCount}: AccessKeyDataTableRow) => html`${asnCount}`,
-            comparator: (
-              row1: AccessKeyDataTableRow,
-              row2: AccessKeyDataTableRow
-            ) => defaultNumericComparator(row1.asnCount, row2.asnCount),
+            comparator: (a: AccessKeyDataTableRow, b: AccessKeyDataTableRow) =>
+              defaultNumericComparator(a.dataUsageBytes, b.dataUsageBytes),
           },
           {
             id: 'controls',
-            render: ({id}: AccessKeyDataTableRow) =>
+            render: (key: AccessKeyDataTableRow) =>
               html`<access-key-controls
-                id=${id}
+                .key=${key}
                 .localize=${this.localize}
                 serverVersion=${this.serverVersion}
               ></access-key-controls>`,

@@ -50,6 +50,24 @@ export const defaultNumericComparator: Comparator<number> = (
 };
 
 /**
+ * A default comparator function for strings.
+ *
+ * @param {number} value1 The first string.
+ * @param {number} value2 The second string.
+ * @returns {-1 | 0 | 1}  -1 if value1 < value2, 0 if value1 === value2, 1 if value1 > value2.
+ */
+export const defaultStringComparator: Comparator<string> = (
+  value1: string,
+  value2: string
+) => {
+  const comparisonResult = value1.localeCompare(value2);
+
+  if (comparisonResult === 0) return 0;
+  if (comparisonResult < 0) return -1;
+  if (comparisonResult > 0) return 1;
+};
+
+/**
  * Enum representing the sort direction of a DataTable column.
  */
 export enum DataTableSortDirection {
@@ -215,7 +233,7 @@ export class DataTable<T extends object> extends LitElement {
     }
 
     this.dispatchEvent(
-      new CustomEvent('DataTable.Sort', {
+      new CustomEvent(DataTableEvent.SORT, {
         detail: {
           columnId: columnProperties.id,
           sortDirection: this.sortDirection,
