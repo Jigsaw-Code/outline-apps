@@ -53,14 +53,14 @@ type NewClientResult struct {
 func NewClient(transportConfig string) *NewClientResult {
 	tcpDialer := transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
 	udpDialer := transport.UDPDialer{}
-	client, err := newClientWithBaseDialers(transportConfig, &tcpDialer, &udpDialer)
+	client, err := NewClientWithBaseDialers(transportConfig, &tcpDialer, &udpDialer)
 	if err != nil {
 		return &NewClientResult{Error: platerrors.ToPlatformError(err)}
 	}
 	return &NewClientResult{Client: client}
 }
 
-func newClientWithBaseDialers(transportConfig string, tcpDialer transport.StreamDialer, udpDialer transport.PacketDialer) (*Client, error) {
+func NewClientWithBaseDialers(transportConfig string, tcpDialer transport.StreamDialer, udpDialer transport.PacketDialer) (*Client, error) {
 	transportYAML, err := config.ParseConfigYAML(transportConfig)
 	if err != nil {
 		return nil, &platerrors.PlatformError{

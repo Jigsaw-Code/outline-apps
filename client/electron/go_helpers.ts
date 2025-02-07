@@ -32,19 +32,49 @@ import {ChildProcessHelper} from './process';
  * @throws Error if TCP connection cannot be established.
  * @throws ProcessTerminatedExitCodeError if tun2socks failed to run.
  */
-export async function checkUDPConnectivity(
+export function checkUDPConnectivity(
   config: string,
   debugMode: boolean = false
+): Promise<boolean> {
+  return checkUDPConnectivityWithArgs(
+    ['-transport', config, '-checkConnectivity'],
+    debugMode
+  );
+}
+
+/**
+ * Verifies the UDP connectivity of the server specified in `config`.
+ * Checks whether proxy server is reachable, whether the network and proxy support UDP forwarding
+ * and validates the proxy credentials.
+ *
+ * @param config The transport configuration in JSON.
+ * @param adapterIndex Optional. Whether to use a specific network adapter for testing.
+ * @param debugMode Optional. Whether to forward logs to stdout. Defaults to false.
+ * @returns A boolean indicating whether UDP forwarding is supported.
+ * @throws Error if TCP connection cannot be established.
+ * @throws ProcessTerminatedExitCodeError if tun2socks failed to run.
+ */
+export function checkUDPConnectivityWindows(
+  config: string,
+  adapterIndex: string,
+  debugMode: boolean = false
+): Promise<boolean> {
+  const args = ['-transport', config, '-checkConnectivity'];
+  if (adapterIndex) {
+    args.push('-adapterIndex', adapterIndex);
+  }
+  return checkUDPConnectivityWithArgs(args, debugMode);
+}
+
+async function checkUDPConnectivityWithArgs(
+  args: string[],
+  debugMode: boolean
 ): Promise<boolean> {
   const tun2socks = new ChildProcessHelper(pathToEmbeddedTun2socksBinary());
   tun2socks.isDebugModeEnabled = debugMode;
 
-  console.debug('[tun2socks] - checking connectivity ...');
-  const output = await tun2socks.launch([
-    '-transport',
-    config,
-    '-checkConnectivity',
-  ]);
+  console.debug('[tun2socks] - checking connectivity ...', args);
+  const output = await tun2socks.launch(args);
 
   // Only parse the first line, because sometimes Windows Crypto API adds warnings to stdout.
   const outObj = JSON.parse(output.split('\n')[0]);
