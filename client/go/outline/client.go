@@ -53,14 +53,14 @@ type NewClientResult struct {
 func NewClient(transportConfig string) *NewClientResult {
 	tcpDialer := transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
 	udpDialer := transport.UDPDialer{}
-	client, err := newClientWithBaseDialers(transportConfig, &tcpDialer, &udpDialer)
+	client, err := NewClientWithBaseDialers(transportConfig, &tcpDialer, &udpDialer)
 	if err != nil {
 		return &NewClientResult{Error: platerrors.ToPlatformError(err)}
 	}
 	return &NewClientResult{Client: client}
 }
 
-func newClientWithBaseDialers(transportConfig string, tcpDialer transport.StreamDialer, udpDialer transport.PacketDialer) (*Client, error) {
+func NewClientWithBaseDialers(transportConfig string, tcpDialer transport.StreamDialer, udpDialer transport.PacketDialer) (*Client, error) {
 	transportYAML, err := config.ParseConfigYAML(transportConfig)
 	if err != nil {
 		return nil, &platerrors.PlatformError{
@@ -84,6 +84,20 @@ func newClientWithBaseDialers(transportConfig string, tcpDialer transport.Stream
 				Message: "failed to create transport",
 				Cause:   platerrors.ToPlatformError(err),
 			}
+		}
+	}
+
+	// Make sure the transport is not proxyless for now.
+	if transportPair.StreamDialer.ConnType == config.ConnTypeDirect {
+		return nil, &platerrors.PlatformError{
+			Code:    platerrors.InvalidConfig,
+			Message: "transport must tunnel TCP traffic",
+		}
+	}
+	if transportPair.PacketListener.ConnType == config.ConnTypeDirect {
+		return nil, &platerrors.PlatformError{
+			Code:    platerrors.InvalidConfig,
+			Message: "transport must tunnel UDP traffic",
 		}
 	}
 

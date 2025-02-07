@@ -17,7 +17,9 @@ package outline
 import (
 	"context"
 	"encoding/json"
+	"strconv"
 
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/callback"
 	perrs "github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/vpn"
 )
@@ -44,7 +46,7 @@ func establishVPN(configStr string) error {
 
 	tcp := newFWMarkProtectedTCPDialer(conf.VPNConfig.ProtectionMark)
 	udp := newFWMarkProtectedUDPDialer(conf.VPNConfig.ProtectionMark)
-	c, err := newClientWithBaseDialers(conf.TransportConfig, tcp, udp)
+	c, err := NewClientWithBaseDialers(conf.TransportConfig, tcp, udp)
 	if err != nil {
 		return err
 	}
@@ -56,4 +58,17 @@ func establishVPN(configStr string) error {
 // closeVPN closes the currently active VPN connection.
 func closeVPN() error {
 	return vpn.CloseVPN()
+}
+
+func setVPNStateChangeListener(cbTokenStr string) error {
+	cbToken, err := strconv.Atoi(cbTokenStr)
+	if err != nil {
+		return perrs.PlatformError{
+			Code:    perrs.InternalError,
+			Message: "invalid callback token",
+			Cause:   perrs.ToPlatformError(err),
+		}
+	}
+	vpn.SetStateChangeListener(callback.Token(cbToken))
+	return nil
 }

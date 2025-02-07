@@ -17,9 +17,6 @@ import * as semver from 'semver';
 
 import * as server from '../model/server';
 
-const HOUR_IN_SECS = 60 * 60;
-const DAY_IN_HOURS = 24;
-
 interface AccessKeyJson {
   id: string;
   name: string;
@@ -189,16 +186,12 @@ export class ShadowboxServer implements server.Server {
 
       return {
         server: json.server.map(server => {
-          const userHours = server.tunnelTime.seconds / HOUR_IN_SECS;
-
           return {
             location: server.location,
             asn: server.asn,
             asOrg: server.asOrg,
             tunnelTime: server.tunnelTime,
             dataTransferred: server.dataTransferred,
-            userHours,
-            averageDevices: userHours / (timeRangeInDays * DAY_IN_HOURS),
           };
         }),
         accessKeys: json.accessKeys.map(key => ({

@@ -16,10 +16,13 @@ package vpn
 
 import (
 	"context"
+	"encoding/json"
 	"io"
 	"log/slog"
 	"sync"
+	"time"
 
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/callback"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
@@ -47,9 +50,23 @@ type platformVPNConn interface {
 	Close() error
 }
 
+// closeTimeout is the maximum time out used in platformVPNConn.Close
+const closeTimeout = 10 * time.Second
+
+// ConnectionStatus represents the status of a [VPNConnection].
+type ConnectionStatus string
+
+const (
+	ConnectionConnected     ConnectionStatus = "Connected"
+	ConnectionDisconnected  ConnectionStatus = "Disconnected"
+	ConnectionConnecting    ConnectionStatus = "Connecting"
+	ConnectionDisconnecting ConnectionStatus = "Disconnecting"
+)
+
 // VPNConnection represents a system-wide VPN connection.
 type VPNConnection struct {
-	ID string
+	ID     string           `json:"id"`
+	Status ConnectionStatus `json:"status"`
 
 	cancelEst     context.CancelFunc
 	wgEst, wgCopy sync.WaitGroup
@@ -62,6 +79,24 @@ type VPNConnection struct {
 // This package allows at most one active VPN connection at the same time.
 var mu sync.Mutex
 var conn *VPNConnection
+var stateChangeCb callback.Token
+
+// SetStatus sets the [VPNConnection] Status and calls the stateChangeCb callback.
+func (c *VPNConnection) SetStatus(status ConnectionStatus) {
+	c.Status = status
+	if connJson, err := json.Marshal(c); err == nil {
+		callback.DefaultManager().Call(stateChangeCb, string(connJson))
+	} else {
+		slog.Warn("failed to marshal VPN connection", "err", err)
+	}
+}
+
+// SetStateChangeListener sets the given [callback.Token] as a global VPN connection
+// state change listener.
+// The token should have already been registered with the [callback.DefaultManager].
+func SetStateChangeListener(token callback.Token) {
+	stateChangeCb = token
+}
 
 // EstablishVPN establishes a new active [VPNConnection] connecting to a [ProxyDevice]
 // with the given VPN [Config].
@@ -81,7 +116,7 @@ func EstablishVPN(
 		panic("a PacketListener must be provided")
 	}
 
-	c := &VPNConnection{ID: conf.ID}
+	c := &VPNConnection{ID: conf.ID, Status: ConnectionDisconnected}
 	ctx, c.cancelEst = context.WithCancel(ctx)
 
 	if c.platform, err = newPlatformVPNConn(conf); err != nil {
@@ -97,6 +132,14 @@ func EstablishVPN(
 	}
 
 	slog.Debug("establishing vpn connection ...", "id", c.ID)
+	c.SetStatus(ConnectionConnecting)
+	defer func() {
+		if err == nil {
+			c.SetStatus(ConnectionConnected)
+		} else {
+			c.SetStatus(ConnectionDisconnected)
+		}
+	}()
 
 	if c.proxy, err = ConnectRemoteDevice(ctx, sd, pl); err != nil {
 		slog.Error("failed to connect to the remote device", "err", err)
@@ -154,14 +197,15 @@ func closeVPNNoLock() (err error) {
 		return nil
 	}
 
+	slog.Debug("terminating the global vpn connection...", "id", conn.ID)
+	conn.SetStatus(ConnectionDisconnecting)
 	defer func() {
 		if err == nil {
 			slog.Info("vpn connection terminated", "id", conn.ID)
+			conn.SetStatus(ConnectionDisconnected)
 			conn = nil
 		}
 	}()
-
-	slog.Debug("terminating the global vpn connection...", "id", conn.ID)
 
 	// Cancel the Establish process and wait
 	conn.cancelEst()
@@ -172,17 +216,39 @@ func closeVPNNoLock() (err error) {
 		err = conn.platform.Close()
 	}
 
+	// TODO: Implement more sophisticated cancellation
+	// The proxy's Close method might take a long time to return when there are
+	// still outgoing traffic to the proxy in an unreachable network environment.
+	// The conn.wgCopy will also be blocked forever because we are waiting to copy
+	// traffic from the proxy to a local tun device.
+	// Therefore we will close the proxy in a goroutine, and wait for wgCopy to be
+	// done with a timeout value.
+
 	// We can ignore the following error
 	if conn.proxy != nil {
-		if err2 := conn.proxy.Close(); err2 != nil {
-			slog.Warn("failed to disconnect from the remote device")
-		} else {
-			slog.Info("disconnected from the remote device")
-		}
+		go func() {
+			slog.Debug("disconnecting from the remote device ...")
+			if err2 := conn.proxy.Close(); err2 != nil {
+				slog.Warn("failed to disconnect from the remote device")
+			} else {
+				slog.Info("disconnected from the remote device")
+			}
+		}()
 	}
 
+	closeDone := make(chan struct{})
+
 	// Wait for traffic copy go routines to finish
-	conn.wgCopy.Wait()
+	go func() {
+		conn.wgCopy.Wait()
+		close(closeDone)
+	}()
+
+	select {
+	case <-time.After(closeTimeout):
+		slog.Warn("disconnect from the remote device timed out")
+	case <-closeDone:
+	}
 
 	return
 }

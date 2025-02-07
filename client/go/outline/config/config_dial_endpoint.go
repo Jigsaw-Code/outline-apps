@@ -19,7 +19,9 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"runtime"
 	"strconv"
+	"testing"
 )
 
 // DialEndpointConfig is the format for the Dial Endpoint config.
@@ -43,9 +45,21 @@ func parseDirectDialerEndpoint[ConnType any](ctx context.Context, config any, ne
 		return nil, fmt.Errorf("failed to create sub-dialer: %w", err)
 	}
 
+	// We need to resolve to the proxy server address before attempting a connection.
+	// This is because we cannot protect the system DNS resolution connection
+	// with our FW_MARK (Linux) or by binding to an interface (Windows). Therefore, as a workaround on Linux and Windows, we resolve the address first.
+	ipPortStr := dialParams.Address
+	if dialer.ConnType == ConnTypeDirect && (runtime.GOOS == "linux" || runtime.GOOS == "windows") && !testing.Testing() {
+		ipPort, err := net.ResolveTCPAddr("tcp", ipPortStr)
+		if err != nil {
+			return nil, fmt.Errorf("failed to resolve endpoint address %s: %w", ipPortStr, err)
+		}
+		ipPortStr = ipPort.String()
+	}
+
 	endpoint := &Endpoint[ConnType]{
 		Connect: func(ctx context.Context) (ConnType, error) {
-			return dialer.Dial(ctx, dialParams.Address)
+			return dialer.Dial(ctx, ipPortStr)
 		},
 		ConnectionProviderInfo: dialer.ConnectionProviderInfo,
 	}

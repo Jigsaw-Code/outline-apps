@@ -44,6 +44,16 @@ const (
 	//  - Input: the transport config text
 	//  - Output: the TunnelConfigJson that Typescript needs
 	MethodParseTunnelConfig = "ParseTunnelConfig"
+
+	// SetVPNStateChangeListener sets a callback to be invoked when the VPN state changes.
+	//
+	// We recommend the caller to set this listener at app startup to catch all VPN state changes.
+	// Users might start the VPN from system settings, bypassing the app;
+	// so setting the listener when connecting within the app might miss some events.
+	//
+	//  - Input: A callback token string.
+	//  - Output: null
+	MethodSetVPNStateChangeListener = "SetVPNStateChangeListener"
 )
 
 // InvokeMethodResult represents the result of an InvokeMethod call.
@@ -79,6 +89,12 @@ func InvokeMethod(method string, input string) *InvokeMethodResult {
 
 	case MethodParseTunnelConfig:
 		return doParseTunnelConfig(input)
+
+	case MethodSetVPNStateChangeListener:
+		err := setVPNStateChangeListener(input)
+		return &InvokeMethodResult{
+			Error: platerrors.ToPlatformError(err),
+		}
 
 	default:
 		return &InvokeMethodResult{Error: &platerrors.PlatformError{

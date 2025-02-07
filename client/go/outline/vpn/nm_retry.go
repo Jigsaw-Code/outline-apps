@@ -1,4 +1,4 @@
-// Copyright 2024 The Outline Authors
+// Copyright 2025 The Outline Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,12 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//go:build !linux
+package vpn
 
-package outline
+import (
+	"fmt"
+	"time"
+)
 
-import "errors"
+// TODO: NetworkManager is async, use signals instead of retries in the future
+const (
+	nmRetryCount = 20
+	nmRetryDelay = 50 * time.Millisecond
+)
 
-func establishVPN(configStr string) error               { return errors.ErrUnsupported }
-func closeVPN() error                                   { return errors.ErrUnsupported }
-func setVPNStateChangeListener(cbTokenStr string) error { return errors.ErrUnsupported }
+func nmCallWithRetry(doWork func() error) (err error) {
+	for retries := nmRetryCount; retries > 0; retries-- {
+		if err = doWork(); err == nil {
+			return nil
+		}
+		time.Sleep(nmRetryDelay)
+	}
+	return fmt.Errorf("exceeds maximum retry attempts: %w", err)
+}

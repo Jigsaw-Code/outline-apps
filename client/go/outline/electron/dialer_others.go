@@ -1,4 +1,4 @@
-// Copyright 2024 The Outline Authors
+// Copyright 2025 The Outline Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,12 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//go:build !linux
+//go:build !windows
 
-package outline
+package main
 
-import "errors"
+import (
+	"errors"
 
-func establishVPN(configStr string) error               { return errors.ErrUnsupported }
-func closeVPN() error                                   { return errors.ErrUnsupported }
-func setVPNStateChangeListener(cbTokenStr string) error { return errors.ErrUnsupported }
+	"github.com/Jigsaw-Code/outline-sdk/transport"
+)
+
+func newBaseDialersWithAdapter(nicIdx int) (transport.StreamDialer, transport.PacketDialer, error) {
+	return nil, nil, errors.ErrUnsupported
+}

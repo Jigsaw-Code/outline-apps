@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {invokeGoMethod} from './go_plugin';
+import {invokeGoMethod, registerCallback} from './go_plugin';
 import {
   StartRequestJson,
   TunnelStatus,
@@ -35,27 +35,23 @@ interface EstablishVpnRequest {
   transport: string;
 }
 
-let currentRequestId: string | undefined = undefined;
-
 export async function establishVpn(request: StartRequestJson) {
-  currentRequestId = request.id;
-  statusCb?.(currentRequestId, TunnelStatus.RECONNECTING);
-
   const config: EstablishVpnRequest = {
+    // The following VPN configuration ensures that the new routing can co-exist with any legacy Outline routings (e.g. AppImage).
     vpn: {
-      id: currentRequestId,
+      id: request.id,
 
-      // TUN device name, being compatible with old code:
+      // TUN device name, use 'outline-tun1' to avoid conflict with old 'outline-tun0':
       // https://github.com/Jigsaw-Code/outline-apps/blob/client/linux/v1.14.0/client/electron/linux_proxy_controller/outline_proxy_controller.h#L203
-      interfaceName: 'outline-tun0',
+      interfaceName: 'outline-tun1',
 
       // Network Manager connection name, Use "TUN Connection" instead of "VPN Connection"
       // because Network Manager has a dedicated "VPN Connection" concept that we did not implement
       connectionName: 'Outline TUN Connection',
 
-      // TUN IP, being compatible with old code:
+      // TUN IP, use '10.0.85.5' to avoid conflict with old '10.0.85.1':
       // https://github.com/Jigsaw-Code/outline-apps/blob/client/linux/v1.14.0/client/electron/linux_proxy_controller/outline_proxy_controller.h#L204
-      ipAddress: '10.0.85.1',
+      ipAddress: '10.0.85.5',
 
       // DNS server list, being compatible with old code:
       // https://github.com/Jigsaw-Code/outline-apps/blob/client/linux/v1.14.0/client/electron/linux_proxy_controller/outline_proxy_controller.h#L207
@@ -72,19 +68,67 @@ export async function establishVpn(request: StartRequestJson) {
   };
 
   await invokeGoMethod('EstablishVPN', JSON.stringify(config));
-  statusCb?.(currentRequestId, TunnelStatus.CONNECTED);
 }
 
 export async function closeVpn(): Promise<void> {
-  statusCb?.(currentRequestId!, TunnelStatus.DISCONNECTING);
   await invokeGoMethod('CloseVPN', '');
-  statusCb?.(currentRequestId!, TunnelStatus.DISCONNECTED);
 }
 
-export type VpnStatusCallback = (id: string, status: TunnelStatus) => void;
+export type VpnStateChangeCallback = (status: TunnelStatus, id: string) => void;
 
-let statusCb: VpnStatusCallback | undefined = undefined;
+/**
+ * Registers a callback function to be invoked when the VPN state changes.
+ *
+ * @param cb - The callback function to be invoked when the VPN state changes.
+ *             The callback will receive the VPN connection ID as well as the new status.
+ *
+ * @remarks The caller should subscribe to this event **only once**.
+ *          Use the `id` parameter in the callback to identify the firing VPN connection.
+ */
+export async function onVpnStateChanged(
+  cb: VpnStateChangeCallback
+): Promise<void> {
+  if (!cb) {
+    return;
+  }
 
-export function onVpnStatusChanged(cb: VpnStatusCallback): void {
-  statusCb = cb;
+  const cbToken = await registerCallback(data => {
+    const conn = JSON.parse(data) as VPNConnectionState;
+    console.debug('VPN connection state changed', conn);
+    switch (conn?.status) {
+      case VPNConnConnected:
+        cb(TunnelStatus.CONNECTED, conn.id);
+        break;
+      case VPNConnConnecting:
+        cb(TunnelStatus.RECONNECTING, conn.id);
+        break;
+      case VPNConnDisconnecting:
+        cb(TunnelStatus.DISCONNECTING, conn.id);
+        break;
+      case VPNConnDisconnected:
+        cb(TunnelStatus.DISCONNECTED, conn.id);
+        break;
+    }
+    return '';
+  });
+
+  await invokeGoMethod('SetVPNStateChangeListener', cbToken.toString());
 }
+
+//#region type definitions of VPNConnection in Go
+
+// The following constants and types should be aligned with the corresponding definitions
+// in `./client/go/outline/vpn/vpn.go`.
+
+type VPNConnStatus = string;
+const VPNConnConnecting: VPNConnStatus = 'Connecting';
+const VPNConnConnected: VPNConnStatus = 'Connected';
+const VPNConnDisconnecting: VPNConnStatus = 'Disconnecting';
+const VPNConnDisconnected: VPNConnStatus = 'Disconnected';
+
+interface VPNConnectionState {
+  readonly id: string;
+  readonly status: VPNConnStatus;
+}
+
+//#endregion type definitions of VPNConnection in Go

@@ -63,6 +63,8 @@ var args struct {
 	tunName *string
 	tunDNS  *string
 
+	adapterIndex *int
+
 	transportConfig *string
 
 	logLevel          *string
@@ -93,6 +95,9 @@ func main() {
 	args.tunName = flag.String("tunName", "tun0", "TUN interface name")
 	args.dnsFallback = flag.Bool("dnsFallback", false, "Enable DNS fallback over TCP (overrides the UDP handler).")
 
+	// Windows Network Adapter Index
+	args.adapterIndex = flag.Int("adapterIndex", -1, "Windows network adapter index for proxy connection")
+
 	// Proxy transport config
 	args.transportConfig = flag.String("transport", "", "A JSON object containing the transport config, UTF8-encoded")
 
@@ -115,11 +120,24 @@ func main() {
 	if len(*args.transportConfig) == 0 {
 		printErrorAndExit(platerrors.PlatformError{Code: platerrors.InvalidConfig, Message: "transport config missing"}, exitCodeFailure)
 	}
-	clientResult := outline.NewClient(*args.transportConfig)
-	if clientResult.Error != nil {
-		printErrorAndExit(clientResult.Error, exitCodeFailure)
+
+	var client *outline.Client
+	if *args.adapterIndex >= 0 {
+		tcp, udp, err := newBaseDialersWithAdapter(*args.adapterIndex)
+		if err != nil {
+			printErrorAndExit(err, exitCodeFailure)
+		}
+		client, err = outline.NewClientWithBaseDialers(*args.transportConfig, tcp, udp)
+		if err != nil {
+			printErrorAndExit(err, exitCodeFailure)
+		}
+	} else {
+		result := outline.NewClient(*args.transportConfig)
+		if result.Error != nil {
+			printErrorAndExit(result.Error, exitCodeFailure)
+		}
+		client = result.Client
 	}
-	client := clientResult.Client
 
 	if *args.checkConnectivity {
 		result := outline.CheckTCPAndUDPConnectivity(client)

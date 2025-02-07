@@ -16,9 +16,11 @@ package vpn
 
 import (
 	"encoding/binary"
+	"fmt"
+	"io"
 	"log/slog"
 	"net"
-	"time"
+	"slices"
 
 	gonm "github.com/Wifx/gonetworkmanager/v2"
 	"golang.org/x/sys/unix"
@@ -34,27 +36,26 @@ type nmConnectionOptions struct {
 	RoutingPriority uint32
 }
 
-func establishNMConnection(nm gonm.NetworkManager, opts *nmConnectionOptions) (ac gonm.ActiveConnection, err error) {
+type nmConnection struct {
+	nm   gonm.NetworkManager
+	name string
+	ac   gonm.ActiveConnection
+}
+
+func newNMConnection(nm gonm.NetworkManager, opts *nmConnectionOptions) (_ io.Closer, err error) {
 	if nm == nil {
 		panic("a NetworkManager must be provided")
 	}
+
+	c := &nmConnection{
+		nm:   nm,
+		name: opts.Name,
+	}
 	defer func() {
 		if err != nil {
-			closeNMConnection(nm, ac)
-			ac = nil
+			c.Close()
 		}
 	}()
-
-	dev, err := waitForTUNDeviceToBeAvailable(nm, opts.TUNName)
-	if err != nil {
-		return nil, errSetupVPN("failed to find tun device", err, "tun", opts.TUNName, "api", "NetworkManager")
-	}
-	slog.Debug("located tun device in NetworkManager", "tun", opts.TUNName, "dev", dev.GetPath())
-
-	if err = dev.SetPropertyManaged(true); err != nil {
-		return nil, errSetupVPN("failed to manage tun device", err, "dev", dev.GetPath(), "api", "NetworkManager")
-	}
-	slog.Debug("NetworkManager now manages the tun device", "dev", dev.GetPath())
 
 	props := make(map[string]map[string]interface{})
 	configureCommonProps(props, opts)
@@ -62,45 +63,86 @@ func establishNMConnection(nm gonm.NetworkManager, opts *nmConnectionOptions) (a
 	configureIPv4Props(props, opts)
 	slog.Debug("populated NetworkManager connection settings", "settings", props)
 
-	// The previous SetPropertyManaged call needs some time to take effect (typically within 50ms)
-	for retries := 20; retries > 0; retries-- {
-		slog.Debug("trying to create NetworkManager connection for tun device...", "dev", dev.GetPath())
-		ac, err = nm.AddAndActivateConnection(props, dev)
-		if err == nil {
-			break
-		}
-		slog.Debug("failed to create NetworkManager connection, will retry later", "err", err)
-		time.Sleep(50 * time.Millisecond)
-	}
+	dev, err := nm.GetDeviceByIpIface(opts.TUNName)
 	if err != nil {
-		return ac, errSetupVPN("failed to create connection", err, "dev", dev.GetPath(), "api", "NetworkManager")
+		return nil, fmt.Errorf("failed to locate TUN device in NetworkManager: %w", err)
 	}
-	return
+
+	err = nmCallWithRetry(func() (e error) {
+		slog.Debug("trying to create NetworkManager connection for tun device...", "dev", dev.GetPath())
+		if c.ac, e = nm.AddAndActivateConnection(props, dev); e == nil {
+			slog.Info("successfully created NetworkManager connection", "conn", c.ac.GetPath())
+		} else {
+			slog.Debug("failed to create NetworkManager connection, will retry later", "err", err)
+		}
+		return e
+	})
+	return c, err
 }
 
-func closeNMConnection(nm gonm.NetworkManager, ac gonm.ActiveConnection) error {
+func (c *nmConnection) Close() error {
+	if c.ac != nil {
+		if err := c.nm.DeactivateConnection(c.ac); err != nil {
+			slog.Warn("failed to deactivate NetworkManager connection", "err", err, "conn", c.ac.GetPath())
+		}
+		slog.Debug("deactivated NetworkManager connection", "conn", c.ac.GetPath())
+	}
+	return clearNMConnections(c.nm, c.name)
+}
+
+// clearNMConnections removes all NetworkManager connections with a given name.
+func clearNMConnections(nm gonm.NetworkManager, name string) error {
 	if nm == nil {
 		panic("a NetworkManager must be provided")
 	}
-	if ac == nil {
+	if name == "" {
 		return nil
 	}
 
-	if err := nm.DeactivateConnection(ac); err != nil {
-		slog.Warn("failed to deactivate NetworkManager connection", "err", err, "conn", ac.GetPath())
-	}
-	slog.Debug("deactivated NetworkManager connection", "conn", ac.GetPath())
-
-	conn, err := ac.GetPropertyConnection()
-	if err == nil {
-		err = conn.Delete()
-	}
+	slog.Debug("deleting all NetworkManager connections with name ...", "name", name)
+	nmSettings, err := gonm.NewSettings()
 	if err != nil {
-		return errCloseVPN("failed to delete NetworkManager connection", err, "conn", ac.GetPath())
+		return fmt.Errorf("failed to connect to NetworkManager settings: %w", err)
 	}
-	slog.Info("NetworkManager connection deleted", "conn", ac.GetPath())
+	return nmCallWithRetry(func() error {
+		conns, err := listConnectionsByName(nmSettings, name)
+		if err != nil {
+			return err
+		}
+		for _, conn := range conns {
+			slog.Debug("deleting connection", "conn", conn.GetPath())
+			if err := conn.Delete(); err != nil {
+				slog.Debug("failed to delete connection, will rety later", "conn", conn.GetPath())
+			}
+		}
 
-	return nil
+		// confirm deletion
+		conns, err = listConnectionsByName(nmSettings, name)
+		if err != nil || len(conns) > 0 {
+			return fmt.Errorf("NetworkManager connection `%s` still exists, will retry later", name)
+		}
+		slog.Info("all NetworkManager connections deleted", "name", name)
+		return nil
+	})
+}
+
+func listConnectionsByName(nmSettings gonm.Settings, name string) ([]gonm.Connection, error) {
+	conns, err := nmSettings.ListConnections()
+	if err != nil {
+		slog.Warn("failed to list NetworkManager connections", "err", err)
+		return nil, err
+	}
+	return slices.DeleteFunc(conns, func(conn gonm.Connection) bool {
+		props, err := conn.GetSettings()
+		if err != nil {
+			return true
+		}
+		connProps, ok := props["connection"]
+		if !ok {
+			return true
+		}
+		return connProps["id"] != name
+	}), nil
 }
 
 // NetworkManager settings reference:

@@ -39,7 +39,7 @@ import {invokeGoMethod} from './go_plugin';
 import {GoVpnTunnel} from './go_vpn_tunnel';
 import {installRoutingServices, RoutingDaemon} from './routing_service';
 import {TunnelStore} from './tunnel_store';
-import {closeVpn, establishVpn, onVpnStatusChanged} from './vpn_service';
+import {closeVpn, establishVpn, onVpnStateChanged} from './vpn_service';
 import {VpnTunnel} from './vpn_tunnel';
 import * as config from '../src/www/app/outline_server_repository/config';
 import {
@@ -59,6 +59,7 @@ declare const APP_VERSION: string;
 const debugMode = process.env.OUTLINE_DEBUG === 'true';
 
 const IS_LINUX = os.platform() === 'linux';
+const USE_MODERN_ROUTING = IS_LINUX && !process.env.APPIMAGE;
 
 // Used for the auto-connect feature. There will be a tunnel in store
 // if the user was connected at shutdown.
@@ -359,11 +360,6 @@ async function createVpnTunnel(
   }
   const hostIp = await lookupIp(host);
   const routing = new RoutingDaemon(hostIp || '', isAutoConnect);
-  // Make sure the transport will use the IP we will allowlist.
-  // HACK: We do a simple string replacement in the config here. This may not always work with general configs
-  // but it works for simple configs.
-  // TODO: Remove the need to allowlisting the host IP.
-  tunnelConfig.transport = tunnelConfig.transport.replaceAll(host, hostIp);
   const tunnel = new GoVpnTunnel(routing, tunnelConfig.transport);
   routing.onNetworkChange = tunnel.networkChanged.bind(tunnel);
   return tunnel;
@@ -373,11 +369,7 @@ async function createVpnTunnel(
 async function startVpn(request: StartRequestJson, isAutoConnect: boolean) {
   console.debug('startVpn called with request ', JSON.stringify(request));
 
-  if (IS_LINUX && !process.env.APPIMAGE) {
-    onVpnStatusChanged((id, status) => {
-      setUiTunnelStatus(status, id);
-      console.info('VPN Status Changed: ', id, status);
-    });
+  if (USE_MODERN_ROUTING) {
     await establishVpn(request);
     return;
   }
@@ -415,7 +407,7 @@ async function startVpn(request: StartRequestJson, isAutoConnect: boolean) {
 
 // Invoked by both the stop-proxying event and quit handler.
 async function stopVpn() {
-  if (IS_LINUX && !process.env.APPIMAGE) {
+  if (USE_MODERN_ROUTING) {
     await Promise.all([closeVpn(), tearDownAutoLaunch()]);
     return;
   }
@@ -470,6 +462,10 @@ function main() {
     setupTray();
     // TODO(fortuna): Start the app with the window hidden on auto-start?
     setupWindow();
+
+    if (USE_MODERN_ROUTING) {
+      await onVpnStateChanged(setUiTunnelStatus);
+    }
 
     let requestAtShutdown: StartRequestJson | undefined;
     try {

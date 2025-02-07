@@ -41,6 +41,7 @@ interface RoutingServiceResponse {
   statusCode: RoutingServiceStatusCode;
   errorMessage?: string;
   connectionStatus: TunnelStatus;
+  gatewayAdapterIndex?: string;
 }
 
 enum RoutingServiceAction {
@@ -80,7 +81,10 @@ export class RoutingDaemon {
     this.fulfillDisconnect = F;
   });
 
-  private networkChangeListener?: (status: TunnelStatus) => void;
+  private networkChangeListener?: (
+    status: TunnelStatus,
+    gatewayIndex?: string
+  ) => void;
 
   constructor(
     private proxyAddress: string,
@@ -89,8 +93,9 @@ export class RoutingDaemon {
 
   // Fulfills once a connection is established with the routing daemon *and* it has successfully
   // configured the system's routing table.
+  // Returns a string representing the network adapter index that connects to the gateway.
   async start() {
-    return new Promise<void>((fulfill, reject) => {
+    return new Promise<string>((fulfill, reject) => {
       const newSocket = (this.socket = createConnection(SERVICE_NAME, () => {
         newSocket.removeListener('error', initialErrorHandler);
         const cleanup = () => {
@@ -137,7 +142,7 @@ export class RoutingDaemon {
             );
             reject(new Error(perr.toJSON()));
           } else {
-            fulfill();
+            fulfill(message.gatewayAdapterIndex);
           }
         });
 
@@ -174,7 +179,10 @@ export class RoutingDaemon {
     switch (message.action) {
       case RoutingServiceAction.STATUS_CHANGED:
         if (this.networkChangeListener) {
-          this.networkChangeListener(message.connectionStatus);
+          this.networkChangeListener(
+            message.connectionStatus,
+            message.gatewayAdapterIndex
+          );
         }
         break;
       case RoutingServiceAction.RESET_ROUTING:
@@ -253,7 +261,10 @@ export class RoutingDaemon {
   }
 
   set onNetworkChange(
-    newListener: ((status: TunnelStatus) => void) | undefined
+    newListener: (
+      status: TunnelStatus,
+      gatewayIndex?: string
+    ) => void | undefined
   ) {
     this.networkChangeListener = newListener;
   }

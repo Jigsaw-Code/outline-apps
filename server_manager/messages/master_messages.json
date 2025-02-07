@@ -1173,9 +1173,13 @@
       }
     }
   },
-  "server_view_access_keys_privacy_statement": {
-    "description": "The privacy statement text displayed to the user on the Access Keys tab, explaining data collection practices.",
-    "message": "We are committed to protecting the privacy and security of our users. Each Outline server automatically collects aggregated and anonymized usage data. This data does not include information about the websites users visit or their communications. It is also not shared with the Outline team unless you"
+  "server_view_privacy_statement": {
+    "description": "The privacy statement text displayed to the user on the Access Keys and Server Metrics tabs, explaining data collection practices.",
+    "message": "We are committed to protecting the privacy and security of our users. Each Outline server automatically collects aggregated and anonymized usage data. This data does not include information about the websites users visit or their communications. It is also not shared with the Outline team unless you, as the server administrator, explicitly opt in to sharing."
+  },
+  "server_view_privacy_statement_link": {
+    "description": "This is a link that apprears at the end of the privacy statement which explains data collection practices, calling them to learn more about our policies.",
+    "message": "Learn more."
   },
   "server_view_access_keys_key_column_header": {
     "description": "The header for the Key name column in the Access Keys table, labeling the column containing access key identifiers.",
@@ -1231,7 +1235,7 @@
   },
   "server_view_access_keys_last_active_tooltip": {
     "description": "The tooltip displayed when hovering over the Traffic last seen column in the Access Keys table, providing additional information about the last activity time.",
-    "message": "This shows the last time the key sent or received data through the server. If this time is significantly earlier than the last connected time"
+    "message": "This shows the last time the key sent or received data through the server. If this time is significantly earlier than the last connected time, the key could be connecting but failing to sending data."
   },
   "server_view_access_keys_usage_tooltip": {
     "description": "The tooltip displayed when hovering over the Usage column in the Access Keys table, providing additional information about data transfer volume.",
@@ -1239,11 +1243,11 @@
   },
   "server_view_access_keys_peak_devices_tooltip": {
     "description": "The tooltip displayed when hovering over the Peak devices column in the Access Keys table, providing additional information about maximum simultaneous connections.",
-    "message": "This shows the most devices connected to the server using this key at one time"
+    "message": "This shows the most devices connected to the server using this key at one time, within the last 30 days. It also shows the time when this occurred."
   },
   "server_view_access_keys_as_count_tooltip": {
     "description": "The tooltip displayed when hovering over the Unique ASes column in the Access Keys table, providing additional information about Autonomous Systems - or administrative internet regions.",
-    "message": "This shows the number of different Autonomous Systems (ASes) that connected to the server using this key over the last 30 days. An AS is a network that’s typically run by one organization"
+    "message": "This shows the number of different Autonomous Systems (ASes) that connected to the server using this key over the last 30 days. An AS is a network that’s typically run by one organization, like an internet service provider, a large company, or a university."
   },
   "server_view_access_keys_usage_limit": {
     "description": "The text displayed to the user when their access key usage approaches a defined limit (e.g., 80%).",
@@ -1256,10 +1260,6 @@
   "server_view_server_metrics_tab": {
     "description": "The title of the Server Metrics tab, displayed to the user to navigate to the server performance statistics section.",
     "message": "Server Metrics"
-  },
-  "server_view_server_metrics_privacy_statement": {
-    "description": "The privacy statement text displayed to the user on the Server Metrics tab, explaining data collection practices.",
-    "message": "We are committed to protecting the privacy and security of our users. Each Outline server automatically collects aggregated and anonymized usage data. This data does not include information about the websites users visit or their communications. It is also not shared with the Outline team unless you"
   },
   "server_view_server_metrics_bandwidth_title": {
     "description": "The title displayed for the total bandwidth usage metric, showing the overall data transfer volume for the server.",
@@ -1372,10 +1372,6 @@
         "content": "{openItalics}"
       }
     }
-  },
-  "server_view_server_metrics_devices_as_breakdown_unit_label": {
-    "description": "The unit label displayed alongside the devices connected breakdown by AS.",
-    "message": "Devices"
   },
   "server_view_server_metrics_advanced_metrics_link": {
     "description": "The text of a link that directs the user to a help center article with more detailed information about accessing advanced server metrics.",

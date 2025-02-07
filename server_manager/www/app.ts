@@ -16,9 +16,14 @@ import {CustomError} from '@outline/infrastructure/custom_error';
 import * as path_api from '@outline/infrastructure/path_api';
 import {sleep} from '@outline/infrastructure/sleep';
 import * as Sentry from '@sentry/electron/renderer';
+import {Comparator, Heap} from 'heap-js';
 import * as semver from 'semver';
 
-import {DisplayDataAmount, displayDataAmountToBytes} from './data_formatting';
+import {
+  DisplayDataAmount,
+  displayDataAmountToBytes,
+  formatBytes,
+} from './data_formatting';
 import {filterOptions, getShortName} from './location_formatting';
 import {parseManualServerConfig} from './management_urls';
 import type {AppRoot, ServerListEntry} from './ui_components/app-root';
@@ -43,8 +48,10 @@ const CHANGE_KEYS_PORT_VERSION = '1.0.0';
 const DATA_LIMITS_VERSION = '1.1.0';
 const CHANGE_HOSTNAME_VERSION = '1.2.0';
 const KEY_SETTINGS_VERSION = '1.6.0';
+const SECONDS_IN_HOUR = 60 * 60;
 const MAX_ACCESS_KEY_DATA_LIMIT_BYTES = 50 * 10 ** 9; // 50GB
 const CANCELLED_ERROR = new Error('Cancelled');
+const CHARACTER_TABLE_FLAG_SYMBOL_OFFSET = 127397;
 export const LAST_DISPLAYED_SERVER_STORAGE_KEY = 'lastDisplayedServer';
 
 // todo (#1311): we are referencing `@sentry/electron` which won't work for
@@ -1035,31 +1042,74 @@ export class App {
     }
   }
 
-  private async refreshServerMetrics(
+  private async refreshServerMetricsUI(
     selectedServer: server_model.Server,
     serverView: ServerView
   ) {
     try {
       const serverMetrics = await selectedServer.getServerMetrics();
 
-      let totalUserHours = 0;
-      let totalAverageDevices = 0;
-      for (const {averageDevices, userHours} of serverMetrics.server) {
-        totalAverageDevices += averageDevices;
-        totalUserHours += userHours;
+      let bandwidthUsageTotal = 0;
+      const bandwidthUsageComparator: Comparator<server_model.ServerMetrics> = (
+        server1,
+        server2
+      ) => server2.dataTransferred.bytes - server1.dataTransferred.bytes;
+      const bandwidthUsageHeap = new Heap(bandwidthUsageComparator);
+
+      let tunnelTimeTotal = 0;
+      const tunnelTimeComparator: Comparator<server_model.ServerMetrics> = (
+        server1,
+        server2
+      ) => server2.tunnelTime.seconds - server1.tunnelTime.seconds;
+      const tunnelTimeHeap = new Heap(tunnelTimeComparator);
+
+      for (const server of serverMetrics.server) {
+        bandwidthUsageTotal += server.dataTransferred.bytes;
+        bandwidthUsageHeap.push(server);
+
+        tunnelTimeTotal += server.tunnelTime.seconds;
+        tunnelTimeHeap.push(server);
       }
 
-      serverView.totalUserHours = totalUserHours;
-      serverView.totalAverageDevices = totalAverageDevices;
+      // support legacy metrics view
+      serverView.totalInboundBytes = bandwidthUsageTotal;
 
-      let totalInboundBytes = 0;
-      for (const {dataTransferred} of serverMetrics.accessKeys) {
-        if (!dataTransferred) continue;
+      const NUMBER_OF_ASES_TO_SHOW = 4;
+      serverView.bandwidthUsageTotal = formatBytes(
+        bandwidthUsageTotal,
+        this.appRoot.language
+      );
 
-        totalInboundBytes += dataTransferred.bytes;
-      }
+      serverView.bandwidthUsageRegions = bandwidthUsageHeap
+        .top(NUMBER_OF_ASES_TO_SHOW)
+        .reverse()
+        .map(server => ({
+          title: server.asOrg,
+          subtitle: `AS${server.asn}`,
+          icon: this.countryCodeToEmoji(server.location),
+          highlight: formatBytes(
+            server.dataTransferred.bytes,
+            this.appRoot.language
+          ),
+        }));
 
-      serverView.totalInboundBytes = totalInboundBytes;
+      serverView.tunnelTimeTotal = this.formatHourValue(
+        tunnelTimeTotal / SECONDS_IN_HOUR
+      );
+      serverView.tunnelTimeTotalLabel = this.formatHourUnits(
+        tunnelTimeTotal / SECONDS_IN_HOUR
+      );
+      serverView.tunnelTimeRegions = tunnelTimeHeap
+        .top(NUMBER_OF_ASES_TO_SHOW)
+        .reverse()
+        .map(server => ({
+          title: server.asOrg,
+          subtitle: `ASN${server.asn}`,
+          icon: this.countryCodeToEmoji(server.location),
+          highlight: this.formatHourValueAndUnit(
+            server.tunnelTime.seconds / SECONDS_IN_HOUR
+          ),
+        }));
 
       // Update all the displayed access keys, even if usage didn't change, in case data limits did.
       const keyDataTransferMap = serverMetrics.accessKeys.reduce(
@@ -1101,11 +1151,49 @@ export class App {
     }
   }
 
+  private formatHourValueAndUnit(hours: number) {
+    return new Intl.NumberFormat(this.appRoot.language, {
+      style: 'unit',
+      unit: 'hour',
+      unitDisplay: 'long',
+    }).format(hours);
+  }
+
+  private formatHourUnits(hours: number) {
+    const formattedValue = this.formatHourValue(hours);
+    const formattedValueAndUnit = this.formatHourValueAndUnit(hours);
+
+    return formattedValueAndUnit
+      .split(formattedValue)
+      .find(_ => _)
+      .trim();
+  }
+
+  private formatHourValue(hours: number) {
+    return new Intl.NumberFormat(this.appRoot.language, {
+      unit: 'hour',
+    }).format(hours);
+  }
+
+  private countryCodeToEmoji(countryCode: string) {
+    if (!countryCode || !/^[A-Z]{2}$/.test(countryCode)) {
+      return '';
+    }
+
+    // Convert the country code to an emoji using Unicode regional indicator symbols
+    const codePoints = countryCode
+      .toUpperCase()
+      .split('')
+      .map(char => CHARACTER_TABLE_FLAG_SYMBOL_OFFSET + char.charCodeAt(0));
+
+    return String.fromCodePoint(...codePoints);
+  }
+
   private showServerMetrics(
     selectedServer: server_model.Server,
     serverView: ServerView
   ) {
-    this.refreshServerMetrics(selectedServer, serverView);
+    this.refreshServerMetricsUI(selectedServer, serverView);
     // Get transfer stats once per minute for as long as server is selected.
     const statsRefreshRateMs = 60 * 1000;
     const intervalId = setInterval(() => {
@@ -1114,7 +1202,7 @@ export class App {
         clearInterval(intervalId);
         return;
       }
-      this.refreshServerMetrics(selectedServer, serverView);
+      this.refreshServerMetricsUI(selectedServer, serverView);
     }, statsRefreshRateMs);
   }
 
@@ -1185,7 +1273,7 @@ export class App {
       this.appRoot.showNotification(this.appRoot.localize('saved'));
       serverView.defaultDataLimitBytes = limit?.bytes;
       serverView.isDefaultDataLimitEnabled = true;
-      this.refreshServerMetrics(this.selectedServer, serverView);
+      this.refreshServerMetricsUI(this.selectedServer, serverView);
       // Don't display the feature collection disclaimer anymore.
       serverView.showFeatureMetricsDisclaimer = false;
       window.localStorage.setItem(
@@ -1211,7 +1299,7 @@ export class App {
       await this.selectedServer.removeDefaultDataLimit();
       serverView.isDefaultDataLimitEnabled = false;
       this.appRoot.showNotification(this.appRoot.localize('saved'));
-      this.refreshServerMetrics(this.selectedServer, serverView);
+      this.refreshServerMetricsUI(this.selectedServer, serverView);
     } catch (error) {
       console.error(`Failed to remove server default data limit: ${error}`);
       this.appRoot.showError(this.appRoot.localize('error-remove-data-limit'));
@@ -1259,7 +1347,7 @@ export class App {
     const serverView = await this.appRoot.getServerView(server.getId());
     try {
       await server.setAccessKeyDataLimit(keyId, {bytes: dataLimitBytes});
-      this.refreshServerMetrics(server, serverView);
+      this.refreshServerMetricsUI(server, serverView);
       this.appRoot.showNotification(this.appRoot.localize('saved'));
       return true;
     } catch (error) {
@@ -1280,7 +1368,7 @@ export class App {
     const serverView = await this.appRoot.getServerView(server.getId());
     try {
       await server.removeAccessKeyDataLimit(keyId);
-      this.refreshServerMetrics(server, serverView);
+      this.refreshServerMetricsUI(server, serverView);
       this.appRoot.showNotification(this.appRoot.localize('saved'));
       return true;
     } catch (error) {

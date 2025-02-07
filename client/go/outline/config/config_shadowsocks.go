@@ -71,6 +71,8 @@ func parseShadowsocksTransport(ctx context.Context, config ConfigNode, parseSE P
 	if err != nil {
 		return nil, fmt.Errorf("failed to create PacketListener: %w", err)
 	}
+	// For the Shadowsocks transport, the prefix only applies to TCP. To use a prefix with UDP, one needs to
+	// specify it in the PacketListener config explicitly. This is to ensure backwards-compatibility.
 	return &TransportPair{
 		&Dialer[transport.StreamConn]{ConnectionProviderInfo{ConnTypeTunneled, se.FirstHop}, sd.DialStream},
 		&PacketListener{ConnectionProviderInfo{ConnTypeTunneled, pe.FirstHop}, pl},
@@ -113,10 +115,6 @@ func parseShadowsocksPacketListener(ctx context.Context, config ConfigNode, pars
 	if err != nil {
 		return nil, err
 	}
-	if params.SaltGenerator != nil {
-		return nil, fmt.Errorf("prefix is not yet supported for PacketDialers")
-	}
-
 	pe, err := parsePE(ctx, params.Endpoint)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create PacketEndpoint: %w", err)
@@ -125,7 +123,9 @@ func parseShadowsocksPacketListener(ctx context.Context, config ConfigNode, pars
 	if err != nil {
 		return nil, err
 	}
-	// TODO: support UDP prefix.
+	if params.SaltGenerator != nil {
+		pl.SetSaltGenerator(params.SaltGenerator)
+	}
 	return &PacketListener{ConnectionProviderInfo{ConnTypeTunneled, pe.FirstHop}, pl}, nil
 }
 

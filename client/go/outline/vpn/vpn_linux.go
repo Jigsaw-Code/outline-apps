@@ -29,7 +29,7 @@ type linuxVPNConn struct {
 	tun    io.ReadWriteCloser
 	nmOpts *nmConnectionOptions
 	nm     gonm.NetworkManager
-	ac     gonm.ActiveConnection
+	nmConn io.Closer
 }
 
 var _ platformVPNConn = (*linuxVPNConn)(nil)
@@ -82,16 +82,12 @@ func (c *linuxVPNConn) Establish(ctx context.Context) (err error) {
 	if ctx.Err() != nil {
 		return perrs.PlatformError{Code: perrs.OperationCanceled}
 	}
-
-	if c.tun, err = newTUNDevice(c.nmOpts.TUNName); err != nil {
-		return errSetupVPN("failed to create tun device", err, "name", c.nmOpts.Name)
+	if c.tun, err = newTUNDevice(c.nm, c.nmOpts.TUNName); err != nil {
+		return errSetupVPN("failed to create tun device", err, "name", c.nmOpts.TUNName)
 	}
-	slog.Info("tun device created", "name", c.nmOpts.TUNName)
-
-	if c.ac, err = establishNMConnection(c.nm, c.nmOpts); err != nil {
-		return
+	if c.nmConn, err = newNMConnection(c.nm, c.nmOpts); err != nil {
+		return errSetupVPN("failed to configure NetworkManager connection", err, "name", c.nmOpts.TUNName)
 	}
-	slog.Info("successfully configured NetworkManager connection", "conn", c.ac.GetPath())
 	return nil
 }
 
@@ -101,13 +97,12 @@ func (c *linuxVPNConn) Close() (err error) {
 		return nil
 	}
 
-	closeNMConnection(c.nm, c.ac)
+	if c.nmConn != nil {
+		c.nmConn.Close()
+	}
 	if c.tun != nil {
-		// this is the only error that matters
 		if err = c.tun.Close(); err != nil {
 			err = errCloseVPN("failed to delete tun device", err, "name", c.nmOpts.TUNName)
-		} else {
-			slog.Info("tun device deleted", "name", c.nmOpts.TUNName)
 		}
 	}
 
