@@ -41,7 +41,6 @@ interface RoutingServiceResponse {
   statusCode: RoutingServiceStatusCode;
   errorMessage?: string;
   connectionStatus: TunnelStatus;
-  gatewayAdapterIp?: string;
   gatewayAdapterIndex?: string;
 }
 
@@ -84,7 +83,6 @@ export class RoutingDaemon {
 
   private networkChangeListener?: (
     status: TunnelStatus,
-    gatewayIp?: string,
     gatewayIndex?: string
   ) => void;
 
@@ -95,86 +93,82 @@ export class RoutingDaemon {
 
   // Fulfills once a connection is established with the routing daemon *and* it has successfully
   // configured the system's routing table.
+  // Returns a string representing the network adapter index that connects to the gateway.
   async start() {
-    return new Promise<{gatewayIp?: string; gatewayIndex?: string}>(
-      (fulfill, reject) => {
-        const newSocket = (this.socket = createConnection(SERVICE_NAME, () => {
-          newSocket.removeListener('error', initialErrorHandler);
-          const cleanup = () => {
-            newSocket.removeAllListeners();
-            this.socket = null;
-            this.fulfillDisconnect();
-          };
-          newSocket.once('close', cleanup);
-          newSocket.once('error', cleanup);
-
-          newSocket.once('data', data => {
-            const message = this.parseRoutingServiceResponse(data);
-            if (
-              !message ||
-              message.action !== RoutingServiceAction.CONFIGURE_ROUTING ||
-              message.statusCode !== RoutingServiceStatusCode.SUCCESS
-            ) {
-              // NOTE: This will rarely occur because the connectivity tests
-              //       performed when the user clicks "CONNECT" should detect when
-              //       the system is offline and that, currently, is pretty much
-              //       the only time the routing service will fail.
-              reject(
-                new Error(
-                  message
-                    ? message.errorMessage
-                    : 'empty routing service response'
-                )
-              );
-              newSocket.end();
-              return;
-            }
-
-            newSocket.on('data', this.dataHandler.bind(this));
-
-            // Potential race condition: this routing daemon might already be stopped by the tunnel
-            // when one of the dependencies (ss-local/tun2socks) exited
-            // TODO(junyi): better handling this case in the next installation logic fix
-            if (this.stopping) {
-              cleanup();
-              newSocket.destroy();
-              const perr = new PlatformError(
-                GoErrorCode.ROUTING_SERVICE_NOT_RUNNING,
-                'routing daemon service stopped before started'
-              );
-              reject(new Error(perr.toJSON()));
-            } else {
-              fulfill({
-                gatewayIp: message.gatewayAdapterIp,
-                gatewayIndex: message.gatewayAdapterIndex,
-              });
-            }
-          });
-
-          newSocket.write(
-            JSON.stringify({
-              action: RoutingServiceAction.CONFIGURE_ROUTING,
-              parameters: {
-                proxyIp: this.proxyAddress,
-                isAutoConnect: this.isAutoConnect,
-              },
-            } as RoutingServiceRequest)
-          );
-        }));
-
-        const initialErrorHandler = (err: Error) => {
-          console.error('Routing daemon socket setup failed', err);
+    return new Promise<string>((fulfill, reject) => {
+      const newSocket = (this.socket = createConnection(SERVICE_NAME, () => {
+        newSocket.removeListener('error', initialErrorHandler);
+        const cleanup = () => {
+          newSocket.removeAllListeners();
           this.socket = null;
-          const perr = new PlatformError(
-            GoErrorCode.ROUTING_SERVICE_NOT_RUNNING,
-            'routing daemon is not running',
-            {cause: err}
-          );
-          reject(new Error(perr.toJSON()));
+          this.fulfillDisconnect();
         };
-        newSocket.once('error', initialErrorHandler);
-      }
-    );
+        newSocket.once('close', cleanup);
+        newSocket.once('error', cleanup);
+
+        newSocket.once('data', data => {
+          const message = this.parseRoutingServiceResponse(data);
+          if (
+            !message ||
+            message.action !== RoutingServiceAction.CONFIGURE_ROUTING ||
+            message.statusCode !== RoutingServiceStatusCode.SUCCESS
+          ) {
+            // NOTE: This will rarely occur because the connectivity tests
+            //       performed when the user clicks "CONNECT" should detect when
+            //       the system is offline and that, currently, is pretty much
+            //       the only time the routing service will fail.
+            reject(
+              new Error(
+                message
+                  ? message.errorMessage
+                  : 'empty routing service response'
+              )
+            );
+            newSocket.end();
+            return;
+          }
+
+          newSocket.on('data', this.dataHandler.bind(this));
+
+          // Potential race condition: this routing daemon might already be stopped by the tunnel
+          // when one of the dependencies (ss-local/tun2socks) exited
+          // TODO(junyi): better handling this case in the next installation logic fix
+          if (this.stopping) {
+            cleanup();
+            newSocket.destroy();
+            const perr = new PlatformError(
+              GoErrorCode.ROUTING_SERVICE_NOT_RUNNING,
+              'routing daemon service stopped before started'
+            );
+            reject(new Error(perr.toJSON()));
+          } else {
+            fulfill(message.gatewayAdapterIndex);
+          }
+        });
+
+        newSocket.write(
+          JSON.stringify({
+            action: RoutingServiceAction.CONFIGURE_ROUTING,
+            parameters: {
+              proxyIp: this.proxyAddress,
+              isAutoConnect: this.isAutoConnect,
+            },
+          } as RoutingServiceRequest)
+        );
+      }));
+
+      const initialErrorHandler = (err: Error) => {
+        console.error('Routing daemon socket setup failed', err);
+        this.socket = null;
+        const perr = new PlatformError(
+          GoErrorCode.ROUTING_SERVICE_NOT_RUNNING,
+          'routing daemon is not running',
+          {cause: err}
+        );
+        reject(new Error(perr.toJSON()));
+      };
+      newSocket.once('error', initialErrorHandler);
+    });
   }
 
   private dataHandler(data: Buffer) {
@@ -187,7 +181,6 @@ export class RoutingDaemon {
         if (this.networkChangeListener) {
           this.networkChangeListener(
             message.connectionStatus,
-            message.gatewayAdapterIp,
             message.gatewayAdapterIndex
           );
         }
@@ -270,7 +263,6 @@ export class RoutingDaemon {
   set onNetworkChange(
     newListener: (
       status: TunnelStatus,
-      gatewayIp?: string,
       gatewayIndex?: string
     ) => void | undefined
   ) {

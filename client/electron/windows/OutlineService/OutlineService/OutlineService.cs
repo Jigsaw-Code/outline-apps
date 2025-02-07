@@ -48,12 +48,12 @@ using Newtonsoft.Json;
  *
  * Response
  *
- *  { statusCode:<int>, action:<string>, errorMessage?:<string>, gatewayAdapterIp?:<string>, gatewayAdapterIndex?:<string> }
+ *  { statusCode:<int>, action:<string>, errorMessage?:<string>, gatewayAdapterIndex?:<string> }
  *
  *  The service will send connection status updates if the pipe connection is kept
  *  open by the client. Such responses have the form:
  *
- *  { statusCode:<int>, action:"statusChanged", connectionStatus:<int>, gatewayAdapterIp?:<string>, gatewayAdapterIndex?:<string> }
+ *  { statusCode:<int>, action:"statusChanged", connectionStatus:<int>, gatewayAdapterIndex?:<string> }
  *
  * View logs with this PowerShell query:
  * get-eventlog -logname Application -source OutlineService -newest 20 | format-table -property timegenerated,entrytype,message -autosize
@@ -104,13 +104,7 @@ namespace OutlineService
         private NamedPipeServerStream pipe;
         private string proxyIp;
 
-        // Next-hop of the network adapter connected to the internet
         private string gatewayIp;
-
-        // IPv4 of the network adapter connected to the internet
-        private string gatewayAdapterIp;
-
-        // Index of the network adapter connected to the internet
         private int gatewayInterfaceIndex;
 
         // Time, in ms, to wait until considering smartdnsblock.exe to have successfully launched.
@@ -340,7 +334,6 @@ namespace OutlineService
             {
                 case ACTION_CONFIGURE_ROUTING:
                     ConfigureRouting(request.parameters[PARAM_PROXY_IP], Boolean.Parse(request.parameters[PARAM_AUTO_CONNECT]));
-                    response.gatewayAdapterIp = gatewayAdapterIp;
                     response.gatewayAdapterIndex = gatewayInterfaceIndex.ToString();
                     break;
                 case ACTION_RESET_ROUTING:
@@ -789,7 +782,6 @@ namespace OutlineService
         {
             gatewayIp = null;
             gatewayInterfaceIndex = -1;
-            gatewayAdapterIp = null;
 
             int tapInterfaceIndex;
             try
@@ -861,33 +853,8 @@ namespace OutlineService
                 throw new Exception("no gateway found");
             }
 
-            string gatewayInterfaceIp;
-            try
-            {
-                gatewayInterfaceIp = NetworkInterface.GetAllNetworkInterfaces()
-                    .Select(i => i.GetIPProperties())
-                    .FirstOrDefault(p => p.GetIPv4Properties().Index == bestRow.dwForwardIfIndex)
-                    .UnicastAddresses
-                    .FirstOrDefault(a => a.Address.AddressFamily == AddressFamily.InterNetwork)
-                    .Address.ToString();
-                if (string.IsNullOrEmpty(gatewayInterfaceIp))
-                {
-                    throw new Exception();
-                }
-                
-            }
-            catch (Exception ex)
-            {
-                eventLog.WriteEntry($"failed to locate gateway adapter: Index={bestRow.dwForwardIfIndex}, Err={ex}", EventLogEntryType.Error);
-                throw new Exception("failed to get gateway adapter IP address");
-            }
-
             gatewayIp = new IPAddress(BitConverter.GetBytes(bestRow.dwForwardNextHop)).ToString();
             gatewayInterfaceIndex = bestRow.dwForwardIfIndex;
-            gatewayAdapterIp = gatewayInterfaceIp;
-            eventLog.WriteEntry(
-                $"Network gateway adapter refreshed: Index={gatewayInterfaceIndex}, IP={gatewayAdapterIp}, NextHop={gatewayIp}"
-            );
         }
 
         // Updates, if Outline is connected, the routing table to reflect a new
@@ -922,7 +889,6 @@ namespace OutlineService
             }
 
             var previousGatewayIp = gatewayIp;
-            var previousGatewayAdapterIp = gatewayAdapterIp;
             var previousGatewayInterfaceIndex = gatewayInterfaceIndex;
 
             try
@@ -934,9 +900,7 @@ namespace OutlineService
                 eventLog.WriteEntry($"network changed but no gateway found: {e.Message}");
             }
 
-            if (previousGatewayIp == gatewayIp &&
-                previousGatewayInterfaceIndex == gatewayInterfaceIndex &&
-                previousGatewayAdapterIp == gatewayAdapterIp)
+            if (previousGatewayIp == gatewayIp && previousGatewayInterfaceIndex == gatewayInterfaceIndex)
             {
                 // Only send on actual change, to prevent duplicate notifications (mostly
                 // harmless but can make debugging harder).
@@ -1008,15 +972,12 @@ namespace OutlineService
                 eventLog.WriteEntry("Cannot send connection status change, pipe not connected.", EventLogEntryType.Error);
                 return;
             }
-            ServiceResponse response = new ServiceResponse
-            {
-                action = ACTION_STATUS_CHANGED,
-                statusCode = (int)ErrorCode.Success,
-                connectionStatus = (int)status
-            };
+            ServiceResponse response = new ServiceResponse();
+            response.action = ACTION_STATUS_CHANGED;
+            response.statusCode = (int)ErrorCode.Success;
+            response.connectionStatus = (int)status;
             if (status == ConnectionStatus.Connected)
             {
-                response.gatewayAdapterIp = gatewayAdapterIp;
                 response.gatewayAdapterIndex = gatewayInterfaceIndex.ToString();
             }
             try
@@ -1076,8 +1037,6 @@ namespace OutlineService
         internal string errorMessage;
         [DataMember]
         internal int connectionStatus;
-        [DataMember]
-        internal string gatewayAdapterIp;
         [DataMember]
         internal string gatewayAdapterIndex;
     }
