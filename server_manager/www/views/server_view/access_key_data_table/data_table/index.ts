@@ -68,6 +68,21 @@ export const defaultStringComparator: Comparator<string> = (
 };
 
 /**
+ * A default comparator for Dates.
+ * @param {Date} value1 The first date.
+ * @param {Date} value2 The second date.
+ * @returns {-1 | 0 | 1}  -1 if value1 < value2, 0 if value1 === value2, 1 if value1 > value2.
+ */
+export const defaultDateComparator: Comparator<Date> = (
+  value1: Date,
+  value2: Date
+) => {
+  if (value1 === value2) return 0;
+  if (value1 < value2) return -1;
+  if (value1 > value2) return 1;
+};
+
+/**
  * Enum representing the sort direction of a DataTable column.
  */
 export enum DataTableSortDirection {

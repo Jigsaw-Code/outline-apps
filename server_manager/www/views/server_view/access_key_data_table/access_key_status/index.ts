@@ -79,7 +79,7 @@ export class AccessKeyStatus extends LitElement {
   render() {
     return html` <div class="icon-wrapper">
         <mwc-icon>vpn_key</mwc-icon>
-        ${this.key.connected
+        ${this.key.isOnline
           ? html`<div class="icon-status-indicator"></div>`
           : nothing}
       </div>

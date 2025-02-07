@@ -27,13 +27,22 @@ export default {
     localize: (key: string) => {
       return (
         {
+          'server-view-access-keys-last-connected-column-header':
+            'Last connected',
+          'server-view-access-keys-last-connected-tooltip':
+            'This shows the last time the key successfully connected to the server.',
+          'server-view-access-keys-last-active-column-header': 'Last active',
+          'server-view-access-keys-last-active-tooltip':
+            'This shows the last time the key sent or received data through the server. If this time is significantly earlier than the last connected time, the key could be connecting but failing to sending data. ',
+          'server-view-access-keys-peak-devices-column-header':
+            'Peak devices <i>(last 30 days)</i>',
+          'server-view-access-keys-peak-devices-tooltip':
+            'This shows the most devices connected to the server using this key at one time, within the last 30 days. It also shows the time when this occurred.',
           'server-view-access-keys-key-column-header': 'Key',
           'server-view-access-keys-usage-column-header':
             'Usage <i>(last 30 days)</i>',
-          'server-view-access-keys-usage-tooltip': 'Lorem ipsum',
-          'server-view-access-keys-as-count-column-header':
-            'Total ASes seen <i>(last 30 days)</i>',
-          'server-view-access-keys-as-count-tooltip': 'Lorem ipsum',
+          'server-view-access-keys-usage-tooltip':
+            'This shows how much data the key transferred through the server over the last 30 days.',
           'server-view-access-keys-usage-limit': '(80%+ used)',
           'server-access-key-rename': 'Rename',
           remove: 'Remove',
@@ -43,25 +52,50 @@ export default {
     },
     accessKeys: [
       {
-        id: 1,
-        name: 'Key#1',
-        dataUsageBytes: 100000000,
-        dataLimitBytes: 10000000000,
+        id: '0',
+        name: 'Key 001',
+        isOnline: true,
+        lastConnected: '2/19/2025 10:08:34',
+        lastTraffic: '2/19/2025 16:54:03',
+        dataUsageBytes: 62 * 1000 * 1000,
+        dataLimitBytes: 100 * 1000 * 1000,
+        peakDeviceCount: 3,
+        peakDeviceTime: '2/17/2025 18:32:07',
       },
       {
-        id: 2,
-        name: 'Key#2',
-        dataUsageBytes: 8000000000,
-        dataLimitBytes: 10000000000,
+        id: '1',
+        name: 'Key 002',
+        isOnline: true,
+        lastConnected: '2/19/2025 9:25:43',
+        lastTraffic: '2/19/2025 17:02:21',
+        dataUsageBytes: 86 * 1000 * 1000,
+        dataLimitBytes: 100 * 1000 * 1000,
+        peakDeviceCount: 17,
+        peakDeviceTime: '2/19/2025 22:41:38',
       },
       {
-        id: 3,
-        name: 'Key#3',
-        dataUsageBytes: 6500000000,
-        dataLimitBytes: 10000000000,
+        id: '2',
+        name: 'Key 003',
+        isOnline: false,
+        lastConnected: '2/12/2025 11:56:18',
+        lastTraffic: '1/30/2025 7:02:31',
+        dataUsageBytes: 45 * 1000 * 1000,
+        dataLimitBytes: 100 * 1000 * 1000,
+        peakDeviceCount: 2,
+        peakDeviceTime: '1/29/2025 8:48:29',
+      },
+      {
+        id: '3',
+        name: 'Key 004',
+        isOnline: false,
+        lastConnected: '9/14/2024 14:26:02',
+        lastTraffic: '9/14/2024 19:17:51',
+        dataUsageBytes: 0,
+        dataLimitBytes: 100 * 1000 * 1000,
+        peakDeviceCount: 0,
       },
     ],
-    sortColumnId: 'name',
+    sortColumnId: 'peakDevices',
     sortDirection: DataTableSortDirection.DESCENDING,
     language: 'en',
   },

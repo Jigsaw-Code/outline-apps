@@ -708,14 +708,11 @@ export class ServerView extends DirMixin(PolymerElement) {
   //   https://www.polymer-project.org/1.0/docs/devguide/data-binding.html
   monthlyOutboundTransferBytes = 0;
   monthlyCost = 0;
-  accessKeySortBy = 'name';
-  /** The direction to sort: 1 == ascending, -1 == descending */
-  accessKeySortDirection: -1 | 1 = 1;
   language = 'en';
   localize: (msgId: string, ...params: string[]) => string = null;
   selectedPage: 'progressView' | 'unreachableView' | 'managementView' =
     'managementView';
-  selectedTab: 'connections' | 'settings' = 'connections';
+  selectedTab: 'connections' | 'metrics' | 'settings' = 'connections';
   featureFlags = {serverMetricsTab: false};
 
   // Help bubbles should be shown after this outline-server-view

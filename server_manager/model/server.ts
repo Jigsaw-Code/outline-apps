@@ -209,4 +209,16 @@ export interface AccessKeyMetrics {
   accessKeyId: AccessKeyId;
   tunnelTime?: Duration;
   dataTransferred?: Data;
+  connection?: AccessKeyConnection;
+}
+
+export interface PeakDevices {
+  count: number;
+  timestamp: number | null;
+}
+
+export interface AccessKeyConnection {
+  lastConnected: number | null;
+  lastTrafficSeen: number | null;
+  peakDevices: PeakDevices;
 }

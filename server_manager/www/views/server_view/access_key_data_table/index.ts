@@ -18,6 +18,7 @@ import {LitElement, html} from 'lit';
 import {customElement, property, query} from 'lit/decorators.js';
 
 import './access_key_controls';
+
 import {
   AccessKeyControlsEvent,
   SERVER_DATA_LIMITS_SUPPORT_VERSION,
@@ -30,6 +31,7 @@ import {
   DataTable,
   DataTableEvent,
   DataTableSortDirection,
+  defaultDateComparator,
   defaultNumericComparator,
   defaultStringComparator,
 } from './data_table';
@@ -39,12 +41,16 @@ import {formatBytes} from '../../../data_formatting';
  * Data expected in the access key table.
  */
 export interface AccessKeyDataTableRow {
-  id: string;
-  name: string;
-  connected: boolean;
   accessUrl: string;
-  dataUsageBytes: number;
   dataLimitBytes: number;
+  dataUsageBytes: number;
+  id: string;
+  isOnline: boolean;
+  lastConnected?: string;
+  lastTraffic?: string;
+  name: string;
+  peakDeviceCount: number;
+  peakDeviceTime?: string;
 }
 
 /**
@@ -134,6 +140,38 @@ export class AccessKeyDataTable extends LitElement {
               defaultStringComparator(a.name, b.name),
           },
           {
+            id: 'lastConnected',
+            displayName: this.localize(
+              'server-view-access-keys-last-connected-column-header'
+            ),
+            tooltip: this.localize(
+              'server-view-access-keys-last-connected-tooltip'
+            ),
+            render: (key: AccessKeyDataTableRow) =>
+              html`${key.lastConnected ?? '-'}`,
+            comparator: (a: AccessKeyDataTableRow, b: AccessKeyDataTableRow) =>
+              defaultDateComparator(
+                new Date(a.lastConnected),
+                new Date(b.lastConnected)
+              ),
+          },
+          {
+            id: 'lastTraffic',
+            displayName: this.localize(
+              'server-view-access-keys-last-active-column-header'
+            ),
+            tooltip: this.localize(
+              'server-view-access-keys-last-active-tooltip'
+            ),
+            render: (key: AccessKeyDataTableRow) =>
+              html`${key.lastTraffic ?? '-'}`,
+            comparator: (a: AccessKeyDataTableRow, b: AccessKeyDataTableRow) =>
+              defaultDateComparator(
+                new Date(a.lastTraffic),
+                new Date(b.lastTraffic)
+              ),
+          },
+          {
             id: 'usage',
             displayName: this.localize(
               'server-view-access-keys-usage-column-header'
@@ -156,6 +194,27 @@ export class AccessKeyDataTable extends LitElement {
             },
             comparator: (a: AccessKeyDataTableRow, b: AccessKeyDataTableRow) =>
               defaultNumericComparator(a.dataUsageBytes, b.dataUsageBytes),
+          },
+          {
+            id: 'peakDevices',
+            displayName: this.localize(
+              'server-view-access-keys-peak-devices-column-header'
+            ),
+            tooltip: this.localize(
+              'server-view-access-keys-peak-devices-tooltip'
+            ),
+            render: (key: AccessKeyDataTableRow) => {
+              if (!key.peakDeviceTime) {
+                return html`<span>${key.peakDeviceCount}</span>`;
+              }
+
+              return html`<div style="display: flex; gap: 1rem;">
+                <span>${key.peakDeviceCount}</span
+                ><span>${key.peakDeviceTime}</span>
+              </div>`;
+            },
+            comparator: (a: AccessKeyDataTableRow, b: AccessKeyDataTableRow) =>
+              defaultNumericComparator(a.peakDeviceCount, b.peakDeviceCount),
           },
           {
             id: 'controls',

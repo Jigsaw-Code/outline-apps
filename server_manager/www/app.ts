@@ -1065,9 +1065,6 @@ export class App {
         tunnelTimeHeap.push(server);
       }
 
-      // support legacy metrics view
-      serverView.totalInboundBytes = bandwidthUsageTotal;
-
       const NUMBER_OF_ASES_TO_SHOW = 4;
       serverView.bandwidthUsageTotal = formatBytes(
         bandwidthUsageTotal,
@@ -1105,29 +1102,52 @@ export class App {
           ),
         }));
 
-      // Update all the displayed access keys, even if usage didn't change, in case data limits did.
-      const keyDataTransferMap = serverMetrics.accessKeys.reduce(
-        (map, {accessKeyId, dataTransferred}) => {
-          if (dataTransferred) {
-            map.set(String(accessKeyId), dataTransferred.bytes);
-          }
-          return map;
-        },
-        new Map<string, number>()
-      );
+      const keyMetricsMap = serverMetrics.accessKeys.reduce((map, key) => {
+        map.set(key.accessKeyId, key);
 
-      serverView.accessKeyData = serverAccessKeys.map(accessKey => ({
-        id: accessKey.id,
-        connected: false,
-        name:
-          accessKey.name || this.appRoot.localize('key', 'keyId', accessKey.id),
-        accessUrl: accessKey.accessUrl,
-        dataUsageBytes: keyDataTransferMap.get(accessKey.id) ?? 0,
-        dataLimitBytes:
-          accessKey.dataLimit?.bytes ??
-          (serverView.isDefaultDataLimitEnabled &&
-            serverView.defaultDataLimitBytes),
-      }));
+        return map;
+      }, new Map<string, server_model.AccessKeyMetrics>());
+
+      serverView.accessKeyData = serverAccessKeys.map(accessKey => {
+        const {connection, dataTransferred} =
+          keyMetricsMap.get(accessKey.id) ?? {};
+
+        const lastTrafficDate = connection?.lastTrafficSeen
+          ? new Date(connection.lastTrafficSeen * 1000)
+          : null;
+
+        const currentDate = new Date();
+        const fiveMinutesAgo = new Date(currentDate.getTime() - 5 * 60 * 1000);
+
+        return {
+          id: accessKey.id,
+          isOnline:
+            lastTrafficDate >= fiveMinutesAgo && lastTrafficDate <= currentDate,
+          name:
+            accessKey.name ||
+            this.appRoot.localize('key', 'keyId', accessKey.id),
+          lastConnected: connection?.lastConnected
+            ? new Date(connection.lastConnected * 1000)?.toLocaleDateString(
+                this.appRoot.language
+              )
+            : null,
+          lastTraffic: lastTrafficDate?.toLocaleDateString(
+            this.appRoot.language
+          ),
+          peakDeviceCount: connection?.peakDevices.count ?? 0,
+          peakDeviceTime: connection?.peakDevices.timestamp
+            ? new Date(
+                connection.peakDevices.timestamp * 1000
+              )?.toLocaleDateString(this.appRoot.language)
+            : null,
+          accessUrl: accessKey.accessUrl,
+          dataUsageBytes: dataTransferred?.bytes ?? 0,
+          dataLimitBytes:
+            accessKey.dataLimit?.bytes ??
+            (serverView.isDefaultDataLimitEnabled &&
+              serverView.defaultDataLimitBytes),
+        };
+      });
     } catch (e) {
       // Since failures are invisible to users we generally want exceptions here to bubble
       // up and trigger a Sentry report. The exception is network errors, about which we can't
