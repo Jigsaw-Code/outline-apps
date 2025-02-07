@@ -15,12 +15,20 @@
  */
 
 import {LitElement, html, css, nothing} from 'lit';
-import {customElement, property} from 'lit/decorators.js';
+import {customElement, property, query} from 'lit/decorators.js';
+
+import {AccessKeyDataTableRow} from '..';
+
+export enum AccessKeyStatusEvent {
+  NAME_FIELD_CHANGE = 'AccessKeyStats.NameFieldChange',
+}
 
 @customElement('access-key-status')
 export class AccessKeyStatus extends LitElement {
-  @property({type: String}) name: string;
+  @property({type: Object}) key: AccessKeyDataTableRow;
   @property({type: Boolean}) connected: boolean;
+
+  @query('span.key-name') nameField: HTMLElement;
 
   static styles = css`
     :host {
@@ -63,17 +71,39 @@ export class AccessKeyStatus extends LitElement {
       right: 0;
       width: var(--access-key-status-indicator-size);
     }
+
+    .key-name:focus {
+      outline: none;
+      border-bottom: 1px solid var(--access-key-status-indicator-color);
+    }
   `;
 
   render() {
     return html`<div class="key">
       <div class="key-icon">
         <mwc-icon>vpn_key</mwc-icon>
-        ${this.connected
+        ${this.key.connected
           ? html`<div class="key-icon-indicator"></div>`
           : nothing}
       </div>
-      ${this.name}
+
+      <span class="key-name" contenteditable @blur=${this.change}
+        >${this.key.name}</span
+      >
     </div>`;
+  }
+
+  change() {
+    if (this.key.name === this.nameField.textContent) {
+      return;
+    }
+
+    this.dispatchEvent(
+      new CustomEvent(AccessKeyStatusEvent.NAME_FIELD_CHANGE, {
+        bubbles: true,
+        composed: true,
+        detail: {...this.key, name: this.nameField.textContent},
+      })
+    );
   }
 }

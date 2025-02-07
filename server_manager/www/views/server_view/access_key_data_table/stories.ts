@@ -43,19 +43,19 @@ export default {
     },
     accessKeys: [
       {
-        id: 'ss://key1.com:3000',
+        id: 1,
         name: 'Key#1',
         dataUsageBytes: 100000000,
         dataLimitBytes: 10000000000,
       },
       {
-        id: 'ss://key2.com:3000',
+        id: 2,
         name: 'Key#2',
         dataUsageBytes: 8000000000,
         dataLimitBytes: 10000000000,
       },
       {
-        id: 'ss://key3.com:3000',
+        id: 3,
         name: 'Key#3',
         dataUsageBytes: 6500000000,
         dataLimitBytes: 10000000000,

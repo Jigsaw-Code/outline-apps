@@ -15,17 +15,19 @@
  */
 
 import {LitElement, html} from 'lit';
-import {customElement, property} from 'lit/decorators.js';
+import {customElement, property, query} from 'lit/decorators.js';
 
 import './access_key_controls';
 import {
   AccessKeyControlsEvent,
   SERVER_DATA_LIMITS_SUPPORT_VERSION,
 } from './access_key_controls';
+import {AccessKeyStatus, AccessKeyStatusEvent} from './access_key_status';
 import './access_key_status';
 import './access_key_usage_meter';
 import './data_table';
 import {
+  DataTable,
   DataTableEvent,
   DataTableSortDirection,
   defaultNumericComparator,
@@ -39,6 +41,7 @@ import {formatBytes} from '../../../data_formatting';
 export interface AccessKeyDataTableRow {
   id: string;
   name: string;
+  connected: boolean;
   accessUrl: string;
   dataUsageBytes: number;
   dataLimitBytes: number;
@@ -65,6 +68,8 @@ export class AccessKeyDataTable extends LitElement {
   @property({type: String}) sortDirection: DataTableSortDirection =
     DataTableSortDirection.NONE;
 
+  @query('data-table') table: DataTable<AccessKeyDataTableRow>;
+
   connectedCallback() {
     super.connectedCallback();
 
@@ -83,8 +88,25 @@ export class AccessKeyDataTable extends LitElement {
       AccessKeyDataTableEvent.EDIT_KEY_DATA_LIMIT
     );
 
-    this.forwardEventListener(
+    // Redirect the controls' edit name event to the
+    // inline input in the name column.
+    this.addEventListener(
       AccessKeyControlsEvent.EDIT_NAME,
+      (event: CustomEvent) => {
+        event.stopImmediatePropagation();
+
+        (
+          this.table.shadowRoot.getElementById(
+            this.nameColumnIndex(event.detail)
+          ) as AccessKeyStatus
+        ).nameField.focus();
+      }
+    );
+
+    // When the name columns' name field changes, _then_ fire the
+    // edit name event.
+    this.forwardEventListener(
+      AccessKeyStatusEvent.NAME_FIELD_CHANGE,
       AccessKeyDataTableEvent.EDIT_KEY_NAME
     );
 
@@ -103,8 +125,11 @@ export class AccessKeyDataTable extends LitElement {
             displayName: this.localize(
               'server-view-access-keys-key-column-header'
             ),
-            render: ({name}: AccessKeyDataTableRow) =>
-              html`<access-key-status name=${name}></access-key-status>`,
+            render: (key: AccessKeyDataTableRow) =>
+              html`<access-key-status
+                id=${this.nameColumnIndex(key)}
+                .key=${key}
+              ></access-key-status>`,
             comparator: (a: AccessKeyDataTableRow, b: AccessKeyDataTableRow) =>
               defaultStringComparator(a.name, b.name),
           },
@@ -147,6 +172,10 @@ export class AccessKeyDataTable extends LitElement {
         sortDirection=${this.sortDirection}
       ></data-table>
     `;
+  }
+
+  private nameColumnIndex(key: AccessKeyDataTableRow) {
+    return `status-id-${key.id}`;
   }
 
   private forwardEventListener(

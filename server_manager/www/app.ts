@@ -28,10 +28,7 @@ import {filterOptions, getShortName} from './location_formatting';
 import {parseManualServerConfig} from './management_urls';
 import type {AppRoot, ServerListEntry} from './ui_components/app-root';
 import {FeedbackDetail} from './ui_components/outline-feedback-dialog';
-import type {
-  DisplayAccessKey,
-  ServerView,
-} from './ui_components/outline-server-view';
+import type {ServerView} from './ui_components/outline-server-view';
 import * as digitalocean_api from '../cloud/digitalocean_api';
 import {HttpError} from '../cloud/gcp_api';
 import * as accounts from '../model/accounts';
@@ -248,11 +245,7 @@ export class App {
     appRoot.addEventListener(
       'RenameAccessKeyRequested',
       (event: CustomEvent) => {
-        this.renameAccessKey(
-          event.detail.accessKeyId,
-          event.detail.newName,
-          event.detail.entry
-        );
+        this.renameAccessKey(event.detail.accessKeyId, event.detail.newName);
       }
     );
 
@@ -961,9 +954,6 @@ export class App {
       this.showMetricsOptInWhenNeeded(server);
       try {
         const serverAccessKeys = await server.listAccessKeys();
-        view.accessKeyRows = serverAccessKeys.map(
-          this.convertToUiAccessKey.bind(this)
-        );
         if (view.defaultDataLimitBytes === undefined) {
           view.defaultDataLimitBytes = (
             await computeDefaultDataLimit(server, serverAccessKeys)
@@ -973,6 +963,7 @@ export class App {
         setTimeout(() => {
           showHelpBubblesOnce(view);
         }, 250);
+        this.refreshServerMetricsUI(server, view);
       } catch (error) {
         console.error(`Failed to load access keys: ${error}`);
         this.appRoot.showError(this.appRoot.localize('error-keys-get'));
@@ -1127,6 +1118,7 @@ export class App {
 
       serverView.accessKeyData = serverAccessKeys.map(accessKey => ({
         id: accessKey.id,
+        connected: false,
         name:
           accessKey.name || this.appRoot.localize('key', 'keyId', accessKey.id),
         accessUrl: accessKey.accessUrl,
@@ -1136,22 +1128,6 @@ export class App {
           (serverView.isDefaultDataLimitEnabled &&
             serverView.defaultDataLimitBytes),
       }));
-
-      let keyTransferMax = 0;
-      let dataLimitMax = selectedServer.getDefaultDataLimit()?.bytes ?? 0;
-      for (const accessKey of await selectedServer.listAccessKeys()) {
-        serverView.updateAccessKeyRow(accessKey.id, {
-          transferredBytes: keyDataTransferMap.get(accessKey.id) ?? 0,
-          dataLimitBytes: accessKey.dataLimit?.bytes,
-        });
-        keyTransferMax = Math.max(
-          keyTransferMax,
-          keyDataTransferMap.get(accessKey.id) ?? 0
-        );
-        dataLimitMax = Math.max(dataLimitMax, accessKey.dataLimit?.bytes ?? 0);
-      }
-
-      serverView.baselineDataTransfer = Math.max(keyTransferMax, dataLimitMax);
     } catch (e) {
       // Since failures are invisible to users we generally want exceptions here to bubble
       // up and trigger a Sentry report. The exception is network errors, about which we can't
@@ -1221,24 +1197,6 @@ export class App {
     }, statsRefreshRateMs);
   }
 
-  // Converts the access key model to the format used by outline-server-view.
-  private convertToUiAccessKey(
-    remoteAccessKey: server_model.AccessKey
-  ): DisplayAccessKey {
-    return {
-      id: remoteAccessKey.id,
-      placeholderName: this.appRoot.localize(
-        'key',
-        'keyId',
-        remoteAccessKey.id
-      ),
-      name: remoteAccessKey.name,
-      accessUrl: remoteAccessKey.accessUrl,
-      transferredBytes: 0,
-      dataLimitBytes: remoteAccessKey.dataLimit?.bytes,
-    };
-  }
-
   private async addAccessKey() {
     const server = this.selectedServer;
     try {
@@ -1254,21 +1212,18 @@ export class App {
     }
   }
 
-  private renameAccessKey(
-    accessKeyId: string,
-    newName: string,
-    entry: polymer.Base
-  ) {
-    this.selectedServer
-      .renameAccessKey(accessKeyId, newName)
-      .then(() => {
-        entry.commitName();
-      })
-      .catch(error => {
-        console.error(`Failed to rename access key: ${error}`);
-        this.appRoot.showError(this.appRoot.localize('error-key-rename'));
-        entry.revertName();
-      });
+  private async renameAccessKey(accessKeyId: string, newName: string) {
+    try {
+      await this.selectedServer.renameAccessKey(accessKeyId, newName);
+    } catch (error) {
+      console.error(`Failed to rename access key: ${error}`);
+      this.appRoot.showError(this.appRoot.localize('error-key-rename'));
+    } finally {
+      this.refreshServerMetricsUI(
+        this.selectedServer,
+        await this.appRoot.getServerView(this.selectedServer.getId())
+      );
+    }
   }
 
   private async setDefaultDataLimit(limit: server_model.Data) {
