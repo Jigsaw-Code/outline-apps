@@ -47,8 +47,7 @@ func parseDirectDialerEndpoint[ConnType any](ctx context.Context, config any, ne
 
 	// We need to resolve to the proxy server address before attempting a connection.
 	// This is because we cannot protect the system DNS resolution connection
-	// with our FW_MARK. Therefore, as a workaround in Linux, we resolve the address first.
-	// The same logic applies to Windows as well.
+	// with our FW_MARK (Linux) or by binding to an interface (Windows). Therefore, as a workaround on Linux and Windows, we resolve the address first.
 	ipPortStr := dialParams.Address
 	if dialer.ConnType == ConnTypeDirect && (runtime.GOOS == "linux" || runtime.GOOS == "windows") && !testing.Testing() {
 		ipPort, err := net.ResolveTCPAddr("tcp", ipPortStr)
