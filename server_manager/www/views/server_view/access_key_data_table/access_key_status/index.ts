@@ -46,6 +46,7 @@ export class AccessKeyStatus extends LitElement {
       background: gray;
       border-radius: 50%;
       display: inline-flex;
+      flex-shrink: 0;
       height: var(--access-key-status-icon-size);
       justify-content: center;
       position: relative;

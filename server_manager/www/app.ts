@@ -1125,7 +1125,7 @@ export class App {
         new Map<string, number>()
       );
 
-      serverView.accessKeys = serverAccessKeys.map(accessKey => ({
+      serverView.accessKeyData = serverAccessKeys.map(accessKey => ({
         id: accessKey.id,
         name: accessKey.name,
         accessUrl: accessKey.accessUrl,

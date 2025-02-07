@@ -31,6 +31,7 @@ import {
   defaultNumericComparator,
   defaultStringComparator,
 } from './data_table';
+import {formatBytes} from '../../../data_formatting';
 
 /**
  * Data expected in the access key table.
@@ -113,13 +114,21 @@ export class AccessKeyDataTable extends LitElement {
               'server-view-access-keys-usage-column-header'
             ),
             tooltip: this.localize('server-view-access-keys-usage-tooltip'),
-            render: ({dataUsageBytes, dataLimitBytes}: AccessKeyDataTableRow) =>
-              html`<access-key-usage-meter
+            render: ({
+              dataUsageBytes,
+              dataLimitBytes,
+            }: AccessKeyDataTableRow) => {
+              if (!dataLimitBytes) {
+                return html`${formatBytes(dataUsageBytes, this.language)}`;
+              }
+
+              return html`<access-key-usage-meter
                 dataUsageBytes=${dataUsageBytes}
                 dataLimitBytes=${dataLimitBytes}
                 .localize=${this.localize}
                 language=${this.language}
-              ></access-key-usage-meter>`,
+              ></access-key-usage-meter>`;
+            },
             comparator: (a: AccessKeyDataTableRow, b: AccessKeyDataTableRow) =>
               defaultNumericComparator(a.dataUsageBytes, b.dataUsageBytes),
           },

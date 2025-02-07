@@ -141,6 +141,7 @@ export class DataTable<T extends object> extends LitElement {
 
     table {
       display: grid;
+      isolation: isolate;
       grid-template-columns: repeat(var(--data-table-columns), auto);
       background-color: var(--data-table-background-color);
     }
@@ -163,6 +164,9 @@ export class DataTable<T extends object> extends LitElement {
       position: sticky;
       top: 0;
 
+      /* ensure the header covers content when it sticks */
+      z-index: 1;
+
       --mdc-icon-size: var(--data-table-header-icon-size);
     }
 
@@ -179,12 +183,7 @@ export class DataTable<T extends object> extends LitElement {
 
   render() {
     return html`
-      <style>
-        :host {
-          --data-table-columns: ${this.columns.length};
-        }
-      </style>
-      <table>
+      <table style="--data-table-columns: ${this.columns.length};">
         <thead>
           <tr>
             ${this.columns.map(column => this.renderHeaderCell(column))}

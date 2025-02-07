@@ -34,7 +34,7 @@ import './outline-server-settings';
 import './outline-share-dialog';
 import './outline-sort-span';
 import '../views/server_view/server_metrics_row';
-import '../views/server_view/access_keys_data_table';
+import '../views/server_view/access_key_data_table';
 import {html, PolymerElement} from '@polymer/polymer';
 import type {PolymerElementProperties} from '@polymer/polymer/interfaces';
 import type {DomRepeat} from '@polymer/polymer/lib/elements/dom-repeat';
@@ -48,7 +48,7 @@ import type {AccessKeyId} from '../../model/server';
 import * as formatting from '../data_formatting';
 import {getShortName} from '../location_formatting';
 import {
-  AccessKeyDataTableEvent,
+  // AccessKeyDataTableEvent,
   AccessKeyDataTableRow,
 } from '../views/server_view/access_key_data_table';
 import {DataTableSortDirection} from '../views/server_view/access_key_data_table/data_table';
@@ -623,13 +623,17 @@ export class ServerView extends DirMixin(PolymerElement) {
             </aside>
 
             <access-key-data-table
-              access-keys="[[accessKeys]]"
+              access-keys="[[accessKeyData]]"
               language="[[language]]"
               localize="[[localize]]"
               server-version="[[serverVersion]]"
-              sort-column-direction="[[accessKeyDataTableSortDirection]]"
-              sort-column-id="[[accessKeyDataTableSortColumnId]]"
+              sort-column-direction="[[accessKeyDataSortDirection]]"
+              sort-column-id="[[accessKeyDataSortColumnId]]"
             ></access-key-data-table>
+
+            <template is="dom-if" if="{{!accessKeyData.length}}">
+              Loading...
+            </template>
           </template>
 
           <template is="dom-if" if="{{!featureFlags.serverMetricsTab}}">
@@ -894,10 +898,10 @@ export class ServerView extends DirMixin(PolymerElement) {
 
   static get properties(): PolymerElementProperties {
     return {
-      accessKeys: Array,
+      accessKeyData: Array,
+      accessKeyDataSortColumnId: String,
+      accessKeyDataSortDirection: String,
       accessKeyRows: Array,
-      accessKeyDataTableSortDirection: String,
-      accessKeyDataTableSortColumnId: String,
       accessKeySortBy: String,
       accessKeySortDirection: Number,
       bandwidthUsage: String,
@@ -941,52 +945,52 @@ export class ServerView extends DirMixin(PolymerElement) {
     return ['_accessKeysAddedOrRemoved(accessKeyRows.splices)'];
   }
 
-  ready(): void {
-    this.addEventListener(
-      AccessKeyDataTableEvent.SORT,
-      (event: CustomEvent) => {
-        this.accessKeyDataTableSortDirection = event.detail.sortDirection;
-        this.accessKeyDataTableSortColumnId = event.detail.columnId;
-      }
-    );
-    this.addEventListener(
-      AccessKeyDataTableEvent.DELETE_KEY,
-      (event: CustomEvent) =>
-        this.dispatchEvent(
-          makePublicEvent('RemoveAccessKeyRequested', {
-            accessKeyId: event.detail.id,
-          })
-        )
-    );
-    // this.addEventListener(
-    //   AccessKeyDataTableEvent.EDIT_KEY_NAME,
-    //   this._handleRenameAccessKeyPressed
-    // );
-    this.addEventListener(
-      AccessKeyDataTableEvent.EDIT_KEY_DATA_LIMIT,
-      (event: CustomEvent) =>
-        this.dispatchEvent(
-          makePublicEvent('OpenPerKeyDataLimitDialogRequested', {
-            keyId: event.detail.id,
-            keyDataLimitBytes: event.detail,
-            keyName: event.detail.name,
-            serverId: this.serverId,
-            defaultDataLimitBytes: this.isDefaultDataLimitEnabled
-              ? this.defaultDataLimitBytes
-              : undefined,
-          })
-        )
-    );
-    this.addEventListener(
-      AccessKeyDataTableEvent.SHARE_KEY,
-      (event: CustomEvent) =>
-        this.dispatchEvent(
-          makePublicEvent('OpenShareDialogRequested', {
-            accessKey: event.detail.accessUrl,
-          })
-        )
-    );
-  }
+  // ready(): void {
+  //   this.addEventListener(
+  //     AccessKeyDataTableEvent.SORT,
+  //     (event: CustomEvent) => {
+  //       this.accessKeyDataSortDirection = event.detail.sortDirection;
+  //       this.accessKeyDataSortColumnId = event.detail.columnId;
+  //     }
+  //   );
+  //   this.addEventListener(
+  //     AccessKeyDataTableEvent.DELETE_KEY,
+  //     (event: CustomEvent) =>
+  //       this.dispatchEvent(
+  //         makePublicEvent('RemoveAccessKeyRequested', {
+  //           accessKeyId: event.detail.id,
+  //         })
+  //       )
+  //   );
+  //   // this.addEventListener(
+  //   //   AccessKeyDataTableEvent.EDIT_KEY_NAME,
+  //   //   this._handleRenameAccessKeyPressed
+  //   // );
+  //   this.addEventListener(
+  //     AccessKeyDataTableEvent.EDIT_KEY_DATA_LIMIT,
+  //     (event: CustomEvent) =>
+  //       this.dispatchEvent(
+  //         makePublicEvent('OpenPerKeyDataLimitDialogRequested', {
+  //           keyId: event.detail.id,
+  //           keyDataLimitBytes: event.detail.dataLimitBytes,
+  //           keyName: event.detail.name,
+  //           serverId: this.serverId,
+  //           defaultDataLimitBytes: this.isDefaultDataLimitEnabled
+  //             ? this.defaultDataLimitBytes
+  //             : undefined,
+  //         })
+  //       )
+  //   );
+  //   this.addEventListener(
+  //     AccessKeyDataTableEvent.SHARE_KEY,
+  //     (event: CustomEvent) =>
+  //       this.dispatchEvent(
+  //         makePublicEvent('OpenShareDialogRequested', {
+  //           accessKey: event.detail.accessUrl,
+  //         })
+  //       )
+  //   );
+  // }
 
   bandwidthUsageTotal = '';
   bandwidthUsageRegions: Partial<ServerMetricsRowSubcard>[] = [];
@@ -1023,10 +1027,10 @@ export class ServerView extends DirMixin(PolymerElement) {
   totalAverageDevices = 0;
   /** The number to which access key transfer amounts are compared for progress bar display */
   baselineDataTransfer = Number.POSITIVE_INFINITY;
-  accessKeys: AccessKeyDataTableRow[] = [];
+  accessKeyData: AccessKeyDataTableRow[] = [];
+  accessKeyDataSortDirection: DataTableSortDirection;
+  accessKeyDataSortColumnId: string;
   accessKeyRows: DisplayAccessKey[] = [];
-  accessKeyDataTableSortDirection: DataTableSortDirection;
-  accessKeyDataTableSortColumnId: string;
   hasNonAdminAccessKeys = false;
   metricsEnabled = false;
   // Initialize monthlyOutboundTransferBytes and monthlyCost to 0, so they can

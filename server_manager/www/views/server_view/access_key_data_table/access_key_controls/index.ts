@@ -60,6 +60,7 @@ export class AccessKeyControls extends LitElement {
     }
 
     .wrapper {
+      display: flex;
       float: right;
     }
 
