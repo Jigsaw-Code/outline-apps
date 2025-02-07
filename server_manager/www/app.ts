@@ -1131,9 +1131,9 @@ export class App {
                 this.appRoot.language
               )
             : null,
-          lastTraffic: lastTrafficDate?.toLocaleDateString(
-            this.appRoot.language
-          ),
+          lastTraffic: lastTrafficDate
+            ? lastTrafficDate?.toLocaleDateString(this.appRoot.language)
+            : null,
           peakDeviceCount: connection?.peakDevices.count ?? 0,
           peakDeviceTime: connection?.peakDevices.timestamp
             ? new Date(
@@ -1144,8 +1144,9 @@ export class App {
           dataUsageBytes: dataTransferred?.bytes ?? 0,
           dataLimitBytes:
             accessKey.dataLimit?.bytes ??
-            (serverView.isDefaultDataLimitEnabled &&
-              serverView.defaultDataLimitBytes),
+            (serverView.isDefaultDataLimitEnabled
+              ? serverView.defaultDataLimitBytes
+              : 0),
         };
       });
     } catch (e) {
