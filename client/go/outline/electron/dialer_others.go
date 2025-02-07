@@ -19,9 +19,9 @@ package main
 import (
 	"errors"
 
-	"github.com/Jigsaw-Code/outline-apps/client/go/outline"
+	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
-func newOutlineClientWithAdapter(string, int) (*outline.Client, error) {
-	return nil, errors.ErrUnsupported
+func newBaseDialersWithAdapter(nicIdx int) (transport.StreamDialer, transport.PacketDialer, error) {
+	return nil, nil, errors.ErrUnsupported
 }

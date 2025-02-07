@@ -63,7 +63,6 @@ var args struct {
 	tunName *string
 	tunDNS  *string
 
-	adapterIP    *string
 	adapterIndex *int
 
 	transportConfig *string
@@ -124,8 +123,11 @@ func main() {
 
 	var client *outline.Client
 	if *args.adapterIndex >= 0 {
-		var err error
-		client, err = newOutlineClientWithAdapter(*args.transportConfig, *args.adapterIndex)
+		tcp, udp, err := newBaseDialersWithAdapter(*args.adapterIndex)
+		if err != nil {
+			printErrorAndExit(err, exitCodeFailure)
+		}
+		client, err = outline.NewClientWithBaseDialers(*args.transportConfig, tcp, udp)
 		if err != nil {
 			printErrorAndExit(err, exitCodeFailure)
 		}

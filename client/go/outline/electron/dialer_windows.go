@@ -20,7 +20,6 @@ import (
 	"net"
 	"syscall"
 
-	"github.com/Jigsaw-Code/outline-apps/client/go/outline"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 	"golang.org/x/sys/windows"
 )
@@ -33,10 +32,10 @@ const (
 	IP_UNICAST_IF = 31 // value: 32bit DWORD (IF_INDEX in network byte order)
 )
 
-func newOutlineClientWithAdapter(transportConfig string, adapterIndex int) (*outline.Client, error) {
-	tcp := newTCPDialerWithAdapter(adapterIndex)
-	udp := newUDPDialerWithAdapter((adapterIndex))
-	return outline.NewClientWithBaseDialers(transportConfig, tcp, udp)
+func newBaseDialersWithAdapter(nicIdx int) (transport.StreamDialer, transport.PacketDialer, error) {
+	tcp := newTCPDialerWithAdapter(nicIdx)
+	udp := newUDPDialerWithAdapter(nicIdx)
+	return tcp, udp, nil
 }
 
 func newTCPDialerWithAdapter(nicIdx int) transport.StreamDialer {
