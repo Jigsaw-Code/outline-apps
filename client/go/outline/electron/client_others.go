@@ -16,13 +16,12 @@
 
 package main
 
-import "github.com/Jigsaw-Code/outline-apps/client/go/outline"
+import (
+	"errors"
 
-func newOutlineClient(transportConfig string, adapterIp string, adapterIndex int) (*outline.Client, error) {
-	result := outline.NewClient(transportConfig)
-	if result.Error == nil {
-		// nil *PlatformError is not nil error, need to guard here
-		return result.Client, nil
-	}
-	return nil, result.Error
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline"
+)
+
+func newOutlineClientWithAdapter(string, int) (*outline.Client, error) {
+	return nil, errors.ErrUnsupported
 }

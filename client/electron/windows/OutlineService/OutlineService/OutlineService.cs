@@ -103,7 +103,6 @@ namespace OutlineService
         private EventLog eventLog;
         private NamedPipeServerStream pipe;
         private string proxyIp;
-
         private string gatewayIp;
         private int gatewayInterfaceIndex;
 
@@ -942,7 +941,7 @@ namespace OutlineService
             }
             finally
             {
-                // Always send the status update since IP addresses might have been updated
+                // Always send the status update since network adapters might have been updated
                 SendConnectionStatusChange(ConnectionStatus.Connected);
             }
 

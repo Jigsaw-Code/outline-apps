@@ -53,7 +53,6 @@ export class GoVpnTunnel implements VpnTunnel {
   private disconnected = false;
 
   private isUdpEnabled = false;
-
   private gatewayAdapterIndex?: string;
 
   private readonly onAllHelpersStopped: Promise<void>;
@@ -180,7 +179,7 @@ export class GoVpnTunnel implements VpnTunnel {
   private async updateUdpAndRestartTun2socks() {
     try {
       if (IS_WINDOWS) {
-        await checkUDPConnectivityWindows(
+        this.isUdpEnabled = await checkUDPConnectivityWindows(
           this.transportConfig,
           this.gatewayAdapterIndex,
           this.isDebugMode

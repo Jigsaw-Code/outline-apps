@@ -96,8 +96,7 @@ func main() {
 	args.tunName = flag.String("tunName", "tun0", "TUN interface name")
 	args.dnsFallback = flag.Bool("dnsFallback", false, "Enable DNS fallback over TCP (overrides the UDP handler).")
 
-	// Windows Network Adapter Index and IP
-	args.adapterIP = flag.String("adapterIP", "", "Windows network adapter IP for proxy connections")
+	// Windows Network Adapter Index
 	args.adapterIndex = flag.Int("adapterIndex", -1, "Windows network adapter index for proxy connection")
 
 	// Proxy transport config
@@ -123,9 +122,19 @@ func main() {
 		printErrorAndExit(platerrors.PlatformError{Code: platerrors.InvalidConfig, Message: "transport config missing"}, exitCodeFailure)
 	}
 
-	client, err := newOutlineClient(*args.transportConfig, *args.adapterIP, *args.adapterIndex)
-	if err != nil {
-		printErrorAndExit(err, exitCodeFailure)
+	var client *outline.Client
+	if *args.adapterIndex >= 0 {
+		var err error
+		client, err = newOutlineClientWithAdapter(*args.transportConfig, *args.adapterIndex)
+		if err != nil {
+			printErrorAndExit(err, exitCodeFailure)
+		}
+	} else {
+		result := outline.NewClient(*args.transportConfig)
+		if result.Error != nil {
+			printErrorAndExit(result.Error, exitCodeFailure)
+		}
+		client = result.Client
 	}
 
 	if *args.checkConnectivity {

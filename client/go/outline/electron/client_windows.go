@@ -25,57 +25,53 @@ import (
 	"golang.org/x/sys/windows"
 )
 
-// Define missing Windows constants
-const IP_UNICAST_IF = 31
+// Define missing Windows constants in ws2ipdef.h
+// - https://learn.microsoft.com/en-us/windows/win32/winsock/ipproto-ip-socket-options
+const (
+	IP_IFLIST     = 28 // value: 32bit DWORD (boolean)
+	IP_ADD_IFLIST = 29 // value: 32bit DWORD (IF_INDEX in native byte order)
+	IP_UNICAST_IF = 31 // value: 32bit DWORD (IF_INDEX in network byte order)
+)
 
-func newOutlineClient(transportConfig string, adapterIP string, adapterIndex int) (*outline.Client, error) {
-	if adapterIP == "" || adapterIndex < 0 {
-		// Check connectivity, ignore these parameters
-		result := outline.NewClient(transportConfig)
-		if result.Error == nil {
-			// nil *PlatformError is not nil error, need to guard here
-			return result.Client, nil
-		}
-		return nil, result.Error
-	}
-	tcp := newNetInterfaceBoundTCPDialer(uint32(adapterIndex))
-	udp := newNetInterfaceBoundUDPDialer(uint32(adapterIndex), adapterIP)
+func newOutlineClientWithAdapter(transportConfig string, adapterIndex int) (*outline.Client, error) {
+	tcp := newTCPDialerWithAdapter(adapterIndex)
+	udp := newUDPDialerWithAdapter((adapterIndex))
 	return outline.NewClientWithBaseDialers(transportConfig, tcp, udp)
 }
 
-func newNetInterfaceBoundTCPDialer(nicIdx uint32) transport.StreamDialer {
-	nicIdx = htonl(nicIdx)
+func newTCPDialerWithAdapter(nicIdx int) transport.StreamDialer {
+	nicIdxBigEnd := toBigEndianInt(nicIdx)
 	return &transport.TCPDialer{Dialer: net.Dialer{
 		KeepAlive: -1,
 		Control: func(network, address string, conn syscall.RawConn) error {
 			var operr error
 			err := conn.Control(func(fd uintptr) {
-				operr = windows.SetsockoptInt(windows.Handle(fd), syscall.IPPROTO_IP, IP_UNICAST_IF, int(nicIdx))
+				// TODO(ipv6): set IPPROTO_IPV6 when IPv6 is enabled
+				operr = windows.SetsockoptInt(windows.Handle(fd), syscall.IPPROTO_IP, IP_UNICAST_IF, nicIdxBigEnd)
 			})
 			return errors.Join(err, operr)
 		},
 	}}
 }
 
-func newNetInterfaceBoundUDPDialer(nicIdx uint32, nicIP string) transport.PacketDialer {
-	nicIdx = htonl(nicIdx)
-	addr := windows.SockaddrInet4{Port: 0}
-	copy(addr.Addr[:], net.ParseIP(nicIP).To4())
+func newUDPDialerWithAdapter(nicIdx int) transport.PacketDialer {
+	nicIdxBigEnd := toBigEndianInt(nicIdx)
 	return &transport.UDPDialer{Dialer: net.Dialer{
 		Control: func(network, address string, conn syscall.RawConn) error {
-			var operr error
+			var operr1, operr2, operr3 error
 			err := conn.Control(func(fd uintptr) {
-				err1 := windows.Bind(windows.Handle(fd), &addr)
-				err2 := windows.SetsockoptInt(windows.Handle(fd), syscall.IPPROTO_IP, IP_UNICAST_IF, int(nicIdx))
-				operr = errors.Join(err1, err2)
+				// TODO(ipv6): set IPPROTO_IPV6 when IPv6 is enabled
+				operr1 = windows.SetsockoptInt(windows.Handle(fd), syscall.IPPROTO_IP, IP_IFLIST, 1)
+				operr2 = windows.SetsockoptInt(windows.Handle(fd), syscall.IPPROTO_IP, IP_ADD_IFLIST, nicIdx)
+				operr3 = windows.SetsockoptInt(windows.Handle(fd), syscall.IPPROTO_IP, IP_UNICAST_IF, nicIdxBigEnd)
 			})
-			return errors.Join(err, operr)
+			return errors.Join(err, operr1, operr2, operr3)
 		},
 	}}
 }
 
-func htonl(v uint32) uint32 {
+func toBigEndianInt(v int) int {
 	bigEndianBytes := make([]byte, 4)
-	binary.NativeEndian.PutUint32(bigEndianBytes, v)
-	return binary.BigEndian.Uint32(bigEndianBytes)
+	binary.NativeEndian.PutUint32(bigEndianBytes, uint32(v))
+	return int(binary.BigEndian.Uint32(bigEndianBytes))
 }
