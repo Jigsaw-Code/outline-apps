@@ -17,7 +17,9 @@ package tun2socks
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net"
+	"runtime/debug"
 	"sync"
 	"time"
 
@@ -90,7 +92,14 @@ func (h *udpHandler) relayPacketsFromProxy(tunConn core.UDPConn, proxyConn net.P
 }
 
 // ReceiveTo relays packets from the TUN device to the proxy. It's called by tun2socks.
-func (h *udpHandler) ReceiveTo(tunConn core.UDPConn, data []byte, destAddr *net.UDPAddr) error {
+func (h *udpHandler) ReceiveTo(tunConn core.UDPConn, data []byte, destAddr *net.UDPAddr) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			slog.Error("Panic in UDP handler", "err", r)
+			debug.PrintStack()
+			err = fmt.Errorf("panic in UDP handler: %v", r)
+		}
+	}()
 	h.Lock()
 	proxyConn, ok := h.conns[tunConn]
 	h.Unlock()
@@ -98,7 +107,7 @@ func (h *udpHandler) ReceiveTo(tunConn core.UDPConn, data []byte, destAddr *net.
 		return fmt.Errorf("connection %v->%v does not exist", tunConn.LocalAddr(), destAddr)
 	}
 	proxyConn.SetDeadline(time.Now().Add(h.timeout))
-	_, err := proxyConn.WriteTo(data, destAddr)
+	_, err = proxyConn.WriteTo(data, destAddr)
 	return err
 }
 
