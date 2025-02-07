@@ -29,6 +29,7 @@ import './cloud-install-styles';
 import './outline-iconset';
 import './outline-help-bubble';
 import './outline-metrics-option-dialog';
+import './outline-progress-spinner';
 import './outline-server-progress-step';
 import './outline-server-settings';
 import './outline-share-dialog';
@@ -632,7 +633,11 @@ export class ServerView extends DirMixin(PolymerElement) {
             ></access-key-data-table>
 
             <template is="dom-if" if="{{!accessKeyData.length}}">
-              Loading...
+              <div
+                style="display: flex; justify-content: center; align-items: center; width: 100%; padding: 2rem; box-sizing: border-box;"
+              >
+                <outline-progress-spinner></outline-progress-spinner>
+              </div>
             </template>
           </template>
 
