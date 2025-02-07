@@ -35,21 +35,19 @@ export class AccessKeyStatus extends LitElement {
       --access-key-status-gap: 0.5rem;
       --access-key-status-icon-size: 2rem;
       --access-key-status-text-color: hsl(0, 0%, 79%);
+      --access-key-status-key-name-field-border: 1px solid
+        hsla(167, 57%, 61%, 0.88);
       --access-key-status-font-family: 'Inter', system-ui;
       --access-key-status-indicator-size: 0.5rem;
       --access-key-status-indicator-color: hsla(127, 67%, 59%, 1);
 
       font-family: var(--access-key-status-font-family);
-      color: var(--access-key-status-text-color);
-    }
-
-    .key {
       align-items: center;
       display: inline-flex;
       gap: var(--access-key-status-gap);
     }
 
-    .key-icon {
+    .icon-wrapper {
       align-items: center;
       background: gray;
       border-radius: 50%;
@@ -61,7 +59,7 @@ export class AccessKeyStatus extends LitElement {
       width: var(--access-key-status-icon-size);
     }
 
-    .key-icon-indicator {
+    .icon-status-indicator {
       background: var(--access-key-status-indicator-color);
       border-radius: 50%;
       bottom: 0;
@@ -72,25 +70,23 @@ export class AccessKeyStatus extends LitElement {
       width: var(--access-key-status-indicator-size);
     }
 
-    .key-name:focus {
+    .name-field:focus {
       outline: none;
-      border-bottom: 1px solid var(--access-key-status-indicator-color);
+      border-bottom: var(--access-key-status-key-name-field-border);
     }
   `;
 
   render() {
-    return html`<div class="key">
-      <div class="key-icon">
+    return html` <div class="icon-wrapper">
         <mwc-icon>vpn_key</mwc-icon>
         ${this.key.connected
-          ? html`<div class="key-icon-indicator"></div>`
+          ? html`<div class="icon-status-indicator"></div>`
           : nothing}
       </div>
 
-      <span class="key-name" contenteditable @blur=${this.change}
+      <span class="name-field" contenteditable @blur=${this.change}
         >${this.key.name}</span
-      >
-    </div>`;
+      >`;
   }
 
   change() {

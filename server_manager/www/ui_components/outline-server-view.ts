@@ -448,15 +448,6 @@ export class ServerView extends DirMixin(PolymerElement) {
           <div
             style="padding: 1rem; box-sizing: border-box; background: hsl(197, 13%, 22%);"
           >
-            <access-key-data-table
-              access-keys="[[accessKeyData]]"
-              language="[[language]]"
-              localize="[[localize]]"
-              server-version="[[serverVersion]]"
-              sort-direction="[[accessKeyDataSortDirection]]"
-              sort-column-id="[[accessKeyDataSortColumnId]]"
-            ></access-key-data-table>
-
             <template is="dom-if" if="{{!accessKeyData.length}}">
               <div
                 style="display: flex; justify-content: center; align-items: center; width: 100%; padding: 2rem; box-sizing: border-box;"
@@ -465,21 +456,33 @@ export class ServerView extends DirMixin(PolymerElement) {
               </div>
             </template>
 
-            <div class="access-key-row" id="addAccessKeyRow">
-              <span class="access-key-container">
-                <paper-icon-button
-                  icon="icons:add"
-                  on-tap="_handleAddAccessKeyPressed"
-                  id="addAccessKeyButton"
-                  class="access-key-icon"
-                ></paper-icon-button>
-                <div class="add-new-key" on-tap="_handleAddAccessKeyPressed">
-                  [[localize('server-access-key-new')]]
-                </div>
-              </span>
+            <template is="dom-if" if="{{accessKeyData.length}}">
+              <access-key-data-table
+                access-keys="[[accessKeyData]]"
+                language="[[language]]"
+                localize="[[localize]]"
+                server-version="[[serverVersion]]"
+                sort-direction="[[accessKeyDataSortDirection]]"
+                sort-column-id="[[accessKeyDataSortColumnId]]"
+              ></access-key-data-table>
+
+              <div class="access-key-row" id="addAccessKeyRow">
+                <span class="access-key-container">
+                  <paper-icon-button
+                    icon="icons:add"
+                    on-tap="_handleAddAccessKeyPressed"
+                    id="addAccessKeyButton"
+                    class="access-key-icon"
+                  ></paper-icon-button>
+                  <div class="add-new-key" on-tap="_handleAddAccessKeyPressed">
+                    [[localize('server-access-key-new')]]
+                  </div>
+                </span>
+              </div>
             </div>
-          </div>
+          </template>
         </div>
+  </div>
 
         <div name="metrics">
           <aside>
