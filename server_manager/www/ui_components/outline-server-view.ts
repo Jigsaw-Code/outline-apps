@@ -49,7 +49,7 @@ import type {AccessKeyId} from '../../model/server';
 import * as formatting from '../data_formatting';
 import {getShortName} from '../location_formatting';
 import {
-  // AccessKeyDataTableEvent,
+  AccessKeyDataTableEvent,
   AccessKeyDataTableRow,
 } from '../views/server_view/access_key_data_table';
 import {DataTableSortDirection} from '../views/server_view/access_key_data_table/data_table';
@@ -628,7 +628,7 @@ export class ServerView extends DirMixin(PolymerElement) {
               language="[[language]]"
               localize="[[localize]]"
               server-version="[[serverVersion]]"
-              sort-column-direction="[[accessKeyDataSortDirection]]"
+              sort-direction="[[accessKeyDataSortDirection]]"
               sort-column-id="[[accessKeyDataSortColumnId]]"
             ></access-key-data-table>
 
@@ -950,52 +950,58 @@ export class ServerView extends DirMixin(PolymerElement) {
     return ['_accessKeysAddedOrRemoved(accessKeyRows.splices)'];
   }
 
-  // ready(): void {
-  //   this.addEventListener(
-  //     AccessKeyDataTableEvent.SORT,
-  //     (event: CustomEvent) => {
-  //       this.accessKeyDataSortDirection = event.detail.sortDirection;
-  //       this.accessKeyDataSortColumnId = event.detail.columnId;
-  //     }
-  //   );
-  //   this.addEventListener(
-  //     AccessKeyDataTableEvent.DELETE_KEY,
-  //     (event: CustomEvent) =>
-  //       this.dispatchEvent(
-  //         makePublicEvent('RemoveAccessKeyRequested', {
-  //           accessKeyId: event.detail.id,
-  //         })
-  //       )
-  //   );
-  //   // this.addEventListener(
-  //   //   AccessKeyDataTableEvent.EDIT_KEY_NAME,
-  //   //   this._handleRenameAccessKeyPressed
-  //   // );
-  //   this.addEventListener(
-  //     AccessKeyDataTableEvent.EDIT_KEY_DATA_LIMIT,
-  //     (event: CustomEvent) =>
-  //       this.dispatchEvent(
-  //         makePublicEvent('OpenPerKeyDataLimitDialogRequested', {
-  //           keyId: event.detail.id,
-  //           keyDataLimitBytes: event.detail.dataLimitBytes,
-  //           keyName: event.detail.name,
-  //           serverId: this.serverId,
-  //           defaultDataLimitBytes: this.isDefaultDataLimitEnabled
-  //             ? this.defaultDataLimitBytes
-  //             : undefined,
-  //         })
-  //       )
-  //   );
-  //   this.addEventListener(
-  //     AccessKeyDataTableEvent.SHARE_KEY,
-  //     (event: CustomEvent) =>
-  //       this.dispatchEvent(
-  //         makePublicEvent('OpenShareDialogRequested', {
-  //           accessKey: event.detail.accessUrl,
-  //         })
-  //       )
-  //   );
-  // }
+  ready() {
+    super.ready();
+
+    this.addEventListener(
+      AccessKeyDataTableEvent.SORT,
+      (event: CustomEvent) => {
+        this.accessKeyDataSortDirection = event.detail.sortDirection;
+        this.accessKeyDataSortColumnId = event.detail.columnId;
+      }
+    );
+
+    this.addEventListener(
+      AccessKeyDataTableEvent.DELETE_KEY,
+      (event: CustomEvent) =>
+        this.dispatchEvent(
+          makePublicEvent('RemoveAccessKeyRequested', {
+            accessKeyId: event.detail.id,
+          })
+        )
+    );
+
+    // this.addEventListener(
+    //   AccessKeyDataTableEvent.EDIT_KEY_NAME,
+    //   this._handleRenameAccessKeyPressed
+    // );
+
+    this.addEventListener(
+      AccessKeyDataTableEvent.EDIT_KEY_DATA_LIMIT,
+      (event: CustomEvent) =>
+        this.dispatchEvent(
+          makePublicEvent('OpenPerKeyDataLimitDialogRequested', {
+            keyId: event.detail.id,
+            keyDataLimitBytes: event.detail.dataLimitBytes,
+            keyName: event.detail.name,
+            serverId: this.serverId,
+            defaultDataLimitBytes: this.isDefaultDataLimitEnabled
+              ? this.defaultDataLimitBytes
+              : undefined,
+          })
+        )
+    );
+
+    this.addEventListener(
+      AccessKeyDataTableEvent.SHARE_KEY,
+      (event: CustomEvent) =>
+        this.dispatchEvent(
+          makePublicEvent('OpenShareDialogRequested', {
+            accessKey: event.detail.accessUrl,
+          })
+        )
+    );
+  }
 
   bandwidthUsageTotal = '';
   bandwidthUsageRegions: Partial<ServerMetricsRowSubcard>[] = [];

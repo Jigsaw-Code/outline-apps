@@ -231,11 +231,23 @@ export class DataTable<T extends object> extends LitElement {
       return;
     }
 
+    let sortDirection;
+    switch (this.sortDirection) {
+      case DataTableSortDirection.ASCENDING:
+        sortDirection = DataTableSortDirection.DESCENDING;
+        break;
+      case DataTableSortDirection.DESCENDING:
+      case DataTableSortDirection.NONE:
+      default:
+        sortDirection = DataTableSortDirection.ASCENDING;
+        break;
+    }
+
     this.dispatchEvent(
       new CustomEvent(DataTableEvent.SORT, {
         detail: {
           columnId: columnProperties.id,
-          sortDirection: this.sortDirection,
+          sortDirection,
         },
         bubbles: true,
         composed: true,
