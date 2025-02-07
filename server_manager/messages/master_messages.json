@@ -1235,7 +1235,7 @@
   },
   "server_view_access_keys_last_active_tooltip": {
     "description": "The tooltip displayed when hovering over the Traffic last seen column in the Access Keys table, providing additional information about the last activity time.",
-    "message": "This shows the last time the key sent or received data through the server. If this time is significantly earlier than the last connected time"
+    "message": "This shows the last time the key sent or received data through the server. If this time is significantly earlier than the last connected time, the key could be connecting but failing to sending data."
   },
   "server_view_access_keys_usage_tooltip": {
     "description": "The tooltip displayed when hovering over the Usage column in the Access Keys table, providing additional information about data transfer volume.",
@@ -1243,11 +1243,11 @@
   },
   "server_view_access_keys_peak_devices_tooltip": {
     "description": "The tooltip displayed when hovering over the Peak devices column in the Access Keys table, providing additional information about maximum simultaneous connections.",
-    "message": "This shows the most devices connected to the server using this key at one time"
+    "message": "This shows the most devices connected to the server using this key at one time, within the last 30 days. It also shows the time when this occurred."
   },
   "server_view_access_keys_as_count_tooltip": {
     "description": "The tooltip displayed when hovering over the Unique ASes column in the Access Keys table, providing additional information about Autonomous Systems - or administrative internet regions.",
-    "message": "This shows the number of different Autonomous Systems (ASes) that connected to the server using this key over the last 30 days. An AS is a network that’s typically run by one organization"
+    "message": "This shows the number of different Autonomous Systems (ASes) that connected to the server using this key over the last 30 days. An AS is a network that’s typically run by one organization, like an internet service provider, a large company, or a university."
   },
   "server_view_access_keys_usage_limit": {
     "description": "The text displayed to the user when their access key usage approaches a defined limit (e.g., 80%).",
