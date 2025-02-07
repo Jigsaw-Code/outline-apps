@@ -143,7 +143,7 @@ export class ServerMetricsRow extends LitElement {
               : nothing}
             <h2 class="title">${unsafeHTML(this.title)}</h2>
             ${this.tooltip
-              ? html`<help-tooltip>${this.tooltip}</help-tooltip>`
+              ? html`<help-tooltip text=${this.tooltip}></help-tooltip>`
               : nothing}
           </div>
           <div class="value-container">

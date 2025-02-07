@@ -23,5 +23,5 @@ export default {
 };
 
 export const Example = () => html`
-  <help-tooltip>Tooltip text here</help-tooltip>
+  <help-tooltip text="Tooltip text here"></help-tooltip>
 `;

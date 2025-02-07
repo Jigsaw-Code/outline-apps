@@ -15,56 +15,68 @@
  */
 
 import {LitElement, css, html} from 'lit';
-import {customElement} from 'lit/decorators.js';
+import {customElement, state, query, property} from 'lit/decorators.js';
 
 import '@material/mwc-icon';
 
-// TODO: this tooltip is naive - we should switch to the Popover API once we upgrade Electron
+// TODO: this tooltip is implemented by javascript and not css due to api limitations in our current version of Electron.
+// Once electron is updated, we should switch to the Popover API for better style control.
 @customElement('help-tooltip')
 export class HelpTooltip extends LitElement {
+  @property({type: String}) text: string;
+
+  @state() tooltip: HTMLElement | null = null;
+  @query('mwc-icon') icon: HTMLElement;
+
   static styles = css`
     :host {
-      --help-tooltip-background: hsl(0, 0%, 94%);
-      --help-tooltip-border-radius: 0.3rem;
-      --help-tooltip-padding: 0.3rem;
-      --help-tooltip-text-color: hsl(0, 0%, 20%);
-      --help-tooltip-max-width: 320px;
       --help-tooltip-icon-size: 1.85rem;
-
-      --mdc-icon-size: var(--help-tooltip-icon-size);
 
       cursor: help;
       position: relative;
       display: inline-flex;
     }
 
-    .tooltip {
-      background-color: var(--help-tooltip-background);
-      border-radius: var(--help-tooltip-border-radius);
-      color: var(--help-tooltip-text-color);
-      font-family: var(--info-font-family);
-      left: 50%;
-      max-width: var(--help-tooltip-max-width);
-      padding: var(--help-tooltip-padding);
-      position: absolute;
-      top: 150%;
-      transform: translateX(-50%);
-      visibility: hidden;
-      white-space: pre-line;
-      width: max-content;
-      word-wrap: break-word;
-    }
-
-    :host(:hover) .tooltip {
-      visibility: visible;
-      opacity: 1;
+    mwc-icon {
+      --mdc-icon-size: var(--help-tooltip-icon-size);
     }
   `;
 
   render() {
     return html`
-      <mwc-icon>help</mwc-icon>
-      <span class="tooltip"><slot></slot></span>
+      <mwc-icon
+        @mouseenter=${this.insertTooltip}
+        @mouseout=${this.removeTooltip}
+        >help</mwc-icon
+      >
     `;
+  }
+
+  insertTooltip() {
+    this.tooltip = document.createElement('span');
+    this.tooltip.innerHTML = this.text;
+    this.tooltip.style.cssText = `
+      display: inline-block;
+      background-color: hsl(0, 0%, 94%);
+      border-radius: 0.3rem;
+      color: hsl(0, 0%, 20%);
+      font-family: 'Inter', system-ui;
+      max-width: 320px;
+      left: ${this.icon.getBoundingClientRect().left}px;
+      top: ${this.icon.getBoundingClientRect().bottom}px;
+      padding: 0.3rem;
+      position: fixed;
+      white-space: pre-line;
+      width: max-content;
+      word-wrap: break-word;
+      z-index: 1000;
+    `;
+
+    document.body.appendChild(this.tooltip);
+  }
+
+  removeTooltip() {
+    this.tooltip?.remove();
+    this.tooltip = null;
   }
 }

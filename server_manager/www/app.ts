@@ -1107,7 +1107,7 @@ export class App {
         .reverse()
         .map(server => ({
           title: server.asOrg,
-          subtitle: `ASN${server.asn}`,
+          subtitle: `AS${server.asn}`,
           icon: this.countryCodeToEmoji(server.location),
           highlight: this.formatHourValueAndUnit(
             server.tunnelTime.seconds / SECONDS_IN_HOUR
@@ -1127,10 +1127,14 @@ export class App {
 
       serverView.accessKeyData = serverAccessKeys.map(accessKey => ({
         id: accessKey.id,
-        name: accessKey.name,
+        name:
+          accessKey.name || this.appRoot.localize('key', 'keyId', accessKey.id),
         accessUrl: accessKey.accessUrl,
         dataUsageBytes: keyDataTransferMap.get(accessKey.id) ?? 0,
-        dataLimitBytes: accessKey.dataLimit?.bytes,
+        dataLimitBytes:
+          accessKey.dataLimit?.bytes ??
+          (serverView.isDefaultDataLimitEnabled &&
+            serverView.defaultDataLimitBytes),
       }));
 
       let keyTransferMax = 0;
@@ -1238,10 +1242,9 @@ export class App {
   private async addAccessKey() {
     const server = this.selectedServer;
     try {
-      const serverAccessKey = await server.addAccessKey();
-      const uiAccessKey = this.convertToUiAccessKey(serverAccessKey);
+      await server.addAccessKey();
       const serverView = await this.appRoot.getServerView(server.getId());
-      serverView.addAccessKey(uiAccessKey);
+      this.refreshServerMetricsUI(server, serverView);
       this.appRoot.showNotification(
         this.appRoot.localize('notification-key-added')
       );
@@ -1483,8 +1486,9 @@ export class App {
     const server = this.selectedServer;
     try {
       await server.removeAccessKey(accessKeyId);
-      (await this.appRoot.getServerView(server.getId())).removeAccessKey(
-        accessKeyId
+      this.refreshServerMetricsUI(
+        server,
+        await this.appRoot.getServerView(server.getId())
       );
       this.appRoot.showNotification(
         this.appRoot.localize('notification-key-removed')
