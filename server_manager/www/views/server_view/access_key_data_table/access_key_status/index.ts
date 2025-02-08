@@ -28,7 +28,7 @@ export class AccessKeyStatus extends LitElement {
   @property({type: Object}) key: AccessKeyDataTableRow;
   @property({type: Boolean}) connected: boolean;
 
-  @query('span.key-name') nameField: HTMLElement;
+  @query('#nameField') nameField: HTMLElement;
 
   static styles = css`
     :host {
@@ -70,7 +70,7 @@ export class AccessKeyStatus extends LitElement {
       width: var(--access-key-status-indicator-size);
     }
 
-    .name-field:focus {
+    #nameField:focus {
       outline: none;
       border-bottom: var(--access-key-status-key-name-field-border);
     }
@@ -84,7 +84,7 @@ export class AccessKeyStatus extends LitElement {
           : nothing}
       </div>
 
-      <span class="name-field" contenteditable @blur=${this.change}
+      <span id="nameField" contenteditable @blur=${this.change}
         >${this.key.name}</span
       >`;
   }

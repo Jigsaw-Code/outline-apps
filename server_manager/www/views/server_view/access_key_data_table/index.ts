@@ -102,10 +102,12 @@ export class AccessKeyDataTable extends LitElement {
         event.stopImmediatePropagation();
 
         (
-          this.table.shadowRoot.getElementById(
-            this.nameColumnIndex(event.detail)
-          ) as AccessKeyStatus
-        ).nameField.focus();
+          (
+            this.table.shadowRoot.getElementById(
+              this.nameColumnIndex(event.detail)
+            ) as AccessKeyStatus
+          ).shadowRoot.querySelector('#nameField') as HTMLElement
+        ).focus();
       }
     );
 
