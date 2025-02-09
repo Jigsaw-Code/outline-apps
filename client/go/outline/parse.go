@@ -96,6 +96,7 @@ func doParseTunnelConfig(input string) *InvokeMethodResult {
 					},
 				}
 			}
+			// Extract transport config as an opaque string.
 			transportConfigBytes, err = yaml.Marshal(legacyConfig)
 		} else {
 			transportConfigBytes, err = yaml.Marshal(tunnelConfig.Transport)
