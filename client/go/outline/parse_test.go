@@ -38,6 +38,35 @@ transport:
 		result.Value)
 }
 
+func Test_doParseTunnelConfigLegacyJson(t *testing.T) {
+	config := `{
+    "server": "example.com",
+    "server_port": 4321,
+    "method": "chacha20-ietf-poly1305",
+    "password": "SECRET",
+	"prefix": "POST "
+}`
+	result := doParseTunnelConfig(config)
+
+	require.Nil(t, result.Error)
+	require.Equal(t, "{\"firstHop\":\"example.com:4321\",\"transport\":\"server: example.com\\nserver_port: 4321\\nmethod: chacha20-ietf-poly1305\\npassword: SECRET\\nprefix: 'POST '\\n\"}", result.Value)
+}
+
+func Test_doParseTunnelConfigLegacyYaml(t *testing.T) {
+	config := `
+server: example.com
+server_port: 4321
+method: chacha20-ietf-poly1305
+password: SECRET
+prefix: "POST "
+`
+	result := doParseTunnelConfig(config)
+
+	require.Nil(t, result.Error)
+	require.Equal(t, "{\"firstHop\":\"example.com:4321\",\"transport\":\"server: example.com\\nserver_port: 4321\\nmethod: chacha20-ietf-poly1305\\npassword: SECRET\\nprefix: 'POST '\\n\"}", result.Value)
+
+}
+
 func Test_doParseTunnelConfig_ProviderError(t *testing.T) {
 	result := doParseTunnelConfig(`
 error:
@@ -45,11 +74,27 @@ error:
   details: Account expired
 `)
 
-	require.Equal(t, result.Error, &platerrors.PlatformError{
+	require.Equal(t, &platerrors.PlatformError{
 		Code:    platerrors.ProviderError,
 		Message: "Unauthorized",
 		Details: map[string]any{
 			"details": "Account expired",
 		},
-	})
+	}, result.Error)
+}
+
+func Test_doParseTunnelConfig_ProviderErrorUTF8(t *testing.T) {
+	result := doParseTunnelConfig(`
+error:
+  message: "\u26a0 Invalid Access Key \/ Key \u1000\u102d\u102f\u1015\u103c\u1014\u103a\u101c\u100a\u103a\u1005\u1005\u103a\u1006\u1031\u1038\u1015\u1031\u1038\u1015\u102b\u104b"
+  details: "\u26a0 Details \/ Key \u1000\u102d\u102f\u1015\u103c\u1014\u103a\u101c\u100a\u103a\u1005\u1005\u103a\u1006\u1031\u1038\u1015\u1031\u1038\u1015\u102b\u104b"
+`)
+
+	require.Equal(t, &platerrors.PlatformError{
+		Code:    platerrors.ProviderError,
+		Message: "⚠ Invalid Access Key / Key ကိုပြန်လည်စစ်ဆေးပေးပါ။",
+		Details: map[string]any{
+			"details": "⚠ Details / Key ကိုပြန်လည်စစ်ဆေးပေးပါ။",
+		},
+	}, result.Error)
 }

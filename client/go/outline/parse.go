@@ -31,6 +31,14 @@ type parseTunnelConfigRequest struct {
 	}
 }
 
+type legacyShadowsocksConfig struct {
+	Server     string `yaml:"server"`
+	ServerPort uint   `yaml:"server_port"`
+	Method     string `yaml:"method"`
+	Password   string `yaml:"password"`
+	Prefix     string `yaml:"prefix"`
+}
+
 // tunnelConfigJson must match the definition in config.ts.
 type tunnelConfigJson struct {
 	FirstHop  string `json:"firstHop"`
@@ -39,8 +47,10 @@ type tunnelConfigJson struct {
 
 func doParseTunnelConfig(input string) *InvokeMethodResult {
 	var transportConfigText string
+	var transportConfigBytes []byte
 
 	input = strings.TrimSpace(input)
+	input = strings.ReplaceAll(input, "\\/", "/") // Unescape forward slashes as it is not required in YAML.
 	// Input may be one of:
 	// - ss:// link
 	// - Legacy Shadowsocks JSON (parsed as YAML)
@@ -50,6 +60,8 @@ func doParseTunnelConfig(input string) *InvokeMethodResult {
 	} else {
 		// Parse as YAML.
 		tunnelConfig := parseTunnelConfigRequest{}
+		legacyConfig := legacyShadowsocksConfig{}
+
 		if err := yaml.Unmarshal([]byte(input), &tunnelConfig); err != nil {
 			return &InvokeMethodResult{
 				Error: &platerrors.PlatformError{
@@ -72,9 +84,23 @@ func doParseTunnelConfig(input string) *InvokeMethodResult {
 			}
 			return &InvokeMethodResult{Error: platErr}
 		}
+		var err error
+		// Check if the input is a new-style YAML config by checking for the presence of a top-level "transport" key.
+		if tunnelConfig.Transport.IsZero() {
+			// Try Legacy Shadowsocks JSON format.
+			if err := yaml.Unmarshal([]byte(input), &legacyConfig); err != nil {
+				return &InvokeMethodResult{
+					Error: &platerrors.PlatformError{
+						Code:    platerrors.InvalidConfig,
+						Message: fmt.Sprintf("failed to parse: %s", err),
+					},
+				}
+			}
+			transportConfigBytes, err = yaml.Marshal(legacyConfig)
+		} else {
+			transportConfigBytes, err = yaml.Marshal(tunnelConfig.Transport)
+		}
 
-		// Extract transport config as an opaque string.
-		transportConfigBytes, err := yaml.Marshal(tunnelConfig.Transport)
 		if err != nil {
 			return &InvokeMethodResult{
 				Error: &platerrors.PlatformError{
@@ -85,7 +111,6 @@ func doParseTunnelConfig(input string) *InvokeMethodResult {
 		}
 		transportConfigText = string(transportConfigBytes)
 	}
-
 	result := NewClient(transportConfigText)
 	if result.Error != nil {
 		return &InvokeMethodResult{
