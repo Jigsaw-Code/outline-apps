@@ -108,3 +108,14 @@ error:
 		},
 	}, result.Error)
 }
+
+/*
+// TODO: Fix YAML parsing so it supports escaped slash:
+// See: https://github.com/go-yaml/yaml/issues/967
+func Test_doParseTunnelConfig_parseJSON(t *testing.T) {
+	text := `"\/"`
+	var value any
+	require.NoError(t, json.Unmarshal([]byte(text), &value))
+	require.NoError(t, yaml.Unmarshal([]byte(text), &value))
+}
+*/
