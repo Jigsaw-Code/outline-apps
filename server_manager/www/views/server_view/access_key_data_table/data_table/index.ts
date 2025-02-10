@@ -131,12 +131,17 @@ export class DataTable<T extends object> extends LitElement {
       --data-table-font-family: 'Inter', system-ui;
 
       --data-table-cell-padding: 1rem;
+      --data-table-cell-gap: 0.5rem;
+      --data-table-sides-padding: 2rem;
 
       --data-table-header-icon-size: 1.2rem;
-      --data-table-header-gap: 0.5rem;
       --data-table-header-border-bottom: 0.7rem solid hsla(200, 16%, 19%, 1);
 
       --data-table-row-border-bottom: 1px solid hsla(0, 0%, 100%, 0.2);
+
+      --data-table-collapsed-vertical-padding: 1.5rem;
+      --data-table-collapsed-row-label-font-size: 0.7rem;
+      --data-table-collapsed-row-label-gap: 0.25rem;
     }
 
     table,
@@ -155,17 +160,20 @@ export class DataTable<T extends object> extends LitElement {
     }
 
     table {
-      display: grid;
-      isolation: isolate;
-      grid-template-columns: repeat(var(--data-table-columns), auto);
       background-color: var(--data-table-background-color);
+      display: grid;
+      grid-auto-rows: auto;
+      grid-template-columns: repeat(var(--data-table-columns), auto);
+      isolation: isolate;
     }
 
     th,
     td {
       box-sizing: border-box;
       color: var(--data-table-text-color);
+      display: flex;
       font-family: var(--data-table-font-family);
+      gap: var(--data-table-cell-gap);
       padding: var(--data-table-cell-padding);
     }
 
@@ -174,8 +182,6 @@ export class DataTable<T extends object> extends LitElement {
       background-color: var(--data-table-background-color);
       border-bottom: var(--data-table-header-border-bottom);
       cursor: pointer;
-      display: flex;
-      gap: var(--data-table-header-gap);
       position: sticky;
       top: 0;
 
@@ -189,10 +195,79 @@ export class DataTable<T extends object> extends LitElement {
       --help-tooltip-icon-size: var(--data-table-header-icon-size);
     }
 
+    th:first-child {
+      padding-left: calc(
+        var(--data-table-cell-padding) + var(--data-table-sides-padding)
+      );
+    }
+
+    th:last-child {
+      padding-right: calc(
+        var(--data-table-cell-padding) + var(--data-table-sides-padding)
+      );
+    }
+
     td {
       border-bottom: var(--data-table-row-border-bottom);
-      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    td:first-child {
+      margin-left: var(--data-table-sides-padding);
+    }
+
+    td:last-child {
+      margin-right: var(--data-table-sides-padding);
+    }
+
+    label {
       align-items: center;
+      display: none;
+      font-size: var(--data-table-row-label-font-size);
+      gap: var(--data-table-collapsed-row-label-gap);
+      text-transform: uppercase;
+    }
+
+    label > help-tooltip {
+      --help-tooltip-icon-size: var(--data-table-row-label-font-size);
+    }
+
+    /*
+      TODO: 
+        This max-width value is currently entirely dependent on the contents of the window from which the 
+        table is rendered. Convert this to a container query once we upgrade electron so it's reusable.
+    */
+    @media (max-width: 900px) {
+      table {
+        grid-template-columns: auto;
+      }
+
+      th {
+        display: none;
+      }
+
+      td {
+        border: none;
+      }
+
+      td:first-child,
+      td:last-child {
+        margin: 0;
+      }
+
+      td:first-child {
+        padding-top: var(--data-table-collapsed-vertical-padding);
+      }
+
+      td:last-child {
+        padding-bottom: var(--data-table-collapsed-vertical-padding);
+        border-bottom: var(--data-table-row-border-bottom);
+      }
+
+      label {
+        display: flex;
+      }
     }
   `;
 
@@ -207,9 +282,7 @@ export class DataTable<T extends object> extends LitElement {
         <tbody>
           ${this.sortedData.map(row => {
             return html`<tr>
-              ${this.columns.map(column => {
-                return html`<td>${column.render(row)}</td>`;
-              })}
+              ${this.columns.map(column => this.renderDataCell(column, row))}
             </tr>`;
           })}
         </tbody>
@@ -233,12 +306,25 @@ export class DataTable<T extends object> extends LitElement {
     }
 
     return html`<th @click=${() => this.sort(columnProperties)}>
-      <span>${unsafeHTML(columnProperties.displayName)}</span>
+      <span class="header-display-name"
+        >${unsafeHTML(columnProperties.displayName)}</span
+      >
       ${columnProperties?.tooltip
         ? html`<help-tooltip text=${columnProperties.tooltip}></help-tooltip>`
         : nothing}
       ${this.sortColumnId === columnProperties.id ? sortIcon : nothing}
     </th>`;
+  }
+
+  renderDataCell(columnProperties: DataTableColumnProperties<T>, row: T) {
+    return html`<td>
+      <label
+        >${unsafeHTML(columnProperties.displayName)}${columnProperties?.tooltip
+          ? html`<help-tooltip text=${columnProperties.tooltip}></help-tooltip>`
+          : nothing}</label
+      >
+      <span class="data-value">${columnProperties.render(row)}</span>
+    </td>`;
   }
 
   sort(columnProperties: DataTableColumnProperties<T>) {

@@ -164,10 +164,11 @@ export class ServerView extends DirMixin(PolymerElement) {
           margin: 24px;
         }
         .access-key-row {
-          display: flex;
           align-items: center;
+          box-sizing: border-box;
+          display: flex;
           justify-content: center;
-          margin: 15px 0;
+          padding: 3rem;
         }
         .access-key-container {
           display: flex;
@@ -270,6 +271,20 @@ export class ServerView extends DirMixin(PolymerElement) {
 
         .advanced-metrics-link-text {
           color: var(--medium-gray);
+        }
+
+        .connections-container {
+          box-sizing: border-box;
+          background: hsl(197, 13%, 22%);
+        }
+
+        .connections-loading-container {
+          align-items: center;
+          box-sizing: border-box;
+          display: flex;
+          justify-content: center;
+          padding: 2rem;
+          width: 100%;
         }
       </style>
 
@@ -445,13 +460,9 @@ export class ServerView extends DirMixin(PolymerElement) {
             </p>
           </aside>
 
-          <div
-            style="padding: 1rem; box-sizing: border-box; background: hsl(197, 13%, 22%);"
-          >
+          <div class="connections-container">
             <template is="dom-if" if="{{!accessKeyData.length}}">
-              <div
-                style="display: flex; justify-content: center; align-items: center; width: 100%; padding: 2rem; box-sizing: border-box;"
-              >
+              <div class="connections-loading-container">
                 <outline-progress-spinner></outline-progress-spinner>
               </div>
             </template>
@@ -465,24 +476,23 @@ export class ServerView extends DirMixin(PolymerElement) {
                 sort-direction="[[accessKeyDataSortDirection]]"
                 sort-column-id="[[accessKeyDataSortColumnId]]"
               ></access-key-data-table>
+            </template>
 
-              <div class="access-key-row" id="addAccessKeyRow">
-                <span class="access-key-container">
-                  <paper-icon-button
-                    icon="icons:add"
-                    on-tap="_handleAddAccessKeyPressed"
-                    id="addAccessKeyButton"
-                    class="access-key-icon"
-                  ></paper-icon-button>
-                  <div class="add-new-key" on-tap="_handleAddAccessKeyPressed">
-                    [[localize('server-access-key-new')]]
-                  </div>
-                </span>
-              </div>
+            <div class="access-key-row" id="addAccessKeyRow">
+              <span class="access-key-container">
+                <paper-icon-button
+                  icon="icons:add"
+                  on-tap="_handleAddAccessKeyPressed"
+                  id="addAccessKeyButton"
+                  class="access-key-icon"
+                ></paper-icon-button>
+                <div class="add-new-key" on-tap="_handleAddAccessKeyPressed">
+                  [[localize('server-access-key-new')]]
+                </div>
+              </span>
             </div>
-          </template>
+          </div>
         </div>
-  </div>
 
         <div name="metrics">
           <aside>
