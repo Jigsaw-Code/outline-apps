@@ -97,7 +97,7 @@ func doParseTunnelConfig(input string) *InvokeMethodResult {
 				return &InvokeMethodResult{
 					Error: &platerrors.PlatformError{
 						Code:    platerrors.InvalidConfig,
-						Message: fmt.Sprintf("failed normalize config: %s", err),
+						Message: fmt.Sprintf("failed to normalize config: %s", err),
 					},
 				}
 			}
