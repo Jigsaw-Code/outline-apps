@@ -16,7 +16,9 @@ import {customElement, property, state} from 'lit/decorators.js';
 
 @customElement('add-access-key-dialog')
 export class AddAccessKeyDialog extends LitElement {
-  @property({type: String}) accessKey: string | null = null;
+  @property({type: String, attribute: true, reflect: true}) accessKey:
+    | string
+    | null = null;
   @property({type: Object}) accessKeyValidator!: (
     accessKey: string
   ) => Promise<boolean>;
@@ -137,10 +139,14 @@ export class AddAccessKeyDialog extends LitElement {
   }
 
   private edit(event: InputEvent) {
+    event.preventDefault();
+
     this.accessKey = (event.target as HTMLInputElement).value;
   }
 
-  private confirm() {
+  private confirm(event: Event) {
+    event.preventDefault();
+
     this.dispatchEvent(
       new CustomEvent('AddServerRequested', {
         detail: {accessKey: this.accessKey},
