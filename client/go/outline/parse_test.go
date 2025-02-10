@@ -21,6 +21,27 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func Test_doParseTunnel_SSURL(t *testing.T) {
+	result := doParseTunnelConfig("ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@example.com:4321/")
+	require.Nil(t, result.Error)
+	require.Equal(t,
+		"{\"firstHop\":\"example.com:4321\",\"transport\":\"ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@example.com:4321/\"}",
+		result.Value)
+}
+
+func Test_doParseTunnel_LegacyJSON(t *testing.T) {
+	result := doParseTunnelConfig(`{
+    "server": "example.com",
+    "server_port": 4321,
+    "method": "chacha20-ietf-poly1305",
+    "password": "SECRET"
+}`)
+	require.Nil(t, result.Error)
+	require.Equal(t,
+		"{\"firstHop\":\"example.com:4321\",\"transport\":\"{\\n    \\\"server\\\": \\\"example.com\\\",\\n    \\\"server_port\\\": 4321,\\n    \\\"method\\\": \\\"chacha20-ietf-poly1305\\\",\\n    \\\"password\\\": \\\"SECRET\\\"\\n}\"}",
+		result.Value)
+}
+
 func Test_doParseTunnelConfig(t *testing.T) {
 	result := doParseTunnelConfig(`
 transport:
