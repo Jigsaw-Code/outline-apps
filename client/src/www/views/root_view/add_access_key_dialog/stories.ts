@@ -32,4 +32,7 @@ export const Example = ({open, accessKey}: AddAccessKeyDialog) =>
     .open=${open}
     .localize=${localize}
     .accessKey=${accessKey}
+    .accessKeyValidator=${async (key: string) => {
+      return key.startsWith('ss://') || key.startsWith('ssconf://');
+    }}
   ></add-access-key-dialog>`;

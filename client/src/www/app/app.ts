@@ -222,7 +222,7 @@ export class App {
 
     this.eventQueue.startPublishing();
 
-    this.rootEl.$.addServerView.validateAccessKey = async (
+    this.rootEl.$.addServerView.accessKeyValidator = async (
       accessKey: string
     ): Promise<boolean> => {
       try {
