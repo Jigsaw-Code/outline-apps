@@ -12,20 +12,21 @@
 */
 
 import {LitElement, html, css} from 'lit';
-import {customElement, property} from 'lit/decorators.js';
+import {customElement, property, state} from 'lit/decorators.js';
 
 @customElement('add-access-key-dialog')
 export class AddAccessKeyDialog extends LitElement {
-  @property({type: Function}) localize!: (
+  @property({type: String}) accessKey: string | null = null;
+  @property({type: Object}) accessKeyValidator!: (
+    accessKey: string
+  ) => Promise<boolean>;
+  @property({type: Object}) localize!: (
     key: string,
     ...args: string[]
   ) => string;
   @property({type: Boolean}) open: boolean;
-  @property({type: String}) accessKey: string = '';
-  @property({type: Boolean}) isValidAccessKey: boolean = false;
-  @property({type: Function}) validateAccessKey: (
-    accessKey: string
-  ) => Promise<boolean>;
+
+  @state() isAccessKeyValid: boolean;
 
   static styles = css`
     :host {
@@ -70,12 +71,24 @@ export class AddAccessKeyDialog extends LitElement {
     }
   `;
 
+  async connectedCallback() {
+    super.connectedCallback();
+
+    await this.updateIsAccessKeyValid(this.accessKey);
+  }
+
+  async attributeChangedCallback(
+    attributeName: string,
+    oldValue: string,
+    newValue: string
+  ) {
+    super.attributeChangedCallback(attributeName, oldValue, newValue);
+
+    await this.updateIsAccessKeyValid(newValue);
+  }
+
   render() {
-    return html`<md-dialog
-      .open="${this.open}"
-      @cancel=${this.handleCancel}
-      quick
-    >
+    return html`<md-dialog .open="${this.open}" @cancel=${this.cancel} quick>
       <header slot="headline">
         ${this.localize('add-access-key-dialog-header')}
       </header>
@@ -92,8 +105,8 @@ export class AddAccessKeyDialog extends LitElement {
         ></section>
         <section>
           <md-filled-text-field
-            .error=${this.accessKey && !this.isValidAccessKey}
-            @input=${this.handleEdit}
+            .error=${!this.isAccessKeyValid}
+            @input=${this.edit}
             error-text="${this.localize('add-access-key-dialog-error-text')}"
             label="${this.localize('add-access-key-dialog-label')}"
             rows="5"
@@ -103,35 +116,31 @@ export class AddAccessKeyDialog extends LitElement {
         </section>
       </article>
       <fieldset slot="actions">
-        <md-text-button @click=${this.handleCancel}>
+        <md-text-button @click=${this.cancel}>
           ${this.localize('cancel')}
         </md-text-button>
         <md-filled-button
-          @click=${this.handleConfirm}
-          ?disabled=${!this.accessKey || !this.isValidAccessKey}
+          @click=${this.confirm}
+          ?disabled=${!this.isAccessKeyValid}
           >${this.localize('confirm')}</md-filled-button
         >
       </fieldset>
     </md-dialog>`;
   }
 
-  private updateIsValidAccessKey(
-    accessKey: string,
-    validate: (accessKey: string) => Promise<boolean>
-  ) {
-    this.isValidAccessKey = false;
-    validate(accessKey).then(result => {
-      this.isValidAccessKey = result;
-    });
+  private async updateIsAccessKeyValid(accessKey: string | null) {
+    if (accessKey === null) {
+      this.isAccessKeyValid = false;
+    }
+
+    this.isAccessKeyValid = await this.accessKeyValidator(accessKey);
   }
 
-  private handleEdit(event: InputEvent) {
+  private edit(event: InputEvent) {
     this.accessKey = (event.target as HTMLInputElement).value;
-
-    this.updateIsValidAccessKey(this.accessKey, this.validateAccessKey);
   }
 
-  private handleConfirm() {
+  private confirm() {
     this.dispatchEvent(
       new CustomEvent('AddServerRequested', {
         detail: {accessKey: this.accessKey},
@@ -140,10 +149,10 @@ export class AddAccessKeyDialog extends LitElement {
       })
     );
 
-    this.accessKey = '';
+    this.accessKey = null;
   }
 
-  private handleCancel(event: Event) {
+  private cancel(event: Event) {
     event.preventDefault();
 
     this.dispatchEvent(
@@ -154,6 +163,6 @@ export class AddAccessKeyDialog extends LitElement {
       })
     );
 
-    this.accessKey = '';
+    this.accessKey = null;
   }
 }
