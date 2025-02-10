@@ -20,11 +20,12 @@ import (
 	"strings"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
-	"gopkg.in/yaml.v3"
+	"github.com/goccy/go-yaml"
+	"github.com/goccy/go-yaml/ast"
 )
 
 type parseTunnelConfigRequest struct {
-	Transport yaml.Node
+	Transport ast.Node
 	Error     *struct {
 		Message string
 		Details string

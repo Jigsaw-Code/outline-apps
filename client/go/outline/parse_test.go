@@ -79,8 +79,8 @@ func Test_doParseTunnelConfig_ProviderErrorJSON(t *testing.T) {
 	result := doParseTunnelConfig(`
 {
   "error": {
-    "message": "\u26a0 Invalid Access Key / Key \u1000\u102d\u102f\u1015\u103c\u1014\u103a\u101c\u100a\u103a\u1005\u1005\u103a\u1006\u1031\u1038\u1015\u1031\u1038\u1015\u102b\u104b",
-    "details": "\u26a0 Details / Key \u1000\u102d\u102f\u1015\u103c\u1014\u103a\u101c\u100a\u103a\u1005\u1005\u103a\u1006\u1031\u1038\u1015\u1031\u1038\u1015\u102b\u104b"
+    "message": "\u26a0 Invalid Access Key \/ Key \u1000\u102d\u102f\u1015\u103c\u1014\u103a\u101c\u100a\u103a\u1005\u1005\u103a\u1006\u1031\u1038\u1015\u1031\u1038\u1015\u102b\u104b",
+    "details": "\u26a0 Details \/ Key \u1000\u102d\u102f\u1015\u103c\u1014\u103a\u101c\u100a\u103a\u1005\u1005\u103a\u1006\u1031\u1038\u1015\u1031\u1038\u1015\u102b\u104b"
   }
 }`)
 
@@ -108,14 +108,3 @@ error:
 		},
 	}, result.Error)
 }
-
-/*
-// TODO: Fix YAML parsing so it supports escaped slash:
-// See: https://github.com/go-yaml/yaml/issues/967
-func Test_doParseTunnelConfig_parseJSON(t *testing.T) {
-	text := `"\/"`
-	var value any
-	require.NoError(t, json.Unmarshal([]byte(text), &value))
-	require.NoError(t, yaml.Unmarshal([]byte(text), &value))
-}
-*/

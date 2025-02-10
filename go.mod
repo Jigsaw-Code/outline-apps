@@ -8,13 +8,13 @@ require (
 	github.com/Wifx/gonetworkmanager/v2 v2.1.0
 	github.com/eycorsican/go-tun2socks v1.16.11
 	github.com/go-task/task/v3 v3.36.0
+	github.com/goccy/go-yaml v1.15.19
 	github.com/google/addlicense v1.1.1
 	github.com/google/go-licenses v1.6.0
 	github.com/songgao/water v0.0.0-20200317203138-2b4b6d7c09d8
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/mobile v0.0.0-20241213221354-a87c1cf6cf46
 	golang.org/x/sys v0.28.0
-	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -61,6 +61,7 @@ require (
 	gopkg.in/src-d/go-billy.v4 v4.3.2 // indirect
 	gopkg.in/src-d/go-git.v4 v4.13.1 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/klog/v2 v2.80.1 // indirect
 	mvdan.cc/sh/v3 v3.8.0 // indirect
 )
