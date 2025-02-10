@@ -55,7 +55,7 @@ transport:
 
 	require.Nil(t, result.Error)
 	require.Equal(t,
-		"{\"firstHop\":\"example.com:80\",\"transport\":\"$type: tcpudp\\ntcp: \\u0026shared\\n    $type: shadowsocks\\n    endpoint: example.com:80\\n    cipher: chacha20-ietf-poly1305\\n    secret: SECRET\\nudp: *shared\\n\"}",
+		"{\"firstHop\":\"example.com:80\",\"transport\":\"  $type: tcpudp\\n  tcp: \\u0026shared\\n    $type: shadowsocks\\n    endpoint: example.com:80\\n    cipher: chacha20-ietf-poly1305\\n    secret: SECRET\\n  udp: *shared\\n\"}",
 		result.Value)
 }
 
