@@ -101,11 +101,11 @@ func toDialEndpointConfig(node ConfigNode) (*DialEndpointConfig, error) {
 
 	case map[string]any:
 		// TODO: Make it type-based
-		config := &DialEndpointConfig{}
+		var config DialEndpointConfig
 		if err := mapToAny(typed, &config); err != nil {
 			return nil, err
 		}
-		return config, nil
+		return &config, nil
 
 	default:
 		return nil, fmt.Errorf("endpoint config of type %T is not supported", typed)

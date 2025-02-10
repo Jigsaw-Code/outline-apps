@@ -20,7 +20,7 @@ import (
 	"errors"
 	"fmt"
 
-	"gopkg.in/yaml.v3"
+	"github.com/goccy/go-yaml"
 )
 
 // ConfigTypeKey is the config key used to specify the type of the config in order to select the corresponding parser.
@@ -57,8 +57,7 @@ func mapToAny(in map[string]any, out any) error {
 	if err != nil {
 		return fmt.Errorf("error marshaling to YAML: %w", err)
 	}
-	decoder := yaml.NewDecoder(bytes.NewReader(yamlText))
-	decoder.KnownFields(true)
+	decoder := yaml.NewDecoder(bytes.NewReader(yamlText), yaml.DisallowUnknownField())
 	if err := decoder.Decode(out); err != nil {
 		return fmt.Errorf("error decoding YAML: %w", err)
 	}
