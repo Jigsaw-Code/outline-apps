@@ -131,9 +131,9 @@ export class AddAccessKeyDialog extends LitElement {
   private async updateIsAccessKeyValid(accessKey: string | null) {
     if (accessKey === null) {
       this.isAccessKeyValid = false;
+    } else {
+      this.isAccessKeyValid = await this.accessKeyValidator(accessKey);
     }
-
-    this.isAccessKeyValid = await this.accessKeyValidator(accessKey);
   }
 
   private edit(event: InputEvent) {
