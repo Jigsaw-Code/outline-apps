@@ -16,7 +16,6 @@
 
 import {css, html, LitElement, TemplateResult, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
-import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
 import '@material/mwc-icon';
 import '../../help_tooltip';
@@ -104,8 +103,8 @@ export enum DataTableEvent {
  * @template T The type of data represented in the column.
  */
 export interface DataTableColumnProperties<T> {
+  displayName?: string | TemplateResult<typeof INTERNAL_LIT_ENUM_HTML_RESULT>;
   comparator?: Comparator<T>;
-  displayName?: string;
   id: string;
   render: (_value: T) => TemplateResult<typeof INTERNAL_LIT_ENUM_HTML_RESULT>;
   tooltip?: string;
@@ -307,7 +306,7 @@ export class DataTable<T extends object> extends LitElement {
 
     return html`<th @click=${() => this.sort(columnProperties)}>
       <span class="header-display-name"
-        >${unsafeHTML(columnProperties.displayName)}</span
+        >${columnProperties?.displayName ?? nothing}</span
       >
       ${columnProperties?.tooltip
         ? html`<help-tooltip text=${columnProperties.tooltip}></help-tooltip>`
@@ -319,7 +318,7 @@ export class DataTable<T extends object> extends LitElement {
   renderDataCell(columnProperties: DataTableColumnProperties<T>, row: T) {
     return html`<td>
       <label
-        >${unsafeHTML(columnProperties.displayName)}${columnProperties?.tooltip
+        >${columnProperties?.displayName ?? nothing}${columnProperties?.tooltip
           ? html`<help-tooltip text=${columnProperties.tooltip}></help-tooltip>`
           : nothing}</label
       >

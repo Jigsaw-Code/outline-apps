@@ -14,56 +14,85 @@
  * limitations under the License.
  */
 
+import {html} from 'lit';
+
 import './index';
 
 export default {
   title: 'Manager/Server View/Server Metrics Row',
   component: 'server-metrics-row',
-  argTypes: {
-    subcards: {control: 'object'},
-    subtitle: {control: 'text'},
-    title: {control: 'text'},
-    titleIcon: {control: 'text'},
-    tooltip: {control: 'text'},
-    value: {control: 'text'},
-    valueLabel: {control: 'text'},
-  },
 };
 
-export const Example = {
-  args: {
-    title: 'Total Tunnel Time <i>(last 30 days)</i>',
-    value: '43.5',
-    valueLabel: 'Total hours',
-    subtitle: 'ASNs with highest Tunnel Time <i>(last 30 days)</i>',
-    tooltip:
-      'Lorem ipsum dolor sit amet,\nconsectetur adipiscing elit.\nDonec a diam lectus.',
-    titleIcon: 'timer',
-    subcards: [
-      {
-        highlight: '14.1hrs',
-        title: 'Spectrum Online Systems Inc',
-        subtitle: 'ASN3149',
-        icon: '🇺🇸',
-      },
-      {
-        highlight: '14.1hrs',
-        title: 'Spectrum Online Systems Inc',
-        subtitle: 'ASN3149',
-        icon: '🇺🇸',
-      },
-      {
-        highlight: '14.1hrs',
-        title: 'Spectrum Online Systems Inc',
-        subtitle: 'ASN3149',
-        icon: '🇺🇸',
-      },
-      {
-        highlight: '14.1hrs',
-        title: 'Spectrum Online Systems Inc',
-        subtitle: 'ASN3149',
-        icon: '🇺🇸',
-      },
-    ],
-  },
+export const Example = () => {
+  return html`
+    <server-metrics-row
+      title="Total bandwidth used"
+      titleIcon="data_usage"
+      value="38%"
+      valueLabel="380 GB /1 TB"
+      tooltip="Lorem ipsum"
+      subtitle="ASNs with highest bandwidth usage"
+      .subcards=${[
+        {
+          highlight: '265 GB',
+          title: 'Iran Telecommunication Company PJS',
+          subtitle: 'AS58224',
+          icon: '🇮🇷',
+        },
+        {
+          highlight: '46 GB',
+          title: 'Mobile Communication Company of Iran PLC',
+          subtitle: 'AS197207',
+          icon: '🇮🇷',
+        },
+        {
+          highlight: '41 GB',
+          title: 'IRANCELL-AS',
+          subtitle: 'AS44244',
+          icon: '🇮🇷',
+        },
+        {
+          highlight: '28 GB',
+          title: 'Myanma Posts and Telecommunications',
+          subtitle: 'AS9988',
+          icon: '🇲🇲',
+        },
+      ]}
+    ></server-metrics-row>
+    <div style="padding: 0.5rem;"></div>
+    <server-metrics-row
+      title="Total Tunnel Time <i>(last 30 days)</i>"
+      titleIcon="timer"
+      value="1573"
+      valueLabel="hours"
+      tooltip="Lorem ipsum"
+      subtitle="ASNs with highest Tunnel Time <i>(last 30 days)</i>"
+      .subcards=${[
+        {
+          highlight: '1080 hours',
+          title: 'Iran Telecommunication Company PJS',
+          subtitle: 'AS58224',
+          icon: '🇮🇷',
+        },
+        {
+          highlight: '194 hours',
+          title: 'IRANCELL-AS',
+          subtitle: 'AS44244',
+          icon: '🇮🇷',
+        },
+        {
+          highlight: '186 hours',
+          title: 'Mobile Communication Company of Iran PLC',
+          subtitle: 'AS197207',
+          icon: '🇮🇷',
+        },
+        {
+          highlight: '98 hours',
+          title: 'Myanma Posts and Telecommunications',
+          subtitle: 'AS9988',
+          icon: '🇲🇲',
+        },
+      ]}
+    ></server-metrics-row>
+  `;
 };

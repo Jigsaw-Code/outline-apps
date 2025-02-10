@@ -16,6 +16,7 @@
 
 import {LitElement, html} from 'lit';
 import {customElement, property, query} from 'lit/decorators.js';
+import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
 import './access_key_controls';
 
@@ -175,9 +176,9 @@ export class AccessKeyDataTable extends LitElement {
           },
           {
             id: 'usage',
-            displayName: this.localize(
-              'server-view-access-keys-usage-column-header'
-            ),
+            displayName: html`${unsafeHTML(
+              this.localize('server-view-access-keys-usage-column-header')
+            )}`,
             tooltip: this.localize('server-view-access-keys-usage-tooltip'),
             render: ({
               dataUsageBytes,
@@ -199,9 +200,11 @@ export class AccessKeyDataTable extends LitElement {
           },
           {
             id: 'peakDevices',
-            displayName: this.localize(
-              'server-view-access-keys-peak-devices-column-header'
-            ),
+            displayName: html`${unsafeHTML(
+              this.localize(
+                'server-view-access-keys-peak-devices-column-header'
+              )
+            )}`,
             tooltip: this.localize(
               'server-view-access-keys-peak-devices-tooltip'
             ),
