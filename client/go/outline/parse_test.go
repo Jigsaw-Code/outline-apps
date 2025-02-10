@@ -74,3 +74,19 @@ error:
 		},
 	})
 }
+
+func Test_doParseTunnelConfig_ProviderErrorUTF8(t *testing.T) {
+	result := doParseTunnelConfig(`
+error:
+  message: "\u26a0 Invalid Access Key / Key \u1000\u102d\u102f\u1015\u103c\u1014\u103a\u101c\u100a\u103a\u1005\u1005\u103a\u1006\u1031\u1038\u1015\u1031\u1038\u1015\u102b\u104b"
+  details: "\u26a0 Details / Key \u1000\u102d\u102f\u1015\u103c\u1014\u103a\u101c\u100a\u103a\u1005\u1005\u103a\u1006\u1031\u1038\u1015\u1031\u1038\u1015\u102b\u104b"
+`)
+
+	require.Equal(t, &platerrors.PlatformError{
+		Code:    platerrors.ProviderError,
+		Message: "⚠ Invalid Access Key / Key ကိုပြန်လည်စစ်ဆေးပေးပါ။",
+		Details: map[string]any{
+			"details": "⚠ Details / Key ကိုပြန်လည်စစ်ဆေးပေးပါ။",
+		},
+	}, result.Error)
+}
