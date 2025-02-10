@@ -28,6 +28,7 @@ export class AddAccessKeyDialog extends LitElement {
   ) => string;
   @property({type: Boolean}) open: boolean;
 
+  @state() hasEmptyAccessKey: boolean;
   @state() hasInvalidAccessKey: boolean;
 
   static styles = css`
@@ -76,7 +77,7 @@ export class AddAccessKeyDialog extends LitElement {
   async connectedCallback() {
     super.connectedCallback();
 
-    await this.checkAccessKeyValidity(this.accessKey);
+    await this.runAccessKeyChecks(this.accessKey);
   }
 
   async attributeChangedCallback(
@@ -86,7 +87,7 @@ export class AddAccessKeyDialog extends LitElement {
   ) {
     super.attributeChangedCallback(attributeName, oldValue, newValue);
 
-    await this.checkAccessKeyValidity(newValue);
+    await this.runAccessKeyChecks(newValue);
   }
 
   render() {
@@ -107,13 +108,13 @@ export class AddAccessKeyDialog extends LitElement {
         ></section>
         <section>
           <md-filled-text-field
-            .error=${this.hasInvalidAccessKey}
+            .error=${!this.hasEmptyAccessKey && this.hasInvalidAccessKey}
             @input=${this.edit}
             error-text="${this.localize('add-access-key-dialog-error-text')}"
             label="${this.localize('add-access-key-dialog-label')}"
             rows="5"
             type="textarea"
-            .value=${this.accessKey}
+            .value=${this.accessKey ?? ''}
           ></md-filled-text-field>
         </section>
       </article>
@@ -123,18 +124,20 @@ export class AddAccessKeyDialog extends LitElement {
         </md-text-button>
         <md-filled-button
           @click=${this.confirm}
-          ?disabled=${this.hasInvalidAccessKey}
+          ?disabled=${this.hasEmptyAccessKey || this.hasInvalidAccessKey}
           >${this.localize('confirm')}</md-filled-button
         >
       </fieldset>
     </md-dialog>`;
   }
 
-  private async checkAccessKeyValidity(accessKey: string | null) {
+  private async runAccessKeyChecks(accessKey: string | null) {
     if (accessKey === null) {
       this.hasInvalidAccessKey = true;
+      this.hasEmptyAccessKey = true;
     } else {
       this.hasInvalidAccessKey = !(await this.accessKeyValidator(accessKey));
+      this.hasEmptyAccessKey = false;
     }
   }
 
