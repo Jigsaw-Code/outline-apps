@@ -28,7 +28,7 @@ export class AddAccessKeyDialog extends LitElement {
   ) => string;
   @property({type: Boolean}) open: boolean;
 
-  @state() isAccessKeyValid: boolean;
+  @state() hasInvalidAccessKey: boolean;
 
   static styles = css`
     :host {
@@ -76,7 +76,7 @@ export class AddAccessKeyDialog extends LitElement {
   async connectedCallback() {
     super.connectedCallback();
 
-    await this.updateIsAccessKeyValid(this.accessKey);
+    await this.checkAccessKeyValidity(this.accessKey);
   }
 
   async attributeChangedCallback(
@@ -86,7 +86,7 @@ export class AddAccessKeyDialog extends LitElement {
   ) {
     super.attributeChangedCallback(attributeName, oldValue, newValue);
 
-    await this.updateIsAccessKeyValid(newValue);
+    await this.checkAccessKeyValidity(newValue);
   }
 
   render() {
@@ -107,7 +107,7 @@ export class AddAccessKeyDialog extends LitElement {
         ></section>
         <section>
           <md-filled-text-field
-            .error=${!this.isAccessKeyValid}
+            .error=${this.hasInvalidAccessKey}
             @input=${this.edit}
             error-text="${this.localize('add-access-key-dialog-error-text')}"
             label="${this.localize('add-access-key-dialog-label')}"
@@ -123,18 +123,18 @@ export class AddAccessKeyDialog extends LitElement {
         </md-text-button>
         <md-filled-button
           @click=${this.confirm}
-          ?disabled=${!this.isAccessKeyValid}
+          ?disabled=${this.hasInvalidAccessKey}
           >${this.localize('confirm')}</md-filled-button
         >
       </fieldset>
     </md-dialog>`;
   }
 
-  private async updateIsAccessKeyValid(accessKey: string | null) {
+  private async checkAccessKeyValidity(accessKey: string | null) {
     if (accessKey === null) {
-      this.isAccessKeyValid = false;
+      this.hasInvalidAccessKey = true;
     } else {
-      this.isAccessKeyValid = await this.accessKeyValidator(accessKey);
+      this.hasInvalidAccessKey = !(await this.accessKeyValidator(accessKey));
     }
   }
 
