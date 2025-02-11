@@ -1061,9 +1061,9 @@ export class App {
         );
 
       serverView.bandwidthUsageLocations = serverMetrics.server?.locations
-        .sort(
+        ?.sort(
           (location2, location1) =>
-            location1.dataTransferred.bytes - location2.dataTransferred.bytes
+            location1.dataTransferred?.bytes - location2.dataTransferred?.bytes
         )
         .slice(0, NUMBER_OF_ASES_TO_SHOW)
         .map(server => ({
@@ -1073,11 +1073,11 @@ export class App {
           bytes: server.dataTransferred.bytes,
         }));
 
-      serverView.tunnelTimeTotal = serverMetrics.server.tunnelTime.seconds;
+      serverView.tunnelTimeTotal = serverMetrics.server.tunnelTime?.seconds;
       serverView.tunnelTimeLocations = serverMetrics.server?.locations
-        .sort(
+        ?.sort(
           (location2, location1) =>
-            location1.tunnelTime.seconds - location2.tunnelTime.seconds
+            location1.tunnelTime?.seconds - location2.tunnelTime?.seconds
         )
         .slice(0, NUMBER_OF_ASES_TO_SHOW)
         .map(server => ({
