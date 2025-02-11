@@ -830,13 +830,13 @@ export class ServerView extends DirMixin(PolymerElement) {
               current-bytes="[[bandwidthCurrent]]"
               peak-bytes="[[bandwidthPeak]]"
               peak-timestamp="[[bandwidthPeakTimestamp]]"
-              regions="[[bandwidthUsageRegions]]"
+              locations="[[bandwidthUsageLocations]]"
             ></server-metrics-bandwidth-row>
             <server-metrics-tunnel-time-row
               localize="[[localize]]"
               language="[[lagugage]]"
               total-seconds="[[tunnelTimeTotal]]"
-              regions="[[tunnelTimeRegions]]"
+              locations="[[tunnelTimeLocations]]"
             ></server-metrics-tunnel-time-row>
           </div>
         </template>
@@ -882,7 +882,7 @@ export class ServerView extends DirMixin(PolymerElement) {
       bandwidthCurrent: Number,
       bandwidthPeak: Number,
       bandwidthPeakTimestamp: String,
-      bandwidthUsageRegions: Array,
+      bandwidthUsageLocations: Array,
       baselineDataTransfer: Number,
       cloudId: String,
       cloudLocation: Object,
@@ -913,7 +913,7 @@ export class ServerView extends DirMixin(PolymerElement) {
       showFeatureMetricsDisclaimer: Boolean,
       supportsDefaultDataLimit: Boolean,
       totalInboundBytes: Number,
-      tunnelTimeRegions: Array,
+      tunnelTimeLocations: Array,
       tunnelTimeTotal: Number,
     };
   }
@@ -926,10 +926,10 @@ export class ServerView extends DirMixin(PolymerElement) {
   bandwidthCurrent = 0;
   bandwidthPeak = 0;
   bandwidthPeakTimestamp = '';
-  bandwidthUsageRegions: Partial<ServerMetricsBandwidthRegion>[] = [];
+  bandwidthUsageLocations: Partial<ServerMetricsBandwidthRegion>[] = [];
 
   tunnelTimeTotal = 0;
-  tunnelTimeRegions: Partial<ServerMetricsTunnelTimeRegion>[] = [];
+  tunnelTimeLocations: Partial<ServerMetricsTunnelTimeRegion>[] = [];
 
   serverId = '';
   metricsId = '';

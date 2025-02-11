@@ -42,7 +42,7 @@ export class ServerMetricsBandwidthRow extends LitElement {
   @property({type: Number}) currentBytes: number;
   @property({type: Number}) peakBytes: number;
   @property({type: String}) peakTimestamp: string;
-  @property({type: Array}) regions: Array<ServerMetricsBandwidthRegion>;
+  @property({type: Array}) locations: Array<ServerMetricsBandwidthRegion>;
 
   @property({type: Boolean, reflect: true})
   get bandwidthLimitWarning() {
@@ -267,7 +267,7 @@ export class ServerMetricsBandwidthRow extends LitElement {
   render() {
     return html`
       <server-metrics-row
-        .subcards=${this.regions.map(asn => ({
+        .subcards=${this.locations.map(asn => ({
           title: asn.asOrg,
           subtitle: asn.asn,
           highlight: formatBytes(asn.bytes, this.language),

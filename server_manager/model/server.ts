@@ -193,13 +193,19 @@ export interface Data {
   readonly bytes: number;
 }
 
+interface TimedData<T> {
+  data: T;
+  timestamp: Date;
+}
+
 export interface Duration {
   readonly seconds: number;
 }
 
 export interface ServerMetrics {
-  regions?: ServerMetricsRegion[];
-  bandwidth?: BandwidthStats;
+  locations?: ServerMetricsRegion[];
+  dataTransferred?: BandwidthStats;
+  tunnelTime?: Duration;
 }
 
 export interface ServerMetricsRegion {
@@ -218,11 +224,6 @@ export interface AccessKeyMetrics {
 
 export interface BandwidthStats {
   total: Data;
-  peak: PeakBandwidth;
+  peak: TimedData<Data>;
   current: Data;
-}
-
-export interface PeakBandwidth {
-  bytes: number;
-  timestamp: Date | null;
 }

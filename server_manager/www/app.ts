@@ -16,7 +16,6 @@ import {CustomError} from '@outline/infrastructure/custom_error';
 import * as path_api from '@outline/infrastructure/path_api';
 import {sleep} from '@outline/infrastructure/sleep';
 import * as Sentry from '@sentry/electron/renderer';
-import {Comparator, Heap} from 'heap-js';
 import * as semver from 'semver';
 
 import {DisplayDataAmount, displayDataAmountToBytes} from './data_formatting';
@@ -1044,45 +1043,29 @@ export class App {
     try {
       const serverMetrics = await selectedServer.getServerMetrics();
 
-      const bandwidthUsageComparator: Comparator<
-        server_model.ServerMetricsRegion
-      > = (server1, server2) =>
-        server2.dataTransferred.bytes - server1.dataTransferred.bytes;
-      const bandwidthUsageHeap = new Heap(bandwidthUsageComparator);
-
-      let tunnelTimeTotal = 0;
-      const tunnelTimeComparator: Comparator<
-        server_model.ServerMetricsRegion
-      > = (server1, server2) =>
-        server2.tunnelTime.seconds - server1.tunnelTime.seconds;
-      const tunnelTimeHeap = new Heap(tunnelTimeComparator);
-
-      for (const region of serverMetrics.server?.regions ?? []) {
-        bandwidthUsageHeap.push(region);
-
-        tunnelTimeTotal += region.tunnelTime.seconds;
-        tunnelTimeHeap.push(region);
-      }
-
       // support legacy metrics view
       serverView.totalInboundBytes =
-        serverMetrics.server.bandwidth?.total.bytes;
+        serverMetrics.server.dataTransferred?.total.bytes;
 
       const NUMBER_OF_ASES_TO_SHOW = 4;
       serverView.bandwidthUsageTotal =
-        serverMetrics.server.bandwidth?.total.bytes;
+        serverMetrics.server.dataTransferred?.total.bytes;
 
       serverView.bandwidthCurrent =
-        serverMetrics.server.bandwidth?.current.bytes;
-      serverView.bandwidthPeak = serverMetrics.server.bandwidth?.peak.bytes;
+        serverMetrics.server.dataTransferred?.current.bytes;
+      serverView.bandwidthPeak =
+        serverMetrics.server.dataTransferred?.peak.data.bytes;
       serverView.bandwidthPeakTimestamp =
-        serverMetrics.server.bandwidth?.peak.timestamp.toLocaleString(
+        serverMetrics.server.dataTransferred?.peak.timestamp.toLocaleString(
           this.appRoot.language
         );
 
-      serverView.bandwidthUsageRegions = bandwidthUsageHeap
-        .top(NUMBER_OF_ASES_TO_SHOW)
-        .reverse()
+      serverView.bandwidthUsageLocations = serverMetrics.server?.locations
+        .sort(
+          (location2, location1) =>
+            location1.dataTransferred.bytes - location2.dataTransferred.bytes
+        )
+        .slice(0, NUMBER_OF_ASES_TO_SHOW)
         .map(server => ({
           asOrg: server.asOrg,
           asn: `AS${server.asn}`,
@@ -1090,13 +1073,16 @@ export class App {
           bytes: server.dataTransferred.bytes,
         }));
 
-      serverView.tunnelTimeTotal = tunnelTimeTotal;
-      serverView.tunnelTimeRegions = tunnelTimeHeap
-        .top(NUMBER_OF_ASES_TO_SHOW)
-        .reverse()
+      serverView.tunnelTimeTotal = serverMetrics.server.tunnelTime.seconds;
+      serverView.tunnelTimeLocations = serverMetrics.server?.locations
+        .sort(
+          (location2, location1) =>
+            location1.tunnelTime.seconds - location2.tunnelTime.seconds
+        )
+        .slice(0, NUMBER_OF_ASES_TO_SHOW)
         .map(server => ({
           asOrg: server.asOrg,
-          asn: `ASN${server.asn}`,
+          asn: `AS${server.asn}`,
           countryFlag: this.countryCodeToEmoji(server.location),
           seconds: server.tunnelTime.seconds,
         }));

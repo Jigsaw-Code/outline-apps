@@ -38,16 +38,35 @@ interface ServerConfigJson {
 
 interface MetricsJson {
   server: {
-    location: string;
-    asn: number;
-    asOrg: string;
-    tunnelTime?: {
+    tunnelTime: {
       seconds: number;
     };
-    dataTransferred?: {
-      bytes: number;
+    dataTransferred: {
+      total: {
+        bytes: number;
+      };
+      current: {
+        bytes: number;
+      };
+      peak: {
+        data: {
+          bytes: number;
+        };
+        timestamp: string;
+      };
     };
-  }[];
+    locations: {
+      location: string;
+      asn: number;
+      asOrg: string;
+      tunnelTime?: {
+        seconds: number;
+      };
+      dataTransferred?: {
+        bytes: number;
+      };
+    }[];
+  };
   accessKeys: {
     accessKeyId: string;
     tunnelTime?: {
@@ -184,30 +203,20 @@ export class ShadowboxServer implements server.Server {
         `experimental/server/metrics?since=${timeRangeInDays}d`
       );
 
-      // TODO: add these datapoints once the endpoint is merged
       return {
         server: {
-          bandwidth: {
-            total: {
-              bytes: 0,
-            },
-            current: {
-              bytes: 0,
-            },
+          tunnelTime: json.server.tunnelTime,
+          dataTransferred: {
+            total: json.server.dataTransferred.total,
+            current: json.server.dataTransferred.current,
             peak: {
-              bytes: 0,
-              timestamp: new Date(),
+              data: {
+                bytes: json.server.dataTransferred.peak.data.bytes,
+              },
+              timestamp: new Date(json.server.dataTransferred.peak.timestamp),
             },
           },
-          regions: json.server.map(region => {
-            return {
-              location: region.location,
-              asn: region.asn,
-              asOrg: region.asOrg,
-              tunnelTime: region.tunnelTime,
-              dataTransferred: region.dataTransferred,
-            };
-          }),
+          locations: json.server.locations,
         },
         accessKeys: json.accessKeys.map(key => ({
           accessKeyId: key.accessKeyId,

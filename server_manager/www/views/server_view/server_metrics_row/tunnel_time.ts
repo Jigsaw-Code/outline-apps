@@ -35,7 +35,7 @@ export class ServerMetricsTunnelTimeRow extends LitElement {
   @property({type: String}) language: string = 'en';
   @property({type: Object}) localize: (key: string) => string;
   @property({type: Number}) totalSeconds: number;
-  @property({type: Array}) regions: Array<ServerMetricsTunnelTimeRegion>;
+  @property({type: Array}) locations: Array<ServerMetricsTunnelTimeRegion>;
 
   static styles = css`
     :host {
@@ -114,7 +114,7 @@ export class ServerMetricsTunnelTimeRow extends LitElement {
   render() {
     return html`
       <server-metrics-row
-        .subcards=${this.regions.map(asn => ({
+        .subcards=${this.locations.map(asn => ({
           title: asn.asOrg,
           subtitle: asn.asn,
           highlight: this.formatter.format(asn.seconds / SECONDS_IN_HOUR),
