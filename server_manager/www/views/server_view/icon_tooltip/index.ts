@@ -17,6 +17,7 @@
 import {LitElement, css, html} from 'lit';
 import {customElement, state, query, property} from 'lit/decorators.js';
 
+import '@material/mwc-icon';
 import '@material/mwc-icon-button';
 
 // TODO: this tooltip is implemented by javascript and not css due to api limitations in our current version of Electron.
@@ -37,12 +38,17 @@ export class IconTooltip extends LitElement {
       color: var(--icon-tooltip-icon-color);
     }
 
+    mwc-icon,
     mwc-icon-button {
-      --mdc-icon-size: var(--help-tooltip-icon-size);
+      --mdc-icon-size: var(--icon-tooltip-icon-size);
     }
   `;
 
   render() {
+    if (!this.text) {
+      return html`<mwc-icon>${this.icon}</mwc-icon>`;
+    }
+
     return html`
       <mwc-icon-button
         @click=${this.insertTooltip}
@@ -54,10 +60,6 @@ export class IconTooltip extends LitElement {
   }
 
   insertTooltip() {
-    if (!this.text) {
-      return;
-    }
-
     this.tooltip = document.createElement('span');
     this.tooltip.innerHTML = this.text;
     this.tooltip.style.cssText = `

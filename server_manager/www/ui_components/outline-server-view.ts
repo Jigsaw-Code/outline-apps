@@ -824,6 +824,7 @@ export class ServerView extends DirMixin(PolymerElement) {
             <server-metrics-bandwidth-row
               localize="[[localize]]"
               language="[[language]]"
+              hasDataLimits="{{!isDefaultDataLimitEnabled && !accessKeyRows.some(({ dataLimitBytes }) => dataLimitBytes)}}"
               totalBandwidthBytes="[[bandwidthUsageTotal]]"
               bandwidthLimitBytes="[[monthlyOutboundTransferBytes]]"
               currentBandwidthBytes="[[bandwidthCurrent]]"

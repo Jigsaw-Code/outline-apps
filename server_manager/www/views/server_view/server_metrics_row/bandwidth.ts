@@ -38,6 +38,7 @@ export class ServerMetricsBandwidthRow extends LitElement {
   @property({type: Number}) totalBandwidthBytes: number;
   @property({type: Number}) bandwidthLimitBytes: number;
   @property({type: Number}) bandwidthLimitThreshold: number = 0.8;
+  @property({type: Boolean}) hasDataLimits: boolean = false;
   @property({type: Number}) currentBandwidthBytes: number;
   @property({type: Number}) peakBandwidthBytes: number;
   @property({type: String}) peakBandwidthTimestamp: string;
@@ -133,8 +134,8 @@ export class ServerMetricsBandwidthRow extends LitElement {
       --mdc-icon-size: var(--server-metrics-bandwidth-row-icon-size);
     }
 
-    help-tooltip {
-      --help-tooltip-icon-size: var(--server-metrics-tunnel-time-row-icon-size);
+    icon-tooltip {
+      --icon-tooltip-icon-size: var(--server-metrics-tunnel-time-row-icon-size);
     }
 
     .bandwidth-container {
@@ -283,9 +284,11 @@ export class ServerMetricsBandwidthRow extends LitElement {
                   value=${this.totalBandwidthBytes}
                 ></progress>
                 <icon-tooltip
-                  text="${this.localize(
-                    'server-view-server-metrics-bandwidth-limit-tooltip'
-                  )}"
+                  text="${this.hasDataLimits
+                    ? ''
+                    : this.localize(
+                        'server-view-server-metrics-bandwidth-limit-tooltip'
+                      )}"
                   icon="warning"
                 ></icon-tooltip>
               </span>
