@@ -819,6 +819,22 @@ export class ServerView extends DirMixin(PolymerElement) {
                 ></iron-icon>
               </a>
             </aside>
+            <server-metrics-bandwidth-row
+              language="[[language]]"
+              title="[[localize('server-view-server-metrics-bandwidth-title')]]"
+              tooltip="[[localize('server-view-server-metrics-bandwidth-tooltip')]]"
+            ></server-metrics-bandwidth-row>
+
+            <server-metrics-tunnel-time-row
+              language="[[lagugage]]"
+              title="[[localize('server-view-server-metrics-tunnel-time-title')]]"
+              tooltip="[[localize('server-view-server-metrics-tunnel-time-tooltip')]]"
+              totalTunnelTimeHours="[[tunnelTimeTotal]]"
+              tunnelTimeAsnTitle="[localize('server-view-server-metrics-tunnel-time-as-breakdown')]]"
+              tunnelTimeAsns="[[tunnelTimeRegions]]"
+            >
+            </server-metrics-tunnel-time-row>
+
             <server-metrics-row
               title="[[localize('server-view-server-metrics-bandwidth-title')]]"
               titleIcon="data_usage"
@@ -828,15 +844,6 @@ export class ServerView extends DirMixin(PolymerElement) {
                     language)]]"
               subtitle="[[localize('server-view-server-metrics-bandwidth-as-breakdown')]]"
               subcards="[[bandwidthUsageRegions]]"
-            ></server-metrics-row>
-            <server-metrics-row
-              title="[[localize('server-view-server-metrics-tunnel-time-title')]]"
-              titleIcon="timer"
-              tooltip="[[localize('server-view-server-metrics-tunnel-time-tooltip')]]"
-              value="[[tunnelTimeTotal]]"
-              value-label="[[tunnelTimeTotalLabel]]"
-              subtitle="[[localize('server-view-server-metrics-tunnel-time-as-breakdown')]]"
-              subcards="[[tunnelTimeRegions]]"
             ></server-metrics-row>
           </div>
         </template>

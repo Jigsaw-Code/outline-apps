@@ -1,0 +1,330 @@
+/**
+ * Copyright 2025 The Outline Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import {LitElement, html, css, nothing} from 'lit';
+import {customElement, property} from 'lit/decorators.js';
+import {unsafeHTML} from 'lit/directives/unsafe-html.js';
+
+import {formatBytes, formatBytesParts} from '../../../data_formatting';
+
+import '../help_tooltip';
+import './index';
+import '@material/mwc-icon';
+
+interface ServerMetricsBandwidthAsn {
+  bandwidthBytes: number;
+  asn: string;
+  asOrg?: string;
+  countryFlag: string;
+}
+
+@customElement('server-metrics-bandwidth-row')
+export class ServerMetricsBandwidthRow extends LitElement {
+  @property({type: String}) language: string = 'en';
+  @property({type: String}) title: string;
+  @property({type: String}) tooltip: string;
+  @property({type: Number}) totalBandwidthBytes: number;
+  @property({type: String}) totalBandwidthTitle: string;
+  @property({type: Number}) bandwidthLimitBytes: number;
+  @property({type: Number}) bandwidthLimitThreshold: number;
+  @property({type: String}) bandwidthLimitTooltip: string;
+  @property({type: Number}) currentBandwidthBytes: number;
+  @property({type: String}) currentBandwidthTitle: string;
+  @property({type: Number}) peakBandwidthBytes: number;
+  @property({type: String}) peakBandwidthTimestamp: string;
+  @property({type: String}) peakBandwidthTitle: string;
+  @property({type: String}) bandwidthAsnTitle: string;
+  @property({type: Array}) bandwidthAsns: Array<ServerMetricsBandwidthAsn>;
+
+  @property({type: Boolean, reflect: true})
+  get bandwidthLimitWarning() {
+    return this.bandwidthPercentage >= this.bandwidthLimitThreshold;
+  }
+
+  get bandwidthPercentage() {
+    return this.totalBandwidthBytes / this.bandwidthLimitBytes;
+  }
+
+  static styles = css`
+    :host {
+      --server-metrics-bandwidth-row-icon-size: 1.38rem;
+
+      --server-metrics-bandwidth-row-font-family: 'Inter', system-ui;
+      --server-metrics-bandwidth-row-title-color: hsla(0, 0%, 100%, 0.7);
+      --server-metrics-bandwidth-row-title-container-gap: 0.25rem;
+      --server-metrics-bandwidth-row-title-font-size: 1rem;
+      --server-metrics-bandwidth-row-padding: 0.9rem 1.3rem;
+
+      --server-metrics-bandwidth-row-value-container-margin-top: 0.75rem;
+
+      --server-metrics-bandwidth-row-value-font-size: 2.25rem;
+      --server-metrics-bandwidth-row-value-font-family: 'Roboto', system-ui;
+      --server-metrics-bandwidth-row-value-label-font-size: 0.825rem;
+      --server-metrics-bandwidth-row-value-label-margin-left: 0.2rem;
+
+      --server-metrics-bandwidth-row-meter-size: 0.7rem;
+
+      --server-metrics-bandwidth-row-meter-background-color: hsla(
+        0,
+        0%,
+        85%,
+        1
+      );
+
+      --server-metrics-bandwidth-row-meter-color: hsla(167, 57%, 61%, 0.88);
+      --server-metrics-bandwidth-row-meter-text-color: hsl(0, 0%, 79%);
+
+      --server-metrics-bandwidth-row-meter-warning-color: hsla(51, 73%, 91%, 1);
+      --server-metrics-bandwidth-row-meter-warning-text-color: hsla(
+        39,
+        77%,
+        53%,
+        1
+      );
+
+      --server-metrics-bandwidth-current-and-peak-border: 1px solid
+        hsla(0, 0%, 100%, 0.35);
+      --server-metrics-bandwidth-current-and-peak-value-font-size: 1.5rem;
+      --server-metrics-bandwidth-peak-timestamp-text-color: hsla(
+        0,
+        0%,
+        100%,
+        0.5
+      );
+    }
+
+    .main-container {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .title-and-bandwidth-container,
+    .current-and-peak-container {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      padding: var(--server-metrics-bandwidth-row-padding);
+    }
+
+    .title-container {
+      display: flex;
+      align-items: center;
+      gap: var(--server-metrics-bandwidth-row-title-container-gap);
+    }
+
+    .title {
+      all: initial;
+      display: inline-block;
+      font-family: var(--server-metrics-bandwidth-row-font-family);
+      font-weight: 400;
+      font-size: var(--server-metrics-bandwidth-row-title-font-size);
+      color: var(--server-metrics-bandwidth-row-title-color);
+    }
+
+    mwc-icon {
+      --mdc-icon-size: var(--server-metrics-bandwidth-row-icon-size);
+    }
+
+    help-tooltip {
+      --help-tooltip-icon-size: var(--server-metrics-tunnel-time-row-icon-size);
+    }
+
+    .bandwidth-container {
+      margin-top: var(
+        --server-metrics-bandwidth-row-value-container-margin-top
+      );
+    }
+
+    .bandwidth-percentage {
+      font-family: var(--server-metrics-bandwidth-row-value-font-family);
+      font-size: var(--server-metrics-bandwidth-row-value-font-size);
+    }
+
+    :host([bandwidthLimitWarning]) .bandwidth-percentage {
+      color: var(--server-metrics-bandwidth-row-meter-warning-text-color);
+    }
+
+    .bandwidth-fraction {
+      color: var(--server-metrics-bandwidth-row-title-color);
+      font-family: var(--server-metrics-bandwidth-row-font-family);
+      font-size: var(--server-metrics-bandwidth-row-value-label-font-size);
+      margin-left: var(--server-metrics-bandwidth-row-value-label-margin-left);
+    }
+
+    .bandwidth-progress-container {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    progress {
+      display: block;
+      appearance: none;
+      height: var(--server-metrics-bandwidth-row-meter-size);
+      margin-bottom: var(--server-metrics-bandwidth-row-meter-gap);
+      width: 100%;
+    }
+
+    progress[value]::-webkit-progress-bar {
+      background: var(--server-metrics-bandwidth-row-meter-background-color);
+      border-radius: var(--server-metrics-bandwidth-row-meter-size);
+    }
+
+    progress[value]::-webkit-progress-value {
+      background: var(--server-metrics-bandwidth-row-meter-color);
+      border-radius: var(--server-metrics-bandwidth-row-meter-size);
+    }
+
+    :host([bandwidthLimitWarning]) progress[value]::-webkit-progress-value {
+      background: var(--server-metrics-bandwidth-row-meter-warning-color);
+    }
+
+    .current-and-peak-container {
+      gap: 0.9rem;
+      border-left: var(--server-metrics-bandwidth-current-and-peak-border);
+    }
+
+    .current-container,
+    .peak-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .current-value,
+    .peak-value {
+      font-family: var(--server-metrics-bandwidth-row-value-font-family);
+      font-size: var(
+        --server-metrics-bandwidth-current-and-peak-value-font-size
+      );
+    }
+
+    .current-unit,
+    .peak-unit {
+      color: var(--server-metrics-bandwidth-row-title-color);
+      font-family: var(--server-metrics-bandwidth-row-font-family);
+      font-size: var(--server-metrics-bandwidth-row-value-label-font-size);
+    }
+
+    .current-title,
+    .peak-title {
+      color: var(--server-metrics-bandwidth-row-title-color);
+      font-family: var(--server-metrics-bandwidth-row-font-family);
+      font-size: var(--server-metrics-bandwidth-row-value-label-font-size);
+    }
+
+    .peak-timestamp {
+      color: var(--server-metrics-bandwidth-peak-timestamp-text-color);
+      font-family: var(--server-metrics-bandwidth-row-font-family);
+      font-size: var(--server-metrics-bandwidth-row-value-label-font-size);
+      font-style: italic;
+    }
+  `;
+
+  render() {
+    return html`
+      <server-metrics-row
+        .subcards=${this.bandwidthAsns.map(asn => ({
+          title: asn.asOrg,
+          subtitle: asn.asn,
+          highlight: this.formatBytes(asn.bandwidthBytes),
+          icon: asn.countryFlag,
+        }))}
+        .subtitle=${this.bandwidthAsnTitle}
+      >
+        <div class="main-container">
+          <div class="title-and-bandwidth-container">
+            <div class="title-container">
+              <mwc-icon>data_usage</mwc-icon>
+              <h2 class="title">${unsafeHTML(this.title)}</h2>
+              ${this.tooltip
+                ? html`<help-tooltip>${this.tooltip}</help-tooltip>`
+                : nothing}
+            </div>
+            <div class="bandwidth-container">
+              <span class="bandwidth-percentage"
+                >${this.formatPercentage(this.bandwidthPercentage)}</span
+              >
+              <span class="bandwidth-fraction"
+                >${this.formatBytes(this.totalBandwidthBytes)}
+                /${this.formatBytes(this.bandwidthLimitBytes)}</span
+              >
+              <span class="bandwidth-progress-container">
+                <progress
+                  max=${this.bandwidthLimitBytes}
+                  value=${this.totalBandwidthBytes}
+                ></progress>
+                ${this.bandwidthLimitWarning
+                  ? html`<help-tooltip
+                      >${this.bandwidthLimitTooltip}</help-tooltip
+                    >`
+                  : nothing}
+              </span>
+            </div>
+          </div>
+          <div class="current-and-peak-container">
+            <div class="current-container">
+              <span class="current-value-and-unit">
+                <span class="current-value"
+                  >${this.formatBytesValue(this.currentBandwidthBytes)}</span
+                >
+                <span class="current-unit"
+                  >${this.formatBytesUnit(this.currentBandwidthBytes)}/s</span
+                >
+              </span>
+              <span class="current-title">${this.currentBandwidthTitle}</span>
+            </div>
+            <div class="peak-container">
+              <span class="peak-value-and-unit">
+                <span class="peak-value"
+                  >${this.formatBytesValue(this.peakBandwidthBytes)}</span
+                >
+                <span class="peak-unit"
+                  >${this.formatBytesUnit(this.peakBandwidthBytes)}/s</span
+                >
+                <span class="peak-timestamp"
+                  >(${this.peakBandwidthTimestamp})</span
+                >
+              </span>
+              <span class="peak-title">${this.peakBandwidthTitle}</span>
+            </div>
+          </div>
+        </div>
+      </server-metrics-row>
+    `;
+  }
+
+  private formatPercentage(percentage: number) {
+    return Intl.NumberFormat(this.language, {
+      style: 'percent',
+      minimumFractionDigits: 0,
+    }).format(percentage);
+  }
+
+  private formatBytes(totalBytes: number) {
+    return formatBytes(totalBytes, this.language);
+  }
+
+  private formatBytesUnit(totalBytes: number) {
+    return formatBytesParts(totalBytes, this.language).unit;
+  }
+
+  private formatBytesValue(totalBytes: number) {
+    return formatBytesParts(totalBytes, this.language).value;
+  }
+}

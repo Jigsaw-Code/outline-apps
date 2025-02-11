@@ -28,29 +28,14 @@ import type {ServerMetricsRowSubcard} from './server_metrics_row_subcard';
 export class ServerMetricsRow extends LitElement {
   @property({type: Array}) subcards?: Array<Partial<ServerMetricsRowSubcard>>;
   @property({type: String}) subtitle?: string;
-  @property({type: String}) title: string;
-  @property({type: String}) titleIcon?: string;
-  @property({type: String}) tooltip?: string;
-  @property({type: String}) value: string;
-  @property({type: String}) valueLabel?: string;
 
   static styles = css`
     :host {
       --server-metrics-row-background: hsl(200, 10.7%, 22%);
       --server-metrics-row-font-family: 'Inter', system-ui;
       --server-metrics-row-icon-size: 1.38rem;
-      --server-metrics-row-padding: 0.9rem 1.5rem;
       --server-metrics-row-text-color: hsla(0, 0%, 100%, 0.8);
-
-      --server-metrics-row-title-color: hsla(0, 0%, 100%, 0.7);
-      --server-metrics-row-value-container-margin-top: 0.75rem;
-      --server-metrics-row-title-container-gap: 0.25rem;
-      --server-metrics-row-title-font-size: 1rem;
-
-      --server-metrics-row-value-font-size: 2.25rem;
-      --server-metrics-row-value-font-family: 'Roboto', system-ui;
-      --server-metrics-row-value-label-font-size: 0.825rem;
-      --server-metrics-row-value-label-margin-left: 0.2rem;
+      --server-metrics-row-padding: 0.9rem 1.3rem;
 
       --server-metrics-row-footer-top-border: 1px solid hsla(0, 0%, 100%, 0.35);
 
@@ -68,45 +53,6 @@ export class ServerMetricsRow extends LitElement {
       display: block;
       font-family: 'iRoboto', system-u;
       width: 100%;
-    }
-
-    .title-and-value-container {
-      padding: var(--server-metrics-row-padding);
-    }
-
-    .title-container {
-      display: flex;
-      align-items: center;
-      gap: var(--server-metrics-row-title-container-gap);
-    }
-
-    .title {
-      all: initial;
-      display: inline-block;
-      font-family: var(--server-metrics-row-font-family);
-      font-weight: 400;
-      font-size: var(--server-metrics-row-title-font-size);
-      color: var(--server-metrics-row-title-color);
-    }
-
-    mwc-icon {
-      font-size: var(--server-metrics-row-icon-size);
-    }
-
-    .value-container {
-      margin-top: var(--server-metrics-row-value-container-margin-top);
-    }
-
-    .value {
-      font-family: var(--server-metrics-row-value-font-family);
-      font-size: var(--server-metrics-row-value-font-size);
-    }
-
-    .value-label {
-      color: var(--server-metrics-row-title-color);
-      font-family: var(--server-metrics-row-font-family);
-      font-size: var(--server-metrics-row-value-label-font-size);
-      margin-left: var(--server-metrics-row-value-label-margin-left);
     }
 
     aside {
@@ -136,21 +82,7 @@ export class ServerMetricsRow extends LitElement {
   render() {
     return html`
       <section>
-        <div class="title-and-value-container">
-          <div class="title-container">
-            ${this.titleIcon
-              ? html`<mwc-icon>${this.titleIcon}</mwc-icon>`
-              : nothing}
-            <h2 class="title">${unsafeHTML(this.title)}</h2>
-            ${this.tooltip
-              ? html`<help-tooltip>${this.tooltip}</help-tooltip>`
-              : nothing}
-          </div>
-          <div class="value-container">
-            <span class="value">${this.value}</span>
-            <span class="value-label">${this.valueLabel}</span>
-          </div>
-        </div>
+        <slot></slot>
 
         ${this.subcards && this.subcards.length
           ? html`
