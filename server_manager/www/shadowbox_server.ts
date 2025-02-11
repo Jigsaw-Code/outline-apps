@@ -38,16 +38,30 @@ interface ServerConfigJson {
 
 interface MetricsJson {
   server: {
-    location: string;
-    asn: number;
-    asOrg: string;
-    tunnelTime?: {
-      seconds: number;
+    bandwidth: {
+      total: {
+        bytes: number;
+      };
+      current: {
+        bytes: number;
+      };
+      peak: {
+        bytes: number;
+        timestamp: string;
+      };
     };
-    dataTransferred?: {
-      bytes: number;
-    };
-  }[];
+    regions: {
+      location: string;
+      asn: number;
+      asOrg: string;
+      tunnelTime?: {
+        seconds: number;
+      };
+      dataTransferred?: {
+        bytes: number;
+      };
+    }[];
+  };
   accessKeys: {
     accessKeyId: string;
     tunnelTime?: {
@@ -175,7 +189,7 @@ export class ShadowboxServer implements server.Server {
   }
 
   async getServerMetrics(): Promise<{
-    server: server.ServerMetrics[];
+    server: server.ServerMetrics;
     accessKeys: server.AccessKeyMetrics[];
   }> {
     if (await this.getSupportedExperimentalUniversalMetricsEndpoint()) {
@@ -185,15 +199,29 @@ export class ShadowboxServer implements server.Server {
       );
 
       return {
-        server: json.server.map(server => {
-          return {
-            location: server.location,
-            asn: server.asn,
-            asOrg: server.asOrg,
-            tunnelTime: server.tunnelTime,
-            dataTransferred: server.dataTransferred,
-          };
-        }),
+        server: {
+          bandwidth: {
+            total: {
+              bytes: json.server.bandwidth.total.bytes,
+            },
+            current: {
+              bytes: json.server.bandwidth.current.bytes,
+            },
+            peak: {
+              bytes: json.server.bandwidth.peak.bytes,
+              timestamp: new Date(json.server.bandwidth.peak.timestamp),
+            },
+          },
+          regions: json.server.regions.map(region => {
+            return {
+              location: region.location,
+              asn: region.asn,
+              asOrg: region.asOrg,
+              tunnelTime: region.tunnelTime,
+              dataTransferred: region.dataTransferred,
+            };
+          }),
+        },
         accessKeys: json.accessKeys.map(key => ({
           accessKeyId: key.accessKeyId,
           tunnelTime: key.tunnelTime,
@@ -203,10 +231,10 @@ export class ShadowboxServer implements server.Server {
     }
 
     const result: {
-      server: server.ServerMetrics[];
+      server: server.ServerMetrics;
       accessKeys: server.AccessKeyMetrics[];
     } = {
-      server: [],
+      server: {},
       accessKeys: [],
     };
 

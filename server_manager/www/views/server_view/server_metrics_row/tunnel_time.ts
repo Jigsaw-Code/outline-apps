@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {LitElement, html, css, nothing} from 'lit';
+import {LitElement, html, css} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
@@ -22,7 +22,7 @@ import '../help_tooltip';
 import './index';
 import '@material/mwc-icon';
 
-interface ServerMetricsTunnelTimeAsn {
+export interface ServerMetricsTunnelTimeRegion {
   tunnelTimeHours: number;
   asn: string;
   asOrg?: string;
@@ -32,11 +32,10 @@ interface ServerMetricsTunnelTimeAsn {
 @customElement('server-metrics-tunnel-time-row')
 export class ServerMetricsTunnelTimeRow extends LitElement {
   @property({type: String}) language: string = 'en';
-  @property({type: String}) title: string;
-  @property({type: String}) tooltip: string;
+  @property({type: Object}) localize: (key: string) => string;
   @property({type: Number}) totalTunnelTimeHours: number;
-  @property({type: String}) tunnelTimeAsnTitle: string;
-  @property({type: Array}) tunnelTimeAsns: Array<ServerMetricsTunnelTimeAsn>;
+  @property({type: Array})
+  tunnelTimeRegions: Array<ServerMetricsTunnelTimeRegion>;
 
   static styles = css`
     :host {
@@ -107,21 +106,29 @@ export class ServerMetricsTunnelTimeRow extends LitElement {
   render() {
     return html`
       <server-metrics-row
-        .subcards=${this.tunnelTimeAsns.map(asn => ({
+        .subcards=${this.tunnelTimeRegions.map(asn => ({
           title: asn.asOrg,
           subtitle: asn.asn,
           highlight: this.formatHourValueAndUnit(asn.tunnelTimeHours),
           icon: asn.countryFlag,
         }))}
-        .subtitle=${this.tunnelTimeAsnTitle}
+        .subtitle=${this.localize(
+          'server-view-server-metrics-tunnel-time-as-breakdown'
+        )}
       >
         <div class="main-container">
           <div class="title-container">
             <mwc-icon>timer</mwc-icon>
-            <h2 class="title">${unsafeHTML(this.title)}</h2>
-            ${this.tooltip
-              ? html`<help-tooltip>${this.tooltip}</help-tooltip>`
-              : nothing}
+            <h2 class="title">
+              ${unsafeHTML(
+                this.localize('server-view-server-metrics-tunnel-time-title')
+              )}
+            </h2>
+            <help-tooltip
+              >${this.localize(
+                'server-view-server-metrics-tunnel-time-tooltip'
+              )}</help-tooltip
+            >
           </div>
           <div class="tunnel-time-container">
             <span class="tunnel-time-value"

@@ -24,7 +24,7 @@ import '../help_tooltip';
 import './index';
 import '@material/mwc-icon';
 
-interface ServerMetricsBandwidthAsn {
+export interface ServerMetricsBandwidthRegion {
   bandwidthBytes: number;
   asn: string;
   asOrg?: string;
@@ -34,20 +34,15 @@ interface ServerMetricsBandwidthAsn {
 @customElement('server-metrics-bandwidth-row')
 export class ServerMetricsBandwidthRow extends LitElement {
   @property({type: String}) language: string = 'en';
-  @property({type: String}) title: string;
-  @property({type: String}) tooltip: string;
+  @property({type: Object}) localize: (key: string) => string;
   @property({type: Number}) totalBandwidthBytes: number;
-  @property({type: String}) totalBandwidthTitle: string;
   @property({type: Number}) bandwidthLimitBytes: number;
-  @property({type: Number}) bandwidthLimitThreshold: number;
-  @property({type: String}) bandwidthLimitTooltip: string;
+  @property({type: Number}) bandwidthLimitThreshold: number = 0.8;
   @property({type: Number}) currentBandwidthBytes: number;
-  @property({type: String}) currentBandwidthTitle: string;
   @property({type: Number}) peakBandwidthBytes: number;
   @property({type: String}) peakBandwidthTimestamp: string;
-  @property({type: String}) peakBandwidthTitle: string;
-  @property({type: String}) bandwidthAsnTitle: string;
-  @property({type: Array}) bandwidthAsns: Array<ServerMetricsBandwidthAsn>;
+  @property({type: Array})
+  bandwidthRegions: Array<ServerMetricsBandwidthRegion>;
 
   @property({type: Boolean, reflect: true})
   get bandwidthLimitWarning() {
@@ -239,22 +234,30 @@ export class ServerMetricsBandwidthRow extends LitElement {
   render() {
     return html`
       <server-metrics-row
-        .subcards=${this.bandwidthAsns.map(asn => ({
+        .subcards=${this.bandwidthRegions.map(asn => ({
           title: asn.asOrg,
           subtitle: asn.asn,
           highlight: this.formatBytes(asn.bandwidthBytes),
           icon: asn.countryFlag,
         }))}
-        .subtitle=${this.bandwidthAsnTitle}
+        .subtitle=${this.localize(
+          'server-view-server-metrics-bandwidth-as-breakdown'
+        )}
       >
         <div class="main-container">
           <div class="title-and-bandwidth-container">
             <div class="title-container">
               <mwc-icon>data_usage</mwc-icon>
-              <h2 class="title">${unsafeHTML(this.title)}</h2>
-              ${this.tooltip
-                ? html`<help-tooltip>${this.tooltip}</help-tooltip>`
-                : nothing}
+              <h2 class="title">
+                ${unsafeHTML(
+                  this.localize('server-view-server-metrics-bandwidth-title')
+                )}
+              </h2>
+              <help-tooltip
+                >${this.localize(
+                  'server-view-server-metrics-bandwidth-tooltip'
+                )}</help-tooltip
+              >
             </div>
             <div class="bandwidth-container">
               <span class="bandwidth-percentage"
@@ -270,9 +273,7 @@ export class ServerMetricsBandwidthRow extends LitElement {
                   value=${this.totalBandwidthBytes}
                 ></progress>
                 ${this.bandwidthLimitWarning
-                  ? html`<help-tooltip
-                      >${this.bandwidthLimitTooltip}</help-tooltip
-                    >`
+                  ? html`<help-tooltip>${this.localize('')}</help-tooltip>`
                   : nothing}
               </span>
             </div>
@@ -287,7 +288,7 @@ export class ServerMetricsBandwidthRow extends LitElement {
                   >${this.formatBytesUnit(this.currentBandwidthBytes)}/s</span
                 >
               </span>
-              <span class="current-title">${this.currentBandwidthTitle}</span>
+              <span class="current-title">${this.localize('')}</span>
             </div>
             <div class="peak-container">
               <span class="peak-value-and-unit">
@@ -297,11 +298,13 @@ export class ServerMetricsBandwidthRow extends LitElement {
                 <span class="peak-unit"
                   >${this.formatBytesUnit(this.peakBandwidthBytes)}/s</span
                 >
-                <span class="peak-timestamp"
-                  >(${this.peakBandwidthTimestamp})</span
-                >
+                ${this.peakBandwidthTimestamp
+                  ? html`<span class="peak-timestamp"
+                      >(${this.peakBandwidthTimestamp})</span
+                    >`
+                  : nothing}
               </span>
-              <span class="peak-title">${this.peakBandwidthTitle}</span>
+              <span class="peak-title">${this.localize('')}</span>
             </div>
           </div>
         </div>

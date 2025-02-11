@@ -19,11 +19,7 @@ import * as Sentry from '@sentry/electron/renderer';
 import {Comparator, Heap} from 'heap-js';
 import * as semver from 'semver';
 
-import {
-  DisplayDataAmount,
-  displayDataAmountToBytes,
-  formatBytes,
-} from './data_formatting';
+import {DisplayDataAmount, displayDataAmountToBytes} from './data_formatting';
 import {filterOptions, getShortName} from './location_formatting';
 import {parseManualServerConfig} from './management_urls';
 import type {AppRoot, ServerListEntry} from './ui_components/app-root';
@@ -1049,66 +1045,58 @@ export class App {
     try {
       const serverMetrics = await selectedServer.getServerMetrics();
 
-      let bandwidthUsageTotal = 0;
-      const bandwidthUsageComparator: Comparator<server_model.ServerMetrics> = (
-        server1,
-        server2
-      ) => server2.dataTransferred.bytes - server1.dataTransferred.bytes;
+      const bandwidthUsageComparator: Comparator<
+        server_model.ServerMetricsRegion
+      > = (server1, server2) =>
+        server2.dataTransferred.bytes - server1.dataTransferred.bytes;
       const bandwidthUsageHeap = new Heap(bandwidthUsageComparator);
 
       let tunnelTimeTotal = 0;
-      const tunnelTimeComparator: Comparator<server_model.ServerMetrics> = (
-        server1,
-        server2
-      ) => server2.tunnelTime.seconds - server1.tunnelTime.seconds;
+      const tunnelTimeComparator: Comparator<
+        server_model.ServerMetricsRegion
+      > = (server1, server2) =>
+        server2.tunnelTime.seconds - server1.tunnelTime.seconds;
       const tunnelTimeHeap = new Heap(tunnelTimeComparator);
 
-      for (const server of serverMetrics.server) {
-        bandwidthUsageTotal += server.dataTransferred.bytes;
-        bandwidthUsageHeap.push(server);
+      for (const region of serverMetrics.server.regions) {
+        bandwidthUsageHeap.push(region);
 
-        tunnelTimeTotal += server.tunnelTime.seconds;
-        tunnelTimeHeap.push(server);
+        tunnelTimeTotal += region.tunnelTime.seconds;
+        tunnelTimeHeap.push(region);
       }
 
       // support legacy metrics view
-      serverView.totalInboundBytes = bandwidthUsageTotal;
+      serverView.totalInboundBytes = serverMetrics.server.bandwidth.total.bytes;
 
       const NUMBER_OF_ASES_TO_SHOW = 4;
-      serverView.bandwidthUsageTotal = formatBytes(
-        bandwidthUsageTotal,
-        this.appRoot.language
-      );
+      serverView.bandwidthUsageTotal =
+        serverMetrics.server.bandwidth.total.bytes;
+
+      serverView.bandwidthCurrent =
+        serverMetrics.server.bandwidth.current.bytes;
+      serverView.bandwidthPeak = serverMetrics.server.bandwidth.peak.bytes;
+      serverView.bandwidthPeakTimestamp =
+        serverMetrics.server.bandwidth.peak.timestamp.toLocaleDateString();
 
       serverView.bandwidthUsageRegions = bandwidthUsageHeap
         .top(NUMBER_OF_ASES_TO_SHOW)
         .reverse()
         .map(server => ({
-          title: server.asOrg,
-          subtitle: `AS${server.asn}`,
-          icon: this.countryCodeToEmoji(server.location),
-          highlight: formatBytes(
-            server.dataTransferred.bytes,
-            this.appRoot.language
-          ),
+          asOrg: server.asOrg,
+          asn: `AS${server.asn}`,
+          countryFlag: this.countryCodeToEmoji(server.location),
+          bandwidthBytes: server.dataTransferred.bytes,
         }));
 
-      serverView.tunnelTimeTotal = this.formatHourValue(
-        tunnelTimeTotal / SECONDS_IN_HOUR
-      );
-      serverView.tunnelTimeTotalLabel = this.formatHourUnits(
-        tunnelTimeTotal / SECONDS_IN_HOUR
-      );
+      serverView.tunnelTimeTotal = tunnelTimeTotal / SECONDS_IN_HOUR;
       serverView.tunnelTimeRegions = tunnelTimeHeap
         .top(NUMBER_OF_ASES_TO_SHOW)
         .reverse()
         .map(server => ({
-          title: server.asOrg,
-          subtitle: `ASN${server.asn}`,
-          icon: this.countryCodeToEmoji(server.location),
-          highlight: this.formatHourValueAndUnit(
-            server.tunnelTime.seconds / SECONDS_IN_HOUR
-          ),
+          asOrg: server.asOrg,
+          asn: `ASN${server.asn}`,
+          countryFlag: this.countryCodeToEmoji(server.location),
+          tunnelTimeHours: server.tunnelTime.seconds / SECONDS_IN_HOUR,
         }));
 
       // Update all the displayed access keys, even if usage didn't change, in case data limits did.

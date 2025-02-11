@@ -33,7 +33,8 @@ import './outline-server-progress-step';
 import './outline-server-settings';
 import './outline-share-dialog';
 import './outline-sort-span';
-import '../views/server_view/server_metrics_row';
+import '../views/server_view/server_metrics_row/bandwidth';
+import '../views/server_view/server_metrics_row/tunnel_time';
 import {html, PolymerElement} from '@polymer/polymer';
 import type {PolymerElementProperties} from '@polymer/polymer/interfaces';
 import type {DomRepeat} from '@polymer/polymer/lib/elements/dom-repeat';
@@ -46,7 +47,8 @@ import type {CloudLocation} from '../../model/location';
 import type {AccessKeyId} from '../../model/server';
 import * as formatting from '../data_formatting';
 import {getShortName} from '../location_formatting';
-import type {ServerMetricsRowSubcard} from '../views/server_view/server_metrics_row/server_metrics_row_subcard';
+import {ServerMetricsBandwidthRegion} from '../views/server_view/server_metrics_row/bandwidth';
+import {ServerMetricsTunnelTimeRegion} from '../views/server_view/server_metrics_row/tunnel_time';
 
 export const MY_CONNECTION_USER_ID = '0';
 
@@ -820,31 +822,21 @@ export class ServerView extends DirMixin(PolymerElement) {
               </a>
             </aside>
             <server-metrics-bandwidth-row
+              localize="[[localize]]"
               language="[[language]]"
-              title="[[localize('server-view-server-metrics-bandwidth-title')]]"
-              tooltip="[[localize('server-view-server-metrics-bandwidth-tooltip')]]"
+              totalBandwidthBytes="[[bandwidthUsageTotal]]"
+              bandwidthLimitBytes="[[monthlyOutboundTransferBytes]]"
+              currentBandwidthBytes="[[bandwidthCurrent]]"
+              peakBandwidthBytes="[[bandwidthPeak]]"
+              peakBandwidthTimestamp="[[bandwidthTimestamp]]"
+              bandwidthAsns="[[bandwidthUsageRegions]]"
             ></server-metrics-bandwidth-row>
-
             <server-metrics-tunnel-time-row
+              localize="[[localize]]"
               language="[[lagugage]]"
-              title="[[localize('server-view-server-metrics-tunnel-time-title')]]"
-              tooltip="[[localize('server-view-server-metrics-tunnel-time-tooltip')]]"
               totalTunnelTimeHours="[[tunnelTimeTotal]]"
-              tunnelTimeAsnTitle="[localize('server-view-server-metrics-tunnel-time-as-breakdown')]]"
               tunnelTimeAsns="[[tunnelTimeRegions]]"
-            >
-            </server-metrics-tunnel-time-row>
-
-            <server-metrics-row
-              title="[[localize('server-view-server-metrics-bandwidth-title')]]"
-              titleIcon="data_usage"
-              tooltip="[[localize('server-view-server-metrics-bandwidth-tooltip')]]"
-              value="[[_computeManagedServerUtilizationPercentage(totalInboundBytes, monthlyOutboundTransferBytes)]]"
-              value-label="[[bandwidthUsageTotal]] /[[_formatBytesTransferred(monthlyOutboundTransferBytes,
-                    language)]]"
-              subtitle="[[localize('server-view-server-metrics-bandwidth-as-breakdown')]]"
-              subcards="[[bandwidthUsageRegions]]"
-            ></server-metrics-row>
+            ></server-metrics-tunnel-time-row>
           </div>
         </template>
         <div name="settings">
@@ -885,7 +877,10 @@ export class ServerView extends DirMixin(PolymerElement) {
       accessKeyRows: Array,
       accessKeySortBy: String,
       accessKeySortDirection: Number,
-      bandwidthUsage: String,
+      bandwidthUsageTotal: Number,
+      bandwidthCurrent: Number,
+      bandwidthPeak: Number,
+      bandwidthPeakTimestamp: String,
       bandwidthUsageRegions: Array,
       baselineDataTransfer: Number,
       cloudId: String,
@@ -918,7 +913,7 @@ export class ServerView extends DirMixin(PolymerElement) {
       supportsDefaultDataLimit: Boolean,
       totalInboundBytes: Number,
       tunnelTimeRegions: Array,
-      tunnelTimeTotal: String,
+      tunnelTimeTotal: Number,
     };
   }
 
@@ -926,12 +921,14 @@ export class ServerView extends DirMixin(PolymerElement) {
     return ['_accessKeysAddedOrRemoved(accessKeyRows.splices)'];
   }
 
-  bandwidthUsageTotal = '';
-  bandwidthUsageRegions: Partial<ServerMetricsRowSubcard>[] = [];
+  bandwidthUsageTotal = 0;
+  bandwidthCurrent = 0;
+  bandwidthPeak = 0;
+  bandwidthPeakTimestamp = '';
+  bandwidthUsageRegions: Partial<ServerMetricsBandwidthRegion>[] = [];
 
-  tunnelTimeTotal = '';
-  tunnelTimeTotalLabel = '';
-  tunnelTimeRegions: Partial<ServerMetricsRowSubcard>[] = [];
+  tunnelTimeTotal = 0;
+  tunnelTimeRegions: Partial<ServerMetricsTunnelTimeRegion>[] = [];
 
   serverId = '';
   metricsId = '';
