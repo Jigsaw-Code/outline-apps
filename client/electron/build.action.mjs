@@ -39,7 +39,9 @@ export async function main(...parameters) {
   }
 
   if (buildMode === 'debug') {
-    console.warn(`WARNING: building "${platform}" in [DEBUG] mode. Do not publish this build!!`);
+    console.warn(
+      `WARNING: building "${platform}" in [DEBUG] mode. Do not publish this build!!`
+    );
   }
 
   if (buildMode === 'release' && !autoUpdateUrl) {
@@ -53,10 +55,15 @@ export async function main(...parameters) {
   await runAction('client/go/build', ...parameters);
   await runAction('client/electron/build_main', ...parameters);
 
-  await fs.mkdir(path.join(getRootDir(), ELECTRON_BUILD_DIR, 'client', 'electron'), {recursive: true});
+  await fs.mkdir(
+    path.join(getRootDir(), ELECTRON_BUILD_DIR, 'client', 'electron'),
+    {recursive: true}
+  );
 
   const electronConfig = JSON.parse(
-    await fs.readFile(path.resolve(getRootDir(), 'client', 'electron', 'electron-builder.json'))
+    await fs.readFile(
+      path.resolve(getRootDir(), 'client', 'electron', 'electron-builder.json')
+    )
   );
 
   // build electron binary

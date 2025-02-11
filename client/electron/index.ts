@@ -360,11 +360,6 @@ async function createVpnTunnel(
   }
   const hostIp = await lookupIp(host);
   const routing = new RoutingDaemon(hostIp || '', isAutoConnect);
-  // Make sure the transport will use the IP we will allowlist.
-  // HACK: We do a simple string replacement in the config here. This may not always work with general configs
-  // but it works for simple configs.
-  // TODO: Remove the need to allowlisting the host IP.
-  tunnelConfig.transport = tunnelConfig.transport.replaceAll(host, hostIp);
   const tunnel = new GoVpnTunnel(routing, tunnelConfig.transport);
   routing.onNetworkChange = tunnel.networkChanged.bind(tunnel);
   return tunnel;

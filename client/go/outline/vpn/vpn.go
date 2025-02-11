@@ -20,6 +20,7 @@ import (
 	"io"
 	"log/slog"
 	"sync"
+	"time"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/callback"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
@@ -48,6 +49,9 @@ type platformVPNConn interface {
 	// Close terminates the VPN connection and closes the TUN device.
 	Close() error
 }
+
+// closeTimeout is the maximum time out used in platformVPNConn.Close
+const closeTimeout = 10 * time.Second
 
 // ConnectionStatus represents the status of a [VPNConnection].
 type ConnectionStatus string
@@ -212,17 +216,39 @@ func closeVPNNoLock() (err error) {
 		err = conn.platform.Close()
 	}
 
+	// TODO: Implement more sophisticated cancellation
+	// The proxy's Close method might take a long time to return when there are
+	// still outgoing traffic to the proxy in an unreachable network environment.
+	// The conn.wgCopy will also be blocked forever because we are waiting to copy
+	// traffic from the proxy to a local tun device.
+	// Therefore we will close the proxy in a goroutine, and wait for wgCopy to be
+	// done with a timeout value.
+
 	// We can ignore the following error
 	if conn.proxy != nil {
-		if err2 := conn.proxy.Close(); err2 != nil {
-			slog.Warn("failed to disconnect from the remote device")
-		} else {
-			slog.Info("disconnected from the remote device")
-		}
+		go func() {
+			slog.Debug("disconnecting from the remote device ...")
+			if err2 := conn.proxy.Close(); err2 != nil {
+				slog.Warn("failed to disconnect from the remote device")
+			} else {
+				slog.Info("disconnected from the remote device")
+			}
+		}()
 	}
 
+	closeDone := make(chan struct{})
+
 	// Wait for traffic copy go routines to finish
-	conn.wgCopy.Wait()
+	go func() {
+		conn.wgCopy.Wait()
+		close(closeDone)
+	}()
+
+	select {
+	case <-time.After(closeTimeout):
+		slog.Warn("disconnect from the remote device timed out")
+	case <-closeDone:
+	}
 
 	return
 }

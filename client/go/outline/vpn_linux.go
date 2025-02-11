@@ -46,7 +46,7 @@ func establishVPN(configStr string) error {
 
 	tcp := newFWMarkProtectedTCPDialer(conf.VPNConfig.ProtectionMark)
 	udp := newFWMarkProtectedUDPDialer(conf.VPNConfig.ProtectionMark)
-	c, err := newClientWithBaseDialers(conf.TransportConfig, tcp, udp)
+	c, err := NewClientWithBaseDialers(conf.TransportConfig, tcp, udp)
 	if err != nil {
 		return err
 	}
