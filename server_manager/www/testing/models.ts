@@ -269,6 +269,18 @@ export class FakeManualServer
     if (await this.getSupportedExperimentalUniversalMetricsEndpoint()) {
       return {
         server: {
+          bandwidth: {
+            total: {
+              bytes: 0,
+            },
+            current: {
+              bytes: 0,
+            },
+            peak: {
+              bytes: 0,
+              timestamp: new Date(),
+            },
+          },
           regions: [
             {
               location: 'US',

@@ -1057,7 +1057,7 @@ export class App {
         server2.tunnelTime.seconds - server1.tunnelTime.seconds;
       const tunnelTimeHeap = new Heap(tunnelTimeComparator);
 
-      for (const region of serverMetrics.server.regions) {
+      for (const region of serverMetrics.server?.regions ?? []) {
         bandwidthUsageHeap.push(region);
 
         tunnelTimeTotal += region.tunnelTime.seconds;
@@ -1065,17 +1065,18 @@ export class App {
       }
 
       // support legacy metrics view
-      serverView.totalInboundBytes = serverMetrics.server.bandwidth.total.bytes;
+      serverView.totalInboundBytes =
+        serverMetrics.server.bandwidth?.total.bytes;
 
       const NUMBER_OF_ASES_TO_SHOW = 4;
       serverView.bandwidthUsageTotal =
-        serverMetrics.server.bandwidth.total.bytes;
+        serverMetrics.server.bandwidth?.total.bytes;
 
       serverView.bandwidthCurrent =
-        serverMetrics.server.bandwidth.current.bytes;
-      serverView.bandwidthPeak = serverMetrics.server.bandwidth.peak.bytes;
+        serverMetrics.server.bandwidth?.current.bytes;
+      serverView.bandwidthPeak = serverMetrics.server.bandwidth?.peak.bytes;
       serverView.bandwidthPeakTimestamp =
-        serverMetrics.server.bandwidth.peak.timestamp.toLocaleString(
+        serverMetrics.server.bandwidth?.peak.timestamp.toLocaleString(
           this.appRoot.language
         );
 
