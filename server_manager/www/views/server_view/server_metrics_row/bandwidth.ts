@@ -70,7 +70,7 @@ export class ServerMetricsBandwidthRow extends LitElement {
       --server-metrics-bandwidth-row-value-label-font-size: 0.825rem;
       --server-metrics-bandwidth-row-value-label-margin-left: 0.2rem;
 
-      --server-metrics-bandwidth-row-meter-size: 0.7rem;
+      --server-metrics-bandwidth-row-meter-size: 0.6rem;
 
       --server-metrics-bandwidth-row-meter-background-color: hsla(
         0,
@@ -89,10 +89,13 @@ export class ServerMetricsBandwidthRow extends LitElement {
         1
       );
 
-      --server-metrics-bandwidth-current-and-peak-border: 1px solid
+      --server-metrics-bandwidth-row-bandwidth-progress-container-gap: 0.5rem;
+      --server-metrics-bandwidth-row-current-and-peak-border: 1px solid
         hsla(0, 0%, 100%, 0.35);
-      --server-metrics-bandwidth-current-and-peak-value-font-size: 1.5rem;
-      --server-metrics-bandwidth-peak-timestamp-text-color: hsla(
+      --server-metrics-bandwidth-row-current-and-peak-container-gap: 0.9rem;
+      --server-metrics-bandwidth-row-current-and-peak-value-font-size: 1.5rem;
+      --server-metrics-bandwidth-row-current-and-peak-inner-container-gap: 0.25rem;
+      --server-metrics-bandwidth-row-peak-timestamp-text-color: hsla(
         0,
         0%,
         100%,
@@ -162,7 +165,10 @@ export class ServerMetricsBandwidthRow extends LitElement {
     .bandwidth-progress-container {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: var(--server-metrics-bandwidth-row-value-container-margin-top);
+
+      /* TODO: use calc() here. compensates for the height offset when the warning icon is displayed */
+      padding: 0.825rem 0;
     }
 
     progress {
@@ -195,27 +201,31 @@ export class ServerMetricsBandwidthRow extends LitElement {
       background: var(--server-metrics-bandwidth-row-meter-warning-color);
     }
 
+    :host([bandwidthLimitWarning]) .bandwidth-progress-container {
+      padding: 0;
+    }
+
     :host([bandwidthLimitWarning]) .bandwidth-progress-container icon-tooltip {
       display: block;
     }
 
     .current-and-peak-container {
-      gap: 0.9rem;
-      border-left: var(--server-metrics-bandwidth-current-and-peak-border);
+      gap: var(--server-metrics-bandwidth-row-current-and-peak-container-gap);
+      border-left: var(--server-metrics-bandwidth-row-current-and-peak-border);
     }
 
     .current-container,
     .peak-container {
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
+      gap: var(--server-metrics-bandwidth-row-value-container-margin-top);
     }
 
     .current-value,
     .peak-value {
       font-family: var(--server-metrics-bandwidth-row-value-font-family);
       font-size: var(
-        --server-metrics-bandwidth-current-and-peak-value-font-size
+        --server-metrics-bandwidth-row-current-and-peak-value-font-size
       );
     }
 
@@ -234,10 +244,23 @@ export class ServerMetricsBandwidthRow extends LitElement {
     }
 
     .peak-timestamp {
-      color: var(--server-metrics-bandwidth-peak-timestamp-text-color);
+      color: var(--server-metrics-bandwidth-row-peak-timestamp-text-color);
       font-family: var(--server-metrics-bandwidth-row-font-family);
       font-size: var(--server-metrics-bandwidth-row-value-label-font-size);
       font-style: italic;
+    }
+
+    /* TODO: switch to container query once we upgrade Electron */
+    @media (max-width: 720px) {
+      .main-container {
+        flex-direction: column;
+        gap: 0;
+      }
+
+      .current-and-peak-container {
+        padding-top: 0;
+        border: none;
+      }
     }
   `;
 
