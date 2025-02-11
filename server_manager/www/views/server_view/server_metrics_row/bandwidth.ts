@@ -18,7 +18,7 @@ import {LitElement, html, css, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
-import {formatBytes, formatBytesParts} from '../../../data_formatting';
+import {formatBytes, getDataFormattingParams} from '../../../data_formatting';
 
 import '../icon_tooltip';
 import './index';
@@ -247,7 +247,7 @@ export class ServerMetricsBandwidthRow extends LitElement {
         .subcards=${this.bandwidthRegions.map(asn => ({
           title: asn.asOrg,
           subtitle: asn.asn,
-          highlight: this.formatBytes(asn.bandwidthBytes),
+          highlight: formatBytes(asn.bandwidthBytes, this.language),
           icon: asn.countryFlag,
         }))}
         .subtitle=${this.localize(
@@ -274,8 +274,8 @@ export class ServerMetricsBandwidthRow extends LitElement {
                 >${this.formatPercentage(this.bandwidthPercentage)}</span
               >
               <span class="bandwidth-fraction"
-                >${this.formatBytes(this.totalBandwidthBytes)}
-                /${this.formatBytes(this.bandwidthLimitBytes)}</span
+                >${formatBytes(this.totalBandwidthBytes, this.language)}
+                /${formatBytes(this.bandwidthLimitBytes, this.language)}</span
               >
               <span class="bandwidth-progress-container">
                 <progress
@@ -295,10 +295,12 @@ export class ServerMetricsBandwidthRow extends LitElement {
             <div class="current-container">
               <span class="current-value-and-unit">
                 <span class="current-value"
-                  >${this.formatBytesValue(this.currentBandwidthBytes)}</span
+                  >${this.formatBandwidthValue(
+                    this.currentBandwidthBytes
+                  )}</span
                 >
                 <span class="current-unit"
-                  >${this.formatBytesUnit(this.currentBandwidthBytes)}/s</span
+                  >${this.formatBandwidthUnit(this.currentBandwidthBytes)}</span
                 >
               </span>
               <span class="current-title"
@@ -310,10 +312,10 @@ export class ServerMetricsBandwidthRow extends LitElement {
             <div class="peak-container">
               <span class="peak-value-and-unit">
                 <span class="peak-value"
-                  >${this.formatBytesValue(this.peakBandwidthBytes)}</span
+                  >${this.formatBandwidthValue(this.peakBandwidthBytes)}</span
                 >
                 <span class="peak-unit"
-                  >${this.formatBytesUnit(this.peakBandwidthBytes)}/s</span
+                  >${this.formatBandwidthUnit(this.peakBandwidthBytes)}</span
                 >
                 ${this.peakBandwidthTimestamp
                   ? html`<span class="peak-timestamp"
@@ -335,6 +337,7 @@ export class ServerMetricsBandwidthRow extends LitElement {
     `;
   }
 
+  // TODO: move to formatter library
   private formatPercentage(percentage: number) {
     return Intl.NumberFormat(this.language, {
       style: 'percent',
@@ -342,15 +345,32 @@ export class ServerMetricsBandwidthRow extends LitElement {
     }).format(percentage);
   }
 
-  private formatBytes(totalBytes: number) {
-    return formatBytes(totalBytes, this.language);
+  private formatBandwidthUnit(bytesPerSecond: number) {
+    return this.formatBandwidthParts(bytesPerSecond).find(
+      ({type}) => type === 'unit'
+    ).value;
   }
 
-  private formatBytesUnit(totalBytes: number) {
-    return formatBytesParts(totalBytes, this.language).unit;
+  private formatBandwidthValue(bytesPerSecond: number) {
+    return this.formatBandwidthParts(bytesPerSecond)
+      .filter(
+        ({type}) =>
+          type === 'integer' ||
+          type === 'decimal' ||
+          type === 'group' ||
+          type === 'fraction'
+      )
+      .reduce((string, {value}) => string + value, '');
   }
 
-  private formatBytesValue(totalBytes: number) {
-    return formatBytesParts(totalBytes, this.language).value;
+  private formatBandwidthParts(bytesPerSecond: number) {
+    const {value, unit, decimalPlaces} =
+      getDataFormattingParams(bytesPerSecond);
+
+    return new Intl.NumberFormat(this.language, {
+      style: 'unit',
+      unit: `${unit}-per-second`,
+      maximumFractionDigits: decimalPlaces,
+    }).formatToParts(value);
   }
 }

@@ -29,7 +29,13 @@ interface FormatParams {
   decimalPlaces: number;
 }
 
-function getDataFormattingParams(numBytes: number): FormatParams {
+/**
+ * Returns the Intl.NumberFormat options based on the magniutdo of bytes passed in
+ *
+ * @param numBytes the bytes to format
+ * @returns {FormatParams}
+ */
+export function getDataFormattingParams(numBytes: number): FormatParams {
   if (numBytes >= TERABYTE) {
     return {value: numBytes / TERABYTE, unit: 'terabyte', decimalPlaces: 2};
   } else if (numBytes >= GIGABYTE) {

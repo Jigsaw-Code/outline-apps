@@ -103,13 +103,21 @@ export class ServerMetricsTunnelTimeRow extends LitElement {
     }
   `;
 
+  get formatter() {
+    return new Intl.NumberFormat(this.language, {
+      style: 'unit',
+      unit: 'hour',
+      unitDisplay: 'long',
+    });
+  }
+
   render() {
     return html`
       <server-metrics-row
         .subcards=${this.tunnelTimeRegions.map(asn => ({
           title: asn.asOrg,
           subtitle: asn.asn,
-          highlight: this.formatHourValueAndUnit(asn.tunnelTimeHours),
+          highlight: this.formatter.format(asn.tunnelTimeHours),
           icon: asn.countryFlag,
         }))}
         .subtitle=${this.localize(
@@ -143,27 +151,22 @@ export class ServerMetricsTunnelTimeRow extends LitElement {
     `;
   }
 
-  private formatHourValueAndUnit(hours: number) {
-    return new Intl.NumberFormat(this.language, {
-      style: 'unit',
-      unit: 'hour',
-      unitDisplay: 'long',
-    }).format(hours);
-  }
-
+  // TODO: move to formatter library
   private formatHourUnits(hours: number) {
-    const formattedValue = this.formatHourValue(hours);
-    const formattedValueAndUnit = this.formatHourValueAndUnit(hours);
-
-    return formattedValueAndUnit
-      .split(formattedValue)
-      .find(_ => _)
-      .trim();
+    return this.formatter.formatToParts(hours).find(({type}) => type === 'unit')
+      .value;
   }
 
   private formatHourValue(hours: number) {
-    return new Intl.NumberFormat(this.language, {
-      unit: 'hour',
-    }).format(hours);
+    return this.formatter
+      .formatToParts(hours)
+      .filter(
+        ({type}) =>
+          type === 'integer' ||
+          type === 'decimal' ||
+          type === 'group' ||
+          type === 'fraction'
+      )
+      .reduce((string, {value}) => string + value, '');
   }
 }
