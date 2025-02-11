@@ -1277,6 +1277,10 @@
     "description": "The tooltip displayed when hovering over the total bandwidth usage metric, providing additional details about the data transfer volume.",
     "message": "This shows the total amount of data transferred through the server over the last 30 days."
   },
+  "server_view_server_metrics_bandwidth_limit_tooltip": {
+    "description": "The tooltip displayed when hovering over a warning message next to the bandwidth card, informing the user that their bandwidth is running out.",
+    "message": "High bandwidth usage detected over the last 30 days. Consider setting data limits to prevent overages and keep your service running smoothly."
+  },
   "server_view_server_metrics_bandwidth_usage": {
     "description": "The label displayed for the current bandwidth usage metric, showing the real-time data transfer rate.",
     "message": "Current bandwidth usage"
