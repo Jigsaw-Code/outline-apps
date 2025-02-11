@@ -18,7 +18,7 @@ import {LitElement, html, css, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
-import '../help_tooltip';
+import '../icon_tooltip';
 import '@material/mwc-icon';
 
 import './server_metrics_row_subcard';

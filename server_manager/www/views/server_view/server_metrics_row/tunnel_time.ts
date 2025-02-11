@@ -18,7 +18,7 @@ import {LitElement, html, css} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
-import '../help_tooltip';
+import '../icon_tooltip';
 import './index';
 import '@material/mwc-icon';
 
@@ -74,7 +74,7 @@ export class ServerMetricsTunnelTimeRow extends LitElement {
       color: var(--server-metrics-tunnel-time-row-title-color);
     }
 
-    help-tooltip {
+    icon-tooltip {
       --help-tooltip-icon-size: var(--server-metrics-tunnel-time-row-icon-size);
     }
 
@@ -124,11 +124,11 @@ export class ServerMetricsTunnelTimeRow extends LitElement {
                 this.localize('server-view-server-metrics-tunnel-time-title')
               )}
             </h2>
-            <help-tooltip
-              >${this.localize(
+            <icon-tooltip
+              text="${this.localize(
                 'server-view-server-metrics-tunnel-time-tooltip'
-              )}</help-tooltip
-            >
+              )}"
+            ></icon-tooltip>
           </div>
           <div class="tunnel-time-container">
             <span class="tunnel-time-value"

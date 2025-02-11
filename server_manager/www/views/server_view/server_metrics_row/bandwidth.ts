@@ -20,7 +20,7 @@ import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
 import {formatBytes, formatBytesParts} from '../../../data_formatting';
 
-import '../help_tooltip';
+import '../icon_tooltip';
 import './index';
 import '@material/mwc-icon';
 
@@ -82,11 +82,10 @@ export class ServerMetricsBandwidthRow extends LitElement {
       --server-metrics-bandwidth-row-meter-color: hsla(167, 57%, 61%, 0.88);
       --server-metrics-bandwidth-row-meter-text-color: hsl(0, 0%, 79%);
 
-      --server-metrics-bandwidth-row-meter-warning-color: hsla(51, 73%, 91%, 1);
-      --server-metrics-bandwidth-row-meter-warning-text-color: hsla(
-        39,
-        77%,
-        53%,
+      --server-metrics-bandwidth-row-meter-warning-color: hsla(
+        42,
+        100%,
+        63%,
         1
       );
 
@@ -150,7 +149,7 @@ export class ServerMetricsBandwidthRow extends LitElement {
     }
 
     :host([bandwidthLimitWarning]) .bandwidth-percentage {
-      color: var(--server-metrics-bandwidth-row-meter-warning-text-color);
+      color: var(--server-metrics-bandwidth-row-meter-warning-color);
     }
 
     .bandwidth-fraction {
@@ -164,7 +163,6 @@ export class ServerMetricsBandwidthRow extends LitElement {
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      margin-top: 0.5rem;
     }
 
     progress {
@@ -185,8 +183,20 @@ export class ServerMetricsBandwidthRow extends LitElement {
       border-radius: var(--server-metrics-bandwidth-row-meter-size);
     }
 
+    .bandwidth-progress-container icon-tooltip {
+      display: none;
+
+      --icon-tooltip-icon-color: var(
+        --server-metrics-bandwidth-row-meter-warning-color
+      );
+    }
+
     :host([bandwidthLimitWarning]) progress[value]::-webkit-progress-value {
       background: var(--server-metrics-bandwidth-row-meter-warning-color);
+    }
+
+    :host([bandwidthLimitWarning]) .bandwidth-progress-container icon-tooltip {
+      display: block;
     }
 
     .current-and-peak-container {
@@ -253,11 +263,11 @@ export class ServerMetricsBandwidthRow extends LitElement {
                   this.localize('server-view-server-metrics-bandwidth-title')
                 )}
               </h2>
-              <help-tooltip
-                >${this.localize(
+              <icon-tooltip
+                text="${this.localize(
                   'server-view-server-metrics-bandwidth-tooltip'
-                )}</help-tooltip
-              >
+                )}"
+              ></icon-tooltip>
             </div>
             <div class="bandwidth-container">
               <span class="bandwidth-percentage"
@@ -272,9 +282,12 @@ export class ServerMetricsBandwidthRow extends LitElement {
                   max=${this.bandwidthLimitBytes}
                   value=${this.totalBandwidthBytes}
                 ></progress>
-                ${this.bandwidthLimitWarning
-                  ? html`<help-tooltip>${this.localize('')}</help-tooltip>`
-                  : nothing}
+                <icon-tooltip
+                  text="${this.localize(
+                    'server-view-server-metrics-bandwidth-limit-tooltip'
+                  )}"
+                  icon="warning"
+                ></icon-tooltip>
               </span>
             </div>
           </div>
@@ -288,7 +301,11 @@ export class ServerMetricsBandwidthRow extends LitElement {
                   >${this.formatBytesUnit(this.currentBandwidthBytes)}/s</span
                 >
               </span>
-              <span class="current-title">${this.localize('')}</span>
+              <span class="current-title"
+                >${this.localize(
+                  'server-view-server-metrics-bandwidth-usage'
+                )}</span
+              >
             </div>
             <div class="peak-container">
               <span class="peak-value-and-unit">
@@ -304,7 +321,13 @@ export class ServerMetricsBandwidthRow extends LitElement {
                     >`
                   : nothing}
               </span>
-              <span class="peak-title">${this.localize('')}</span>
+              <span class="peak-title"
+                >${unsafeHTML(
+                  this.localize(
+                    'server-view-server-metrics-bandwidth-usage-max'
+                  )
+                )}</span
+              >
             </div>
           </div>
         </div>
