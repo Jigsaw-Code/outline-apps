@@ -824,19 +824,19 @@ export class ServerView extends DirMixin(PolymerElement) {
             <server-metrics-bandwidth-row
               localize="[[localize]]"
               language="[[language]]"
-              hasDataLimits="{{!isDefaultDataLimitEnabled && !accessKeyRows.some(({ dataLimitBytes }) => dataLimitBytes)}}"
-              totalBandwidthBytes="[[bandwidthUsageTotal]]"
-              bandwidthLimitBytes="[[monthlyOutboundTransferBytes]]"
-              currentBandwidthBytes="[[bandwidthCurrent]]"
-              peakBandwidthBytes="[[bandwidthPeak]]"
-              peakBandwidthTimestamp="[[bandwidthTimestamp]]"
-              bandwidthAsns="[[bandwidthUsageRegions]]"
+              has-data-limits="{{!isDefaultDataLimitEnabled && !accessKeyRows.some(({ dataLimitBytes }) => dataLimitBytes)}}"
+              total-bytes="[[bandwidthUsageTotal]]"
+              limit-bytes="[[monthlyOutboundTransferBytes]]"
+              current-bytes="[[bandwidthCurrent]]"
+              peak-bytes="[[bandwidthPeak]]"
+              peak-timestamp="[[bandwidthPeakTimestamp]]"
+              regions="[[bandwidthUsageRegions]]"
             ></server-metrics-bandwidth-row>
             <server-metrics-tunnel-time-row
               localize="[[localize]]"
               language="[[lagugage]]"
-              totalTunnelTimeHours="[[tunnelTimeTotal]]"
-              tunnelTimeAsns="[[tunnelTimeRegions]]"
+              total-seconds="[[tunnelTimeTotal]]"
+              regions="[[tunnelTimeRegions]]"
             ></server-metrics-tunnel-time-row>
           </div>
         </template>

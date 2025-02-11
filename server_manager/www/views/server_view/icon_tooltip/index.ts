@@ -80,6 +80,10 @@ export class IconTooltip extends LitElement {
     `;
 
     document.body.appendChild(this.tooltip);
+
+    // TODO: sometimes the blur listener gives up when the user navigates away from the application
+    // this ensures the tooltip is eventually removed - this will be solved by the Popover API
+    setTimeout(this.removeTooltip, 5000);
   }
 
   removeTooltip() {

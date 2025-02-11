@@ -44,7 +44,6 @@ const CHANGE_KEYS_PORT_VERSION = '1.0.0';
 const DATA_LIMITS_VERSION = '1.1.0';
 const CHANGE_HOSTNAME_VERSION = '1.2.0';
 const KEY_SETTINGS_VERSION = '1.6.0';
-const SECONDS_IN_HOUR = 60 * 60;
 const MAX_ACCESS_KEY_DATA_LIMIT_BYTES = 50 * 10 ** 9; // 50GB
 const CANCELLED_ERROR = new Error('Cancelled');
 const CHARACTER_TABLE_FLAG_SYMBOL_OFFSET = 127397;
@@ -1076,7 +1075,9 @@ export class App {
         serverMetrics.server.bandwidth.current.bytes;
       serverView.bandwidthPeak = serverMetrics.server.bandwidth.peak.bytes;
       serverView.bandwidthPeakTimestamp =
-        serverMetrics.server.bandwidth.peak.timestamp.toLocaleDateString();
+        serverMetrics.server.bandwidth.peak.timestamp.toLocaleString(
+          this.appRoot.language
+        );
 
       serverView.bandwidthUsageRegions = bandwidthUsageHeap
         .top(NUMBER_OF_ASES_TO_SHOW)
@@ -1085,10 +1086,10 @@ export class App {
           asOrg: server.asOrg,
           asn: `AS${server.asn}`,
           countryFlag: this.countryCodeToEmoji(server.location),
-          bandwidthBytes: server.dataTransferred.bytes,
+          bytes: server.dataTransferred.bytes,
         }));
 
-      serverView.tunnelTimeTotal = tunnelTimeTotal / SECONDS_IN_HOUR;
+      serverView.tunnelTimeTotal = tunnelTimeTotal;
       serverView.tunnelTimeRegions = tunnelTimeHeap
         .top(NUMBER_OF_ASES_TO_SHOW)
         .reverse()
@@ -1096,7 +1097,7 @@ export class App {
           asOrg: server.asOrg,
           asn: `ASN${server.asn}`,
           countryFlag: this.countryCodeToEmoji(server.location),
-          tunnelTimeHours: server.tunnelTime.seconds / SECONDS_IN_HOUR,
+          seconds: server.tunnelTime.seconds,
         }));
 
       // Update all the displayed access keys, even if usage didn't change, in case data limits did.
@@ -1137,30 +1138,6 @@ export class App {
       }
       throw e;
     }
-  }
-
-  private formatHourValueAndUnit(hours: number) {
-    return new Intl.NumberFormat(this.appRoot.language, {
-      style: 'unit',
-      unit: 'hour',
-      unitDisplay: 'long',
-    }).format(hours);
-  }
-
-  private formatHourUnits(hours: number) {
-    const formattedValue = this.formatHourValue(hours);
-    const formattedValueAndUnit = this.formatHourValueAndUnit(hours);
-
-    return formattedValueAndUnit
-      .split(formattedValue)
-      .find(_ => _)
-      .trim();
-  }
-
-  private formatHourValue(hours: number) {
-    return new Intl.NumberFormat(this.appRoot.language, {
-      unit: 'hour',
-    }).format(hours);
   }
 
   private countryCodeToEmoji(countryCode: string) {

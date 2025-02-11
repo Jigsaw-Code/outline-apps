@@ -38,30 +38,16 @@ interface ServerConfigJson {
 
 interface MetricsJson {
   server: {
-    bandwidth: {
-      total: {
-        bytes: number;
-      };
-      current: {
-        bytes: number;
-      };
-      peak: {
-        bytes: number;
-        timestamp: string;
-      };
+    location: string;
+    asn: number;
+    asOrg: string;
+    tunnelTime?: {
+      seconds: number;
     };
-    regions: {
-      location: string;
-      asn: number;
-      asOrg: string;
-      tunnelTime?: {
-        seconds: number;
-      };
-      dataTransferred?: {
-        bytes: number;
-      };
-    }[];
-  };
+    dataTransferred?: {
+      bytes: number;
+    };
+  }[];
   accessKeys: {
     accessKeyId: string;
     tunnelTime?: {
@@ -198,21 +184,22 @@ export class ShadowboxServer implements server.Server {
         `experimental/server/metrics?since=${timeRangeInDays}d`
       );
 
+      // TODO: add these datapoints once the endpoint is merged
       return {
         server: {
           bandwidth: {
             total: {
-              bytes: json.server.bandwidth.total.bytes,
+              bytes: 0,
             },
             current: {
-              bytes: json.server.bandwidth.current.bytes,
+              bytes: 0,
             },
             peak: {
-              bytes: json.server.bandwidth.peak.bytes,
-              timestamp: new Date(json.server.bandwidth.peak.timestamp),
+              bytes: 0,
+              timestamp: new Date(),
             },
           },
-          regions: json.server.regions.map(region => {
+          regions: json.server.map(region => {
             return {
               location: region.location,
               asn: region.asn,

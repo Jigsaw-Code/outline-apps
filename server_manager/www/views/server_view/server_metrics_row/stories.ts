@@ -37,33 +37,33 @@ export const Bandwidth = () => {
           'Maximum bandwidth usage <i>(last 30 days)</i>',
       }[key];
     }}
-    totalBandwidthBytes=${380 * 1000 * 1000 * 1000}
-    bandwidthLimitBytes=${1 * 1000 * 1000 * 1000 * 1000}
-    bandwidthLimitThreshold=${0.8}
-    currentBandwidthBytes=${1.2 * 1000 * 1000 * 1000}
-    peakBandwidthBytes=${20.8 * 1000 * 1000 * 1000}
-    peakBandwidthTimestamp="2/19/2025 22:41:38"
-    .bandwidthRegions=${[
+    totalBytes=${380 * 1000 * 1000 * 1000}
+    limitBytes=${1 * 1000 * 1000 * 1000 * 1000}
+    limitThreshold=${0.8}
+    currentBytes=${1.2 * 1000 * 1000 * 1000}
+    peakBytes=${20.8 * 1000 * 1000 * 1000}
+    peakTimestamp="2/19/2025 22:41:38"
+    .regions=${[
       {
-        bandwidthBytes: 265 * 1000 * 1000 * 1000,
+        bytes: 265 * 1000 * 1000 * 1000,
         asOrg: 'Iran Telecommunication Company PJS',
         asn: 'AS58224',
         countryFlag: '🇮🇷',
       },
       {
-        bandwidthBytes: 46 * 1000 * 1000 * 1000,
+        bytes: 46 * 1000 * 1000 * 1000,
         asOrg: 'Mobile Communication Company of Iran PLC',
         asn: 'AS197207',
         countryFlag: '🇮🇷',
       },
       {
-        bandwidthBytes: 41 * 1000 * 1000 * 1000,
+        bytes: 41 * 1000 * 1000 * 1000,
         asOrg: 'IRANCELL-AS',
         asn: 'AS44244',
         countryFlag: '🇮🇷',
       },
       {
-        bandwidthBytes: 28 * 1000 * 1000 * 1000,
+        bytes: 28 * 1000 * 1000 * 1000,
         asOrg: 'Myanma Posts and Telecommunications',
         asn: 'AS9988',
         countryFlag: '🇲🇲',
@@ -88,33 +88,33 @@ export const BandwidthWarning = () => {
           'Maximum bandwidth usage <i>(last 30 days)</i>',
       }[key];
     }}
-    totalBandwidthBytes=${800 * 1000 * 1000 * 1000}
-    bandwidthLimitBytes=${1 * 1000 * 1000 * 1000 * 1000}
-    bandwidthLimitThreshold=${0.8}
-    currentBandwidthBytes=${1.2 * 1000 * 1000 * 1000}
-    peakBandwidthBytes=${20.8 * 1000 * 1000 * 1000}
-    peakBandwidthTimestamp="2/19/2025 22:41:38"
-    .bandwidthRegions=${[
+    totalBytes=${800 * 1000 * 1000 * 1000}
+    limitBytes=${1 * 1000 * 1000 * 1000 * 1000}
+    limitThreshold=${0.8}
+    currentBytes=${1.2 * 1000 * 1000 * 1000}
+    peakBytes=${20.8 * 1000 * 1000 * 1000}
+    peakTimestamp="2/19/2025 22:41:38"
+    .regions=${[
       {
-        bandwidthBytes: 265 * 1000 * 1000 * 1000,
+        bytes: 265 * 1000 * 1000 * 1000,
         asOrg: 'Iran Telecommunication Company PJS',
         asn: 'AS58224',
         countryFlag: '🇮🇷',
       },
       {
-        bandwidthBytes: 46 * 1000 * 1000 * 1000,
+        bytes: 46 * 1000 * 1000 * 1000,
         asOrg: 'Mobile Communication Company of Iran PLC',
         asn: 'AS197207',
         countryFlag: '🇮🇷',
       },
       {
-        bandwidthBytes: 41 * 1000 * 1000 * 1000,
+        bytes: 41 * 1000 * 1000 * 1000,
         asOrg: 'IRANCELL-AS',
         asn: 'AS44244',
         countryFlag: '🇮🇷',
       },
       {
-        bandwidthBytes: 28 * 1000 * 1000 * 1000,
+        bytes: 28 * 1000 * 1000 * 1000,
         asOrg: 'Myanma Posts and Telecommunications',
         asn: 'AS9988',
         countryFlag: '🇲🇲',
@@ -134,28 +134,28 @@ export const TunnelTime = () => {
         'server-view-server-metrics-tunnel-time-tooltip': 'Lorem ipsum',
       }[key];
     }}
-    totalTunnelTimeHours=${1573}
-    .tunnelTimeRegions=${[
+    totalHours=${1573}
+    .regions=${[
       {
-        tunnelTimeHours: 1080,
+        seconds: 1080 * 60 * 60,
         asOrg: 'Iran Telecommunication Company PJS',
         asn: 'AS58224',
         countryFlag: '🇮🇷',
       },
       {
-        tunnelTimeHours: 194,
+        seconds: 194 * 60 * 60,
         asOrg: 'IRANCELL-AS',
         asn: 'AS44244',
         countryFlag: '🇮🇷',
       },
       {
-        tunnelTimeHours: 186,
+        seconds: 186 * 60 * 60,
         asOrg: 'Mobile Communication Company of Iran PLC',
         asn: 'AS197207',
         countryFlag: '🇮🇷',
       },
       {
-        tunnelTimeHours: 98,
+        seconds: 98 * 60 * 60,
         asOrg: 'Myanma Posts and Telecommunications',
         asn: 'AS9988',
         countryFlag: '🇲🇲',

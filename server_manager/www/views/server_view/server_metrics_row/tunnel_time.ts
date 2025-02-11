@@ -22,8 +22,9 @@ import '../icon_tooltip';
 import './index';
 import '@material/mwc-icon';
 
+const SECONDS_IN_HOUR = 60 * 60;
 export interface ServerMetricsTunnelTimeRegion {
-  tunnelTimeHours: number;
+  seconds: number;
   asn: string;
   asOrg?: string;
   countryFlag: string;
@@ -33,9 +34,8 @@ export interface ServerMetricsTunnelTimeRegion {
 export class ServerMetricsTunnelTimeRow extends LitElement {
   @property({type: String}) language: string = 'en';
   @property({type: Object}) localize: (key: string) => string;
-  @property({type: Number}) totalTunnelTimeHours: number;
-  @property({type: Array})
-  tunnelTimeRegions: Array<ServerMetricsTunnelTimeRegion>;
+  @property({type: Number}) totalSeconds: number;
+  @property({type: Array}) regions: Array<ServerMetricsTunnelTimeRegion>;
 
   static styles = css`
     :host {
@@ -75,7 +75,7 @@ export class ServerMetricsTunnelTimeRow extends LitElement {
     }
 
     icon-tooltip {
-      --help-tooltip-icon-size: var(--server-metrics-tunnel-time-row-icon-size);
+      --icon-tooltip-icon-size: var(--server-metrics-tunnel-time-row-icon-size);
     }
 
     mwc-icon {
@@ -114,10 +114,10 @@ export class ServerMetricsTunnelTimeRow extends LitElement {
   render() {
     return html`
       <server-metrics-row
-        .subcards=${this.tunnelTimeRegions.map(asn => ({
+        .subcards=${this.regions.map(asn => ({
           title: asn.asOrg,
           subtitle: asn.asn,
-          highlight: this.formatter.format(asn.tunnelTimeHours),
+          highlight: this.formatter.format(asn.seconds / SECONDS_IN_HOUR),
           icon: asn.countryFlag,
         }))}
         .subtitle=${this.localize(
@@ -140,10 +140,10 @@ export class ServerMetricsTunnelTimeRow extends LitElement {
           </div>
           <div class="tunnel-time-container">
             <span class="tunnel-time-value"
-              >${this.formatHourValue(this.totalTunnelTimeHours)}</span
+              >${this.formatSecondsValue(this.totalSeconds)}</span
             >
             <span class="tunnel-time-unit"
-              >${this.formatHourUnits(this.totalTunnelTimeHours)}</span
+              >${this.formatSecondsUnits(this.totalSeconds)}</span
             >
           </div>
         </div>
@@ -152,14 +152,15 @@ export class ServerMetricsTunnelTimeRow extends LitElement {
   }
 
   // TODO: move to formatter library
-  private formatHourUnits(hours: number) {
-    return this.formatter.formatToParts(hours).find(({type}) => type === 'unit')
-      .value;
+  private formatSecondsUnits(seconds: number) {
+    return this.formatter
+      .formatToParts(seconds / SECONDS_IN_HOUR)
+      .find(({type}) => type === 'unit').value;
   }
 
-  private formatHourValue(hours: number) {
+  private formatSecondsValue(seconds: number) {
     return this.formatter
-      .formatToParts(hours)
+      .formatToParts(seconds / SECONDS_IN_HOUR)
       .filter(
         ({type}) =>
           type === 'integer' ||

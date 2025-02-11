@@ -25,7 +25,7 @@ import './index';
 import '@material/mwc-icon';
 
 export interface ServerMetricsBandwidthRegion {
-  bandwidthBytes: number;
+  bytes: number;
   asn: string;
   asOrg?: string;
   countryFlag: string;
@@ -35,23 +35,22 @@ export interface ServerMetricsBandwidthRegion {
 export class ServerMetricsBandwidthRow extends LitElement {
   @property({type: String}) language: string = 'en';
   @property({type: Object}) localize: (key: string) => string;
-  @property({type: Number}) totalBandwidthBytes: number;
-  @property({type: Number}) bandwidthLimitBytes: number;
-  @property({type: Number}) bandwidthLimitThreshold: number = 0.8;
+  @property({type: Number}) totalBytes: number;
+  @property({type: Number}) limitBytes: number;
+  @property({type: Number}) limitThreshold: number = 0.8;
   @property({type: Boolean}) hasDataLimits: boolean = false;
-  @property({type: Number}) currentBandwidthBytes: number;
-  @property({type: Number}) peakBandwidthBytes: number;
-  @property({type: String}) peakBandwidthTimestamp: string;
-  @property({type: Array})
-  bandwidthRegions: Array<ServerMetricsBandwidthRegion>;
+  @property({type: Number}) currentBytes: number;
+  @property({type: Number}) peakBytes: number;
+  @property({type: String}) peakTimestamp: string;
+  @property({type: Array}) regions: Array<ServerMetricsBandwidthRegion>;
 
   @property({type: Boolean, reflect: true})
   get bandwidthLimitWarning() {
-    return this.bandwidthPercentage >= this.bandwidthLimitThreshold;
+    return this.bandwidthPercentage >= this.limitThreshold;
   }
 
   get bandwidthPercentage() {
-    return this.totalBandwidthBytes / this.bandwidthLimitBytes;
+    return this.totalBytes / this.limitBytes;
   }
 
   static styles = css`
@@ -245,10 +244,10 @@ export class ServerMetricsBandwidthRow extends LitElement {
   render() {
     return html`
       <server-metrics-row
-        .subcards=${this.bandwidthRegions.map(asn => ({
+        .subcards=${this.regions.map(asn => ({
           title: asn.asOrg,
           subtitle: asn.asn,
-          highlight: formatBytes(asn.bandwidthBytes, this.language),
+          highlight: formatBytes(asn.bytes, this.language),
           icon: asn.countryFlag,
         }))}
         .subtitle=${this.localize(
@@ -275,13 +274,13 @@ export class ServerMetricsBandwidthRow extends LitElement {
                 >${this.formatPercentage(this.bandwidthPercentage)}</span
               >
               <span class="bandwidth-fraction"
-                >${formatBytes(this.totalBandwidthBytes, this.language)}
-                /${formatBytes(this.bandwidthLimitBytes, this.language)}</span
+                >${formatBytes(this.totalBytes, this.language)}
+                /${formatBytes(this.limitBytes, this.language)}</span
               >
               <span class="bandwidth-progress-container">
                 <progress
-                  max=${this.bandwidthLimitBytes}
-                  value=${this.totalBandwidthBytes}
+                  max=${this.limitBytes}
+                  value=${this.totalBytes}
                 ></progress>
                 <icon-tooltip
                   text="${this.hasDataLimits
@@ -298,12 +297,10 @@ export class ServerMetricsBandwidthRow extends LitElement {
             <div class="current-container">
               <span class="current-value-and-unit">
                 <span class="current-value"
-                  >${this.formatBandwidthValue(
-                    this.currentBandwidthBytes
-                  )}</span
+                  >${this.formatBandwidthValue(this.currentBytes)}</span
                 >
                 <span class="current-unit"
-                  >${this.formatBandwidthUnit(this.currentBandwidthBytes)}</span
+                  >${this.formatBandwidthUnit(this.currentBytes)}</span
                 >
               </span>
               <span class="current-title"
@@ -315,14 +312,14 @@ export class ServerMetricsBandwidthRow extends LitElement {
             <div class="peak-container">
               <span class="peak-value-and-unit">
                 <span class="peak-value"
-                  >${this.formatBandwidthValue(this.peakBandwidthBytes)}</span
+                  >${this.formatBandwidthValue(this.peakBytes)}</span
                 >
                 <span class="peak-unit"
-                  >${this.formatBandwidthUnit(this.peakBandwidthBytes)}</span
+                  >${this.formatBandwidthUnit(this.peakBytes)}</span
                 >
-                ${this.peakBandwidthTimestamp
+                ${this.peakTimestamp
                   ? html`<span class="peak-timestamp"
-                      >(${this.peakBandwidthTimestamp})</span
+                      >(${this.peakTimestamp})</span
                     >`
                   : nothing}
               </span>
@@ -349,9 +346,14 @@ export class ServerMetricsBandwidthRow extends LitElement {
   }
 
   private formatBandwidthUnit(bytesPerSecond: number) {
-    return this.formatBandwidthParts(bytesPerSecond).find(
-      ({type}) => type === 'unit'
-    ).value;
+    return (
+      this.formatBandwidthParts(bytesPerSecond)
+        .find(({type}) => type === 'unit')
+        .value // Special case for "byte", since we'd rather be consistent with "KB", etc.  "byte" is
+        // presumably used due to the example in the Unicode standard,
+        // http://unicode.org/reports/tr35/tr35-general.html#Example_Units
+        .replace(/bytes?/, ' B')
+    );
   }
 
   private formatBandwidthValue(bytesPerSecond: number) {
