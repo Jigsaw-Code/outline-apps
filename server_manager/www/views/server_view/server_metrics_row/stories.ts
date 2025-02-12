@@ -16,83 +16,150 @@
 
 import {html} from 'lit';
 
-import './index';
+import './tunnel_time';
+import './bandwidth';
 
 export default {
   title: 'Manager/Server View/Server Metrics Row',
-  component: 'server-metrics-row',
 };
 
-export const Example = () => {
-  return html`
-    <server-metrics-row
-      title="Total bandwidth used"
-      titleIcon="data_usage"
-      value="38%"
-      valueLabel="380 GB /1 TB"
-      tooltip="Lorem ipsum"
-      subtitle="ASNs with highest bandwidth usage"
-      .subcards=${[
-        {
-          highlight: '265 GB',
-          title: 'Iran Telecommunication Company PJS',
-          subtitle: 'AS58224',
-          icon: '🇮🇷',
-        },
-        {
-          highlight: '46 GB',
-          title: 'Mobile Communication Company of Iran PLC',
-          subtitle: 'AS197207',
-          icon: '🇮🇷',
-        },
-        {
-          highlight: '41 GB',
-          title: 'IRANCELL-AS',
-          subtitle: 'AS44244',
-          icon: '🇮🇷',
-        },
-        {
-          highlight: '28 GB',
-          title: 'Myanma Posts and Telecommunications',
-          subtitle: 'AS9988',
-          icon: '🇲🇲',
-        },
-      ]}
-    ></server-metrics-row>
-    <div style="padding: 0.5rem;"></div>
-    <server-metrics-row
-      title="Total Tunnel Time <i>(last 30 days)</i>"
-      titleIcon="timer"
-      value="1573"
-      valueLabel="hours"
-      tooltip="Lorem ipsum"
-      subtitle="ASNs with highest Tunnel Time <i>(last 30 days)</i>"
-      .subcards=${[
-        {
-          highlight: '1080 hours',
-          title: 'Iran Telecommunication Company PJS',
-          subtitle: 'AS58224',
-          icon: '🇮🇷',
-        },
-        {
-          highlight: '194 hours',
-          title: 'IRANCELL-AS',
-          subtitle: 'AS44244',
-          icon: '🇮🇷',
-        },
-        {
-          highlight: '186 hours',
-          title: 'Mobile Communication Company of Iran PLC',
-          subtitle: 'AS197207',
-          icon: '🇮🇷',
-        },
-        {
-          highlight: '98 hours',
-          title: 'Myanma Posts and Telecommunications',
-          subtitle: 'AS9988',
-          icon: '🇲🇲',
-        },
-      ]}
-    ></server-metrics-row>
-  `;
+export const Bandwidth = () => {
+  return html`<server-metrics-bandwidth-row
+    .localize=${(key: string) => {
+      return {
+        'server-view-server-metrics-bandwidth-title': 'Total bandwidth used',
+        'server-view-server-metrics-bandwidth-as-breakdown':
+          'ASNs with highest bandwidth usage',
+        'server-view-server-metrics-bandwidth-tooltip':
+          'This shows the total amount of data transferred through the server over the last 30 days.',
+        'server-view-server-metrics-bandwidth-usage': 'Current bandwidth usage',
+        'server-view-server-metrics-bandwidth-usage-max':
+          'Maximum bandwidth usage <i>(last 30 days)</i>',
+      }[key];
+    }}
+    totalBytes=${380 * 1000 * 1000 * 1000}
+    limitBytes=${1 * 1000 * 1000 * 1000 * 1000}
+    limitThreshold=${0.8}
+    currentBytes=${1.2 * 1000 * 1000 * 1000}
+    peakBytes=${20.8 * 1000 * 1000 * 1000}
+    peakTimestamp="2/19/2025 22:41:38"
+    .regions=${[
+      {
+        bytes: 265 * 1000 * 1000 * 1000,
+        asOrg: 'Iran Telecommunication Company PJS',
+        asn: 'AS58224',
+        countryFlag: '🇮🇷',
+      },
+      {
+        bytes: 46 * 1000 * 1000 * 1000,
+        asOrg: 'Mobile Communication Company of Iran PLC',
+        asn: 'AS197207',
+        countryFlag: '🇮🇷',
+      },
+      {
+        bytes: 41 * 1000 * 1000 * 1000,
+        asOrg: 'IRANCELL-AS',
+        asn: 'AS44244',
+        countryFlag: '🇮🇷',
+      },
+      {
+        bytes: 28 * 1000 * 1000 * 1000,
+        asOrg: 'Myanma Posts and Telecommunications',
+        asn: 'AS9988',
+        countryFlag: '🇲🇲',
+      },
+    ]}
+  ></server-metrics-bandwidth-row>`;
+};
+
+export const BandwidthWarning = () => {
+  return html`<server-metrics-bandwidth-row
+    .localize=${(key: string) => {
+      return {
+        'server-view-server-metrics-bandwidth-title': 'Total bandwidth used',
+        'server-view-server-metrics-bandwidth-as-breakdown':
+          'ASNs with highest bandwidth usage',
+        'server-view-server-metrics-bandwidth-tooltip':
+          'This shows the total amount of data transferred through the server over the last 30 days.',
+        'server-view-server-metrics-bandwidth-limit-tooltip':
+          'High bandwidth usage detected over the last 30 days. Consider setting data limits to prevent overages and keep your service running smoothly. <a href="https://support.google.com/outline/answer/15331326" target="_blank">Learn more.</a>',
+        'server-view-server-metrics-bandwidth-usage': 'Current bandwidth usage',
+        'server-view-server-metrics-bandwidth-usage-max':
+          'Maximum bandwidth usage <i>(last 30 days)</i>',
+      }[key];
+    }}
+    totalBytes=${800 * 1000 * 1000 * 1000}
+    limitBytes=${1 * 1000 * 1000 * 1000 * 1000}
+    limitThreshold=${0.8}
+    currentBytes=${1.2 * 1000 * 1000 * 1000}
+    peakBytes=${20.8 * 1000 * 1000 * 1000}
+    peakTimestamp="2/19/2025 22:41:38"
+    .regions=${[
+      {
+        bytes: 265 * 1000 * 1000 * 1000,
+        asOrg: 'Iran Telecommunication Company PJS',
+        asn: 'AS58224',
+        countryFlag: '🇮🇷',
+      },
+      {
+        bytes: 46 * 1000 * 1000 * 1000,
+        asOrg: 'Mobile Communication Company of Iran PLC',
+        asn: 'AS197207',
+        countryFlag: '🇮🇷',
+      },
+      {
+        bytes: 41 * 1000 * 1000 * 1000,
+        asOrg: 'IRANCELL-AS',
+        asn: 'AS44244',
+        countryFlag: '🇮🇷',
+      },
+      {
+        bytes: 28 * 1000 * 1000 * 1000,
+        asOrg: 'Myanma Posts and Telecommunications',
+        asn: 'AS9988',
+        countryFlag: '🇲🇲',
+      },
+    ]}
+  ></server-metrics-bandwidth-row>`;
+};
+
+export const TunnelTime = () => {
+  return html`<server-metrics-tunnel-time-row
+    .localize=${(key: string) => {
+      return {
+        'server-view-server-metrics-tunnel-time-title':
+          'Total tunnel time <i>(last 30 days)</i>',
+        'server-view-server-metrics-tunnel-time-as-breakdown':
+          'ASNs with highest tunnel time',
+        'server-view-server-metrics-tunnel-time-tooltip': 'Lorem ipsum',
+      }[key];
+    }}
+    totalHours=${1573}
+    .regions=${[
+      {
+        seconds: 1080 * 60 * 60,
+        asOrg: 'Iran Telecommunication Company PJS',
+        asn: 'AS58224',
+        countryFlag: '🇮🇷',
+      },
+      {
+        seconds: 194 * 60 * 60,
+        asOrg: 'IRANCELL-AS',
+        asn: 'AS44244',
+        countryFlag: '🇮🇷',
+      },
+      {
+        seconds: 186 * 60 * 60,
+        asOrg: 'Mobile Communication Company of Iran PLC',
+        asn: 'AS197207',
+        countryFlag: '🇮🇷',
+      },
+      {
+        seconds: 98 * 60 * 60,
+        asOrg: 'Myanma Posts and Telecommunications',
+        asn: 'AS9988',
+        countryFlag: '🇲🇲',
+      },
+    ]}
+  ></server-metrics-tunnel-time-row>`;
 };

@@ -169,7 +169,7 @@ export class FakeServer implements server.Server {
     return Promise.resolve(new Map<server.AccessKeyId, number>());
   }
   getServerMetrics(): Promise<{
-    server: server.ServerMetrics[];
+    server: server.ServerMetrics;
     accessKeys: server.AccessKeyMetrics[];
   }> {
     return Promise.reject(
@@ -263,18 +263,34 @@ export class FakeManualServer
     return Promise.resolve(null);
   }
   async getServerMetrics(): Promise<{
-    server: server.ServerMetrics[];
+    server: server.ServerMetrics;
     accessKeys: server.AccessKeyMetrics[];
   }> {
     if (await this.getSupportedExperimentalUniversalMetricsEndpoint()) {
       return {
-        server: [
-          {
-            location: 'US',
-            asn: 10000,
-            asOrg: 'Fake AS',
+        server: {
+          dataTransferred: {
+            total: {
+              bytes: 0,
+            },
+            current: {
+              bytes: 0,
+            },
+            peak: {
+              data: {
+                bytes: 0,
+              },
+              timestamp: new Date(),
+            },
           },
-        ],
+          locations: [
+            {
+              location: 'US',
+              asn: 10000,
+              asOrg: 'Fake AS',
+            },
+          ],
+        },
         accessKeys: [
           {
             accessKeyId: '0',
@@ -284,7 +300,7 @@ export class FakeManualServer
     }
 
     return {
-      server: [],
+      server: {},
       accessKeys: [
         {
           accessKeyId: '0',

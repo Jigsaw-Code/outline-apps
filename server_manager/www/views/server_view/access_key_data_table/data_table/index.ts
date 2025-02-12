@@ -18,7 +18,7 @@ import {css, html, LitElement, TemplateResult, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 
 import '@material/mwc-icon';
-import '../../help_tooltip';
+import '../../icon_tooltip';
 
 const INTERNAL_LIT_ENUM_HTML_RESULT = 1;
 
@@ -309,7 +309,7 @@ export class DataTable<T extends object> extends LitElement {
         >${columnProperties?.displayName ?? nothing}</span
       >
       ${columnProperties?.tooltip
-        ? html`<help-tooltip text=${columnProperties.tooltip}></help-tooltip>`
+        ? html`<icon-tooltip text="${columnProperties.tooltip}"></icon-tooltip>`
         : nothing}
       ${this.sortColumnId === columnProperties.id ? sortIcon : nothing}
     </th>`;

@@ -34,8 +34,8 @@ import './outline-server-progress-step';
 import './outline-server-settings';
 import './outline-share-dialog';
 import './outline-sort-span';
-import '../views/server_view/server_metrics_row';
-import '../views/server_view/access_key_data_table';
+import '../views/server_view/server_metrics_row/bandwidth';
+import '../views/server_view/server_metrics_row/tunnel_time';
 import {html, PolymerElement} from '@polymer/polymer';
 import type {PolymerElementProperties} from '@polymer/polymer/interfaces';
 import {DirMixin} from '@polymer/polymer/lib/mixins/dir-mixin';
@@ -51,7 +51,8 @@ import {
   AccessKeyDataTableRow,
 } from '../views/server_view/access_key_data_table';
 import {DataTableSortDirection} from '../views/server_view/access_key_data_table/data_table';
-import type {ServerMetricsRowSubcard} from '../views/server_view/server_metrics_row/server_metrics_row_subcard';
+import {ServerMetricsBandwidthRegion} from '../views/server_view/server_metrics_row/bandwidth';
+import {ServerMetricsTunnelTimeRegion} from '../views/server_view/server_metrics_row/tunnel_time';
 
 export const MY_CONNECTION_USER_ID = '0';
 
@@ -500,45 +501,34 @@ export class ServerView extends DirMixin(PolymerElement) {
               <span class="privacy-statement-text"
                 >[[localize('server-view-privacy-statement')]]</span
               >
-              <a
-                class="privacy-statement-link"
-                href="https://support.google.com/outline/answer/15331222"
-                >[[localize('server-view-privacy-statement-link')]]</a
-              >
-            </p>
-            <a
-              class="advanced-metrics-link"
-              href="https://developers.google.com/outline/docs/guides/service-providers/metrics"
-            >
-              <span class="advanced-metrics-link-text"
-                >[[localize('server-view-server-metrics-advanced-metrics-link')]]</span
-              >
-              <iron-icon
-                class="advanced-metrics-link-icon"
-                icon="open-in-new"
-              ></iron-icon>
-            </a>
-          </aside>
-          <server-metrics-row
-            title="[[localize('server-view-server-metrics-bandwidth-title')]]"
-            titleIcon="data_usage"
-            tooltip="[[localize('server-view-server-metrics-bandwidth-tooltip')]]"
-            value="[[_computeManagedServerUtilizationPercentage(totalInboundBytes, monthlyOutboundTransferBytes)]]"
-            value-label="[[bandwidthUsageTotal]] /[[_formatBytesTransferred(monthlyOutboundTransferBytes,
-                    language)]]"
-            subtitle="[[localize('server-view-server-metrics-bandwidth-as-breakdown')]]"
-            subcards="[[bandwidthUsageRegions]]"
-          ></server-metrics-row>
-          <server-metrics-row
-            title="[[localize('server-view-server-metrics-tunnel-time-title')]]"
-            titleIcon="timer"
-            tooltip="[[localize('server-view-server-metrics-tunnel-time-tooltip')]]"
-            value="[[tunnelTimeTotal]]"
-            value-label="[[tunnelTimeTotalLabel]]"
-            subtitle="[[localize('server-view-server-metrics-tunnel-time-as-breakdown')]]"
-            subcards="[[tunnelTimeRegions]]"
-          ></server-metrics-row>
-        </div>
+                <span class="advanced-metrics-link-text"
+                  >[[localize('server-view-server-metrics-advanced-metrics-link')]]</span
+                >
+                <iron-icon
+                  class="advanced-metrics-link-icon"
+                  icon="open-in-new"
+                ></iron-icon>
+              </a>
+            </aside>
+            <server-metrics-bandwidth-row
+              localize="[[localize]]"
+              language="[[language]]"
+              has-data-limits="{{!isDefaultDataLimitEnabled && !accessKeyRows.some(({ dataLimitBytes }) => dataLimitBytes)}}"
+              total-bytes="[[bandwidthUsageTotal]]"
+              limit-bytes="[[monthlyOutboundTransferBytes]]"
+              current-bytes="[[bandwidthCurrent]]"
+              peak-bytes="[[bandwidthPeak]]"
+              peak-timestamp="[[bandwidthPeakTimestamp]]"
+              locations="[[bandwidthUsageLocations]]"
+            ></server-metrics-bandwidth-row>
+            <server-metrics-tunnel-time-row
+              localize="[[localize]]"
+              language="[[lagugage]]"
+              total-seconds="[[tunnelTimeTotal]]"
+              locations="[[tunnelTimeLocations]]"
+            ></server-metrics-tunnel-time-row>
+          </div>
+        </template>
         <div name="settings">
           <outline-server-settings
             id="serverSettings"
@@ -577,8 +567,11 @@ export class ServerView extends DirMixin(PolymerElement) {
       accessKeyData: Array,
       accessKeyDataSortColumnId: String,
       accessKeyDataSortDirection: String,
-      bandwidthUsage: String,
-      bandwidthUsageRegions: Array,
+      bandwidthUsageTotal: Number,
+      bandwidthCurrent: Number,
+      bandwidthPeak: Number,
+      bandwidthPeakTimestamp: String,
+      bandwidthUsageLocations: Array,
       cloudId: String,
       cloudLocation: Object,
       defaultDataLimitBytes: Number,
@@ -607,8 +600,9 @@ export class ServerView extends DirMixin(PolymerElement) {
       serverVersion: String,
       showFeatureMetricsDisclaimer: Boolean,
       supportsDefaultDataLimit: Boolean,
-      tunnelTimeRegions: Array,
-      tunnelTimeTotal: String,
+      totalInboundBytes: Number,
+      tunnelTimeLocations: Array,
+      tunnelTimeTotal: Number,
     };
   }
 
@@ -672,12 +666,14 @@ export class ServerView extends DirMixin(PolymerElement) {
     );
   }
 
-  bandwidthUsageTotal = '';
-  bandwidthUsageRegions: Partial<ServerMetricsRowSubcard>[] = [];
+  bandwidthUsageTotal = 0;
+  bandwidthCurrent = 0;
+  bandwidthPeak = 0;
+  bandwidthPeakTimestamp = '';
+  bandwidthUsageLocations: Partial<ServerMetricsBandwidthRegion>[] = [];
 
-  tunnelTimeTotal = '';
-  tunnelTimeTotalLabel = '';
-  tunnelTimeRegions: Partial<ServerMetricsRowSubcard>[] = [];
+  tunnelTimeTotal = 0;
+  tunnelTimeLocations: Partial<ServerMetricsTunnelTimeRegion>[] = [];
 
   serverId = '';
   metricsId = '';

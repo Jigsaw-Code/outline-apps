@@ -38,7 +38,7 @@ export interface Server {
 
   // Returns server metrics
   getServerMetrics(): Promise<{
-    server: ServerMetrics[];
+    server: ServerMetrics;
     accessKeys: AccessKeyMetrics[];
   }>;
 
@@ -193,11 +193,22 @@ export interface Data {
   readonly bytes: number;
 }
 
+interface TimedData<T> {
+  data: T;
+  timestamp: Date;
+}
+
 export interface Duration {
   readonly seconds: number;
 }
 
 export interface ServerMetrics {
+  locations?: ServerMetricsRegion[];
+  dataTransferred?: BandwidthStats;
+  tunnelTime?: Duration;
+}
+
+export interface ServerMetricsRegion {
   location: string;
   asn: number;
   asOrg: string;
@@ -221,4 +232,10 @@ export interface AccessKeyConnection {
   lastConnected: number | null;
   lastTrafficSeen: number | null;
   peakDevices: PeakDevices;
+}
+
+export interface BandwidthStats {
+  total: Data;
+  peak: TimedData<Data>;
+  current: Data;
 }

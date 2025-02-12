@@ -18,43 +18,54 @@ import {LitElement, css, html} from 'lit';
 import {customElement, state, query, property} from 'lit/decorators.js';
 
 import '@material/mwc-icon';
+import '@material/mwc-icon-button';
 
-// TODO: this tooltip is implemented by javascript and not css due to api limitations in our current version of Electron.
+// TODO (#2384): this tooltip is implemented by javascript and not css due to api limitations in our current version of Electron.
 // Once electron is updated, we should switch to the Popover API for better style control.
-@customElement('help-tooltip')
-export class HelpTooltip extends LitElement {
+@customElement('icon-tooltip')
+export class IconTooltip extends LitElement {
   @property({type: String}) text: string;
+  @property({type: String}) icon: string = 'help';
 
   @state() tooltip: HTMLElement | null = null;
-  @query('mwc-icon') icon: HTMLElement;
+  @query('mwc-icon-button') iconElement: HTMLElement;
 
   static styles = css`
     :host {
-      --help-tooltip-icon-size: 1.85rem;
+      --icon-tooltip-icon-size: 1.85rem;
+      --icon-tooltip-icon-color: hsla(140, 3%, 77%, 1);
 
-      cursor: help;
-      position: relative;
-      display: inline-flex;
+      color: var(--icon-tooltip-icon-color);
     }
 
-    mwc-icon {
-      --mdc-icon-size: var(--help-tooltip-icon-size);
+    mwc-icon,
+    mwc-icon-button {
+      --mdc-icon-size: var(--icon-tooltip-icon-size);
     }
   `;
 
   render() {
+    if (!this.text) {
+      return html`<mwc-icon>${this.icon}</mwc-icon>`;
+    }
+
     return html`
-      <mwc-icon
-        @mouseenter=${this.insertTooltip}
-        @mouseout=${this.removeTooltip}
-        >help</mwc-icon
+      <mwc-icon-button
+        @click=${this.insertTooltip}
+        @blur=${this.removeTooltip}
+        icon=${this.icon}
       >
+      </mwc-icon-button>
     `;
   }
 
   insertTooltip() {
     this.tooltip = document.createElement('span');
     this.tooltip.innerHTML = this.text;
+
+    // Since this element is created outside the custom element's scope,
+    // we can't style it here and instead must inject the styles directly.
+    // This too will be resolved by the Popover API
     this.tooltip.style.cssText = `
       display: inline-block;
       background-color: hsl(0, 0%, 94%);
@@ -62,8 +73,8 @@ export class HelpTooltip extends LitElement {
       color: hsl(0, 0%, 20%);
       font-family: 'Inter', system-ui;
       max-width: 320px;
-      left: ${this.icon.getBoundingClientRect().left}px;
-      top: ${this.icon.getBoundingClientRect().bottom}px;
+      left: ${this.iconElement.getBoundingClientRect().left}px;
+      top: ${this.iconElement.getBoundingClientRect().bottom}px;
       padding: 0.3rem;
       position: fixed;
       white-space: pre-line;
@@ -73,6 +84,10 @@ export class HelpTooltip extends LitElement {
     `;
 
     document.body.appendChild(this.tooltip);
+
+    // TODO: sometimes the blur listener gives up when the user navigates away from the application
+    // this ensures the tooltip is eventually removed - this will be solved by the Popover API
+    setTimeout(this.removeTooltip, 5000);
   }
 
   removeTooltip() {
