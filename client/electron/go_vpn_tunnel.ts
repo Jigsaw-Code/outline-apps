@@ -193,6 +193,7 @@ export class GoVpnTunnel implements VpnTunnel {
       console.log(`UDP support now ${this.isUdpEnabled}`);
     } catch (e) {
       console.error(`connectivity check failed: ${e}`);
+      return;
     }
 
     // Restart tun2socks.
