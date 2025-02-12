@@ -44,7 +44,6 @@ import {getCloudIcon} from './cloud-assets';
 import type {OutlineHelpBubble} from './outline-help-bubble';
 import type {OutlineServerSettings} from './outline-server-settings';
 import type {CloudLocation} from '../../model/location';
-import {AccessKeyMetrics} from '../../model/server';
 import * as formatting from '../data_formatting';
 import {getShortName} from '../location_formatting';
 import {

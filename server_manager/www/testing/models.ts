@@ -248,7 +248,7 @@ export class FakeManualServer
   implements server.ManualServer
 {
   constructor(public manualServerConfig: server.ManualServerConfig) {
-    super(manualServerConfig.apiUrl, 'dev');
+    super(manualServerConfig.apiUrl, '0.0.0');
   }
   getManagementApiUrl() {
     return this.manualServerConfig.apiUrl;
