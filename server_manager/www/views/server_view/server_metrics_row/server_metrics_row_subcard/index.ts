@@ -30,7 +30,7 @@ export class ServerMetricsRowSubcard extends LitElement {
       --server-metrics-row-subcard-border-radius: 0.5rem;
       --server-metrics-row-subcard-font-family: 'Inter', system-ui;
       --server-metrics-row-subcard-padding: 1rem;
-      --server-metrics-row-subcard-text-color: hsla(0, 0, 100%, 0.87);
+      --server-metrics-row-subcard-text-color: hsla(0, 0%, 96%, 1);
 
       --server-metrics-row-subcard-highlight-border: 2px solid
         hsl(167, 49%, 56%);

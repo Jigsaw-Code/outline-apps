@@ -120,8 +120,8 @@ describe('App', () => {
             apiUrl: 'api-url',
           })
         ).getServerMetrics()
-      ).server.length
-    ).toBe(0);
+      ).accessKeys.length
+    ).toBe(1);
   });
 
   it('uses the experimental metrics endpoint if present', async () => {
@@ -137,7 +137,7 @@ describe('App', () => {
           certSha256: 'cert',
           apiUrl: 'api-url',
         }).getServerMetrics()
-      ).server.length
+      ).server.locations?.length
     ).toBe(1);
   });
 

@@ -19,7 +19,7 @@ import {customElement, property} from 'lit/decorators.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
 import '@material/mwc-icon';
-import '../../help_tooltip';
+import '../../icon_tooltip';
 
 const INTERNAL_LIT_ENUM_HTML_RESULT = 1;
 
@@ -203,7 +203,7 @@ export class DataTable<T extends object> extends LitElement {
     return html`<th @click=${() => this.sort(columnProperties)}>
       <span>${unsafeHTML(columnProperties.displayName)}</span>
       ${columnProperties?.tooltip
-        ? html`<help-tooltip>${columnProperties.tooltip}</help-tooltip>`
+        ? html`<icon-tooltip text="${columnProperties.tooltip}"></icon-tooltip>`
         : nothing}
       ${this.sortColumnId === columnProperties.id ? sortIcon : nothing}
     </th>`;

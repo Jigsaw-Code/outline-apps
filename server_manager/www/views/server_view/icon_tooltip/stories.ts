@@ -18,10 +18,10 @@ import {html} from 'lit';
 import '.';
 
 export default {
-  title: 'Manager/Server View/Help Tooltip',
-  component: 'help-tooltip',
+  title: 'Manager/Server View/Icon Tooltip',
+  component: 'icon-tooltip',
 };
 
 export const Example = () => html`
-  <help-tooltip>Tooltip text here</help-tooltip>
+  <icon-tooltip text="Tooltip text here"></icon-tooltip>
 `;
