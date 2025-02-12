@@ -110,7 +110,7 @@ export interface DataTableColumnProperties<T> {
   tooltip?: string;
 }
 
-// TODO: this table is meant to collapse when a certain container size is reached, but
+// TODO (#2384): this table is meant to collapse when a certain container size is reached, but
 // our current version of Electron dosen't support it. Add a container query once
 // electron is upgraded.
 
@@ -238,7 +238,7 @@ export class DataTable<T extends object> extends LitElement {
     }
 
     /*
-      TODO: 
+      TODO (#2384): 
         This max-width value is currently entirely dependent on the contents of the window from which the 
         table is rendered. Convert this to a container query once we upgrade electron so it's reusable.
     */
