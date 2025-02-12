@@ -275,10 +275,10 @@ export class ServerView extends DirMixin(PolymerElement) {
         }
 
         .connections-container {
-          box-sizing: border-box;
           background: hsl(197, 13%, 22%);
         }
 
+        .metrics-loading-container,
         .connections-loading-container {
           align-items: center;
           box-sizing: border-box;
@@ -286,6 +286,10 @@ export class ServerView extends DirMixin(PolymerElement) {
           justify-content: center;
           padding: 2rem;
           width: 100%;
+        }
+
+        .metrics-loading-container {
+          background: hsl(197, 13%, 22%);
         }
       </style>
 
@@ -470,21 +474,21 @@ export class ServerView extends DirMixin(PolymerElement) {
                 sort-direction="[[accessKeyDataSortDirection]]"
                 sort-column-id="[[accessKeyDataSortColumnId]]"
               ></access-key-data-table>
-            </template>
 
-            <div class="access-key-row" id="addAccessKeyRow">
-              <span class="access-key-container">
-                <paper-icon-button
-                  icon="icons:add"
-                  on-tap="_handleAddAccessKeyPressed"
-                  id="addAccessKeyButton"
-                  class="access-key-icon"
-                ></paper-icon-button>
-                <div class="add-new-key" on-tap="_handleAddAccessKeyPressed">
-                  [[localize('server-access-key-new')]]
-                </div>
-              </span>
-            </div>
+              <div class="access-key-row" id="addAccessKeyRow">
+                <span class="access-key-container">
+                  <paper-icon-button
+                    icon="icons:add"
+                    on-tap="_handleAddAccessKeyPressed"
+                    id="addAccessKeyButton"
+                    class="access-key-icon"
+                  ></paper-icon-button>
+                  <div class="add-new-key" on-tap="_handleAddAccessKeyPressed">
+                    [[localize('server-access-key-new')]]
+                  </div>
+                </span>
+              </div>
+            </template>
           </div>
         </div>
 
@@ -494,6 +498,14 @@ export class ServerView extends DirMixin(PolymerElement) {
               <span class="privacy-statement-text"
                 >[[localize('server-view-privacy-statement')]]</span
               >
+              <a
+                class="privacy-statement-link"
+                href="https://support.google.com/outline/answer/15331222"
+                >[[localize('server-view-privacy-statement-link')]]</a
+              >
+            </p>
+
+              <a class="advanced-metrics-link" href="https://developers.google.com/outline/docs/guides/service-providers/metrics">
                 <span class="advanced-metrics-link-text"
                   >[[localize('server-view-server-metrics-advanced-metrics-link')]]</span
                 >
@@ -505,7 +517,7 @@ export class ServerView extends DirMixin(PolymerElement) {
             </aside>
 
             <template is="dom-if" if="{{!accessKeyData.length}}">
-              <div class="connections-loading-container">
+              <div class="metrics-loading-container">
                 <outline-progress-spinner></outline-progress-spinner>
               </div>
             </template>

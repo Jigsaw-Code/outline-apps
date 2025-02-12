@@ -38,8 +38,8 @@ export class AccessKeyUsageMeter extends LitElement {
   static styles = css`
     :host {
       --access-key-usage-meter-font-family: 'Inter', system-ui;
-      --access-key-usage-meter-gap: 0.5rem;
-      --access-key-usage-meter-size: 1rem;
+      --access-key-usage-meter-gap: 0.3rem;
+      --access-key-usage-meter-size: 0.8rem;
 
       --access-key-usage-meter-background-color: hsla(0, 0%, 46%, 1);
 

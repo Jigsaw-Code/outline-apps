@@ -56,7 +56,15 @@ export class AccessKeyControls extends LitElement {
 
   static styles = css`
     :host {
+      --access-key-controls-icon-size: 1.5rem;
+      --access-key-controls-button-size: 2rem;
+
       flex-grow: 1;
+    }
+
+    mwc-icon-button {
+      --mdc-icon-button-size: var(--access-key-controls-button-size);
+      --mdc-icon-size: var(--access-key-controls-icon-size);
     }
 
     .wrapper {

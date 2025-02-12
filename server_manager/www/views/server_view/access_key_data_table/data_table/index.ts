@@ -128,12 +128,13 @@ export class DataTable<T extends object> extends LitElement {
       --data-table-background-color: hsl(197, 13%, 22%);
       --data-table-text-color: hsl(0, 0%, 79%);
       --data-table-font-family: 'Inter', system-ui;
+      --data-table-font-size: 0.8rem;
 
-      --data-table-cell-padding: 1rem;
+      --data-table-cell-padding: 0.8rem;
       --data-table-cell-gap: 0.2rem;
-      --data-table-sides-padding: 2rem;
+      --data-table-sides-padding: 1.5rem;
 
-      --data-table-header-icon-size: 1.2rem;
+      --data-table-header-icon-size: 1rem;
       --data-table-header-border-bottom: 0.7rem solid hsla(200, 16%, 19%, 1);
 
       --data-table-row-border-bottom: 1px solid hsla(0, 0%, 100%, 0.2);
@@ -173,6 +174,7 @@ export class DataTable<T extends object> extends LitElement {
       font-family: var(--data-table-font-family);
       gap: var(--data-table-cell-gap);
       padding: var(--data-table-cell-padding);
+      font-size: var(--data-table-font-size);
     }
 
     th {
@@ -332,6 +334,19 @@ export class DataTable<T extends object> extends LitElement {
   sort(columnProperties: DataTableColumnProperties<T>) {
     if (!columnProperties.comparator) {
       return;
+    }
+
+    if (columnProperties.id !== this.sortColumnId) {
+      return this.dispatchEvent(
+        new CustomEvent(DataTableEvent.SORT, {
+          detail: {
+            columnId: columnProperties.id,
+            sortDirection: this.sortDirection,
+          },
+          bubbles: true,
+          composed: true,
+        })
+      );
     }
 
     let sortDirection;
