@@ -180,6 +180,8 @@ export class ServerMetricsBandwidthRow extends LitElement {
     }
 
     progress[value]::-webkit-progress-bar {
+      /* crops the progress value so it doesn't render outside the container's border-radius */
+      overflow: hidden;
       background: var(--server-metrics-bandwidth-row-meter-background-color);
       border-radius: var(--server-metrics-bandwidth-row-meter-size);
     }

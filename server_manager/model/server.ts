@@ -203,12 +203,13 @@ export interface Duration {
 }
 
 export interface ServerMetrics {
-  locations?: ServerMetricsRegion[];
-  dataTransferred?: BandwidthStats;
+  locations?: ServerMetricsLocation[];
+  bandwidth?: BandwidthStats;
   tunnelTime?: Duration;
+  dataTransferred?: Data;
 }
 
-export interface ServerMetricsRegion {
+export interface ServerMetricsLocation {
   location: string;
   asn: number;
   asOrg: string;
@@ -223,7 +224,6 @@ export interface AccessKeyMetrics {
 }
 
 export interface BandwidthStats {
-  total: Data;
   peak: TimedData<Data>;
   current: Data;
 }

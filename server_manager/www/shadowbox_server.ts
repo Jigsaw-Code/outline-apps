@@ -42,17 +42,20 @@ interface MetricsJson {
       seconds: number;
     };
     dataTransferred: {
-      total: {
-        bytes: number;
-      };
+      bytes: number;
+    };
+    bandwidth: {
       current: {
-        bytes: number;
+        data: {
+          bytes: number;
+        };
+        timestamp: number;
       };
       peak: {
         data: {
           bytes: number;
         };
-        timestamp: string;
+        timestamp: number;
       };
     };
     locations: {
@@ -206,14 +209,14 @@ export class ShadowboxServer implements server.Server {
       return {
         server: {
           tunnelTime: json.server.tunnelTime,
-          dataTransferred: {
-            total: json.server.dataTransferred.total,
-            current: json.server.dataTransferred.current,
+          dataTransferred: json.server.dataTransferred,
+          bandwidth: {
+            current: json.server.bandwidth.current.data,
             peak: {
               data: {
-                bytes: json.server.dataTransferred.peak.data.bytes,
+                bytes: json.server.bandwidth.peak.data.bytes,
               },
-              timestamp: new Date(json.server.dataTransferred.peak.timestamp),
+              timestamp: new Date(json.server.bandwidth.peak.timestamp * 1000),
             },
           },
           locations: json.server.locations,
