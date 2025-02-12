@@ -59,7 +59,14 @@ export class IconTooltip extends LitElement {
     `;
   }
 
-  insertTooltip() {
+  insertTooltip(event: Event) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    if (this.tooltip) {
+      return;
+    }
+
     this.tooltip = document.createElement('span');
     this.tooltip.innerHTML = this.text;
 

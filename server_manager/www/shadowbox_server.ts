@@ -75,6 +75,14 @@ interface MetricsJson {
     dataTransferred?: {
       bytes: number;
     };
+    connection: {
+      lastConnected: number;
+      lastTrafficSeen: number;
+      peakDevices: {
+        count: number;
+        timestamp: number;
+      };
+    };
   }[];
 }
 
@@ -222,6 +230,14 @@ export class ShadowboxServer implements server.Server {
           accessKeyId: key.accessKeyId,
           tunnelTime: key.tunnelTime,
           dataTransferred: key.dataTransferred,
+          connection: {
+            lastConnected: new Date(key.connection.lastConnected * 1000),
+            lastTrafficSeen: new Date(key.connection.lastTrafficSeen * 1000),
+            peakDevices: {
+              count: key.connection.peakDevices.count,
+              timestamp: new Date(key.connection.peakDevices.timestamp * 1000),
+            },
+          },
         })),
       };
     }

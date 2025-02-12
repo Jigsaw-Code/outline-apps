@@ -1088,7 +1088,7 @@ export class App {
           keyMetricsMap.get(accessKey.id) ?? {};
 
         const lastTrafficDate = connection?.lastTrafficSeen
-          ? new Date(connection.lastTrafficSeen * 1000)
+          ? connection.lastTrafficSeen
           : null;
 
         const currentDate = new Date();
@@ -1102,18 +1102,16 @@ export class App {
             accessKey.name ||
             this.appRoot.localize('key', 'keyId', accessKey.id),
           lastConnected: connection?.lastConnected
-            ? new Date(connection.lastConnected * 1000)?.toLocaleDateString(
-                this.appRoot.language
-              )
+            ? connection.lastConnected?.toLocaleString(this.appRoot.language)
             : null,
           lastTraffic: lastTrafficDate
-            ? lastTrafficDate?.toLocaleDateString(this.appRoot.language)
+            ? lastTrafficDate?.toLocaleString(this.appRoot.language)
             : null,
           peakDeviceCount: connection?.peakDevices.count ?? 0,
           peakDeviceTime: connection?.peakDevices.timestamp
-            ? new Date(
-                connection.peakDevices.timestamp * 1000
-              )?.toLocaleDateString(this.appRoot.language)
+            ? connection.peakDevices.timestamp?.toLocaleString(
+                this.appRoot.language
+              )
             : null,
           accessUrl: accessKey.accessUrl,
           dataUsageBytes: dataTransferred?.bytes ?? 0,

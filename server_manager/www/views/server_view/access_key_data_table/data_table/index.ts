@@ -159,9 +159,7 @@ export class DataTable<T extends object> extends LitElement {
     }
 
     table {
-      background-color: var(--data-table-background-color);
       display: grid;
-      grid-auto-rows: auto;
       grid-template-columns: repeat(var(--data-table-columns), auto);
       isolation: isolate;
     }
@@ -170,6 +168,7 @@ export class DataTable<T extends object> extends LitElement {
     td {
       box-sizing: border-box;
       color: var(--data-table-text-color);
+      background-color: var(--data-table-background-color);
       display: flex;
       font-family: var(--data-table-font-family);
       gap: var(--data-table-cell-gap);
@@ -178,7 +177,6 @@ export class DataTable<T extends object> extends LitElement {
 
     th {
       align-items: center;
-      background-color: var(--data-table-background-color);
       border-bottom: var(--data-table-header-border-bottom);
       cursor: pointer;
       position: sticky;

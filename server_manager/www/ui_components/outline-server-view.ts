@@ -423,19 +423,12 @@ export class ServerView extends DirMixin(PolymerElement) {
           attr-for-selected="name"
           noink=""
         >
-          <template is="dom-if" if="{{!featureFlags.serverMetricsTab}}">
-            <paper-tab name="connections"
-              >[[localize('server-connections')]]</paper-tab
-            >
-          </template>
-          <template is="dom-if" if="{{featureFlags.serverMetricsTab}}">
-            <paper-tab name="connections">
-              [[localize('server-view-access-keys-tab', accessKeyRows.length)]]
-            </paper-tab>
-            <paper-tab name="metrics"
-              >[[localize('server-view-server-metrics-tab')]]</paper-tab
-            >
-          </template>
+          <paper-tab name="connections">
+            [[localize('server-view-access-keys-tab', accessKeyRows.length)]]
+          </paper-tab>
+          <paper-tab name="metrics"
+            >[[localize('server-view-server-metrics-tab')]]</paper-tab
+          >
           <paper-tab name="settings" id="settingsTab"
             >[[localize('server-settings')]]</paper-tab
           >
@@ -510,23 +503,32 @@ export class ServerView extends DirMixin(PolymerElement) {
                 ></iron-icon>
               </a>
             </aside>
-            <server-metrics-bandwidth-row
-              localize="[[localize]]"
-              language="[[language]]"
-              has-data-limits="{{!isDefaultDataLimitEnabled && !accessKeyRows.some(({ dataLimitBytes }) => dataLimitBytes)}}"
-              total-bytes="[[bandwidthUsageTotal]]"
-              limit-bytes="[[monthlyOutboundTransferBytes]]"
-              current-bytes="[[bandwidthCurrent]]"
-              peak-bytes="[[bandwidthPeak]]"
-              peak-timestamp="[[bandwidthPeakTimestamp]]"
-              locations="[[bandwidthUsageLocations]]"
-            ></server-metrics-bandwidth-row>
-            <server-metrics-tunnel-time-row
-              localize="[[localize]]"
-              language="[[lagugage]]"
-              total-seconds="[[tunnelTimeTotal]]"
-              locations="[[tunnelTimeLocations]]"
-            ></server-metrics-tunnel-time-row>
+
+            <template is="dom-if" if="{{!accessKeyData.length}}">
+              <div class="connections-loading-container">
+                <outline-progress-spinner></outline-progress-spinner>
+              </div>
+            </template>
+
+            <template is="dom-if" if="{{accessKeyData.length}}">
+              <server-metrics-bandwidth-row
+                localize="[[localize]]"
+                language="[[language]]"
+                has-data-limits="{{!isDefaultDataLimitEnabled && !accessKeyRows.some(({ dataLimitBytes }) => dataLimitBytes)}}"
+                total-bytes="[[bandwidthUsageTotal]]"
+                limit-bytes="[[monthlyOutboundTransferBytes]]"
+                current-bytes="[[bandwidthCurrent]]"
+                peak-bytes="[[bandwidthPeak]]"
+                peak-timestamp="[[bandwidthPeakTimestamp]]"
+                locations="[[bandwidthUsageLocations]]"
+              ></server-metrics-bandwidth-row>
+              <server-metrics-tunnel-time-row
+                localize="[[localize]]"
+                language="[[lagugage]]"
+                total-seconds="[[tunnelTimeTotal]]"
+                locations="[[tunnelTimeLocations]]"
+              ></server-metrics-tunnel-time-row>
+            </template>
           </div>
         </template>
         <div name="settings">

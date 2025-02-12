@@ -225,12 +225,12 @@ export interface AccessKeyMetrics {
 
 export interface PeakDevices {
   count: number;
-  timestamp: number | null;
+  timestamp: Date | null;
 }
 
 export interface AccessKeyConnection {
-  lastConnected: number | null;
-  lastTrafficSeen: number | null;
+  lastConnected: Date | null;
+  lastTrafficSeen: Date | null;
   peakDevices: PeakDevices;
 }
 
