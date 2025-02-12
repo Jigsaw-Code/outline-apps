@@ -20,7 +20,7 @@ import {customElement, state, query, property} from 'lit/decorators.js';
 import '@material/mwc-icon';
 import '@material/mwc-icon-button';
 
-// TODO: this tooltip is implemented by javascript and not css due to api limitations in our current version of Electron.
+// TODO (#2384): this tooltip is implemented by javascript and not css due to api limitations in our current version of Electron.
 // Once electron is updated, we should switch to the Popover API for better style control.
 @customElement('icon-tooltip')
 export class IconTooltip extends LitElement {
@@ -62,6 +62,10 @@ export class IconTooltip extends LitElement {
   insertTooltip() {
     this.tooltip = document.createElement('span');
     this.tooltip.innerHTML = this.text;
+
+    // Since this element is created outside the custom element's scope,
+    // we can't style it here and instead must inject the styles directly.
+    // This too will be resolved by the Popover API
     this.tooltip.style.cssText = `
       display: inline-block;
       background-color: hsl(0, 0%, 94%);

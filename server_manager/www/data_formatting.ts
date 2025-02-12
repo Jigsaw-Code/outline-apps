@@ -30,7 +30,7 @@ interface FormatParams {
 }
 
 /**
- * Returns the Intl.NumberFormat options based on the magniutdo of bytes passed in
+ * Returns the Intl.NumberFormat options based on the magnitude of bytes passed in
  *
  * @param numBytes the bytes to format
  * @returns {FormatParams}
