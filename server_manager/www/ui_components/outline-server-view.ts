@@ -44,6 +44,7 @@ import {getCloudIcon} from './cloud-assets';
 import type {OutlineHelpBubble} from './outline-help-bubble';
 import type {OutlineServerSettings} from './outline-server-settings';
 import type {CloudLocation} from '../../model/location';
+import {AccessKeyMetrics} from '../../model/server';
 import * as formatting from '../data_formatting';
 import {getShortName} from '../location_formatting';
 import {
@@ -427,9 +428,7 @@ export class ServerView extends DirMixin(PolymerElement) {
           attr-for-selected="name"
           noink=""
         >
-          <paper-tab name="connections">
-            [[localize('server-view-access-keys-tab', 'accessKeyCount', accessKeyData.length)]]
-          </paper-tab>
+          <paper-tab name="connections">[[accessKeyTabMessage]]</paper-tab>
           <paper-tab name="metrics"
             >[[localize('server-view-server-metrics-tab')]]</paper-tab
           >
@@ -526,7 +525,7 @@ export class ServerView extends DirMixin(PolymerElement) {
               <server-metrics-bandwidth-row
                 localize="[[localize]]"
                 language="[[language]]"
-                has-data-limits="{{!isDefaultDataLimitEnabled && !accessKeyRows.some(({ dataLimitBytes }) => dataLimitBytes)}}"
+                has-data-limits="[[hasDataLimits]]"
                 total-bytes="[[bandwidthUsageTotal]]"
                 limit-bytes="[[monthlyOutboundTransferBytes]]"
                 current-bytes="[[bandwidthCurrent]]"
@@ -616,6 +615,15 @@ export class ServerView extends DirMixin(PolymerElement) {
       supportsDefaultDataLimit: Boolean,
       tunnelTimeLocations: Array,
       tunnelTimeTotal: Number,
+      accessKeyTabMessage: {
+        type: String,
+        computed: '_computeAccessKeyTabMessage(accessKeyData)',
+      },
+      hasDataLimits: {
+        type: Boolean,
+        computed:
+          '_computeHasDataLimits(isDefaultDataLimitEnabled, accessKeyData)',
+      },
     };
   }
 
@@ -761,6 +769,24 @@ export class ServerView extends DirMixin(PolymerElement) {
     );
   }
 
+  _computeAccessKeyTabMessage(accessKeyData: AccessKeyDataTableRow[]) {
+    return this.localize(
+      'server-view-access-keys-tab',
+      'accessKeyCount',
+      String(accessKeyData.length || '...')
+    );
+  }
+
+  _computeHasDataLimits(
+    isDefaultDataLimitEnabled: boolean,
+    accessKeyData: AccessKeyDataTableRow[]
+  ) {
+    return (
+      !isDefaultDataLimitEnabled &&
+      !accessKeyData.some(({dataLimitBytes}) => dataLimitBytes)
+    );
+  }
+
   _closeAddAccessKeyHelpBubble() {
     (this.$.addAccessKeyHelpBubble as OutlineHelpBubble).hide();
   }
@@ -822,20 +848,6 @@ export class ServerView extends DirMixin(PolymerElement) {
       currency: 'USD',
       currencyDisplay: 'code',
     }).format(monthlyCost);
-  }
-
-  _computeManagedServerUtilizationPercentage(
-    numBytes: number,
-    monthlyLimitBytes: number
-  ) {
-    let utilizationPercentage = 0;
-    if (monthlyLimitBytes && numBytes) {
-      utilizationPercentage = Math.round((numBytes / monthlyLimitBytes) * 100);
-    }
-    if (document.documentElement.dir === 'rtl') {
-      return `%${utilizationPercentage}`;
-    }
-    return `${utilizationPercentage}%`;
   }
 
   _selectedTabChanged() {
