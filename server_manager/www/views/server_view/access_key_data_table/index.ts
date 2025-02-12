@@ -43,15 +43,15 @@ import {formatBytes} from '../../../data_formatting';
  */
 export interface AccessKeyDataTableRow {
   accessUrl: string;
-  dataLimitBytes: number;
-  dataUsageBytes: number;
+  dataLimitBytes: number | null;
+  dataUsageBytes: number | null;
   id: string;
   isOnline: boolean;
-  lastConnected?: string;
-  lastTraffic?: string;
+  lastConnected: string | null;
+  lastTraffic: string | null;
   name: string;
-  peakDeviceCount: number;
-  peakDeviceTime?: string;
+  peakDeviceCount: number | null;
+  peakDeviceTime: string | null;
 }
 
 /**
@@ -190,7 +190,7 @@ export class AccessKeyDataTable extends LitElement {
               dataUsageBytes,
               dataLimitBytes,
             }: AccessKeyDataTableRow) => {
-              if (!dataLimitBytes) {
+              if (dataLimitBytes === null) {
                 return html`${formatBytes(dataUsageBytes, this.language)}`;
               }
 
@@ -219,7 +219,11 @@ export class AccessKeyDataTable extends LitElement {
               'server-view-access-keys-peak-devices-tooltip'
             ),
             render: (key: AccessKeyDataTableRow) => {
-              if (!key.peakDeviceTime) {
+              if (key.peakDeviceCount === null) {
+                return html`<span>-</span>`;
+              }
+
+              if (key.peakDeviceTime === null) {
                 return html`<span>${key.peakDeviceCount}</span>`;
               }
 

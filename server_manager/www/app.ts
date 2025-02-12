@@ -1036,46 +1036,56 @@ export class App {
         selectedServer.getServerMetrics(),
         selectedServer.listAccessKeys(),
       ]);
-
-      const NUMBER_OF_ASES_TO_SHOW = 4;
       serverView.bandwidthUsageTotal =
-        serverMetrics.server.dataTransferred?.bytes;
+        serverMetrics.server.dataTransferred?.bytes ?? null;
+
+      if (!serverView.bandwidthUsageTotal) {
+        // support legacy endpoint
+        for (const key of serverMetrics.accessKeys) {
+          serverView.bandwidthUsageTotal += key.dataTransferred?.bytes ?? 0;
+        }
+      }
 
       serverView.bandwidthCurrent =
-        serverMetrics.server.bandwidth?.current.bytes;
+        serverMetrics.server.bandwidth?.current.bytes ?? null;
       serverView.bandwidthPeak =
-        serverMetrics.server.bandwidth?.peak.data.bytes;
+        serverMetrics.server.bandwidth?.peak.data.bytes ?? null;
       serverView.bandwidthPeakTimestamp =
         serverMetrics.server.bandwidth?.peak.timestamp.toLocaleString(
           this.appRoot.language
-        );
+        ) ?? null;
 
-      serverView.bandwidthUsageLocations = serverMetrics.server?.locations
-        ?.sort(
-          (location2, location1) =>
-            location1.dataTransferred?.bytes - location2.dataTransferred?.bytes
-        )
-        .slice(0, NUMBER_OF_ASES_TO_SHOW)
-        .map(server => ({
-          asOrg: server.asOrg,
-          asn: `AS${server.asn}`,
-          countryFlag: this.countryCodeToEmoji(server.location),
-          bytes: server.dataTransferred.bytes,
-        }));
+      const NUMBER_OF_ASES_TO_SHOW = 4;
+      serverView.bandwidthUsageLocations =
+        serverMetrics.server?.locations
+          ?.sort(
+            (location2, location1) =>
+              location1.dataTransferred?.bytes -
+              location2.dataTransferred?.bytes
+          )
+          .slice(0, NUMBER_OF_ASES_TO_SHOW)
+          .map(server => ({
+            asOrg: server.asOrg,
+            asn: `AS${server.asn}`,
+            countryFlag: this.countryCodeToEmoji(server.location),
+            bytes: server.dataTransferred.bytes,
+          })) ?? null;
 
-      serverView.tunnelTimeTotal = serverMetrics.server.tunnelTime?.seconds;
-      serverView.tunnelTimeLocations = serverMetrics.server?.locations
-        ?.sort(
-          (location2, location1) =>
-            location1.tunnelTime?.seconds - location2.tunnelTime?.seconds
-        )
-        .slice(0, NUMBER_OF_ASES_TO_SHOW)
-        .map(server => ({
-          asOrg: server.asOrg,
-          asn: `AS${server.asn}`,
-          countryFlag: this.countryCodeToEmoji(server.location),
-          seconds: server.tunnelTime.seconds,
-        }));
+      serverView.tunnelTimeTotal =
+        serverMetrics.server.tunnelTime?.seconds ?? null;
+      serverView.tunnelTimeLocations =
+        serverMetrics.server?.locations
+          ?.sort(
+            (location2, location1) =>
+              location1.tunnelTime?.seconds - location2.tunnelTime?.seconds
+          )
+          .slice(0, NUMBER_OF_ASES_TO_SHOW)
+          .map(server => ({
+            asOrg: server.asOrg,
+            asn: `AS${server.asn}`,
+            countryFlag: this.countryCodeToEmoji(server.location),
+            seconds: server.tunnelTime.seconds,
+          })) ?? null;
 
       const keyMetricsMap = serverMetrics.accessKeys.reduce((map, key) => {
         map.set(key.accessKeyId, key);
@@ -1087,10 +1097,7 @@ export class App {
         const {connection, dataTransferred} =
           keyMetricsMap.get(accessKey.id) ?? {};
 
-        const lastTrafficDate = connection?.lastTrafficSeen
-          ? connection.lastTrafficSeen
-          : null;
-
+        const lastTrafficDate = connection?.lastTrafficSeen ?? null;
         const currentDate = new Date();
         const fiveMinutesAgo = new Date(currentDate.getTime() - 5 * 60 * 1000);
 
@@ -1101,25 +1108,23 @@ export class App {
           name:
             accessKey.name ||
             this.appRoot.localize('key', 'keyId', accessKey.id),
-          lastConnected: connection?.lastConnected
-            ? connection.lastConnected?.toLocaleString(this.appRoot.language)
-            : null,
-          lastTraffic: lastTrafficDate
-            ? lastTrafficDate?.toLocaleString(this.appRoot.language)
-            : null,
-          peakDeviceCount: connection?.peakDevices.count ?? 0,
-          peakDeviceTime: connection?.peakDevices.timestamp
-            ? connection.peakDevices.timestamp?.toLocaleString(
-                this.appRoot.language
-              )
-            : null,
+          lastConnected:
+            connection?.lastConnected.toLocaleString(this.appRoot.language) ??
+            null,
+          lastTraffic:
+            lastTrafficDate?.toLocaleString(this.appRoot.language) ?? null,
+          peakDeviceCount: connection?.peakDevices.count ?? null,
+          peakDeviceTime:
+            connection?.peakDevices.timestamp.toLocaleString(
+              this.appRoot.language
+            ) ?? null,
           accessUrl: accessKey.accessUrl,
-          dataUsageBytes: dataTransferred?.bytes ?? 0,
+          dataUsageBytes: dataTransferred?.bytes ?? null,
           dataLimitBytes:
             accessKey.dataLimit?.bytes ??
             (serverView.isDefaultDataLimitEnabled
               ? serverView.defaultDataLimitBytes
-              : 0),
+              : null),
         };
       });
     } catch (e) {

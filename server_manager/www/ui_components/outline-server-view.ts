@@ -602,7 +602,6 @@ export class ServerView extends DirMixin(PolymerElement) {
       serverVersion: String,
       showFeatureMetricsDisclaimer: Boolean,
       supportsDefaultDataLimit: Boolean,
-      totalInboundBytes: Number,
       tunnelTimeLocations: Array,
       tunnelTimeTotal: Number,
     };
@@ -701,8 +700,6 @@ export class ServerView extends DirMixin(PolymerElement) {
   isServerReachable = false;
   /** Callback for retrying to display an unreachable server. */
   retryDisplayingServer: () => void = null;
-  totalInboundBytes = 0;
-  totalAverageDevices = 0;
   accessKeyData: AccessKeyDataTableRow[] = [];
   accessKeyDataSortDirection: DataTableSortDirection;
   accessKeyDataSortColumnId: string;

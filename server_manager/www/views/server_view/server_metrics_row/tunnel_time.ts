@@ -34,9 +34,9 @@ export interface ServerMetricsTunnelTimeLocation {
 export class ServerMetricsTunnelTimeRow extends LitElement {
   @property({type: String}) language: string = 'en';
   @property({type: Object}) localize: (...keys: string[]) => string;
-  @property({type: Number}) totalSeconds: number;
-  @property({type: Array}) locations: Array<ServerMetricsTunnelTimeLocation> =
-    [];
+  @property({type: Number}) totalSeconds: number | null;
+  @property({type: Array})
+  locations: Array<ServerMetricsTunnelTimeLocation> | null;
 
   static styles = css`
     :host {
@@ -120,7 +120,7 @@ export class ServerMetricsTunnelTimeRow extends LitElement {
           subtitle: asn.asn,
           highlight: this.formatter.format(asn.seconds / SECONDS_IN_HOUR),
           icon: asn.countryFlag,
-        }))}
+        })) ?? []}
         .subtitle=${this.localize(
           'server-view-server-metrics-tunnel-time-as-breakdown',
           'openItalics',
@@ -150,12 +150,14 @@ export class ServerMetricsTunnelTimeRow extends LitElement {
             ></icon-tooltip>
           </div>
           <div class="tunnel-time-container">
-            <span class="tunnel-time-value"
-              >${this.formatSecondsValue(this.totalSeconds)}</span
-            >
-            <span class="tunnel-time-unit"
-              >${this.formatSecondsUnits(this.totalSeconds)}</span
-            >
+            ${this.totalSeconds === null
+              ? html`<span class="tunnel-time-value">-</span>`
+              : html`<span class="tunnel-time-value"
+                    >${this.formatSecondsValue(this.totalSeconds)}</span
+                  >
+                  <span class="tunnel-time-unit"
+                    >${this.formatSecondsUnits(this.totalSeconds)}</span
+                  >`}
           </div>
         </div>
       </server-metrics-row>
