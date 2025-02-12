@@ -115,7 +115,7 @@ export class ServerMetricsTunnelTimeRow extends LitElement {
   render() {
     return html`
       <server-metrics-row
-        .subcards=${this.locations.map(asn => ({
+        .subcards=${this.locations?.map(asn => ({
           title: asn.asOrg,
           subtitle: asn.asn,
           highlight: this.formatter.format(asn.seconds / SECONDS_IN_HOUR),

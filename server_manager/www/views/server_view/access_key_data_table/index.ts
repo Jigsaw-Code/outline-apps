@@ -151,7 +151,7 @@ export class AccessKeyDataTable extends LitElement {
               'server-view-access-keys-last-connected-tooltip'
             ),
             render: (key: AccessKeyDataTableRow) =>
-              html`${key.lastConnected ?? '-'}`,
+              this.renderTimestamp(key.lastConnected),
             comparator: (a: AccessKeyDataTableRow, b: AccessKeyDataTableRow) =>
               defaultDateComparator(
                 new Date(a.lastConnected),
@@ -167,7 +167,7 @@ export class AccessKeyDataTable extends LitElement {
               'server-view-access-keys-last-active-tooltip'
             ),
             render: (key: AccessKeyDataTableRow) =>
-              html`${key.lastTraffic ?? '-'}`,
+              this.renderTimestamp(key.lastTraffic),
             comparator: (a: AccessKeyDataTableRow, b: AccessKeyDataTableRow) =>
               defaultDateComparator(
                 new Date(a.lastTraffic),
@@ -229,7 +229,7 @@ export class AccessKeyDataTable extends LitElement {
 
               return html`<div style="display: flex; gap: 1rem;">
                 <span>${key.peakDeviceCount}</span
-                ><span>${key.peakDeviceTime}</span>
+                ><span>${this.renderTimestamp(key.peakDeviceTime)}</span>
               </div>`;
             },
             comparator: (a: AccessKeyDataTableRow, b: AccessKeyDataTableRow) =>
@@ -250,6 +250,16 @@ export class AccessKeyDataTable extends LitElement {
         sortDirection=${this.sortDirection}
       ></data-table>
     `;
+  }
+
+  private renderTimestamp(timestamp: string | null) {
+    if (timestamp === null) {
+      return '-';
+    }
+
+    return html`<span
+      >${timestamp.split(/,\s+/).map(part => html`<div>${part}</div>`)}</span
+    >`;
   }
 
   private nameColumnIndex(key: AccessKeyDataTableRow) {
