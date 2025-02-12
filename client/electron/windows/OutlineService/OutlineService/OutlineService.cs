@@ -787,14 +787,16 @@ namespace OutlineService
             gatewayIp = null;
             gatewayInterfaceIndex = -1;
 
-            int tapInterfaceIndex;
+            ISet<int> excludedNetAdapterIndices;
             try
             {
-                tapInterfaceIndex = NetworkInterface.GetAllNetworkInterfaces()
-                    .Where(i => i.Name == TAP_DEVICE_NAME)
-                    .FirstOrDefault()
-                    .GetIPProperties()
-                    .GetIPv4Properties().Index;
+                // Exclude the tap device, the loopback device and non-operational devices
+                var exclusions = NetworkInterface.GetAllNetworkInterfaces()
+                    .Where(i => i.Name == TAP_DEVICE_NAME ||
+                                i.NetworkInterfaceType == NetworkInterfaceType.Loopback ||
+                                i.OperationalStatus != OperationalStatus.Up)
+                    .Select(i => i.GetIPProperties().GetIPv4Properties().Index);
+                excludedNetAdapterIndices = new HashSet<int>(exclusions);
             }
             catch (Exception)
             {
@@ -836,8 +838,8 @@ namespace OutlineService
                     continue;
                 }
 
-                // Must not be the TAP device.
-                if (row.dwForwardIfIndex == tapInterfaceIndex)
+                // Must not be in the excluded adapters (which includes the TAP device).
+                if (excludedNetAdapterIndices.Contains(row.dwForwardIfIndex))
                 {
                     continue;
                 }
