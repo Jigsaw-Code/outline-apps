@@ -71,7 +71,7 @@ interface MetricsJson {
     }[];
   };
   accessKeys: {
-    accessKeyId: string;
+    accessKeyId: number;
     tunnelTime?: {
       seconds: number;
     };
@@ -81,8 +81,8 @@ interface MetricsJson {
     connection: {
       lastConnected: number;
       lastTrafficSeen: number;
-      peakDevices: {
-        count: number;
+      peakDeviceCount: {
+        data: number;
         timestamp: number;
       };
     };
@@ -230,15 +230,17 @@ export class ShadowboxServer implements server.Server {
           locations: json.server.locations,
         },
         accessKeys: json.accessKeys.map(key => ({
-          accessKeyId: key.accessKeyId,
+          accessKeyId: String(key.accessKeyId),
           tunnelTime: key.tunnelTime,
           dataTransferred: key.dataTransferred,
           connection: {
             lastConnected: new Date(key.connection.lastConnected * 1000),
             lastTrafficSeen: new Date(key.connection.lastTrafficSeen * 1000),
             peakDevices: {
-              count: key.connection.peakDevices.count,
-              timestamp: new Date(key.connection.peakDevices.timestamp * 1000),
+              count: key.connection.peakDeviceCount.data,
+              timestamp: new Date(
+                key.connection.peakDeviceCount.timestamp * 1000
+              ),
             },
           },
         })),

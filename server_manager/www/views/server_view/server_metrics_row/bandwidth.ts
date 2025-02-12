@@ -24,7 +24,7 @@ import '../icon_tooltip';
 import './index';
 import '@material/mwc-icon';
 
-export interface ServerMetricsBandwidthRegion {
+export interface ServerMetricsBandwidthLocation {
   bytes: number;
   asn: string;
   asOrg?: string;
@@ -34,7 +34,7 @@ export interface ServerMetricsBandwidthRegion {
 @customElement('server-metrics-bandwidth-row')
 export class ServerMetricsBandwidthRow extends LitElement {
   @property({type: String}) language: string = 'en';
-  @property({type: Object}) localize: (key: string) => string;
+  @property({type: Object}) localize: (...keys: string[]) => string;
   @property({type: Number}) totalBytes: number;
   @property({type: Number}) limitBytes: number;
   @property({type: Number}) limitThreshold: number = 0.8;
@@ -42,7 +42,8 @@ export class ServerMetricsBandwidthRow extends LitElement {
   @property({type: Number}) currentBytes: number;
   @property({type: Number}) peakBytes: number;
   @property({type: String}) peakTimestamp: string;
-  @property({type: Array}) locations: Array<ServerMetricsBandwidthRegion>;
+  @property({type: Array}) locations: Array<ServerMetricsBandwidthLocation> =
+    [];
 
   @property({type: Boolean, reflect: true})
   get bandwidthLimitWarning() {
@@ -276,7 +277,11 @@ export class ServerMetricsBandwidthRow extends LitElement {
           icon: asn.countryFlag,
         }))}
         .subtitle=${this.localize(
-          'server-view-server-metrics-bandwidth-as-breakdown'
+          'server-view-server-metrics-bandwidth-as-breakdown',
+          'openItalics',
+          '<i>',
+          'closeItalics',
+          '</i>'
         )}
       >
         <div class="main-container">
@@ -285,7 +290,13 @@ export class ServerMetricsBandwidthRow extends LitElement {
               <mwc-icon>data_usage</mwc-icon>
               <h2 class="title">
                 ${unsafeHTML(
-                  this.localize('server-view-server-metrics-bandwidth-title')
+                  this.localize(
+                    'server-view-server-metrics-bandwidth-title',
+                    'openItalics',
+                    '<i>',
+                    'closeItalics',
+                    '</i>'
+                  )
                 )}
               </h2>
               <icon-tooltip
@@ -351,7 +362,11 @@ export class ServerMetricsBandwidthRow extends LitElement {
               <span class="peak-title"
                 >${unsafeHTML(
                   this.localize(
-                    'server-view-server-metrics-bandwidth-usage-max'
+                    'server-view-server-metrics-bandwidth-usage-max',
+                    'openItalics',
+                    '<i>',
+                    'closeItalics',
+                    '</i>'
                   )
                 )}</span
               >

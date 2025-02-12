@@ -236,12 +236,6 @@ export interface AccessKeyConnection {
 }
 
 export interface BandwidthStats {
-  total: Data;
-  peak: TimedData<Data>;
-  current: Data;
-}
-
-export interface BandwidthStats {
   peak: TimedData<Data>;
   current: Data;
 }

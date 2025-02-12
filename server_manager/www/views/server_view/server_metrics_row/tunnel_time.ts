@@ -23,7 +23,7 @@ import './index';
 import '@material/mwc-icon';
 
 const SECONDS_IN_HOUR = 60 * 60;
-export interface ServerMetricsTunnelTimeRegion {
+export interface ServerMetricsTunnelTimeLocation {
   seconds: number;
   asn: string;
   asOrg?: string;
@@ -33,9 +33,10 @@ export interface ServerMetricsTunnelTimeRegion {
 @customElement('server-metrics-tunnel-time-row')
 export class ServerMetricsTunnelTimeRow extends LitElement {
   @property({type: String}) language: string = 'en';
-  @property({type: Object}) localize: (key: string) => string;
+  @property({type: Object}) localize: (...keys: string[]) => string;
   @property({type: Number}) totalSeconds: number;
-  @property({type: Array}) locations: Array<ServerMetricsTunnelTimeRegion>;
+  @property({type: Array}) locations: Array<ServerMetricsTunnelTimeLocation> =
+    [];
 
   static styles = css`
     :host {
@@ -121,7 +122,11 @@ export class ServerMetricsTunnelTimeRow extends LitElement {
           icon: asn.countryFlag,
         }))}
         .subtitle=${this.localize(
-          'server-view-server-metrics-tunnel-time-as-breakdown'
+          'server-view-server-metrics-tunnel-time-as-breakdown',
+          'openItalics',
+          '<i>',
+          'closeItalics',
+          '</i>'
         )}
       >
         <div class="main-container">
@@ -129,7 +134,13 @@ export class ServerMetricsTunnelTimeRow extends LitElement {
             <mwc-icon>timer</mwc-icon>
             <h2 class="title">
               ${unsafeHTML(
-                this.localize('server-view-server-metrics-tunnel-time-title')
+                this.localize(
+                  'server-view-server-metrics-tunnel-time-title',
+                  'openItalics',
+                  '<i>',
+                  'closeItalics',
+                  '</i>'
+                )
               )}
             </h2>
             <icon-tooltip

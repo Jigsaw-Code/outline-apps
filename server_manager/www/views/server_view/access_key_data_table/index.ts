@@ -67,7 +67,7 @@ export enum AccessKeyDataTableEvent {
 @customElement('access-key-data-table')
 export class AccessKeyDataTable extends LitElement {
   @property({type: Array}) accessKeys: AccessKeyDataTableRow[];
-  @property({type: Object}) localize: (messageId: string) => string;
+  @property({type: Object}) localize: (...messageIds: string[]) => string;
   @property({type: String}) language: string;
   @property({type: String}) serverVersion: string =
     SERVER_DATA_LIMITS_SUPPORT_VERSION;
@@ -177,7 +177,13 @@ export class AccessKeyDataTable extends LitElement {
           {
             id: 'usage',
             displayName: html`${unsafeHTML(
-              this.localize('server-view-access-keys-usage-column-header')
+              this.localize(
+                'server-view-access-keys-usage-column-header',
+                'openItalics',
+                '<i>',
+                'closeItalics',
+                '</i>'
+              )
             )}`,
             tooltip: this.localize('server-view-access-keys-usage-tooltip'),
             render: ({
@@ -202,7 +208,11 @@ export class AccessKeyDataTable extends LitElement {
             id: 'peakDevices',
             displayName: html`${unsafeHTML(
               this.localize(
-                'server-view-access-keys-peak-devices-column-header'
+                'server-view-access-keys-peak-devices-column-header',
+                'openItalics',
+                '<i>',
+                'closeItalics',
+                '</i>'
               )
             )}`,
             tooltip: this.localize(

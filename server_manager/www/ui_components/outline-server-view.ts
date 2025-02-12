@@ -51,8 +51,8 @@ import {
   AccessKeyDataTableRow,
 } from '../views/server_view/access_key_data_table';
 import {DataTableSortDirection} from '../views/server_view/access_key_data_table/data_table';
-import {ServerMetricsBandwidthRegion} from '../views/server_view/server_metrics_row/bandwidth';
-import {ServerMetricsTunnelTimeRegion} from '../views/server_view/server_metrics_row/tunnel_time';
+import {ServerMetricsBandwidthLocation} from '../views/server_view/server_metrics_row/bandwidth';
+import {ServerMetricsTunnelTimeLocation} from '../views/server_view/server_metrics_row/tunnel_time';
 
 export const MY_CONNECTION_USER_ID = '0';
 
@@ -424,7 +424,7 @@ export class ServerView extends DirMixin(PolymerElement) {
           noink=""
         >
           <paper-tab name="connections">
-            [[localize('server-view-access-keys-tab', accessKeyRows.length)]]
+            [[localize('server-view-access-keys-tab', 'accessKeyCount', accessKeyData.length)]]
           </paper-tab>
           <paper-tab name="metrics"
             >[[localize('server-view-server-metrics-tab')]]</paper-tab
@@ -672,10 +672,10 @@ export class ServerView extends DirMixin(PolymerElement) {
   bandwidthCurrent = 0;
   bandwidthPeak = 0;
   bandwidthPeakTimestamp = '';
-  bandwidthUsageLocations: Partial<ServerMetricsBandwidthRegion>[] = [];
+  bandwidthUsageLocations: Partial<ServerMetricsBandwidthLocation>[] = [];
 
   tunnelTimeTotal = 0;
-  tunnelTimeLocations: Partial<ServerMetricsTunnelTimeRegion>[] = [];
+  tunnelTimeLocations: Partial<ServerMetricsTunnelTimeLocation>[] = [];
 
   serverId = '';
   metricsId = '';
