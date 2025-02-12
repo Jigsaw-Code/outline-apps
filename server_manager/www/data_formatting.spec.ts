@@ -56,7 +56,7 @@ describe('formatBytes', () => {
     });
   } else {
     it('Formats data amounts', () => {
-      expect(formatting.formatBytes(2.1, 'zh-TW')).toEqual('2 byte');
+      expect(formatting.formatBytes(2.1, 'zh-TW')).toEqual('2 B');
       expect(formatting.formatBytes(7.8 * 10 ** 3, 'ar')).toEqual('8 كيلوبايت');
       expect(formatting.formatBytes(1.5 * 10 ** 6, 'tr')).toEqual('1,5 MB');
       expect(formatting.formatBytes(10 * 10 ** 9, 'jp')).toEqual('10 GB');

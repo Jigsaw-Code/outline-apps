@@ -16,14 +16,9 @@ import {CustomError} from '@outline/infrastructure/custom_error';
 import * as path_api from '@outline/infrastructure/path_api';
 import {sleep} from '@outline/infrastructure/sleep';
 import * as Sentry from '@sentry/electron/renderer';
-import {Comparator, Heap} from 'heap-js';
 import * as semver from 'semver';
 
-import {
-  DisplayDataAmount,
-  displayDataAmountToBytes,
-  formatBytes,
-} from './data_formatting';
+import {DisplayDataAmount, displayDataAmountToBytes} from './data_formatting';
 import {filterOptions, getShortName} from './location_formatting';
 import {parseManualServerConfig} from './management_urls';
 import type {AppRoot, ServerListEntry} from './ui_components/app-root';
@@ -48,7 +43,6 @@ const CHANGE_KEYS_PORT_VERSION = '1.0.0';
 const DATA_LIMITS_VERSION = '1.1.0';
 const CHANGE_HOSTNAME_VERSION = '1.2.0';
 const KEY_SETTINGS_VERSION = '1.6.0';
-const SECONDS_IN_HOUR = 60 * 60;
 const MAX_ACCESS_KEY_DATA_LIMIT_BYTES = 50 * 10 ** 9; // 50GB
 const CANCELLED_ERROR = new Error('Cancelled');
 const CHARACTER_TABLE_FLAG_SYMBOL_OFFSET = 127397;
@@ -1049,66 +1043,48 @@ export class App {
     try {
       const serverMetrics = await selectedServer.getServerMetrics();
 
-      let bandwidthUsageTotal = 0;
-      const bandwidthUsageComparator: Comparator<server_model.ServerMetrics> = (
-        server1,
-        server2
-      ) => server2.dataTransferred.bytes - server1.dataTransferred.bytes;
-      const bandwidthUsageHeap = new Heap(bandwidthUsageComparator);
-
-      let tunnelTimeTotal = 0;
-      const tunnelTimeComparator: Comparator<server_model.ServerMetrics> = (
-        server1,
-        server2
-      ) => server2.tunnelTime.seconds - server1.tunnelTime.seconds;
-      const tunnelTimeHeap = new Heap(tunnelTimeComparator);
-
-      for (const server of serverMetrics.server) {
-        bandwidthUsageTotal += server.dataTransferred.bytes;
-        bandwidthUsageHeap.push(server);
-
-        tunnelTimeTotal += server.tunnelTime.seconds;
-        tunnelTimeHeap.push(server);
-      }
-
       // support legacy metrics view
-      serverView.totalInboundBytes = bandwidthUsageTotal;
+      serverView.totalInboundBytes =
+        serverMetrics.server.dataTransferred?.bytes;
 
       const NUMBER_OF_ASES_TO_SHOW = 4;
-      serverView.bandwidthUsageTotal = formatBytes(
-        bandwidthUsageTotal,
-        this.appRoot.language
-      );
+      serverView.bandwidthUsageTotal =
+        serverMetrics.server.dataTransferred?.bytes;
 
-      serverView.bandwidthUsageRegions = bandwidthUsageHeap
-        .top(NUMBER_OF_ASES_TO_SHOW)
-        .reverse()
+      serverView.bandwidthCurrent =
+        serverMetrics.server.bandwidth?.current.bytes;
+      serverView.bandwidthPeak =
+        serverMetrics.server.bandwidth?.peak.data.bytes;
+      serverView.bandwidthPeakTimestamp =
+        serverMetrics.server.bandwidth?.peak.timestamp.toLocaleString(
+          this.appRoot.language
+        );
+
+      serverView.bandwidthUsageLocations = serverMetrics.server?.locations
+        ?.sort(
+          (location2, location1) =>
+            location1.dataTransferred?.bytes - location2.dataTransferred?.bytes
+        )
+        .slice(0, NUMBER_OF_ASES_TO_SHOW)
         .map(server => ({
-          title: server.asOrg,
-          subtitle: `AS${server.asn}`,
-          icon: this.countryCodeToEmoji(server.location),
-          highlight: formatBytes(
-            server.dataTransferred.bytes,
-            this.appRoot.language
-          ),
+          asOrg: server.asOrg,
+          asn: `AS${server.asn}`,
+          countryFlag: this.countryCodeToEmoji(server.location),
+          bytes: server.dataTransferred.bytes,
         }));
 
-      serverView.tunnelTimeTotal = this.formatHourValue(
-        tunnelTimeTotal / SECONDS_IN_HOUR
-      );
-      serverView.tunnelTimeTotalLabel = this.formatHourUnits(
-        tunnelTimeTotal / SECONDS_IN_HOUR
-      );
-      serverView.tunnelTimeRegions = tunnelTimeHeap
-        .top(NUMBER_OF_ASES_TO_SHOW)
-        .reverse()
+      serverView.tunnelTimeTotal = serverMetrics.server.tunnelTime?.seconds;
+      serverView.tunnelTimeLocations = serverMetrics.server?.locations
+        ?.sort(
+          (location2, location1) =>
+            location1.tunnelTime?.seconds - location2.tunnelTime?.seconds
+        )
+        .slice(0, NUMBER_OF_ASES_TO_SHOW)
         .map(server => ({
-          title: server.asOrg,
-          subtitle: `ASN${server.asn}`,
-          icon: this.countryCodeToEmoji(server.location),
-          highlight: this.formatHourValueAndUnit(
-            server.tunnelTime.seconds / SECONDS_IN_HOUR
-          ),
+          asOrg: server.asOrg,
+          asn: `AS${server.asn}`,
+          countryFlag: this.countryCodeToEmoji(server.location),
+          seconds: server.tunnelTime.seconds,
         }));
 
       // Update all the displayed access keys, even if usage didn't change, in case data limits did.
@@ -1149,30 +1125,6 @@ export class App {
       }
       throw e;
     }
-  }
-
-  private formatHourValueAndUnit(hours: number) {
-    return new Intl.NumberFormat(this.appRoot.language, {
-      style: 'unit',
-      unit: 'hour',
-      unitDisplay: 'long',
-    }).format(hours);
-  }
-
-  private formatHourUnits(hours: number) {
-    const formattedValue = this.formatHourValue(hours);
-    const formattedValueAndUnit = this.formatHourValueAndUnit(hours);
-
-    return formattedValueAndUnit
-      .split(formattedValue)
-      .find(_ => _)
-      .trim();
-  }
-
-  private formatHourValue(hours: number) {
-    return new Intl.NumberFormat(this.appRoot.language, {
-      unit: 'hour',
-    }).format(hours);
   }
 
   private countryCodeToEmoji(countryCode: string) {
