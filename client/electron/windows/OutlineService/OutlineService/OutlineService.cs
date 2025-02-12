@@ -105,6 +105,7 @@ namespace OutlineService
         private string proxyIp;
         private string gatewayIp;
         private int gatewayInterfaceIndex;
+        private ConnectionStatus connStatus = ConnectionStatus.Disconnected;
 
         // Time, in ms, to wait until considering smartdnsblock.exe to have successfully launched.
         private const int SMART_DNS_BLOCK_TIMEOUT_MS = 1000;
@@ -444,6 +445,8 @@ namespace OutlineService
             {
                 throw new Exception($"could not redirect IPv4 traffic: {e.Message}");
             }
+
+            connStatus = ConnectionStatus.Connected;
         }
 
         // Undoes and removes as many as possible of the routes and other
@@ -515,6 +518,8 @@ namespace OutlineService
                 eventLog.WriteEntry($"failed to stop smartdnsblock: {e.Message}",
                     EventLogEntryType.Warning);
             }
+
+            connStatus = ConnectionStatus.Disconnected;
         }
 
         // Disable "Smart Multi-Homed Name Resolution", to ensure the system uses only the
@@ -899,7 +904,9 @@ namespace OutlineService
                 eventLog.WriteEntry($"network changed but no gateway found: {e.Message}");
             }
 
-            if (previousGatewayIp == gatewayIp && previousGatewayInterfaceIndex == gatewayInterfaceIndex)
+            if (previousGatewayIp == gatewayIp &&
+                previousGatewayInterfaceIndex == gatewayInterfaceIndex &&
+                connStatus == ConnectionStatus.Connected)
             {
                 // Only send on actual change, to prevent duplicate notifications (mostly
                 // harmless but can make debugging harder).
@@ -908,6 +915,7 @@ namespace OutlineService
             }
             else if (gatewayIp == null)
             {
+                connStatus = ConnectionStatus.Reconnecting;
                 SendConnectionStatusChange(ConnectionStatus.Reconnecting);
 
                 // Stop capturing IPv4 traffic in order to prevent a routing loop in the TAP device.
@@ -939,11 +947,9 @@ namespace OutlineService
                 eventLog.WriteEntry($"could not refresh IPv4 redirect: {e.Message}");
                 return;
             }
-            finally
-            {
-                // Always send the status update since network adapters might have been updated
-                SendConnectionStatusChange(ConnectionStatus.Connected);
-            }
+
+            connStatus = ConnectionStatus.Connected;
+            SendConnectionStatusChange(ConnectionStatus.Connected);
 
             try
             {
