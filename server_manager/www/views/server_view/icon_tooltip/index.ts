@@ -33,6 +33,7 @@ export class IconTooltip extends LitElement {
   static styles = css`
     :host {
       --icon-tooltip-icon-size: 1.85rem;
+      --icon-tooltip-button-size: 2rem;
       --icon-tooltip-icon-color: hsla(140, 3%, 77%, 1);
 
       color: var(--icon-tooltip-icon-color);
@@ -41,6 +42,10 @@ export class IconTooltip extends LitElement {
     mwc-icon,
     mwc-icon-button {
       --mdc-icon-size: var(--icon-tooltip-icon-size);
+    }
+
+    mwc-icon-button {
+      --mdc-icon-button-size: var(--icon-tooltip-button-size);
     }
   `;
 

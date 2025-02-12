@@ -130,7 +130,7 @@ export class DataTable<T extends object> extends LitElement {
       --data-table-font-family: 'Inter', system-ui;
 
       --data-table-cell-padding: 1rem;
-      --data-table-cell-gap: 0.5rem;
+      --data-table-cell-gap: 0.2rem;
       --data-table-sides-padding: 2rem;
 
       --data-table-header-icon-size: 1.2rem;
@@ -188,8 +188,13 @@ export class DataTable<T extends object> extends LitElement {
       --mdc-icon-size: var(--data-table-header-icon-size);
     }
 
-    th > help-tooltip {
-      --help-tooltip-icon-size: var(--data-table-header-icon-size);
+    th > icon-tooltip {
+      --icon-tooltip-icon-size: var(--data-table-header-icon-size);
+      --icon-tooltip-button-size: 1.6rem;
+    }
+
+    th > mwc-icon {
+      --mdc-icon-size: var(--data-table-header-icon-size);
     }
 
     th:first-child {
@@ -226,8 +231,8 @@ export class DataTable<T extends object> extends LitElement {
       text-transform: uppercase;
     }
 
-    label > help-tooltip {
-      --help-tooltip-icon-size: var(--data-table-row-label-font-size);
+    label > icon-tooltip {
+      --icon-tooltip-icon-size: var(--data-table-row-label-font-size);
     }
 
     /*
