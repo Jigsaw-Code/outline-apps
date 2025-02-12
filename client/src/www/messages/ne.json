@@ -93,7 +93,7 @@
   "server-default-name-outline": "Outline सर्भर",
   "server-detected": "कृपया तपाईं यो सर्भर हाल्न चाहनुहुन्छ भन्ने कुरा पुष्टि गर्नुहोस्।",
   "server-disconnected": "“{serverName}” बाट डिस्कनेक्ट गरिएको छ",
-  "server-forget": "अब नदेखाउनुहोस्",
+  "server-forget": "हटाउनुहोस्",
   "server-forgotten": "अब “{serverName}” देखाइने छैन।",
   "server-forgotten-undo": "“{serverName}” सर्भर रिस्टोर गरिएको छ।",
   "server-rename": "नाम बदल्नुहोस्",

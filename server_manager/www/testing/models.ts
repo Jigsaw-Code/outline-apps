@@ -269,10 +269,13 @@ export class FakeManualServer
     if (await this.getSupportedExperimentalUniversalMetricsEndpoint()) {
       return {
         server: {
+          tunnelTime: {
+            seconds: 0,
+          },
           dataTransferred: {
-            total: {
-              bytes: 0,
-            },
+            bytes: 0,
+          },
+          bandwidth: {
             current: {
               bytes: 0,
             },

@@ -43,7 +43,7 @@ export const Bandwidth = () => {
     currentBytes=${1.2 * 1000 * 1000 * 1000}
     peakBytes=${20.8 * 1000 * 1000 * 1000}
     peakTimestamp="2/19/2025 22:41:38"
-    .regions=${[
+    .locations=${[
       {
         bytes: 265 * 1000 * 1000 * 1000,
         asOrg: 'Iran Telecommunication Company PJS',
@@ -94,7 +94,7 @@ export const BandwidthWarning = () => {
     currentBytes=${1.2 * 1000 * 1000 * 1000}
     peakBytes=${20.8 * 1000 * 1000 * 1000}
     peakTimestamp="2/19/2025 22:41:38"
-    .regions=${[
+    .locations=${[
       {
         bytes: 265 * 1000 * 1000 * 1000,
         asOrg: 'Iran Telecommunication Company PJS',

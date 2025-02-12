@@ -1039,14 +1039,14 @@ export class App {
 
       const NUMBER_OF_ASES_TO_SHOW = 4;
       serverView.bandwidthUsageTotal =
-        serverMetrics.server.dataTransferred?.total.bytes;
+        serverMetrics.server.dataTransferred?.bytes;
 
       serverView.bandwidthCurrent =
-        serverMetrics.server.dataTransferred?.current.bytes;
+        serverMetrics.server.bandwidth?.current.bytes;
       serverView.bandwidthPeak =
-        serverMetrics.server.dataTransferred?.peak.data.bytes;
+        serverMetrics.server.bandwidth?.peak.data.bytes;
       serverView.bandwidthPeakTimestamp =
-        serverMetrics.server.dataTransferred?.peak.timestamp.toLocaleString(
+        serverMetrics.server.bandwidth?.peak.timestamp.toLocaleString(
           this.appRoot.language
         );
 
