@@ -1106,6 +1106,13 @@ export class App {
         const resolveKeyName = (key: server_model.AccessKey) =>
           key.name || this.appRoot.localize('key', 'keyId', key.id);
 
+        let dataLimit = accessKey.dataLimit;
+        if (!dataLimit && serverView.isDefaultDataLimitEnabled) {
+          dataLimit = {
+            bytes: serverView.defaultDataLimitBytes,
+          };
+        }
+
         if (!accessKeyMetrics) {
           return {
             ...accessKey,
@@ -1114,6 +1121,7 @@ export class App {
             dataTransferred: {
               bytes: 0,
             },
+            dataLimit,
           };
         }
 
@@ -1127,13 +1135,6 @@ export class App {
           isOnline =
             accessKeyMetrics.connection.lastTrafficSeen >= fiveMinutesAgo &&
             accessKeyMetrics.connection.lastTrafficSeen <= currentDate;
-        }
-
-        let dataLimit = accessKey.dataLimit;
-        if (!dataLimit && serverView.isDefaultDataLimitEnabled) {
-          dataLimit = {
-            bytes: serverView.defaultDataLimitBytes,
-          };
         }
 
         return {

@@ -336,7 +336,7 @@ export class DataTable<T extends object> extends LitElement {
       return;
     }
 
-    if (columnProperties.id !== this.sortColumnId) {
+    if (this.sortColumnId && columnProperties.id !== this.sortColumnId) {
       return this.dispatchEvent(
         new CustomEvent(DataTableEvent.SORT, {
           detail: {

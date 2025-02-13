@@ -90,6 +90,7 @@ export class IconTooltip extends LitElement {
       padding: 0.3rem;
       position: fixed;
       white-space: pre-line;
+      transform: translateX(-50%);
       width: max-content;
       word-wrap: break-word;
       z-index: 1000;
