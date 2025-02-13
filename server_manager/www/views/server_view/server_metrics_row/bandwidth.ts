@@ -54,7 +54,8 @@ export class ServerMetricsBandwidthRow extends LitElement {
 
   static styles = css`
     :host {
-      --server-metrics-bandwidth-row-icon-size: 1.38rem;
+      --server-metrics-bandwidth-row-icon-size: 1rem;
+      --server-metrics-bandwidth-row-icon-button-size: 1.3rem;
 
       --server-metrics-bandwidth-row-font-family: 'Inter', system-ui;
       --server-metrics-bandwidth-row-title-color: hsla(0, 0%, 100%, 0.7);
@@ -136,7 +137,10 @@ export class ServerMetricsBandwidthRow extends LitElement {
     }
 
     icon-tooltip {
-      --icon-tooltip-icon-size: var(--server-metrics-tunnel-time-row-icon-size);
+      --icon-tooltip-icon-size: var(--server-metrics-bandwidth-row-icon-size);
+      --icon-tooltip-button-size: var(
+        --server-metrics-bandwidth-row-icon-button-size
+      );
     }
 
     .bandwidth-container {

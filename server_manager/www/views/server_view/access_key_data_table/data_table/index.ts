@@ -141,6 +141,8 @@ export class DataTable<T extends object> extends LitElement {
 
       --data-table-collapsed-vertical-padding: 1.5rem;
       --data-table-collapsed-row-label-font-size: 0.7rem;
+      --data-table-collapsed-row-label-icon-size: 1rem;
+      --data-table-collapsed-row-label-icon-button-size: 1.35rem;
       --data-table-collapsed-row-label-gap: 0.25rem;
     }
 
@@ -259,7 +261,10 @@ export class DataTable<T extends object> extends LitElement {
     }
 
     label > icon-tooltip {
-      --icon-tooltip-icon-size: var(--data-table-row-label-font-size);
+      --icon-tooltip-icon-size: var(--data-table-collapsed-row-label-icon-size);
+      --icon-tooltip-button-size: var(
+        --data-table-collapsed-row-label-icon-button-size
+      );
     }
 
     /*
@@ -351,7 +356,7 @@ export class DataTable<T extends object> extends LitElement {
     return html`<td>
       <label
         >${columnProperties?.displayName ?? nothing}${columnProperties?.tooltip
-          ? html`<help-tooltip text=${columnProperties.tooltip}></help-tooltip>`
+          ? html`<icon-tooltip text=${columnProperties.tooltip}></icon-tooltip>`
           : nothing}</label
       >
       <span class="data-value">${columnProperties.render(row)}</span>

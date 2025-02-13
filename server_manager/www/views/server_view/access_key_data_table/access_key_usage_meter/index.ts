@@ -46,7 +46,7 @@ export class AccessKeyUsageMeter extends LitElement {
       --access-key-usage-meter-color: hsla(167, 57%, 61%, 0.88);
       --access-key-usage-meter-text-color: hsl(0, 0%, 79%);
 
-      --access-key-usage-meter-warning-color: hsla(51, 73%, 91%, 1);
+      --access-key-usage-meter-warning-color: hsla(42, 100%, 63%, 1);
       --access-key-usage-meter-warning-text-color: hsla(39, 77%, 53%, 1);
 
       flex-grow: 1;

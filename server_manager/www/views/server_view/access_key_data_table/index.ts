@@ -241,13 +241,13 @@ export class AccessKeyDataTable extends LitElement {
               }
 
               if (connection.peakDeviceCount.timestamp === null) {
-                return html`<span
+                return html`<span style="font-weight: bold;"
                   >${this.formatNumber(connection.peakDeviceCount.data)}</span
                 >`;
               }
 
               return html`<div style="display: flex; gap: 1rem;">
-                <span
+                <span style="font-weight: bold;"
                   >${this.formatNumber(connection.peakDeviceCount.data)}</span
                 ><span
                   >${this.renderDate(

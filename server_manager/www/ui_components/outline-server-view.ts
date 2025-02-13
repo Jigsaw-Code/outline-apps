@@ -520,7 +520,7 @@ export class ServerView extends DirMixin(PolymerElement) {
                 metrics="[[serverMetricsData]]"
               ></server-metrics-bandwidth-row>
               <server-metrics-tunnel-time-row
-                language="[[lagugage]]"
+                language="[[language]]"
                 localize="[[localize]]"
                 locations="[[serverMetricsTunnelTimeLocations]]"
                 metrics="[[serverMetricsData]]"

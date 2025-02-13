@@ -42,7 +42,8 @@ export class ServerMetricsTunnelTimeRow extends LitElement {
 
   static styles = css`
     :host {
-      --server-metrics-tunnel-time-row-icon-size: 1.38rem;
+      --server-metrics-tunnel-time-row-icon-size: 1rem;
+      --server-metrics-tunnel-time-row-icon-button-size: 1.3rem;
 
       --server-metrics-tunnel-time-row-font-family: 'Inter', system-ui;
       --server-metrics-tunnel-time-row-title-color: hsla(0, 0%, 100%, 0.7);
@@ -79,6 +80,9 @@ export class ServerMetricsTunnelTimeRow extends LitElement {
 
     icon-tooltip {
       --icon-tooltip-icon-size: var(--server-metrics-tunnel-time-row-icon-size);
+      --icon-tooltip-button-size: var(
+        --server-metrics-tunnel-time-row-icon-button-size
+      );
     }
 
     mwc-icon {
