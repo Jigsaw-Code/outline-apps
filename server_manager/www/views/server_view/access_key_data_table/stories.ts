@@ -55,44 +55,77 @@ export default {
         id: '0',
         name: 'Key 001',
         isOnline: true,
-        lastConnected: '2/19/2025 10:08:34',
-        lastTraffic: '2/19/2025 16:54:03',
-        dataUsageBytes: 62 * 1000 * 1000,
-        dataLimitBytes: 100 * 1000 * 1000,
-        peakDeviceCount: 3,
-        peakDeviceTime: '2/17/2025 18:32:07',
+        connection: {
+          lastConnected: new Date('2/19/2025 10:08:34'),
+          lastTrafficSeen: new Date('2/19/2025 16:54:03'),
+          peakDeviceCount: {
+            data: 3,
+            timestamp: new Date('2/17/2025 18:32:07'),
+          },
+        },
+        dataTransferred: {
+          bytes: 62 * 1000 * 1000,
+        },
+        dataLimit: {
+          bytes: 100 * 1000 * 1000,
+        },
       },
       {
         id: '1',
         name: 'Key 002',
         isOnline: true,
-        lastConnected: '2/19/2025 9:25:43',
-        lastTraffic: '2/19/2025 17:02:21',
-        dataUsageBytes: 86 * 1000 * 1000,
-        dataLimitBytes: 100 * 1000 * 1000,
-        peakDeviceCount: 17,
-        peakDeviceTime: '2/19/2025 22:41:38',
+        connection: {
+          lastConnected: new Date('2/19/2025 9:25:43'),
+          lastTrafficSeen: new Date('2/19/2025 17:02:21'),
+          peakDeviceCount: {
+            data: 17,
+            timestamp: new Date('2/19/2025 22:41:38'),
+          },
+        },
+        dataTransferred: {
+          bytes: 86 * 1000 * 1000,
+        },
+        dataLimit: {
+          bytes: 100 * 1000 * 1000,
+        },
       },
       {
         id: '2',
         name: 'Key 003',
         isOnline: false,
-        lastConnected: '2/12/2025 11:56:18',
-        lastTraffic: '1/30/2025 7:02:31',
-        dataUsageBytes: 45 * 1000 * 1000,
-        dataLimitBytes: 100 * 1000 * 1000,
-        peakDeviceCount: 2,
-        peakDeviceTime: '1/29/2025 8:48:29',
+        connection: {
+          lastConnected: new Date('2/12/2025 11:56:18'),
+          lastTrafficSeen: new Date('1/30/2025 7:02:31'),
+          peakDeviceCount: {
+            data: 2,
+            timestamp: new Date('1/29/2025 8:48:29'),
+          },
+        },
+        dataTransferred: {
+          bytes: 45 * 1000 * 1000,
+        },
+        dataLimit: {
+          bytes: 100 * 1000 * 1000,
+        },
       },
       {
         id: '3',
         name: 'Key 004',
         isOnline: false,
-        lastConnected: '9/14/2024 14:26:02',
-        lastTraffic: '9/14/2024 19:17:51',
-        dataUsageBytes: 0,
-        dataLimitBytes: 100 * 1000 * 1000,
-        peakDeviceCount: 0,
+        connection: {
+          lastConnected: new Date('9/14/2024 14:26:02'),
+          lastTrafficSeen: new Date('9/14/2024 19:17:51'),
+          peakDeviceCount: {
+            data: 0,
+            timestamp: new Date('1/29/2025 8:48:29'),
+          },
+        },
+        dataTransferred: {
+          bytes: 0 * 1000 * 1000,
+        },
+        dataLimit: {
+          bytes: 100 * 1000 * 1000,
+        },
       },
     ],
     sortColumnId: 'peakDevices',

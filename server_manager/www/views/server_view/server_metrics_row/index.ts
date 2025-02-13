@@ -36,13 +36,13 @@ export interface ServerMetricsData {
       data: {
         bytes: number;
       };
-      timestamp: Date | null;
+      timestamp?: Date;
     };
     current: {
       data: {
         bytes: number;
       };
-      timestamp: Date | null;
+      timestamp?: Date;
     };
   };
 }

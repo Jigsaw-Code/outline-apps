@@ -160,6 +160,7 @@ export class DataTable<T extends object> extends LitElement {
     }
 
     table {
+      background-color: var(--data-table-background-color);
       display: grid;
       grid-template-columns: repeat(var(--data-table-columns), auto);
       isolation: isolate;

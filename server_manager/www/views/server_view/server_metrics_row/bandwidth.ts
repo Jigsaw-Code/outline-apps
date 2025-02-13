@@ -38,7 +38,7 @@ export class ServerMetricsBandwidthRow extends LitElement {
   @property({type: Object}) localize: (...keys: string[]) => string;
   @property({type: Object}) metrics: ServerMetricsData;
   @property({type: Number}) dataLimitBytes: number;
-  @property({type: Number}) dataLimitThreshold: number;
+  @property({type: Number}) dataLimitThreshold: number = 0.8;
   @property({type: Boolean}) hasAccessKeyDataLimits: boolean;
   @property({type: Array})
   locations: Array<ServerMetricsBandwidthLocation>;
