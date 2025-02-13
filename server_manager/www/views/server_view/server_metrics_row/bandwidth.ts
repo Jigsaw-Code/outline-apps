@@ -18,6 +18,7 @@ import {LitElement, html, css, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
+import type {ServerMetricsData} from './index';
 import {formatBytes, getDataFormattingParams} from '../../../data_formatting';
 
 import '../icon_tooltip';
@@ -35,23 +36,20 @@ export interface ServerMetricsBandwidthLocation {
 export class ServerMetricsBandwidthRow extends LitElement {
   @property({type: String}) language: string = 'en';
   @property({type: Object}) localize: (...keys: string[]) => string;
-  @property({type: Number}) totalBytes: number | null;
-  @property({type: Number}) limitBytes: number | null;
-  @property({type: Number}) limitThreshold: number = 0.8;
-  @property({type: Boolean}) hasDataLimits: boolean = false;
-  @property({type: Number}) currentBytes: number | null;
-  @property({type: Number}) peakBytes: number | null;
-  @property({type: String}) peakTimestamp: string | null;
+  @property({type: Object}) metrics: ServerMetricsData;
+  @property({type: Number}) dataLimitBytes: number;
+  @property({type: Number}) dataLimitThreshold: number;
+  @property({type: Boolean}) hasAccessKeyDataLimits: boolean;
   @property({type: Array})
-  locations: Array<ServerMetricsBandwidthLocation> | null;
+  locations: Array<ServerMetricsBandwidthLocation>;
 
   @property({type: Boolean, reflect: true})
   get bandwidthLimitWarning() {
-    return this.bandwidthPercentage >= this.limitThreshold;
+    return this.bandwidthPercentage >= this.dataLimitThreshold;
   }
 
   get bandwidthPercentage() {
-    return this.totalBytes / this.limitBytes;
+    return this.metrics.dataTransferred.bytes / this.dataLimitBytes;
   }
 
   static styles = css`
@@ -270,12 +268,12 @@ export class ServerMetricsBandwidthRow extends LitElement {
   render() {
     return html`
       <server-metrics-row
-        .subcards=${this.locations?.map(asn => ({
+        .subcards=${this.locations.map(asn => ({
           title: asn.asOrg,
           subtitle: asn.asn,
           highlight: formatBytes(asn.bytes, this.language),
           icon: asn.countryFlag,
-        })) ?? []}
+        }))}
         .subtitle=${this.localize(
           'server-view-server-metrics-bandwidth-as-breakdown',
           'openItalics',
@@ -306,43 +304,50 @@ export class ServerMetricsBandwidthRow extends LitElement {
               ></icon-tooltip>
             </div>
             <div class="bandwidth-container">
-              ${this.totalBytes === null
-                ? html`<span class="bandwidth-percentage">-</span>`
-                : html`<span class="bandwidth-percentage"
+              ${this.metrics.dataTransferred
+                ? html`<span class="bandwidth-percentage"
                       >${this.formatPercentage(this.bandwidthPercentage)}</span
                     >
                     <span class="bandwidth-fraction"
-                      >${formatBytes(this.totalBytes, this.language)}
-                      /${formatBytes(this.limitBytes, this.language)}</span
+                      >${formatBytes(
+                        this.metrics.dataTransferred.bytes,
+                        this.language
+                      )}
+                      /${formatBytes(this.dataLimitBytes, this.language)}</span
                     >
                     <span class="bandwidth-progress-container">
                       <progress
-                        max=${this.limitBytes}
-                        value=${this.totalBytes}
+                        max=${this.dataLimitBytes}
+                        value=${this.metrics.dataTransferred.bytes}
                       ></progress>
                       <icon-tooltip
-                        text="${this.hasDataLimits
+                        text="${this.hasAccessKeyDataLimits
                           ? null
                           : this.localize(
                               'server-view-server-metrics-bandwidth-limit-tooltip'
                             )}"
                         icon="warning"
                       ></icon-tooltip>
-                    </span>`}
+                    </span>`
+                : html`<span class="bandwidth-percentage">-</span>`}
             </div>
           </div>
           <div class="current-and-peak-container">
             <div class="current-container">
-              ${this.currentBytes === null
-                ? html` <span class="current-value">-</span> `
-                : html`<span class="current-value-and-unit">
+              ${this.metrics.bandwidth
+                ? html`<span class="current-value-and-unit">
                     <span class="current-value"
-                      >${this.formatBandwidthValue(this.currentBytes)}</span
+                      >${this.formatBandwidthValue(
+                        this.metrics.bandwidth.current.data.bytes
+                      )}</span
                     >
                     <span class="current-unit"
-                      >${this.formatBandwidthUnit(this.currentBytes)}</span
+                      >${this.formatBandwidthUnit(
+                        this.metrics.bandwidth.current.data.bytes
+                      )}</span
                     >
-                  </span>`}
+                  </span>`
+                : html`<span class="current-value">-</span>`}
               <span class="current-title"
                 >${this.localize(
                   'server-view-server-metrics-bandwidth-usage'
@@ -351,17 +356,23 @@ export class ServerMetricsBandwidthRow extends LitElement {
             </div>
             <div class="peak-container">
               <span class="peak-value-and-unit">
-                ${this.peakBytes === null
-                  ? html`<span class="peak-value">-</span>`
-                  : html`<span class="peak-value"
-                        >${this.formatBandwidthValue(this.peakBytes)}</span
+                ${this.metrics.bandwidth
+                  ? html`<span class="peak-value"
+                        >${this.formatBandwidthValue(
+                          this.metrics.bandwidth.peak.data.bytes
+                        )}</span
                       >
                       <span class="peak-unit"
-                        >${this.formatBandwidthUnit(this.peakBytes)}</span
-                      >`}
-                ${this.peakTimestamp
+                        >${this.formatBandwidthUnit(
+                          this.metrics.bandwidth.peak.data.bytes
+                        )}</span
+                      >`
+                  : html`<span class="peak-value">-</span>`}
+                ${this.metrics.bandwidth?.peak.timestamp
                   ? html`<span class="peak-timestamp"
-                      >(${this.peakTimestamp})</span
+                      >(${this.metrics.bandwidth.peak.timestamp.toLocaleString(
+                        this.language
+                      )})</span
                     >`
                   : nothing}
               </span>

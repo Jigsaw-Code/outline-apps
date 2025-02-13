@@ -17,6 +17,8 @@ import * as semver from 'semver';
 
 import * as server from '../model/server';
 
+const TIMESTAMP_TO_MS = 1000;
+
 interface AccessKeyJson {
   id: string;
   name: string;
@@ -49,33 +51,33 @@ interface MetricsJson {
         data: {
           bytes: number;
         };
-        timestamp: number;
+        timestamp?: number;
       };
       peak: {
         data: {
           bytes: number;
         };
-        timestamp: number;
+        timestamp?: number;
       };
     };
     locations: {
       location: string;
       asn: number;
       asOrg: string;
-      tunnelTime?: {
+      tunnelTime: {
         seconds: number;
       };
-      dataTransferred?: {
+      dataTransferred: {
         bytes: number;
       };
     }[];
   };
   accessKeys: {
     accessKeyId: number;
-    tunnelTime?: {
+    tunnelTime: {
       seconds: number;
     };
-    dataTransferred?: {
+    dataTransferred: {
       bytes: number;
     };
     connection: {
@@ -83,7 +85,7 @@ interface MetricsJson {
       lastTrafficSeen: number;
       peakDeviceCount: {
         data: number;
-        timestamp: number;
+        timestamp?: number;
       };
     };
   }[];
@@ -205,7 +207,7 @@ export class ShadowboxServer implements server.Server {
   }
 
   async getServerMetrics(): Promise<{
-    server: server.ServerMetrics;
+    server?: server.ServerMetrics;
     accessKeys: server.AccessKeyMetrics[];
   }> {
     if (await this.getSupportedExperimentalUniversalMetricsEndpoint()) {
@@ -214,32 +216,45 @@ export class ShadowboxServer implements server.Server {
         `experimental/server/metrics?since=${timeRangeInDays}d`
       );
 
+      const convertTimestampToDate = (timestamp?: number) => {
+        if (!timestamp) {
+          return;
+        }
+
+        return new Date(timestamp * TIMESTAMP_TO_MS);
+      };
+
       return {
         server: {
-          tunnelTime: json.server.tunnelTime,
-          dataTransferred: json.server.dataTransferred,
+          ...json.server,
           bandwidth: {
-            current: json.server.bandwidth.current.data,
+            current: {
+              data: json.server.bandwidth.current.data,
+              timestamp: convertTimestampToDate(
+                json.server.bandwidth.current.timestamp
+              ),
+            },
             peak: {
-              data: {
-                bytes: json.server.bandwidth.peak.data.bytes,
-              },
-              timestamp: new Date(json.server.bandwidth.peak.timestamp * 1000),
+              data: json.server.bandwidth.peak.data,
+              timestamp: convertTimestampToDate(
+                json.server.bandwidth.peak.timestamp
+              ),
             },
           },
           locations: json.server.locations,
         },
         accessKeys: json.accessKeys.map(key => ({
+          ...key,
           accessKeyId: String(key.accessKeyId),
-          tunnelTime: key.tunnelTime,
-          dataTransferred: key.dataTransferred,
           connection: {
-            lastConnected: new Date(key.connection.lastConnected * 1000),
-            lastTrafficSeen: new Date(key.connection.lastTrafficSeen * 1000),
-            peakDevices: {
-              count: key.connection.peakDeviceCount.data,
-              timestamp: new Date(
-                key.connection.peakDeviceCount.timestamp * 1000
+            lastConnected: convertTimestampToDate(key.connection.lastConnected),
+            lastTrafficSeen: convertTimestampToDate(
+              key.connection.lastTrafficSeen
+            ),
+            peakDeviceCount: {
+              data: key.connection.peakDeviceCount.data,
+              timestamp: convertTimestampToDate(
+                key.connection.peakDeviceCount.timestamp
               ),
             },
           },
@@ -248,10 +263,8 @@ export class ShadowboxServer implements server.Server {
     }
 
     const result: {
-      server: server.ServerMetrics;
       accessKeys: server.AccessKeyMetrics[];
     } = {
-      server: {},
       accessKeys: [],
     };
 

@@ -18,11 +18,13 @@ import {LitElement, html, css} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
+import type {ServerMetricsData} from './index';
 import '../icon_tooltip';
 import './index';
 import '@material/mwc-icon';
 
 const SECONDS_IN_HOUR = 60 * 60;
+
 export interface ServerMetricsTunnelTimeLocation {
   seconds: number;
   asn: string;
@@ -34,9 +36,9 @@ export interface ServerMetricsTunnelTimeLocation {
 export class ServerMetricsTunnelTimeRow extends LitElement {
   @property({type: String}) language: string = 'en';
   @property({type: Object}) localize: (...keys: string[]) => string;
-  @property({type: Number}) totalSeconds: number | null;
+  @property({type: Object}) metrics: ServerMetricsData;
   @property({type: Array})
-  locations: Array<ServerMetricsTunnelTimeLocation> | null;
+  locations: Array<ServerMetricsTunnelTimeLocation>;
 
   static styles = css`
     :host {
@@ -115,12 +117,12 @@ export class ServerMetricsTunnelTimeRow extends LitElement {
   render() {
     return html`
       <server-metrics-row
-        .subcards=${this.locations?.map(asn => ({
+        .subcards=${this.locations.map(asn => ({
           title: asn.asOrg,
           subtitle: asn.asn,
           highlight: this.formatter.format(asn.seconds / SECONDS_IN_HOUR),
           icon: asn.countryFlag,
-        })) ?? []}
+        }))}
         .subtitle=${this.localize(
           'server-view-server-metrics-tunnel-time-as-breakdown',
           'openItalics',
@@ -150,14 +152,18 @@ export class ServerMetricsTunnelTimeRow extends LitElement {
             ></icon-tooltip>
           </div>
           <div class="tunnel-time-container">
-            ${this.totalSeconds === null
-              ? html`<span class="tunnel-time-value">-</span>`
-              : html`<span class="tunnel-time-value"
-                    >${this.formatSecondsValue(this.totalSeconds)}</span
+            ${this.metrics.tunnelTime
+              ? html`<span class="tunnel-time-value"
+                    >${this.formatSecondsValue(
+                      this.metrics.tunnelTime.seconds
+                    )}</span
                   >
                   <span class="tunnel-time-unit"
-                    >${this.formatSecondsUnits(this.totalSeconds)}</span
-                  >`}
+                    >${this.formatSecondsUnits(
+                      this.metrics.tunnelTime.seconds
+                    )}</span
+                  >`
+              : html`<span class="tunnel-time-value">-</span>`}
           </div>
         </div>
       </server-metrics-row>

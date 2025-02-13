@@ -137,7 +137,7 @@ describe('App', () => {
           certSha256: 'cert',
           apiUrl: 'api-url',
         }).getServerMetrics()
-      ).server.locations?.length
+      ).server?.locations.length
     ).toBe(1);
   });
 

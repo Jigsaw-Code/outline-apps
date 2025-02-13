@@ -131,7 +131,7 @@ export class DataTable<T extends object> extends LitElement {
       --data-table-font-size: 0.8rem;
 
       --data-table-cell-padding: 0.8rem;
-      --data-table-cell-gap: 0.2rem;
+      --data-table-cell-gap: 0.35rem;
       --data-table-sides-padding: 1.5rem;
 
       --data-table-header-icon-size: 1rem;

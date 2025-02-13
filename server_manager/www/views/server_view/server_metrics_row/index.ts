@@ -24,6 +24,29 @@ import '@material/mwc-icon';
 import './server_metrics_row_subcard';
 import type {ServerMetricsRowSubcard} from './server_metrics_row_subcard';
 
+export interface ServerMetricsData {
+  dataTransferred: {
+    bytes: number;
+  };
+  tunnelTime?: {
+    seconds: number;
+  };
+  bandwidth?: {
+    peak: {
+      data: {
+        bytes: number;
+      };
+      timestamp: Date | null;
+    };
+    current: {
+      data: {
+        bytes: number;
+      };
+      timestamp: Date | null;
+    };
+  };
+}
+
 @customElement('server-metrics-row')
 export class ServerMetricsRow extends LitElement {
   @property({type: Array}) subcards?: Array<Partial<ServerMetricsRowSubcard>>;

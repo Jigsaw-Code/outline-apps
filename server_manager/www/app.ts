@@ -40,6 +40,7 @@ const CHANGE_KEYS_PORT_VERSION = '1.0.0';
 const DATA_LIMITS_VERSION = '1.1.0';
 const CHANGE_HOSTNAME_VERSION = '1.2.0';
 const KEY_SETTINGS_VERSION = '1.6.0';
+const MINUTES_TO_MILLISECONDS = 60 * 1000;
 const MAX_ACCESS_KEY_DATA_LIMIT_BYTES = 50 * 10 ** 9; // 50GB
 const CANCELLED_ERROR = new Error('Cancelled');
 const CHARACTER_TABLE_FLAG_SYMBOL_OFFSET = 127397;
@@ -1036,95 +1037,109 @@ export class App {
         selectedServer.getServerMetrics(),
         selectedServer.listAccessKeys(),
       ]);
-      serverView.bandwidthUsageTotal =
-        serverMetrics.server.dataTransferred?.bytes ?? null;
 
-      if (!serverView.bandwidthUsageTotal) {
-        // support legacy endpoint
+      if (!serverMetrics.server) {
+        serverView.serverMetricsData = {
+          dataTransferred: {
+            bytes: 0,
+          },
+        };
+
         for (const key of serverMetrics.accessKeys) {
-          serverView.bandwidthUsageTotal += key.dataTransferred?.bytes ?? 0;
+          serverView.serverMetricsData.dataTransferred.bytes +=
+            key.dataTransferred.bytes;
         }
+
+        serverView.serverMetricsBandwidthLocations = [];
+        serverView.serverMetricsTunnelTimeLocations = [];
+      } else {
+        serverView.serverMetricsData = {
+          bandwidth: serverMetrics.server.bandwidth,
+          dataTransferred: serverMetrics.server.dataTransferred,
+          tunnelTime: serverMetrics.server.tunnelTime,
+        };
+
+        const NUMBER_OF_ASES_TO_SHOW = 4;
+        serverView.serverMetricsBandwidthLocations =
+          serverMetrics.server.locations
+            .sort(
+              (location2, location1) =>
+                location1.dataTransferred?.bytes -
+                location2.dataTransferred?.bytes
+            )
+            .slice(0, NUMBER_OF_ASES_TO_SHOW)
+            .map(location => ({
+              ...location,
+              asn: `AS${location.asn}`,
+              countryFlag: this.countryCodeToEmoji(location.location),
+              bytes: location.dataTransferred.bytes,
+            }));
+
+        serverView.serverMetricsTunnelTimeLocations =
+          serverMetrics.server.locations
+            .sort(
+              (location2, location1) =>
+                location1.tunnelTime?.seconds - location2.tunnelTime?.seconds
+            )
+            .slice(0, NUMBER_OF_ASES_TO_SHOW)
+            .map(location => ({
+              ...location,
+              asn: `AS${location.asn}`,
+              countryFlag: this.countryCodeToEmoji(location.location),
+              seconds: location.tunnelTime.seconds,
+            }));
       }
 
-      serverView.bandwidthCurrent =
-        serverMetrics.server.bandwidth?.current.bytes ?? null;
-      serverView.bandwidthPeak =
-        serverMetrics.server.bandwidth?.peak.data.bytes ?? null;
-      serverView.bandwidthPeakTimestamp =
-        serverMetrics.server.bandwidth?.peak.timestamp.toLocaleString(
-          this.appRoot.language
-        ) ?? null;
-
-      const NUMBER_OF_ASES_TO_SHOW = 4;
-      serverView.bandwidthUsageLocations =
-        serverMetrics.server?.locations
-          ?.sort(
-            (location2, location1) =>
-              location1.dataTransferred?.bytes -
-              location2.dataTransferred?.bytes
-          )
-          .slice(0, NUMBER_OF_ASES_TO_SHOW)
-          .map(server => ({
-            asOrg: server.asOrg,
-            asn: `AS${server.asn}`,
-            countryFlag: this.countryCodeToEmoji(server.location),
-            bytes: server.dataTransferred.bytes,
-          })) ?? null;
-
-      serverView.tunnelTimeTotal =
-        serverMetrics.server.tunnelTime?.seconds ?? null;
-      serverView.tunnelTimeLocations =
-        serverMetrics.server?.locations
-          ?.sort(
-            (location2, location1) =>
-              location1.tunnelTime?.seconds - location2.tunnelTime?.seconds
-          )
-          .slice(0, NUMBER_OF_ASES_TO_SHOW)
-          .map(server => ({
-            asOrg: server.asOrg,
-            asn: `AS${server.asn}`,
-            countryFlag: this.countryCodeToEmoji(server.location),
-            seconds: server.tunnelTime.seconds,
-          })) ?? null;
-
-      const keyMetricsMap = serverMetrics.accessKeys.reduce((map, key) => {
-        map.set(key.accessKeyId, key);
-
-        return map;
-      }, new Map<string, server_model.AccessKeyMetrics>());
+      const accessKeyMetricsIndex = new Map<
+        string,
+        server_model.AccessKeyMetrics
+      >();
+      for (const accessKey of serverMetrics.accessKeys) {
+        accessKeyMetricsIndex.set(accessKey.accessKeyId, accessKey);
+      }
 
       serverView.accessKeyData = serverAccessKeys.map(accessKey => {
-        const {connection, dataTransferred} =
-          keyMetricsMap.get(accessKey.id) ?? {};
+        const accessKeyMetrics = accessKeyMetricsIndex.get(accessKey.id);
 
-        const lastTrafficDate = connection?.lastTrafficSeen ?? null;
-        const currentDate = new Date();
-        const fiveMinutesAgo = new Date(currentDate.getTime() - 5 * 60 * 1000);
+        const resolveKeyName = (key: server_model.AccessKey) =>
+          key.name || this.appRoot.localize('key', 'keyId', key.id);
+
+        if (!accessKeyMetrics) {
+          return {
+            ...accessKey,
+            name: resolveKeyName(accessKey),
+            isOnline: false,
+            dataTransferred: {
+              bytes: 0,
+            },
+          };
+        }
+
+        let isOnline = false;
+        if (accessKeyMetrics.connection) {
+          const currentDate = new Date();
+          const fiveMinutesAgo = new Date(
+            currentDate.getTime() - 5 * MINUTES_TO_MILLISECONDS
+          );
+
+          isOnline =
+            accessKeyMetrics.connection.lastTrafficSeen >= fiveMinutesAgo &&
+            accessKeyMetrics.connection.lastTrafficSeen <= currentDate;
+        }
+
+        let dataLimit = accessKey.dataLimit;
+        if (!dataLimit && serverView.isDefaultDataLimitEnabled) {
+          dataLimit = {
+            bytes: serverView.defaultDataLimitBytes,
+          };
+        }
 
         return {
-          id: accessKey.id,
-          isOnline:
-            lastTrafficDate >= fiveMinutesAgo && lastTrafficDate <= currentDate,
-          name:
-            accessKey.name ||
-            this.appRoot.localize('key', 'keyId', accessKey.id),
-          lastConnected:
-            connection?.lastConnected.toLocaleString(this.appRoot.language) ??
-            null,
-          lastTraffic:
-            lastTrafficDate?.toLocaleString(this.appRoot.language) ?? null,
-          peakDeviceCount: connection?.peakDevices.count ?? null,
-          peakDeviceTime:
-            connection?.peakDevices.timestamp.toLocaleString(
-              this.appRoot.language
-            ) ?? null,
-          accessUrl: accessKey.accessUrl,
-          dataUsageBytes: dataTransferred?.bytes ?? null,
-          dataLimitBytes:
-            accessKey.dataLimit?.bytes ??
-            (serverView.isDefaultDataLimitEnabled
-              ? serverView.defaultDataLimitBytes
-              : null),
+          ...accessKey,
+          ...accessKeyMetrics,
+          name: resolveKeyName(accessKey),
+          isOnline,
+          dataLimit,
         };
       });
     } catch (e) {

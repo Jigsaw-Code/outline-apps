@@ -34,6 +34,7 @@ import './outline-server-progress-step';
 import './outline-server-settings';
 import './outline-share-dialog';
 import './outline-sort-span';
+
 import '../views/server_view/server_metrics_row/bandwidth';
 import '../views/server_view/server_metrics_row/tunnel_time';
 import {html, PolymerElement} from '@polymer/polymer';
@@ -51,6 +52,7 @@ import {
   AccessKeyDataTableRow,
 } from '../views/server_view/access_key_data_table';
 import {DataTableSortDirection} from '../views/server_view/access_key_data_table/data_table';
+import type {ServerMetricsData} from '../views/server_view/server_metrics_row';
 import {ServerMetricsBandwidthLocation} from '../views/server_view/server_metrics_row/bandwidth';
 import {ServerMetricsTunnelTimeLocation} from '../views/server_view/server_metrics_row/tunnel_time';
 
@@ -72,18 +74,6 @@ function makePublicEvent(eventName: string, detail?: object) {
 function exists(x: number): boolean {
   return x !== null && x !== undefined;
 }
-
-/** An access key to be displayed */
-export type DisplayAccessKey = {
-  id: string;
-  placeholderName: string;
-  name: string;
-  accessUrl: string;
-  transferredBytes: number;
-  /** The data limit assigned to the key, if it exists. */
-  dataLimitBytes?: number;
-  dataLimit?: formatting.DisplayDataAmount;
-};
 
 export class ServerView extends DirMixin(PolymerElement) {
   static get template() {
@@ -457,13 +447,13 @@ export class ServerView extends DirMixin(PolymerElement) {
           </aside>
 
           <div class="connections-container">
-            <template is="dom-if" if="{{!accessKeyData.length}}">
+            <template is="dom-if" if="{{!hasAccessKeyData}}">
               <div class="connections-loading-container">
                 <outline-progress-spinner></outline-progress-spinner>
               </div>
             </template>
 
-            <template is="dom-if" if="{{accessKeyData.length}}">
+            <template is="dom-if" if="{{hasAccessKeyData}}">
               <access-key-data-table
                 access-keys="[[accessKeyData]]"
                 language="[[language]]"
@@ -514,29 +504,26 @@ export class ServerView extends DirMixin(PolymerElement) {
               </a>
             </aside>
 
-            <template is="dom-if" if="{{!accessKeyData.length}}">
+            <template is="dom-if" if="{{!serverMetricsData}}">
               <div class="metrics-loading-container">
                 <outline-progress-spinner></outline-progress-spinner>
               </div>
             </template>
 
-            <template is="dom-if" if="{{accessKeyData.length}}">
+            <template is="dom-if" if="{{serverMetricsData}}">
               <server-metrics-bandwidth-row
-                localize="[[localize]]"
+                data-limit-bytes="[[monthlyOutboundTransferBytes]]"
+                has-access-key-data-limits="[[hasAccessKeyDataLimits]]"
                 language="[[language]]"
-                has-data-limits="[[hasDataLimits]]"
-                total-bytes="[[bandwidthUsageTotal]]"
-                limit-bytes="[[monthlyOutboundTransferBytes]]"
-                current-bytes="[[bandwidthCurrent]]"
-                peak-bytes="[[bandwidthPeak]]"
-                peak-timestamp="[[bandwidthPeakTimestamp]]"
-                locations="[[bandwidthUsageLocations]]"
+                localize="[[localize]]"
+                locations="[[serverMetricsBandwidthLocations]]"
+                metrics="[[serverMetricsData]]"
               ></server-metrics-bandwidth-row>
               <server-metrics-tunnel-time-row
-                localize="[[localize]]"
                 language="[[lagugage]]"
-                total-seconds="[[tunnelTimeTotal]]"
-                locations="[[tunnelTimeLocations]]"
+                localize="[[localize]]"
+                locations="[[serverMetricsTunnelTimeLocations]]"
+                metrics="[[serverMetricsData]]"
               ></server-metrics-tunnel-time-row>
             </template>
           </div>
@@ -579,15 +566,27 @@ export class ServerView extends DirMixin(PolymerElement) {
       accessKeyData: Array,
       accessKeyDataSortColumnId: String,
       accessKeyDataSortDirection: String,
-      bandwidthUsageTotal: Number,
-      bandwidthCurrent: Number,
-      bandwidthPeak: Number,
-      bandwidthPeakTimestamp: String,
-      bandwidthUsageLocations: Array,
+      accessKeyTabMessage: {
+        type: String,
+        computed: '_computeAccessKeyTabMessage(accessKeyData)',
+      },
       cloudId: String,
       cloudLocation: Object,
       defaultDataLimitBytes: Number,
       featureFlags: Object,
+      hasAccessKeyDataLimits: {
+        type: Boolean,
+        computed:
+          '_computeHasAccessKeyDataLimits(isDefaultDataLimitEnabled, accessKeyData)',
+      },
+      hasAccessKeyData: {
+        type: Boolean,
+        computed: '_computeHasAccessKeyData(accessKeyData)',
+      },
+      hasServerMetricsData: {
+        type: Boolean,
+        computed: '_computeHasServerMetricsData(serverMetricsData)',
+      },
       hasNonAdminAccessKeys: Boolean,
       installProgress: Number,
       isAccessKeyPortEditable: Boolean,
@@ -607,22 +606,14 @@ export class ServerView extends DirMixin(PolymerElement) {
       serverHostname: String,
       serverId: String,
       serverManagementApiUrl: String,
+      serverMetricsBandwidthLocations: Array,
+      serverMetricsData: Object,
+      serverMetricsTunnelTimeLocations: Array,
       serverName: String,
       serverPortForNewAccessKeys: Number,
       serverVersion: String,
       showFeatureMetricsDisclaimer: Boolean,
       supportsDefaultDataLimit: Boolean,
-      tunnelTimeLocations: Array,
-      tunnelTimeTotal: Number,
-      accessKeyTabMessage: {
-        type: String,
-        computed: '_computeAccessKeyTabMessage(accessKeyData)',
-      },
-      hasDataLimits: {
-        type: Boolean,
-        computed:
-          '_computeHasDataLimits(isDefaultDataLimitEnabled, accessKeyData)',
-      },
     };
   }
 
@@ -686,31 +677,28 @@ export class ServerView extends DirMixin(PolymerElement) {
     );
   }
 
-  bandwidthUsageTotal = 0;
-  bandwidthCurrent = 0;
-  bandwidthPeak = 0;
-  bandwidthPeakTimestamp = '';
-  bandwidthUsageLocations: Partial<ServerMetricsBandwidthLocation>[] = [];
-
-  tunnelTimeTotal = 0;
-  tunnelTimeLocations: Partial<ServerMetricsTunnelTimeLocation>[] = [];
-
-  serverId = '';
-  metricsId = '';
-  serverName = '';
-  serverHostname = '';
-  serverVersion = '';
-  isHostnameEditable = false;
-  serverManagementApiUrl = '';
-  serverPortForNewAccessKeys: number = null;
-  isAccessKeyPortEditable = false;
-  serverCreationDate = new Date(0);
-  cloudLocation: CloudLocation = null;
+  accessKeyData: AccessKeyDataTableRow[];
+  accessKeyDataSortDirection: DataTableSortDirection;
+  accessKeyDataSortColumnId: string;
   cloudId = '';
-  readonly getShortName = getShortName;
-  readonly getCloudIcon = getCloudIcon;
+  cloudLocation: CloudLocation = null;
   defaultDataLimitBytes: number = null;
+  isAccessKeyPortEditable = false;
   isDefaultDataLimitEnabled = false;
+  isHostnameEditable = false;
+  metricsId = '';
+  readonly getCloudIcon = getCloudIcon;
+  readonly getShortName = getShortName;
+  serverCreationDate = new Date(0);
+  serverHostname = '';
+  serverId = '';
+  serverManagementApiUrl = '';
+  serverMetricsBandwidthLocations: ServerMetricsBandwidthLocation[];
+  serverMetricsData: ServerMetricsData;
+  serverMetricsTunnelTimeLocations: ServerMetricsTunnelTimeLocation[];
+  serverName = '';
+  serverPortForNewAccessKeys: number = null;
+  serverVersion = '';
   hasPerKeyDataLimitDialog = false;
   /** Whether the server supports default data limits. */
   supportsDefaultDataLimit = false;
@@ -719,9 +707,6 @@ export class ServerView extends DirMixin(PolymerElement) {
   isServerReachable = false;
   /** Callback for retrying to display an unreachable server. */
   retryDisplayingServer: () => void = null;
-  accessKeyData: AccessKeyDataTableRow[] = [];
-  accessKeyDataSortDirection: DataTableSortDirection;
-  accessKeyDataSortColumnId: string;
   hasNonAdminAccessKeys = false;
   metricsEnabled = false;
   // Initialize monthlyOutboundTransferBytes and monthlyCost to 0, so they can
@@ -768,21 +753,41 @@ export class ServerView extends DirMixin(PolymerElement) {
     );
   }
 
+  _computeHasAccessKeyData(accessKeyData?: AccessKeyDataTableRow[]) {
+    return Boolean(accessKeyData);
+  }
+
+  _computeHasServerMetricsData(serverMetricsData?: ServerMetricsData) {
+    return Boolean(serverMetricsData);
+  }
+
   _computeAccessKeyTabMessage(accessKeyData: AccessKeyDataTableRow[]) {
+    if (!accessKeyData) {
+      return this.localize(
+        'server-view-access-keys-tab',
+        'accessKeyCount',
+        '...'
+      );
+    }
+
     return this.localize(
       'server-view-access-keys-tab',
       'accessKeyCount',
-      String(accessKeyData.length || '...')
+      String(accessKeyData.length)
     );
   }
 
-  _computeHasDataLimits(
+  _computeHasAccessKeyDataLimits(
     isDefaultDataLimitEnabled: boolean,
     accessKeyData: AccessKeyDataTableRow[]
   ) {
+    if (!accessKeyData) {
+      return false;
+    }
+
     return (
       !isDefaultDataLimitEnabled &&
-      !accessKeyData.some(({dataLimitBytes}) => dataLimitBytes)
+      !accessKeyData.some(({dataLimit}) => dataLimit)
     );
   }
 
@@ -871,10 +876,6 @@ export class ServerView extends DirMixin(PolymerElement) {
       helpBubble.show(this.$[positionTargetId], arrowDirection, arrowAlignment);
       helpBubble.addEventListener('outline-help-bubble-dismissed', resolve);
     });
-  }
-
-  isRegularConnection(item: DisplayAccessKey) {
-    return item.id !== MY_CONNECTION_USER_ID;
   }
 
   destroyServer() {
