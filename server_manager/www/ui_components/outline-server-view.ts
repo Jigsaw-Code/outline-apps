@@ -762,7 +762,7 @@ export class ServerView extends DirMixin(PolymerElement) {
     return localize(
       'server-view-access-keys-tab',
       'accessKeyCount',
-      String(accessKeyData.length)
+      new Intl.NumberFormat(this.language).format(accessKeyData.length)
     );
   }
 

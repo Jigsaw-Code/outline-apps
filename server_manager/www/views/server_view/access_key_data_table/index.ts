@@ -241,11 +241,14 @@ export class AccessKeyDataTable extends LitElement {
               }
 
               if (connection.peakDeviceCount.timestamp === null) {
-                return html`<span>${connection.peakDeviceCount.data}</span>`;
+                return html`<span
+                  >${this.formatNumber(connection.peakDeviceCount.data)}</span
+                >`;
               }
 
               return html`<div style="display: flex; gap: 1rem;">
-                <span>${connection.peakDeviceCount.data}</span
+                <span
+                  >${this.formatNumber(connection.peakDeviceCount.data)}</span
                 ><span
                   >${this.renderDate(
                     connection.peakDeviceCount.timestamp
@@ -288,6 +291,10 @@ export class AccessKeyDataTable extends LitElement {
 
   private nameColumnIndex(key: AccessKeyDataTableRow) {
     return `status-id-${key.id}`;
+  }
+
+  private formatNumber(number: number) {
+    return new Intl.NumberFormat(this.language).format(number);
   }
 
   private forwardEventListener(
