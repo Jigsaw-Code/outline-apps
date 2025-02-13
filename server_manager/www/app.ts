@@ -1127,14 +1127,9 @@ export class App {
 
         let isOnline = false;
         if (accessKeyMetrics.connection) {
-          const currentDate = new Date();
-          const fiveMinutesAgo = new Date(
-            currentDate.getTime() - 5 * MINUTES_TO_MILLISECONDS
-          );
-
           isOnline =
-            accessKeyMetrics.connection.lastTrafficSeen >= fiveMinutesAgo &&
-            accessKeyMetrics.connection.lastTrafficSeen <= currentDate;
+            accessKeyMetrics.connection.lastTrafficSeen >=
+            new Date(Date.now() - 5 * MINUTES_TO_MILLISECONDS);
         }
 
         return {

@@ -321,11 +321,11 @@ export class ServerMetricsBandwidthRow extends LitElement {
                         value=${this.metrics.dataTransferred.bytes}
                       ></progress>
                       <icon-tooltip
-                        text="${this.hasAccessKeyDataLimits
+                        text=${this.hasAccessKeyDataLimits
                           ? null
                           : this.localize(
                               'server-view-server-metrics-bandwidth-limit-tooltip'
-                            )}"
+                            )}
                         icon="warning"
                       ></icon-tooltip>
                     </span>`
