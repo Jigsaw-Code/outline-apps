@@ -141,6 +141,7 @@ export class AccessKeyDataTable extends LitElement {
   render() {
     return html`
       <data-table
+        .dir=${document.documentElement.dir}
         .columns=${[
           {
             id: 'name',
@@ -262,6 +263,7 @@ export class AccessKeyDataTable extends LitElement {
             id: 'controls',
             render: (key: AccessKeyDataTableRow) =>
               html`<access-key-controls
+                .dir=${document.documentElement.dir}
                 .key=${key}
                 .localize=${this.localize}
                 serverVersion=${this.serverVersion}

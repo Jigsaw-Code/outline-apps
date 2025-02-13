@@ -72,6 +72,10 @@ export class AccessKeyControls extends LitElement {
       float: right;
     }
 
+    :host([dir='rtl']) {
+      float: left;
+    }
+
     .menu-wrapper {
       position: relative;
     }

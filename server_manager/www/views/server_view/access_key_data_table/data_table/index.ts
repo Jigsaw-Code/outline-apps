@@ -206,8 +206,22 @@ export class DataTable<T extends object> extends LitElement {
       );
     }
 
+    :host([dir='rtl']) th:first-child {
+      padding-left: 0;
+      padding-right: calc(
+        var(--data-table-cell-padding) + var(--data-table-sides-padding)
+      );
+    }
+
     th:last-child {
       padding-right: calc(
+        var(--data-table-cell-padding) + var(--data-table-sides-padding)
+      );
+    }
+
+    :host([dir='rtl']) th:last-child {
+      padding-right: 0;
+      padding-left: calc(
         var(--data-table-cell-padding) + var(--data-table-sides-padding)
       );
     }
@@ -222,8 +236,18 @@ export class DataTable<T extends object> extends LitElement {
       margin-left: var(--data-table-sides-padding);
     }
 
+    :host([dir='rtl']) td:first-child {
+      margin-left: 0;
+      margin-right: var(--data-table-sides-padding);
+    }
+
     td:last-child {
       margin-right: var(--data-table-sides-padding);
+    }
+
+    :host([dir='rtl']) td:last-child {
+      margin-right: 0;
+      margin-left: var(--data-table-sides-padding);
     }
 
     label {
@@ -257,7 +281,9 @@ export class DataTable<T extends object> extends LitElement {
       }
 
       td:first-child,
-      td:last-child {
+      td:last-child,
+      :host([dir='rtl']) td:first-child,
+      :host([dir='rtl']) td:last-child {
         margin: 0;
       }
 

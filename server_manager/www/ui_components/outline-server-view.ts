@@ -569,7 +569,7 @@ export class ServerView extends DirMixin(PolymerElement) {
       accessKeyTabMessage: {
         type: String,
         computed:
-          '_computeAccessKeyTabMessage(hasAccessKeyData, accessKeyData)',
+          '_computeAccessKeyTabMessage(hasAccessKeyData, accessKeyData, localize)',
       },
       cloudId: String,
       cloudLocation: Object,
@@ -752,17 +752,14 @@ export class ServerView extends DirMixin(PolymerElement) {
 
   _computeAccessKeyTabMessage(
     hasAccessKeyData: boolean,
-    accessKeyData: AccessKeyDataTableRow[]
+    accessKeyData: AccessKeyDataTableRow[],
+    localize: Function
   ) {
     if (!hasAccessKeyData) {
-      return this.localize(
-        'server-view-access-keys-tab',
-        'accessKeyCount',
-        '...'
-      );
+      return localize('server-view-access-keys-tab', 'accessKeyCount', '...');
     }
 
-    return this.localize(
+    return localize(
       'server-view-access-keys-tab',
       'accessKeyCount',
       String(accessKeyData.length)

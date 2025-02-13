@@ -215,6 +215,11 @@ export class ServerMetricsBandwidthRow extends LitElement {
       border-left: var(--server-metrics-bandwidth-row-current-and-peak-border);
     }
 
+    .current-and-peak-container[dir='rtl'] {
+      border-left: none;
+      border-right: var(--server-metrics-bandwidth-row-current-and-peak-border);
+    }
+
     .current-container,
     .peak-container {
       display: flex;
@@ -332,7 +337,10 @@ export class ServerMetricsBandwidthRow extends LitElement {
                 : html`<span class="bandwidth-percentage">-</span>`}
             </div>
           </div>
-          <div class="current-and-peak-container">
+          <div
+            class="current-and-peak-container"
+            .dir=${document.documentElement.dir}
+          >
             <div class="current-container">
               ${this.metrics.bandwidth
                 ? html`<span class="current-value-and-unit">
