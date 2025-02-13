@@ -1090,6 +1090,8 @@ export class App {
             }));
       }
 
+      serverView.hasServerMetricsData = true;
+
       const accessKeyMetricsIndex = new Map<
         string,
         server_model.AccessKeyMetrics
@@ -1142,6 +1144,8 @@ export class App {
           dataLimit,
         };
       });
+
+      serverView.hasAccessKeyData = true;
     } catch (e) {
       // Since failures are invisible to users we generally want exceptions here to bubble
       // up and trigger a Sentry report. The exception is network errors, about which we can't

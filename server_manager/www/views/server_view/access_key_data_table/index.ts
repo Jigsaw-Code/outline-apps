@@ -167,8 +167,8 @@ export class AccessKeyDataTable extends LitElement {
               this.renderDate(key.connection?.lastConnected),
             comparator: (a: AccessKeyDataTableRow, b: AccessKeyDataTableRow) =>
               defaultDateComparator(
-                new Date(a.connection?.lastConnected),
-                new Date(b.connection?.lastConnected)
+                a.connection?.lastConnected ?? new Date(0),
+                b.connection?.lastConnected ?? new Date(0)
               ),
           },
           {
@@ -183,8 +183,8 @@ export class AccessKeyDataTable extends LitElement {
               this.renderDate(key.connection?.lastTrafficSeen),
             comparator: (a: AccessKeyDataTableRow, b: AccessKeyDataTableRow) =>
               defaultDateComparator(
-                new Date(a.connection?.lastTrafficSeen),
-                new Date(b.connection?.lastTrafficSeen)
+                a.connection?.lastTrafficSeen ?? new Date(0),
+                b.connection?.lastTrafficSeen ?? new Date(0)
               ),
           },
           {
@@ -254,8 +254,8 @@ export class AccessKeyDataTable extends LitElement {
             },
             comparator: (a: AccessKeyDataTableRow, b: AccessKeyDataTableRow) =>
               defaultNumericComparator(
-                a.connection.peakDeviceCount.data,
-                b.connection.peakDeviceCount.data
+                a.connection?.peakDeviceCount.data ?? 0,
+                b.connection?.peakDeviceCount.data ?? 0
               ),
           },
           {

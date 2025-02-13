@@ -504,13 +504,13 @@ export class ServerView extends DirMixin(PolymerElement) {
               </a>
             </aside>
 
-            <template is="dom-if" if="{{!serverMetricsData}}">
+            <template is="dom-if" if="{{!hasServerMetricsData}}">
               <div class="metrics-loading-container">
                 <outline-progress-spinner></outline-progress-spinner>
               </div>
             </template>
 
-            <template is="dom-if" if="{{serverMetricsData}}">
+            <template is="dom-if" if="{{hasServerMetricsData}}">
               <server-metrics-bandwidth-row
                 data-limit-bytes="[[monthlyOutboundTransferBytes]]"
                 has-access-key-data-limits="[[hasAccessKeyDataLimits]]"
@@ -568,7 +568,8 @@ export class ServerView extends DirMixin(PolymerElement) {
       accessKeyDataSortDirection: String,
       accessKeyTabMessage: {
         type: String,
-        computed: '_computeAccessKeyTabMessage(accessKeyData)',
+        computed:
+          '_computeAccessKeyTabMessage(hasAccessKeyData, accessKeyData)',
       },
       cloudId: String,
       cloudLocation: Object,
@@ -579,14 +580,8 @@ export class ServerView extends DirMixin(PolymerElement) {
         computed:
           '_computeHasAccessKeyDataLimits(isDefaultDataLimitEnabled, accessKeyData)',
       },
-      hasAccessKeyData: {
-        type: Boolean,
-        computed: '_computeHasAccessKeyData(accessKeyData)',
-      },
-      hasServerMetricsData: {
-        type: Boolean,
-        computed: '_computeHasServerMetricsData(serverMetricsData)',
-      },
+      hasAccessKeyData: Boolean,
+      hasServerMetricsData: Boolean,
       hasNonAdminAccessKeys: Boolean,
       installProgress: Number,
       isAccessKeyPortEditable: Boolean,
@@ -677,7 +672,7 @@ export class ServerView extends DirMixin(PolymerElement) {
     );
   }
 
-  accessKeyData: AccessKeyDataTableRow[];
+  accessKeyData: AccessKeyDataTableRow[] = [];
   accessKeyDataSortDirection: DataTableSortDirection;
   accessKeyDataSortColumnId: string;
   cloudId = '';
@@ -708,6 +703,8 @@ export class ServerView extends DirMixin(PolymerElement) {
   /** Callback for retrying to display an unreachable server. */
   retryDisplayingServer: () => void = null;
   hasNonAdminAccessKeys = false;
+  hasAccessKeyData = false;
+  hasServerMetricsData = false;
   metricsEnabled = false;
   // Initialize monthlyOutboundTransferBytes and monthlyCost to 0, so they can
   // be bound to hidden attributes.  Initializing to undefined does not
@@ -753,16 +750,11 @@ export class ServerView extends DirMixin(PolymerElement) {
     );
   }
 
-  _computeHasAccessKeyData(accessKeyData?: AccessKeyDataTableRow[]) {
-    return Boolean(accessKeyData);
-  }
-
-  _computeHasServerMetricsData(serverMetricsData?: ServerMetricsData) {
-    return Boolean(serverMetricsData);
-  }
-
-  _computeAccessKeyTabMessage(accessKeyData: AccessKeyDataTableRow[]) {
-    if (!accessKeyData) {
+  _computeAccessKeyTabMessage(
+    hasAccessKeyData: boolean,
+    accessKeyData: AccessKeyDataTableRow[]
+  ) {
+    if (!hasAccessKeyData) {
       return this.localize(
         'server-view-access-keys-tab',
         'accessKeyCount',
