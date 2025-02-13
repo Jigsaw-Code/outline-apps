@@ -126,7 +126,7 @@ transport:
     $type: shadowsocks
     endpoint:
       $type: first-supported
-      endpoints:
+      options:
         - $type: websocket
           url: wss://legendary-faster-packs-und.trycloudflare.com/SECRET_PATH/tcp
         - ss.example.com:4321
@@ -137,7 +137,7 @@ transport:
     $type: shadowsocks
     endpoint:
       $type: first-supported
-      endpoints:
+      options:
         - $type: websocket
           url: wss://legendary-faster-packs-und.trycloudflare.com/SECRET_PATH/udp
         - ss.example.com:4321
