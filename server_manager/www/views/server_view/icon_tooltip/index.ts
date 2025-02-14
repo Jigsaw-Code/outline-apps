@@ -24,7 +24,7 @@ import '@material/mwc-icon-button';
 // Once electron is updated, we should switch to the Popover API for better style control.
 @customElement('icon-tooltip')
 export class IconTooltip extends LitElement {
-  @property({type: String}) text: string;
+  @property({type: String}) text: string | null;
   @property({type: String}) icon: string = 'help';
 
   @state() tooltip: HTMLElement | null = null;
@@ -33,6 +33,7 @@ export class IconTooltip extends LitElement {
   static styles = css`
     :host {
       --icon-tooltip-icon-size: 1.85rem;
+      --icon-tooltip-button-size: 2rem;
       --icon-tooltip-icon-color: hsla(140, 3%, 77%, 1);
 
       color: var(--icon-tooltip-icon-color);
@@ -42,10 +43,14 @@ export class IconTooltip extends LitElement {
     mwc-icon-button {
       --mdc-icon-size: var(--icon-tooltip-icon-size);
     }
+
+    mwc-icon-button {
+      --mdc-icon-button-size: var(--icon-tooltip-button-size);
+    }
   `;
 
   render() {
-    if (!this.text) {
+    if (this.text === null) {
       return html`<mwc-icon>${this.icon}</mwc-icon>`;
     }
 
@@ -59,7 +64,14 @@ export class IconTooltip extends LitElement {
     `;
   }
 
-  insertTooltip() {
+  insertTooltip(event: Event) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    if (this.tooltip || this.text === null) {
+      return;
+    }
+
     this.tooltip = document.createElement('span');
     this.tooltip.innerHTML = this.text;
 
@@ -78,6 +90,7 @@ export class IconTooltip extends LitElement {
       padding: 0.3rem;
       position: fixed;
       white-space: pre-line;
+      transform: translateX(-50%);
       width: max-content;
       word-wrap: break-word;
       z-index: 1000;

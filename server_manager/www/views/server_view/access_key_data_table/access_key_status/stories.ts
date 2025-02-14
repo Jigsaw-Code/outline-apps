@@ -20,14 +20,15 @@ export default {
   title: 'Manager/Server View/Access Key Data Table/Access Key Status',
   component: 'access-key-status',
   argTypes: {
-    name: {control: 'text'},
-    connected: {control: 'boolean'},
+    key: {control: 'object'},
   },
 };
 
 export const Example = {
   args: {
-    name: 'Key#1',
-    connected: true,
+    key: {
+      name: 'Key#1',
+      connected: true,
+    },
   },
 };

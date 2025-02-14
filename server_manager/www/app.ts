@@ -23,10 +23,7 @@ import {filterOptions, getShortName} from './location_formatting';
 import {parseManualServerConfig} from './management_urls';
 import type {AppRoot, ServerListEntry} from './ui_components/app-root';
 import {FeedbackDetail} from './ui_components/outline-feedback-dialog';
-import type {
-  DisplayAccessKey,
-  ServerView,
-} from './ui_components/outline-server-view';
+import type {ServerView} from './ui_components/outline-server-view';
 import * as digitalocean_api from '../cloud/digitalocean_api';
 import {HttpError} from '../cloud/gcp_api';
 import * as accounts from '../model/accounts';
@@ -43,6 +40,7 @@ const CHANGE_KEYS_PORT_VERSION = '1.0.0';
 const DATA_LIMITS_VERSION = '1.1.0';
 const CHANGE_HOSTNAME_VERSION = '1.2.0';
 const KEY_SETTINGS_VERSION = '1.6.0';
+const MINUTES_TO_MILLISECONDS = 60 * 1000;
 const MAX_ACCESS_KEY_DATA_LIMIT_BYTES = 50 * 10 ** 9; // 50GB
 const CANCELLED_ERROR = new Error('Cancelled');
 const CHARACTER_TABLE_FLAG_SYMBOL_OFFSET = 127397;
@@ -242,11 +240,7 @@ export class App {
     appRoot.addEventListener(
       'RenameAccessKeyRequested',
       (event: CustomEvent) => {
-        this.renameAccessKey(
-          event.detail.accessKeyId,
-          event.detail.newName,
-          event.detail.entry
-        );
+        this.renameAccessKey(event.detail.accessKeyId, event.detail.newName);
       }
     );
 
@@ -955,9 +949,6 @@ export class App {
       this.showMetricsOptInWhenNeeded(server);
       try {
         const serverAccessKeys = await server.listAccessKeys();
-        view.accessKeyRows = serverAccessKeys.map(
-          this.convertToUiAccessKey.bind(this)
-        );
         if (view.defaultDataLimitBytes === undefined) {
           view.defaultDataLimitBytes = (
             await computeDefaultDataLimit(server, serverAccessKeys)
@@ -967,6 +958,7 @@ export class App {
         setTimeout(() => {
           showHelpBubblesOnce(view);
         }, 250);
+        this.refreshServerMetricsUI(server, view);
       } catch (error) {
         console.error(`Failed to load access keys: ${error}`);
         this.appRoot.showError(this.appRoot.localize('error-keys-get'));
@@ -1041,78 +1033,115 @@ export class App {
     serverView: ServerView
   ) {
     try {
-      const serverMetrics = await selectedServer.getServerMetrics();
+      const [serverMetrics, serverAccessKeys] = await Promise.all([
+        selectedServer.getServerMetrics(),
+        selectedServer.listAccessKeys(),
+      ]);
 
-      // support legacy metrics view
-      serverView.totalInboundBytes =
-        serverMetrics.server.dataTransferred?.bytes;
+      if (!serverMetrics.server) {
+        serverView.serverMetricsData = {
+          dataTransferred: {
+            bytes: 0,
+          },
+        };
 
-      const NUMBER_OF_ASES_TO_SHOW = 4;
-      serverView.bandwidthUsageTotal =
-        serverMetrics.server.dataTransferred?.bytes;
+        for (const key of serverMetrics.accessKeys) {
+          serverView.serverMetricsData.dataTransferred.bytes +=
+            key.dataTransferred.bytes;
+        }
 
-      serverView.bandwidthCurrent =
-        serverMetrics.server.bandwidth?.current.bytes;
-      serverView.bandwidthPeak =
-        serverMetrics.server.bandwidth?.peak.data.bytes;
-      serverView.bandwidthPeakTimestamp =
-        serverMetrics.server.bandwidth?.peak.timestamp.toLocaleString(
-          this.appRoot.language
-        );
+        serverView.serverMetricsBandwidthLocations = [];
+        serverView.serverMetricsTunnelTimeLocations = [];
+      } else {
+        serverView.serverMetricsData = {
+          bandwidth: serverMetrics.server.bandwidth,
+          dataTransferred: serverMetrics.server.dataTransferred,
+          tunnelTime: serverMetrics.server.tunnelTime,
+        };
 
-      serverView.bandwidthUsageLocations = serverMetrics.server?.locations
-        ?.sort(
-          (location2, location1) =>
-            location1.dataTransferred?.bytes - location2.dataTransferred?.bytes
-        )
-        .slice(0, NUMBER_OF_ASES_TO_SHOW)
-        .map(server => ({
-          asOrg: server.asOrg,
-          asn: `AS${server.asn}`,
-          countryFlag: this.countryCodeToEmoji(server.location),
-          bytes: server.dataTransferred.bytes,
-        }));
+        const NUMBER_OF_ASES_TO_SHOW = 4;
+        serverView.serverMetricsBandwidthLocations =
+          serverMetrics.server.locations
+            .sort(
+              (location2, location1) =>
+                location1.dataTransferred?.bytes -
+                location2.dataTransferred?.bytes
+            )
+            .slice(0, NUMBER_OF_ASES_TO_SHOW)
+            .map(location => ({
+              ...location,
+              asn: `AS${location.asn}`,
+              countryFlag: this.countryCodeToEmoji(location.location),
+              bytes: location.dataTransferred.bytes,
+            }));
 
-      serverView.tunnelTimeTotal = serverMetrics.server.tunnelTime?.seconds;
-      serverView.tunnelTimeLocations = serverMetrics.server?.locations
-        ?.sort(
-          (location2, location1) =>
-            location1.tunnelTime?.seconds - location2.tunnelTime?.seconds
-        )
-        .slice(0, NUMBER_OF_ASES_TO_SHOW)
-        .map(server => ({
-          asOrg: server.asOrg,
-          asn: `AS${server.asn}`,
-          countryFlag: this.countryCodeToEmoji(server.location),
-          seconds: server.tunnelTime.seconds,
-        }));
-
-      // Update all the displayed access keys, even if usage didn't change, in case data limits did.
-      const keyDataTransferMap = serverMetrics.accessKeys.reduce(
-        (map, {accessKeyId, dataTransferred}) => {
-          if (dataTransferred) {
-            map.set(String(accessKeyId), dataTransferred.bytes);
-          }
-          return map;
-        },
-        new Map<string, number>()
-      );
-
-      let keyTransferMax = 0;
-      let dataLimitMax = selectedServer.getDefaultDataLimit()?.bytes ?? 0;
-      for (const accessKey of await selectedServer.listAccessKeys()) {
-        serverView.updateAccessKeyRow(accessKey.id, {
-          transferredBytes: keyDataTransferMap.get(accessKey.id) ?? 0,
-          dataLimitBytes: accessKey.dataLimit?.bytes,
-        });
-        keyTransferMax = Math.max(
-          keyTransferMax,
-          keyDataTransferMap.get(accessKey.id) ?? 0
-        );
-        dataLimitMax = Math.max(dataLimitMax, accessKey.dataLimit?.bytes ?? 0);
+        serverView.serverMetricsTunnelTimeLocations =
+          serverMetrics.server.locations
+            .sort(
+              (location2, location1) =>
+                location1.tunnelTime?.seconds - location2.tunnelTime?.seconds
+            )
+            .slice(0, NUMBER_OF_ASES_TO_SHOW)
+            .map(location => ({
+              ...location,
+              asn: `AS${location.asn}`,
+              countryFlag: this.countryCodeToEmoji(location.location),
+              seconds: location.tunnelTime.seconds,
+            }));
       }
 
-      serverView.baselineDataTransfer = Math.max(keyTransferMax, dataLimitMax);
+      serverView.hasServerMetricsData = true;
+
+      const accessKeyMetricsIndex = new Map<
+        string,
+        server_model.AccessKeyMetrics
+      >();
+      for (const accessKey of serverMetrics.accessKeys) {
+        accessKeyMetricsIndex.set(accessKey.accessKeyId, accessKey);
+      }
+
+      serverView.accessKeyData = serverAccessKeys.map(accessKey => {
+        const accessKeyMetrics = accessKeyMetricsIndex.get(accessKey.id);
+
+        const resolveKeyName = (key: server_model.AccessKey) =>
+          key.name || this.appRoot.localize('key', 'keyId', key.id);
+
+        let dataLimit = accessKey.dataLimit;
+        if (!dataLimit && serverView.isDefaultDataLimitEnabled) {
+          dataLimit = {
+            bytes: serverView.defaultDataLimitBytes,
+          };
+        }
+
+        if (!accessKeyMetrics) {
+          return {
+            ...accessKey,
+            name: resolveKeyName(accessKey),
+            isOnline: false,
+            dataTransferred: {
+              bytes: 0,
+            },
+            dataLimit,
+          };
+        }
+
+        let isOnline = false;
+        if (accessKeyMetrics.connection) {
+          isOnline =
+            accessKeyMetrics.connection.lastTrafficSeen >=
+            new Date(Date.now() - 5 * MINUTES_TO_MILLISECONDS);
+        }
+
+        return {
+          ...accessKey,
+          ...accessKeyMetrics,
+          name: resolveKeyName(accessKey),
+          isOnline,
+          dataLimit,
+        };
+      });
+
+      serverView.hasAccessKeyData = true;
     } catch (e) {
       // Since failures are invisible to users we generally want exceptions here to bubble
       // up and trigger a Sentry report. The exception is network errors, about which we can't
@@ -1158,31 +1187,12 @@ export class App {
     }, statsRefreshRateMs);
   }
 
-  // Converts the access key model to the format used by outline-server-view.
-  private convertToUiAccessKey(
-    remoteAccessKey: server_model.AccessKey
-  ): DisplayAccessKey {
-    return {
-      id: remoteAccessKey.id,
-      placeholderName: this.appRoot.localize(
-        'key',
-        'keyId',
-        remoteAccessKey.id
-      ),
-      name: remoteAccessKey.name,
-      accessUrl: remoteAccessKey.accessUrl,
-      transferredBytes: 0,
-      dataLimitBytes: remoteAccessKey.dataLimit?.bytes,
-    };
-  }
-
   private async addAccessKey() {
     const server = this.selectedServer;
     try {
-      const serverAccessKey = await server.addAccessKey();
-      const uiAccessKey = this.convertToUiAccessKey(serverAccessKey);
+      await server.addAccessKey();
       const serverView = await this.appRoot.getServerView(server.getId());
-      serverView.addAccessKey(uiAccessKey);
+      this.refreshServerMetricsUI(server, serverView);
       this.appRoot.showNotification(
         this.appRoot.localize('notification-key-added')
       );
@@ -1192,21 +1202,18 @@ export class App {
     }
   }
 
-  private renameAccessKey(
-    accessKeyId: string,
-    newName: string,
-    entry: polymer.Base
-  ) {
-    this.selectedServer
-      .renameAccessKey(accessKeyId, newName)
-      .then(() => {
-        entry.commitName();
-      })
-      .catch(error => {
-        console.error(`Failed to rename access key: ${error}`);
-        this.appRoot.showError(this.appRoot.localize('error-key-rename'));
-        entry.revertName();
-      });
+  private async renameAccessKey(accessKeyId: string, newName: string) {
+    try {
+      await this.selectedServer.renameAccessKey(accessKeyId, newName);
+    } catch (error) {
+      console.error(`Failed to rename access key: ${error}`);
+      this.appRoot.showError(this.appRoot.localize('error-key-rename'));
+    } finally {
+      this.refreshServerMetricsUI(
+        this.selectedServer,
+        await this.appRoot.getServerView(this.selectedServer.getId())
+      );
+    }
   }
 
   private async setDefaultDataLimit(limit: server_model.Data) {
@@ -1424,8 +1431,9 @@ export class App {
     const server = this.selectedServer;
     try {
       await server.removeAccessKey(accessKeyId);
-      (await this.appRoot.getServerView(server.getId())).removeAccessKey(
-        accessKeyId
+      this.refreshServerMetricsUI(
+        server,
+        await this.appRoot.getServerView(server.getId())
       );
       this.appRoot.showNotification(
         this.appRoot.localize('notification-key-removed')

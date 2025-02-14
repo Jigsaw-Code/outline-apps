@@ -18,12 +18,14 @@ import {LitElement, html, css} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
+import type {ServerMetricsData} from './index';
 import '../icon_tooltip';
 import './index';
 import '@material/mwc-icon';
 
 const SECONDS_IN_HOUR = 60 * 60;
-export interface ServerMetricsTunnelTimeRegion {
+
+export interface ServerMetricsTunnelTimeLocation {
   seconds: number;
   asn: string;
   asOrg?: string;
@@ -33,13 +35,15 @@ export interface ServerMetricsTunnelTimeRegion {
 @customElement('server-metrics-tunnel-time-row')
 export class ServerMetricsTunnelTimeRow extends LitElement {
   @property({type: String}) language: string = 'en';
-  @property({type: Object}) localize: (key: string) => string;
-  @property({type: Number}) totalSeconds: number;
-  @property({type: Array}) locations: Array<ServerMetricsTunnelTimeRegion>;
+  @property({type: Object}) localize: (...keys: string[]) => string;
+  @property({type: Object}) metrics: ServerMetricsData;
+  @property({type: Array})
+  locations: Array<ServerMetricsTunnelTimeLocation>;
 
   static styles = css`
     :host {
-      --server-metrics-tunnel-time-row-icon-size: 1.38rem;
+      --server-metrics-tunnel-time-row-icon-size: 1rem;
+      --server-metrics-tunnel-time-row-icon-button-size: 1.3rem;
 
       --server-metrics-tunnel-time-row-font-family: 'Inter', system-ui;
       --server-metrics-tunnel-time-row-title-color: hsla(0, 0%, 100%, 0.7);
@@ -76,6 +80,9 @@ export class ServerMetricsTunnelTimeRow extends LitElement {
 
     icon-tooltip {
       --icon-tooltip-icon-size: var(--server-metrics-tunnel-time-row-icon-size);
+      --icon-tooltip-button-size: var(
+        --server-metrics-tunnel-time-row-icon-button-size
+      );
     }
 
     mwc-icon {
@@ -121,7 +128,11 @@ export class ServerMetricsTunnelTimeRow extends LitElement {
           icon: asn.countryFlag,
         }))}
         .subtitle=${this.localize(
-          'server-view-server-metrics-tunnel-time-as-breakdown'
+          'server-view-server-metrics-tunnel-time-as-breakdown',
+          'openItalics',
+          '<i>',
+          'closeItalics',
+          '</i>'
         )}
       >
         <div class="main-container">
@@ -129,7 +140,13 @@ export class ServerMetricsTunnelTimeRow extends LitElement {
             <mwc-icon>timer</mwc-icon>
             <h2 class="title">
               ${unsafeHTML(
-                this.localize('server-view-server-metrics-tunnel-time-title')
+                this.localize(
+                  'server-view-server-metrics-tunnel-time-title',
+                  'openItalics',
+                  '<i>',
+                  'closeItalics',
+                  '</i>'
+                )
               )}
             </h2>
             <icon-tooltip
@@ -139,12 +156,18 @@ export class ServerMetricsTunnelTimeRow extends LitElement {
             ></icon-tooltip>
           </div>
           <div class="tunnel-time-container">
-            <span class="tunnel-time-value"
-              >${this.formatSecondsValue(this.totalSeconds)}</span
-            >
-            <span class="tunnel-time-unit"
-              >${this.formatSecondsUnits(this.totalSeconds)}</span
-            >
+            ${this.metrics.tunnelTime
+              ? html`<span class="tunnel-time-value"
+                    >${this.formatSecondsValue(
+                      this.metrics.tunnelTime.seconds
+                    )}</span
+                  >
+                  <span class="tunnel-time-unit"
+                    >${this.formatSecondsUnits(
+                      this.metrics.tunnelTime.seconds
+                    )}</span
+                  >`
+              : html`<span class="tunnel-time-value">-</span>`}
           </div>
         </div>
       </server-metrics-row>

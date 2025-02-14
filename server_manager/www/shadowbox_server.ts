@@ -17,6 +17,8 @@ import * as semver from 'semver';
 
 import * as server from '../model/server';
 
+const TIMESTAMP_TO_MS = 1000;
+
 interface AccessKeyJson {
   id: string;
   name: string;
@@ -49,34 +51,41 @@ interface MetricsJson {
         data: {
           bytes: number;
         };
-        timestamp: number;
+        timestamp?: number;
       };
       peak: {
         data: {
           bytes: number;
         };
-        timestamp: number;
+        timestamp?: number;
       };
     };
     locations: {
       location: string;
       asn: number;
       asOrg: string;
-      tunnelTime?: {
+      tunnelTime: {
         seconds: number;
       };
-      dataTransferred?: {
+      dataTransferred: {
         bytes: number;
       };
     }[];
   };
   accessKeys: {
-    accessKeyId: string;
-    tunnelTime?: {
+    accessKeyId: number;
+    tunnelTime: {
       seconds: number;
     };
-    dataTransferred?: {
+    dataTransferred: {
       bytes: number;
+    };
+    connection: {
+      lastTrafficSeen: number;
+      peakDeviceCount: {
+        data: number;
+        timestamp?: number;
+      };
     };
   }[];
 }
@@ -197,7 +206,7 @@ export class ShadowboxServer implements server.Server {
   }
 
   async getServerMetrics(): Promise<{
-    server: server.ServerMetrics;
+    server?: server.ServerMetrics;
     accessKeys: server.AccessKeyMetrics[];
   }> {
     if (await this.getSupportedExperimentalUniversalMetricsEndpoint()) {
@@ -206,34 +215,54 @@ export class ShadowboxServer implements server.Server {
         `experimental/server/metrics?since=${timeRangeInDays}d`
       );
 
+      const convertTimestampToDate = (timestamp?: number) => {
+        if (!timestamp) {
+          return;
+        }
+
+        return new Date(timestamp * TIMESTAMP_TO_MS);
+      };
+
       return {
         server: {
-          tunnelTime: json.server.tunnelTime,
-          dataTransferred: json.server.dataTransferred,
+          ...json.server,
           bandwidth: {
-            current: json.server.bandwidth.current.data,
+            current: {
+              data: json.server.bandwidth.current.data,
+              timestamp: convertTimestampToDate(
+                json.server.bandwidth.current.timestamp
+              ),
+            },
             peak: {
-              data: {
-                bytes: json.server.bandwidth.peak.data.bytes,
-              },
-              timestamp: new Date(json.server.bandwidth.peak.timestamp * 1000),
+              data: json.server.bandwidth.peak.data,
+              timestamp: convertTimestampToDate(
+                json.server.bandwidth.peak.timestamp
+              ),
             },
           },
           locations: json.server.locations,
         },
         accessKeys: json.accessKeys.map(key => ({
-          accessKeyId: key.accessKeyId,
-          tunnelTime: key.tunnelTime,
-          dataTransferred: key.dataTransferred,
+          ...key,
+          accessKeyId: String(key.accessKeyId),
+          connection: {
+            lastTrafficSeen: convertTimestampToDate(
+              key.connection.lastTrafficSeen
+            ),
+            peakDeviceCount: {
+              data: key.connection.peakDeviceCount.data,
+              timestamp: convertTimestampToDate(
+                key.connection.peakDeviceCount.timestamp
+              ),
+            },
+          },
         })),
       };
     }
 
     const result: {
-      server: server.ServerMetrics;
       accessKeys: server.AccessKeyMetrics[];
     } = {
-      server: {},
       accessKeys: [],
     };
 

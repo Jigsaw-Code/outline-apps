@@ -18,13 +18,14 @@ import {LitElement, html, css, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
+import type {ServerMetricsData} from './index';
 import {formatBytes, getDataFormattingParams} from '../../../data_formatting';
 
 import '../icon_tooltip';
 import './index';
 import '@material/mwc-icon';
 
-export interface ServerMetricsBandwidthRegion {
+export interface ServerMetricsBandwidthLocation {
   bytes: number;
   asn: string;
   asOrg?: string;
@@ -34,28 +35,27 @@ export interface ServerMetricsBandwidthRegion {
 @customElement('server-metrics-bandwidth-row')
 export class ServerMetricsBandwidthRow extends LitElement {
   @property({type: String}) language: string = 'en';
-  @property({type: Object}) localize: (key: string) => string;
-  @property({type: Number}) totalBytes: number;
-  @property({type: Number}) limitBytes: number;
-  @property({type: Number}) limitThreshold: number = 0.8;
-  @property({type: Boolean}) hasDataLimits: boolean = false;
-  @property({type: Number}) currentBytes: number;
-  @property({type: Number}) peakBytes: number;
-  @property({type: String}) peakTimestamp: string;
-  @property({type: Array}) locations: Array<ServerMetricsBandwidthRegion>;
+  @property({type: Object}) localize: (...keys: string[]) => string;
+  @property({type: Object}) metrics: ServerMetricsData;
+  @property({type: Number}) dataLimitBytes: number;
+  @property({type: Number}) dataLimitThreshold: number = 0.8;
+  @property({type: Boolean}) hasAccessKeyDataLimits: boolean;
+  @property({type: Array})
+  locations: Array<ServerMetricsBandwidthLocation>;
 
   @property({type: Boolean, reflect: true})
   get bandwidthLimitWarning() {
-    return this.bandwidthPercentage >= this.limitThreshold;
+    return this.bandwidthPercentage >= this.dataLimitThreshold;
   }
 
   get bandwidthPercentage() {
-    return this.totalBytes / this.limitBytes;
+    return this.metrics.dataTransferred.bytes / this.dataLimitBytes;
   }
 
   static styles = css`
     :host {
-      --server-metrics-bandwidth-row-icon-size: 1.38rem;
+      --server-metrics-bandwidth-row-icon-size: 1rem;
+      --server-metrics-bandwidth-row-icon-button-size: 1.3rem;
 
       --server-metrics-bandwidth-row-font-family: 'Inter', system-ui;
       --server-metrics-bandwidth-row-title-color: hsla(0, 0%, 100%, 0.7);
@@ -137,7 +137,10 @@ export class ServerMetricsBandwidthRow extends LitElement {
     }
 
     icon-tooltip {
-      --icon-tooltip-icon-size: var(--server-metrics-tunnel-time-row-icon-size);
+      --icon-tooltip-icon-size: var(--server-metrics-bandwidth-row-icon-size);
+      --icon-tooltip-button-size: var(
+        --server-metrics-bandwidth-row-icon-button-size
+      );
     }
 
     .bandwidth-container {
@@ -216,6 +219,11 @@ export class ServerMetricsBandwidthRow extends LitElement {
       border-left: var(--server-metrics-bandwidth-row-current-and-peak-border);
     }
 
+    .current-and-peak-container[dir='rtl'] {
+      border-left: none;
+      border-right: var(--server-metrics-bandwidth-row-current-and-peak-border);
+    }
+
     .current-container,
     .peak-container {
       display: flex;
@@ -276,7 +284,11 @@ export class ServerMetricsBandwidthRow extends LitElement {
           icon: asn.countryFlag,
         }))}
         .subtitle=${this.localize(
-          'server-view-server-metrics-bandwidth-as-breakdown'
+          'server-view-server-metrics-bandwidth-as-breakdown',
+          'openItalics',
+          '<i>',
+          'closeItalics',
+          '</i>'
         )}
       >
         <div class="main-container">
@@ -285,7 +297,13 @@ export class ServerMetricsBandwidthRow extends LitElement {
               <mwc-icon>data_usage</mwc-icon>
               <h2 class="title">
                 ${unsafeHTML(
-                  this.localize('server-view-server-metrics-bandwidth-title')
+                  this.localize(
+                    'server-view-server-metrics-bandwidth-title',
+                    'openItalics',
+                    '<i>',
+                    'closeItalics',
+                    '</i>'
+                  )
                 )}
               </h2>
               <icon-tooltip
@@ -295,39 +313,53 @@ export class ServerMetricsBandwidthRow extends LitElement {
               ></icon-tooltip>
             </div>
             <div class="bandwidth-container">
-              <span class="bandwidth-percentage"
-                >${this.formatPercentage(this.bandwidthPercentage)}</span
-              >
-              <span class="bandwidth-fraction"
-                >${formatBytes(this.totalBytes, this.language)}
-                /${formatBytes(this.limitBytes, this.language)}</span
-              >
-              <span class="bandwidth-progress-container">
-                <progress
-                  max=${this.limitBytes}
-                  value=${this.totalBytes}
-                ></progress>
-                <icon-tooltip
-                  text="${this.hasDataLimits
-                    ? ''
-                    : this.localize(
-                        'server-view-server-metrics-bandwidth-limit-tooltip'
-                      )}"
-                  icon="warning"
-                ></icon-tooltip>
-              </span>
+              ${this.metrics.dataTransferred
+                ? html`<span class="bandwidth-percentage">
+                      ${this.formatPercentage(this.bandwidthPercentage)}
+                    </span>
+                    <span class="bandwidth-fraction"
+                      >${formatBytes(
+                        this.metrics.dataTransferred.bytes,
+                        this.language
+                      )}
+                      /${formatBytes(this.dataLimitBytes, this.language)}</span
+                    >
+                    <span class="bandwidth-progress-container">
+                      <progress
+                        max=${this.dataLimitBytes}
+                        value=${this.metrics.dataTransferred.bytes}
+                      ></progress>
+                      <icon-tooltip
+                        text=${this.hasAccessKeyDataLimits
+                          ? null
+                          : this.localize(
+                              'server-view-server-metrics-bandwidth-limit-tooltip'
+                            )}
+                        icon="warning"
+                      ></icon-tooltip>
+                    </span>`
+                : html`<span class="bandwidth-percentage">-</span>`}
             </div>
           </div>
-          <div class="current-and-peak-container">
+          <div
+            class="current-and-peak-container"
+            .dir=${document.documentElement.dir}
+          >
             <div class="current-container">
-              <span class="current-value-and-unit">
-                <span class="current-value"
-                  >${this.formatBandwidthValue(this.currentBytes)}</span
-                >
-                <span class="current-unit"
-                  >${this.formatBandwidthUnit(this.currentBytes)}</span
-                >
-              </span>
+              ${this.metrics.bandwidth
+                ? html`<span class="current-value-and-unit">
+                    <span class="current-value"
+                      >${this.formatBandwidthValue(
+                        this.metrics.bandwidth.current.data.bytes
+                      )}</span
+                    >
+                    <span class="current-unit"
+                      >${this.formatBandwidthUnit(
+                        this.metrics.bandwidth.current.data.bytes
+                      )}</span
+                    >
+                  </span>`
+                : html`<span class="current-value">-</span>`}
               <span class="current-title"
                 >${this.localize(
                   'server-view-server-metrics-bandwidth-usage'
@@ -336,22 +368,34 @@ export class ServerMetricsBandwidthRow extends LitElement {
             </div>
             <div class="peak-container">
               <span class="peak-value-and-unit">
-                <span class="peak-value"
-                  >${this.formatBandwidthValue(this.peakBytes)}</span
-                >
-                <span class="peak-unit"
-                  >${this.formatBandwidthUnit(this.peakBytes)}</span
-                >
-                ${this.peakTimestamp
+                ${this.metrics.bandwidth
+                  ? html`<span class="peak-value"
+                        >${this.formatBandwidthValue(
+                          this.metrics.bandwidth.peak.data.bytes
+                        )}</span
+                      >
+                      <span class="peak-unit"
+                        >${this.formatBandwidthUnit(
+                          this.metrics.bandwidth.peak.data.bytes
+                        )}</span
+                      >`
+                  : html`<span class="peak-value">-</span>`}
+                ${this.metrics.bandwidth?.peak.timestamp
                   ? html`<span class="peak-timestamp"
-                      >(${this.peakTimestamp})</span
+                      >(${this.metrics.bandwidth.peak.timestamp.toLocaleString(
+                        this.language
+                      )})</span
                     >`
                   : nothing}
               </span>
               <span class="peak-title"
                 >${unsafeHTML(
                   this.localize(
-                    'server-view-server-metrics-bandwidth-usage-max'
+                    'server-view-server-metrics-bandwidth-usage-max',
+                    'openItalics',
+                    '<i>',
+                    'closeItalics',
+                    '</i>'
                   )
                 )}</span
               >

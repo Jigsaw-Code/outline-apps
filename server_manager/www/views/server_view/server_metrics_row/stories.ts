@@ -37,12 +37,25 @@ export const Bandwidth = () => {
           'Maximum bandwidth usage <i>(last 30 days)</i>',
       }[key];
     }}
-    totalBytes=${380 * 1000 * 1000 * 1000}
-    limitBytes=${1 * 1000 * 1000 * 1000 * 1000}
-    limitThreshold=${0.8}
-    currentBytes=${1.2 * 1000 * 1000 * 1000}
-    peakBytes=${20.8 * 1000 * 1000 * 1000}
-    peakTimestamp="2/19/2025 22:41:38"
+    .metrics=${{
+      dataTransferred: {
+        bytes: 380 * 1000 * 1000 * 1000,
+      },
+      bandwidth: {
+        current: {
+          data: {
+            bytes: 1.2 * 1000 * 1000 * 1000,
+          },
+        },
+        peak: {
+          data: {
+            bytes: 20.8 * 1000 * 1000 * 1000,
+          },
+          timestamp: new Date('2/19/2025 22:41:38'),
+        },
+      },
+    }}
+    dataLimitBytes=${1 * 1000 * 1000 * 1000 * 1000}
     .locations=${[
       {
         bytes: 265 * 1000 * 1000 * 1000,
@@ -88,12 +101,25 @@ export const BandwidthWarning = () => {
           'Maximum bandwidth usage <i>(last 30 days)</i>',
       }[key];
     }}
-    totalBytes=${800 * 1000 * 1000 * 1000}
-    limitBytes=${1 * 1000 * 1000 * 1000 * 1000}
-    limitThreshold=${0.8}
-    currentBytes=${1.2 * 1000 * 1000 * 1000}
-    peakBytes=${20.8 * 1000 * 1000 * 1000}
-    peakTimestamp="2/19/2025 22:41:38"
+    .metrics=${{
+      dataTransferred: {
+        bytes: 800 * 1000 * 1000 * 1000,
+      },
+      bandwidth: {
+        current: {
+          data: {
+            bytes: 1.2 * 1000 * 1000 * 1000,
+          },
+        },
+        peak: {
+          data: {
+            bytes: 20.8 * 1000 * 1000 * 1000,
+          },
+          timestamp: new Date('2/19/2025 22:41:38'),
+        },
+      },
+    }}
+    dataLimitBytes=${1 * 1000 * 1000 * 1000 * 1000}
     .locations=${[
       {
         bytes: 265 * 1000 * 1000 * 1000,
@@ -134,8 +160,12 @@ export const TunnelTime = () => {
         'server-view-server-metrics-tunnel-time-tooltip': 'Lorem ipsum',
       }[key];
     }}
-    totalHours=${1573}
-    .regions=${[
+    .metrics=${{
+      tunnelTime: {
+        seconds: 1573 * 60 * 60,
+      },
+    }}
+    .locations=${[
       {
         seconds: 1080 * 60 * 60,
         asOrg: 'Iran Telecommunication Company PJS',

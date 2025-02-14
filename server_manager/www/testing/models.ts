@@ -169,7 +169,7 @@ export class FakeServer implements server.Server {
     return Promise.resolve(new Map<server.AccessKeyId, number>());
   }
   getServerMetrics(): Promise<{
-    server: server.ServerMetrics;
+    server?: server.ServerMetrics;
     accessKeys: server.AccessKeyMetrics[];
   }> {
     return Promise.reject(
@@ -248,7 +248,7 @@ export class FakeManualServer
   implements server.ManualServer
 {
   constructor(public manualServerConfig: server.ManualServerConfig) {
-    super(manualServerConfig.apiUrl, 'dev');
+    super(manualServerConfig.apiUrl, '0.0.0');
   }
   getManagementApiUrl() {
     return this.manualServerConfig.apiUrl;
@@ -263,7 +263,7 @@ export class FakeManualServer
     return Promise.resolve(null);
   }
   async getServerMetrics(): Promise<{
-    server: server.ServerMetrics;
+    server?: server.ServerMetrics;
     accessKeys: server.AccessKeyMetrics[];
   }> {
     if (await this.getSupportedExperimentalUniversalMetricsEndpoint()) {
@@ -277,7 +277,10 @@ export class FakeManualServer
           },
           bandwidth: {
             current: {
-              bytes: 0,
+              data: {
+                bytes: 0,
+              },
+              timestamp: new Date(),
             },
             peak: {
               data: {
@@ -297,16 +300,21 @@ export class FakeManualServer
         accessKeys: [
           {
             accessKeyId: '0',
+            dataTransferred: {
+              bytes: 0,
+            },
           },
         ],
       };
     }
 
     return {
-      server: {},
       accessKeys: [
         {
           accessKeyId: '0',
+          dataTransferred: {
+            bytes: 0,
+          },
         },
       ],
     };
