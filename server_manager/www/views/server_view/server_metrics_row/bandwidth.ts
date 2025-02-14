@@ -314,9 +314,10 @@ export class ServerMetricsBandwidthRow extends LitElement {
             </div>
             <div class="bandwidth-container">
               ${this.metrics.dataTransferred
-                ? html`<span class="bandwidth-percentage"
-                      >${this.formatPercentage(this.bandwidthPercentage)}</span
-                    >
+                ? html`
+                <span class="bandwidth-percentage">
+                    ${this.formatPercentage(this.bandwidthPercentage)}
+                </span>
                     <span class="bandwidth-fraction"
                       >${formatBytes(
                         this.metrics.dataTransferred.bytes,
