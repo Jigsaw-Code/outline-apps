@@ -260,7 +260,7 @@
   "server-view-privacy-statement-link": "Weitere Informationen.",
   "server-view-server-metrics-advanced-metrics-link": "Informationen zum Aufrufen detaillierter Servermesswerte",
   "server-view-server-metrics-bandwidth-as-breakdown": "Autonome Systeme (ASe) mit der höchsten Bandbreitennutzung {openItalics}(letzte 30 Tage){closeItalics}",
-  "server-view-server-metrics-bandwidth-limit-tooltip": "High bandwidth usage detected over the last 30 days. Consider setting data limits to prevent overages and keep your service running smoothly.",
+  "server-view-server-metrics-bandwidth-limit-tooltip": "Hohe Bandbreitennutzung in den letzten 30 Tagen erkannt. Legen Sie Datenlimits fest, um Überschreitungen zu vermeiden und einen reibungslosen Dienstbetrieb zu gewährleisten.",
   "server-view-server-metrics-bandwidth-title": "Bandbreitennutzung gesamt {openItalics}(letzte 30 Tage){closeItalics}",
   "server-view-server-metrics-bandwidth-tooltip": "Hier wird die Gesamtmenge der Daten angezeigt, die in den letzten 30 Tagen über den Server übertragen wurde.",
   "server-view-server-metrics-bandwidth-usage": "Aktuelle Bandbreitennutzung",

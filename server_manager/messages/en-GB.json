@@ -260,7 +260,7 @@
   "server-view-privacy-statement-link": "Learn more.",
   "server-view-server-metrics-advanced-metrics-link": "Learn how to view detailed server metrics",
   "server-view-server-metrics-bandwidth-as-breakdown": "ASes with most bandwidth usage {openItalics}(past 30 days){closeItalics}",
-  "server-view-server-metrics-bandwidth-limit-tooltip": "High bandwidth usage detected over the last 30 days. Consider setting data limits to prevent overages and keep your service running smoothly.",
+  "server-view-server-metrics-bandwidth-limit-tooltip": "High bandwidth usage detected over the past 30 days. Consider setting data limits to prevent overages and keep your service running smoothly.",
   "server-view-server-metrics-bandwidth-title": "Total bandwidth usage {openItalics}(past 30 days){closeItalics}",
   "server-view-server-metrics-bandwidth-tooltip": "This shows the total amount of data transferred through the server over the past 30 days.",
   "server-view-server-metrics-bandwidth-usage": "Current bandwidth usage",

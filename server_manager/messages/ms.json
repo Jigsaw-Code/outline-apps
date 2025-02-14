@@ -260,7 +260,7 @@
   "server-view-privacy-statement-link": "Ketahui lebih lanjut.",
   "server-view-server-metrics-advanced-metrics-link": "Ketahui cara melihat metrik pelayan terperinci",
   "server-view-server-metrics-bandwidth-as-breakdown": "ASes dengan penggunaan lebar jalur terbanyak {openItalics}(30 hari yang lalu){closeItalics}",
-  "server-view-server-metrics-bandwidth-limit-tooltip": "High bandwidth usage detected over the last 30 days. Consider setting data limits to prevent overages and keep your service running smoothly.",
+  "server-view-server-metrics-bandwidth-limit-tooltip": "Penggunaan lebar jalur tinggi dikesan lebih 30 hari yang lalu. Pertimbangkan untuk menetapkan had data untuk menghalang lebihan data dan memastikan perkhidmatan anda berjalan dengan lancar.",
   "server-view-server-metrics-bandwidth-title": "Jumlah penggunaan lebar jalur {openItalics}(30 hari yang lalu){closeItalics}",
   "server-view-server-metrics-bandwidth-tooltip": "Butiran ini menunjukkan jumlah data yang dipindahkan melalui pelayan sepanjang 30 hari yang lalu.",
   "server-view-server-metrics-bandwidth-usage": "Penggunaan lebar jalur semasa",

@@ -260,7 +260,7 @@
   "server-view-privacy-statement-link": "مزید جانیں۔",
   "server-view-server-metrics-advanced-metrics-link": "سرور کے تفصیلی میٹرکس دیکھنے کا طریقہ جانیں",
   "server-view-server-metrics-bandwidth-as-breakdown": "سب سے زیادہ بینڈ وڈتھ استعمال کرنے والے ASes {openItalics}(گزشتہ 30 دن){closeItalics}",
-  "server-view-server-metrics-bandwidth-limit-tooltip": "High bandwidth usage detected over the last 30 days. Consider setting data limits to prevent overages and keep your service running smoothly.",
+  "server-view-server-metrics-bandwidth-limit-tooltip": "گزشتہ 30 دنوں سے زیادہ عرصے میں زیادہ بینڈ وڈتھ کے استعمال کا پتہ چلا۔ حد سے تجاوز کو روکنے اور اپنی سروس کو آسانی سے چلانے کے لیے ڈیٹا کی حد مقرر کرنے پر غور کریں۔",
   "server-view-server-metrics-bandwidth-title": "بینڈ وڈتھ کا کُل استعمال {openItalics}(گزشتہ 30 دن){closeItalics}",
   "server-view-server-metrics-bandwidth-tooltip": "یہ اس بات کو ظاہر کرتا ہے کہ گزشتہ 30 دنوں سے زیادہ عرصے میں سرور کے ذریعے کُل کتنا ڈیٹا منتقل ہوا۔",
   "server-view-server-metrics-bandwidth-usage": "بینڈ وڈتھ کا موجودہ استعمال",

@@ -260,7 +260,7 @@
   "server-view-privacy-statement-link": "Подробнее…",
   "server-view-server-metrics-advanced-metrics-link": "Узнайте, как получить подробные показатели сервера",
   "server-view-server-metrics-bandwidth-as-breakdown": "Автономные системы с самым большим трафиком {openItalics}(за последние 30 дней){closeItalics}",
-  "server-view-server-metrics-bandwidth-limit-tooltip": "High bandwidth usage detected over the last 30 days. Consider setting data limits to prevent overages and keep your service running smoothly.",
+  "server-view-server-metrics-bandwidth-limit-tooltip": "Обнаружено высокое потребление трафика за последние 30 дней. Установите лимиты трафика, чтобы предотвратить перерасход и обеспечить бесперебойную работу сервиса.",
   "server-view-server-metrics-bandwidth-title": "Общий трафик {openItalics}(за последние 30 дней){closeItalics}",
   "server-view-server-metrics-bandwidth-tooltip": "Количество данных, переданное через сервер за последние 30 дней",
   "server-view-server-metrics-bandwidth-usage": "Текущий трафик",

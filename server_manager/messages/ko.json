@@ -260,7 +260,7 @@
   "server-view-privacy-statement-link": "자세히 알아보기",
   "server-view-server-metrics-advanced-metrics-link": "세부 서버 측정항목 확인 방법 알아보기",
   "server-view-server-metrics-bandwidth-as-breakdown": "대역폭 사용량이 가장 많은 자율 시스템{openItalics}(AS, 지난 30일){closeItalics}",
-  "server-view-server-metrics-bandwidth-limit-tooltip": "High bandwidth usage detected over the last 30 days. Consider setting data limits to prevent overages and keep your service running smoothly.",
+  "server-view-server-metrics-bandwidth-limit-tooltip": "지난 30일 동안 대역폭 사용량이 높게 감지되었습니다. 초과 사용을 방지하고 서비스를 원활하게 실행하기 위해 데이터 한도를 설정해 보세요.",
   "server-view-server-metrics-bandwidth-title": "총 대역폭 사용량{openItalics}(지난 30일){closeItalics}",
   "server-view-server-metrics-bandwidth-tooltip": "지난 30일 동안 서버를 통해 전송된 총 데이터 양을 표시합니다.",
   "server-view-server-metrics-bandwidth-usage": "현재 대역폭 사용량",

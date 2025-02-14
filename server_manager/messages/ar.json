@@ -260,7 +260,7 @@
   "server-view-privacy-statement-link": "مزيد من المعلومات",
   "server-view-server-metrics-advanced-metrics-link": "كيفية الاطّلاع على مقاييس الخادم التفصيلية",
   "server-view-server-metrics-bandwidth-as-breakdown": "الأنظمة المستقلّة ذات أعلى معدّلات لنقل البيانات {openItalics}(آخر 30 يومًا){closeItalics}",
-  "server-view-server-metrics-bandwidth-limit-tooltip": "High bandwidth usage detected over the last 30 days. Consider setting data limits to prevent overages and keep your service running smoothly.",
+  "server-view-server-metrics-bandwidth-limit-tooltip": "تم رصد معدّل نقل بيانات عالٍ خلال آخر 30 يومًا. يُرجى مراعاة ضبط \"الحدود القصوى للبيانات\" لتجنُّب تجاوزها وتعزيز الاستفادة من الخدمة بسلاسة.",
   "server-view-server-metrics-bandwidth-title": "إجمالي معدّل نقل البيانات {openItalics}(آخر 30 يومًا){closeItalics}",
   "server-view-server-metrics-bandwidth-tooltip": "يعرض هذا المقياس إجمالي حجم البيانات التي تم نقلها من خلال الخادم خلال آخر 30 يومًا.",
   "server-view-server-metrics-bandwidth-usage": "معدّل نقل البيانات الحالي",

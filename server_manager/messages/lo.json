@@ -260,7 +260,7 @@
   "server-view-privacy-statement-link": "ສຶກສາເພີ່ມເຕີມ.",
   "server-view-server-metrics-advanced-metrics-link": "ສຶກສາວິທີເບິ່ງການວັດແທກເຊີບເວີໂດຍລະອຽດ",
   "server-view-server-metrics-bandwidth-as-breakdown": "ລະບົບເຄືອຂ່າຍອັດຕະໂນມັດ (AS) ມີການໃຊ້ແບນວິດທີ່ຫຼາຍທີ່ສຸດ {openItalics}(30 ມື້ທີ່ຜ່ານມາ){closeItalics}",
-  "server-view-server-metrics-bandwidth-limit-tooltip": "High bandwidth usage detected over the last 30 days. Consider setting data limits to prevent overages and keep your service running smoothly.",
+  "server-view-server-metrics-bandwidth-limit-tooltip": "ກວດພົບການນຳໃຊ້ແບນວິດສູງໃນໄລຍະ 30 ມື້ທີ່ຜ່ານມາ. ກະລຸນາພິຈາລະນາຕັ້ງຄ່າຂີດຈຳກັດຂອງຂໍ້ມູນເພື່ອປ້ອງກັນບໍ່ໃຫ້ມີການນຳໃຊ້ເກີນຂີດຈຳກັດ ແລະ ເຮັດໃຫ້ບໍລິການຂອງທ່ານເຮັດວຽກໄດ້ຢ່າງລ່ຽນໄຫຼ.",
   "server-view-server-metrics-bandwidth-title": "ການນຳໃຊ້ແບນວິດທັງໝົດ {openItalics}(30 ມື້ທີ່ຜ່ານມາ){closeItalics}",
   "server-view-server-metrics-bandwidth-tooltip": "ຂໍ້ມູນນີ້ຈະສະແດງຈຳນວນຂໍ້ມູນທັງໝົດທີ່ໂອນຜ່ານເຊີບເວີໃນໄລຍະ 30 ມື້ທີ່ຜ່ານມາ.",
   "server-view-server-metrics-bandwidth-usage": "ການນຳໃຊ້ແບນວິດປັດຈຸບັນ",

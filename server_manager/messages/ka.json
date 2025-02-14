@@ -260,7 +260,7 @@
   "server-view-privacy-statement-link": "შეიტყვეთ მეტი.",
   "server-view-server-metrics-advanced-metrics-link": "შეიტყვეთ, როგორ იხილოთ სერვერის დეტალური მეტრიკა",
   "server-view-server-metrics-bandwidth-as-breakdown": "ASes გამტარუნარიანობის ყველაზე დიდი გამოყენებით {openItalics}(ბოლო 30 დღე){closeItalics}",
-  "server-view-server-metrics-bandwidth-limit-tooltip": "High bandwidth usage detected over the last 30 days. Consider setting data limits to prevent overages and keep your service running smoothly.",
+  "server-view-server-metrics-bandwidth-limit-tooltip": "ბოლო 30 დღეში დაფიქსირდა გამტარუნარიანობის გამოყენების ზრდა. განიხილეთ მონაცემთა ლიმიტების დაწესება, რათა თავიდან აიცილოთ ჭარბი გამოყენება და თქვენი სერვისები შეუფერხებლად ამუშაოთ.",
   "server-view-server-metrics-bandwidth-title": "სულ გამტარუნარიანობის გამოყენება {openItalics}(ბოლო 30 დღე){closeItalics}",
   "server-view-server-metrics-bandwidth-tooltip": "აქ ნაჩვენებია სერვერის მიერ ბოლო 30 დღის განმავლობაში გადაცემული მონაცემების ჯამური მოცულობა.",
   "server-view-server-metrics-bandwidth-usage": "გამტარუნარიანობის მიმდინარე გამოყენება",

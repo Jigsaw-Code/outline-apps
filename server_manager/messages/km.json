@@ -260,7 +260,7 @@
   "server-view-privacy-statement-link": "ស្វែងយល់​បន្ថែម។",
   "server-view-server-metrics-advanced-metrics-link": "ស្វែងយល់​អំពី​របៀបមើល​មេទ្រិក​ម៉ាស៊ីនមេ​លម្អិត",
   "server-view-server-metrics-bandwidth-as-breakdown": "AS ដែលមាន​ការប្រើប្រាស់​កម្រិត​បញ្ជូន​ច្រើនបំផុត {openItalics}(30 ថ្ងៃ​ចុងក្រោយ){closeItalics}",
-  "server-view-server-metrics-bandwidth-limit-tooltip": "High bandwidth usage detected over the last 30 days. Consider setting data limits to prevent overages and keep your service running smoothly.",
+  "server-view-server-metrics-bandwidth-limit-tooltip": "បានរកឃើញ​ថាមាន​ការប្រើប្រាស់​កម្រិត​បញ្ជូន​ខ្ពស់​ក្នុងរយៈពេល 30 ថ្ងៃ​ចុងក្រោយ។ សូម​ពិចារណា​ដាក់ដែន​កំណត់​ទិន្នន័យ ដើម្បី​ទប់ស្កាត់​ការប្រើ​លើស​កំណត់ និង​រក្សាឱ្យ​សេវាកម្ម​របស់អ្នក​ដំណើរការយ៉ាងរលូន។",
   "server-view-server-metrics-bandwidth-title": "ការប្រើប្រាស់​កម្រិត​បញ្ជូន​សរុប {openItalics}(30 ថ្ងៃ​ចុងក្រោយ){closeItalics}",
   "server-view-server-metrics-bandwidth-tooltip": "វាបង្ហាញ​ចំនួនទិន្នន័យ​សរុប​ដែលបានផ្ទេរ​តាមរយៈ​ម៉ាស៊ីនមេ​ក្នុងរយៈពេល 30 ថ្ងៃចុងក្រោយ។",
   "server-view-server-metrics-bandwidth-usage": "ការប្រើប្រាស់​កម្រិត​បញ្ជូន​បច្ចុប្បន្ន",

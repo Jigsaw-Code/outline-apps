@@ -260,7 +260,7 @@
   "server-view-privacy-statement-link": "Więcej informacji",
   "server-view-server-metrics-advanced-metrics-link": "Dowiedz się, jak wyświetlać szczegółowe dane dotyczące serwera",
   "server-view-server-metrics-bandwidth-as-breakdown": "Systemy autonomiczne z największym wykorzystaniem przepustowości {openItalics}(ostatnie 30 dni){closeItalics}",
-  "server-view-server-metrics-bandwidth-limit-tooltip": "High bandwidth usage detected over the last 30 days. Consider setting data limits to prevent overages and keep your service running smoothly.",
+  "server-view-server-metrics-bandwidth-limit-tooltip": "W ciągu ostatnich 30 dni wykryto duże wykorzystanie przepustowości. Rozważ ustawienie limitów danych, aby zapobiec nadmiernemu wykorzystaniu i zapewnić płynne działanie usługi.",
   "server-view-server-metrics-bandwidth-title": "Całkowite wykorzystanie przepustowości {openItalics}(ostatnie 30 dni){closeItalics}",
   "server-view-server-metrics-bandwidth-tooltip": "Pokazuje łączną ilość danych przesłanych przy użyciu serwera w ciągu ostatnich 30 dni.",
   "server-view-server-metrics-bandwidth-usage": "Bieżące wykorzystanie przepustowości",

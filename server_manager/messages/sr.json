@@ -260,7 +260,7 @@
   "server-view-privacy-statement-link": "Сазнајте више.",
   "server-view-server-metrics-advanced-metrics-link": "Сазнајте како да прегледате детаљне показатеље сервера",
   "server-view-server-metrics-bandwidth-as-breakdown": "Аутономни системи са највећом потрошњом пропусног опсега {openItalics}(последњих 30 дана){closeItalics}",
-  "server-view-server-metrics-bandwidth-limit-tooltip": "High bandwidth usage detected over the last 30 days. Consider setting data limits to prevent overages and keep your service running smoothly.",
+  "server-view-server-metrics-bandwidth-limit-tooltip": "Откривено је коришћење високог пропусног опсега у последњих 30 дана. Размислите о томе да подесите ограничења потрошње података да бисте спречили прекомерну потрошњу и да би услуга радила без проблема.",
   "server-view-server-metrics-bandwidth-title": "Укупна потрошња пропусног опсега {openItalics}(последњих 30 дана){closeItalics}",
   "server-view-server-metrics-bandwidth-tooltip": "Ово приказује укупну количину података пренетих преко сервера у последњих 30 дана.",
   "server-view-server-metrics-bandwidth-usage": "Тренутна потрошња пропусног опсега",
