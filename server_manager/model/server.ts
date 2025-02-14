@@ -230,7 +230,6 @@ export interface AccessKeyMetrics {
 }
 
 export interface AccessKeyConnection {
-  lastConnected?: Date;
   lastTrafficSeen?: Date;
   peakDeviceCount: PeakDeviceCount;
 }

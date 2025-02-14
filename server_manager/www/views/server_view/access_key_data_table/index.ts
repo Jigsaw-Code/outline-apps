@@ -52,7 +52,6 @@ type Duration = {
 export interface AccessKeyDataTableRow {
   accessUrl: string;
   connection?: {
-    lastConnected?: Date;
     lastTrafficSeen?: Date;
     peakDeviceCount: {
       data: number;

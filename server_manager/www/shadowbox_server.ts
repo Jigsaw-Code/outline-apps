@@ -81,7 +81,6 @@ interface MetricsJson {
       bytes: number;
     };
     connection: {
-      lastConnected: number;
       lastTrafficSeen: number;
       peakDeviceCount: {
         data: number;
@@ -247,7 +246,6 @@ export class ShadowboxServer implements server.Server {
           ...key,
           accessKeyId: String(key.accessKeyId),
           connection: {
-            lastConnected: convertTimestampToDate(key.connection.lastConnected),
             lastTrafficSeen: convertTimestampToDate(
               key.connection.lastTrafficSeen
             ),

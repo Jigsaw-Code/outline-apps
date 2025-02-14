@@ -56,7 +56,6 @@ export default {
         name: 'Key 001',
         isOnline: true,
         connection: {
-          lastConnected: new Date('2/19/2025 10:08:34'),
           lastTrafficSeen: new Date('2/19/2025 16:54:03'),
           peakDeviceCount: {
             data: 3,
@@ -75,7 +74,6 @@ export default {
         name: 'Key 002',
         isOnline: true,
         connection: {
-          lastConnected: new Date('2/19/2025 9:25:43'),
           lastTrafficSeen: new Date('2/19/2025 17:02:21'),
           peakDeviceCount: {
             data: 17,
@@ -94,7 +92,6 @@ export default {
         name: 'Key 003',
         isOnline: false,
         connection: {
-          lastConnected: new Date('2/12/2025 11:56:18'),
           lastTrafficSeen: new Date('1/30/2025 7:02:31'),
           peakDeviceCount: {
             data: 2,
@@ -113,7 +110,6 @@ export default {
         name: 'Key 004',
         isOnline: false,
         connection: {
-          lastConnected: new Date('9/14/2024 14:26:02'),
           lastTrafficSeen: new Date('9/14/2024 19:17:51'),
           peakDeviceCount: {
             data: 0,
