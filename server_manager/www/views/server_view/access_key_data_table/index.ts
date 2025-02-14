@@ -153,7 +153,7 @@ export class AccessKeyDataTable extends LitElement {
                 .key=${key}
               ></access-key-status>`,
             comparator: (a: AccessKeyDataTableRow, b: AccessKeyDataTableRow) =>
-              defaultStringComparator(a.name, b.name),
+              defaultStringComparator(a.name, b.name, this.language),
           },
           {
             id: 'lastTraffic',

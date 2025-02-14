@@ -30,7 +30,17 @@ const INTERNAL_LIT_ENUM_HTML_RESULT = 1;
  * @param {T} value2 The second value to compare.
  * @returns {-1 | 0 | 1} A negative number if value1 is less than value2, zero if they are equal, or a positive number if value1 is greater than value2.
  */
-export type Comparator<T> = (value1: T, value2: T) => -1 | 0 | 1;
+export type Comparator<T> = (
+  value1: T,
+  value2: T,
+  language?: string
+) => -1 | 0 | 1;
+
+function _clamp(number: number): 1 | 0 | -1 {
+  if (number <= -1) return -1;
+  if (number >= 1) return 1;
+  return 0;
+}
 
 /**
  * A default comparator function for numerical data.
@@ -43,9 +53,7 @@ export const defaultNumericComparator: Comparator<number> = (
   value1: number,
   value2: number
 ): -1 | 0 | 1 => {
-  if (value1 === value2) return 0;
-  if (value1 < value2) return -1;
-  if (value1 > value2) return 1;
+  return _clamp(value1 - value2);
 };
 
 /**
@@ -53,14 +61,14 @@ export const defaultNumericComparator: Comparator<number> = (
  *
  * @param {number} value1 The first string.
  * @param {number} value2 The second string.
+ * @param {string} language The locale to compare the strings in
  * @returns {-1 | 0 | 1}  -1 if value1 < value2, 0 if value1 === value2, 1 if value1 > value2.
  */
 export const defaultStringComparator: Comparator<string> = (
   value1: string,
-  value2: string
-) => {
-  return value1.localeCompare(value2);
-};
+  value2: string,
+  language: string = 'en'
+) => _clamp(value1.localeCompare(value2, language));
 
 /**
  * A default comparator for Dates.
@@ -72,7 +80,7 @@ export const defaultDateComparator: Comparator<Date> = (
   value1: Date,
   value2: Date
 ) => {
-  return value1 - value2;
+  return _clamp(value1.getTime() - value2.getTime());
 };
 
 /**
@@ -420,7 +428,7 @@ export class DataTable<T extends object> extends LitElement {
       return this.data;
     }
 
-    return this.data.sort((row1, row2) => {
+    return [...this.data].sort((row1, row2) => {
       if (this.sortDirection === DataTableSortDirection.DESCENDING) {
         return comparator(row2, row1);
       }
