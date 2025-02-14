@@ -267,7 +267,8 @@ export class ServerMetricsBandwidthRow extends LitElement {
         gap: 0;
       }
 
-      .current-and-peak-container {
+      .current-and-peak-container,
+      .current-and-peak-container[dir='rtl'] {
         padding-top: 0;
         border: none;
       }
