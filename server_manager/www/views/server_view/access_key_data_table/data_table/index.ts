@@ -59,11 +59,7 @@ export const defaultStringComparator: Comparator<string> = (
   value1: string,
   value2: string
 ) => {
-  const comparisonResult = value1.localeCompare(value2);
-
-  if (comparisonResult === 0) return 0;
-  if (comparisonResult < 0) return -1;
-  if (comparisonResult > 0) return 1;
+  return value1.localeCompare(value2);
 };
 
 /**
