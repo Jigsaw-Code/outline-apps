@@ -260,7 +260,7 @@
   "server-view-privacy-statement-link": "Pata maelezo zaidi.",
   "server-view-server-metrics-advanced-metrics-link": "Pata maelezo kuhusu jinsi ya kuangalia vipimo vya kina vya seva",
   "server-view-server-metrics-bandwidth-as-breakdown": "Mifumo ya Kiotomatiki yenye matumizi zaidi ya kipimo data {openItalics}(siku 30 zilizopita){closeItalics}",
-  "server-view-server-metrics-bandwidth-limit-tooltip": "High bandwidth usage detected over the last 30 days. Consider setting data limits to prevent overages and keep your service running smoothly.",
+  "server-view-server-metrics-bandwidth-limit-tooltip": "Matumizi ya kipimo data cha juu yametambuliwa katika siku 30 zilizopita. Zingatia kuweka vikomo vya data ili uzuie kupitisha kikomo hicho na uendelee kutumia huduma yako kwa urahisi.",
   "server-view-server-metrics-bandwidth-title": "Jumla ya matumizi ya kipimo data {openItalics}(siku 30 zilizopita){closeItalics}",
   "server-view-server-metrics-bandwidth-tooltip": "Hili huonyesha jumla ya data iliyohamishwa kupitia seva hii katika siku 30 zilizopita.",
   "server-view-server-metrics-bandwidth-usage": "Matumizi ya sasa ya kipimo data",

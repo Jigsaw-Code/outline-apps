@@ -260,7 +260,7 @@
   "server-view-privacy-statement-link": "Obtén més informació.",
   "server-view-server-metrics-advanced-metrics-link": "Informació sobre com pots veure mètriques detallades del servidor",
   "server-view-server-metrics-bandwidth-as-breakdown": "AS amb més ús d'amplada de banda {openItalics}(últims 30 dies){closeItalics}",
-  "server-view-server-metrics-bandwidth-limit-tooltip": "High bandwidth usage detected over the last 30 days. Consider setting data limits to prevent overages and keep your service running smoothly.",
+  "server-view-server-metrics-bandwidth-limit-tooltip": "S'ha detectat un ús elevat de l'amplada de banda durant els 30 darrers dies. Planteja't definir límits de dades per evitar els excedents i mantenir el servei en funcionament sense problemes.",
   "server-view-server-metrics-bandwidth-title": "Ús total d'amplada de banda {openItalics}(últims 30 dies){closeItalics}",
   "server-view-server-metrics-bandwidth-tooltip": "Mostra la quantitat total de dades transferides a través del servidor durant els últims 30 dies.",
   "server-view-server-metrics-bandwidth-usage": "Ús actual de l'amplada de banda",

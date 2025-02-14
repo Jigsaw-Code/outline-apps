@@ -260,7 +260,7 @@
   "server-view-privacy-statement-link": "Scopri di più.",
   "server-view-server-metrics-advanced-metrics-link": "Scopri come visualizzare le metriche dettagliate del server",
   "server-view-server-metrics-bandwidth-as-breakdown": "SA con il maggiore utilizzo di larghezza di banda {openItalics}(ultimi 30 giorni){closeItalics}",
-  "server-view-server-metrics-bandwidth-limit-tooltip": "High bandwidth usage detected over the last 30 days. Consider setting data limits to prevent overages and keep your service running smoothly.",
+  "server-view-server-metrics-bandwidth-limit-tooltip": "Utilizzo elevato della larghezza di banda rilevato negli ultimi 30 giorni. Valuta la possibilità di impostare dei limiti di dati per evitare superamenti e mantenere il servizio in esecuzione senza problemi.",
   "server-view-server-metrics-bandwidth-title": "Utilizzo totale della larghezza di banda {openItalics}(ultimi 30 giorni){closeItalics}",
   "server-view-server-metrics-bandwidth-tooltip": "Mostra la quantità totale di dati trasferiti tramite il server negli ultimi 30 giorni.",
   "server-view-server-metrics-bandwidth-usage": "Utilizzo attuale della larghezza di banda",

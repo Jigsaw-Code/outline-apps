@@ -260,7 +260,7 @@
   "server-view-privacy-statement-link": "Matuto pa.",
   "server-view-server-metrics-advanced-metrics-link": "Alamin kung paano tingnan ang mga detalyadong sukatan ng server",
   "server-view-server-metrics-bandwidth-as-breakdown": "Mga AS na pinakamalakas gumamit ng bandwidth {openItalics}(nakalipas na 30 araw){closeItalics}",
-  "server-view-server-metrics-bandwidth-limit-tooltip": "High bandwidth usage detected over the last 30 days. Consider setting data limits to prevent overages and keep your service running smoothly.",
+  "server-view-server-metrics-bandwidth-limit-tooltip": "May na-detect na mataas na paggamit ng bandwidth sa loob ng nakalipas na 30 araw. Pag-isipang magtakda ng mga limitasyon sa data para maiwasan ang mga overage at panatilihing gumagana nang maayos ang iyong serbisyo.",
   "server-view-server-metrics-bandwidth-title": "Kabuuang paggamit ng bandwidth {openItalics}(nakalipas na 30 araw){closeItalics}",
   "server-view-server-metrics-bandwidth-tooltip": "Ipinapakita nito ang kabuuang dami ng data na inilipat sa pamamagitan ng server sa loob ng nakalipas na 30 araw.",
   "server-view-server-metrics-bandwidth-usage": "Kasalukuyang paggamit ng bandwidth",

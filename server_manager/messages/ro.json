@@ -260,7 +260,7 @@
   "server-view-privacy-statement-link": "Aflați mai multe.",
   "server-view-server-metrics-advanced-metrics-link": "Aflați cum să vedeți valori detaliate ale serverului",
   "server-view-server-metrics-bandwidth-as-breakdown": "Sistemele autonome cu cea mai mare utilizare a lățimii de bandă {openItalics}(ultimele 30 de zile){closeItalics}",
-  "server-view-server-metrics-bandwidth-limit-tooltip": "High bandwidth usage detected over the last 30 days. Consider setting data limits to prevent overages and keep your service running smoothly.",
+  "server-view-server-metrics-bandwidth-limit-tooltip": "S-a detectat o utilizare ridicată a lățimii de bandă în ultimele 30 de zile. Setați limite de date pentru a preveni surplusul și a menține serviciul în funcțiune.",
   "server-view-server-metrics-bandwidth-title": "Utilizarea totală a lățimii de bandă {openItalics}(ultimele 30 de zile){closeItalics}",
   "server-view-server-metrics-bandwidth-tooltip": "Aici se afișează cantitatea totală de date transferate prin server în ultimele 30 de zile.",
   "server-view-server-metrics-bandwidth-usage": "Utilizarea actuală a lățimii de bandă",

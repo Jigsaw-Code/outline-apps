@@ -260,7 +260,7 @@
   "server-view-privacy-statement-link": "Obtén más información.",
   "server-view-server-metrics-advanced-metrics-link": "Aprende a ver métricas detalladas del servidor",
   "server-view-server-metrics-bandwidth-as-breakdown": "AS con mayor uso de ancho de banda {openItalics}(últimos 30 días){closeItalics}",
-  "server-view-server-metrics-bandwidth-limit-tooltip": "High bandwidth usage detected over the last 30 days. Consider setting data limits to prevent overages and keep your service running smoothly.",
+  "server-view-server-metrics-bandwidth-limit-tooltip": "Se detectó un uso elevado del ancho de banda durante los últimos 30 días. Considera establecer límites de datos para evitar excesos y mantener el buen funcionamiento del servicio.",
   "server-view-server-metrics-bandwidth-title": "Uso total de ancho de banda {openItalics}(últimos 30 días){closeItalics}",
   "server-view-server-metrics-bandwidth-tooltip": "Aquí se muestra la cantidad total de datos transferidos a través del servidor en los últimos 30 días.",
   "server-view-server-metrics-bandwidth-usage": "Uso actual del ancho de banda",

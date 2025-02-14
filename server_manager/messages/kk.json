@@ -260,7 +260,7 @@
   "server-view-privacy-statement-link": "Толық ақпарат алыңыз.",
   "server-view-server-metrics-advanced-metrics-link": "Сервердің толық көрсеткіштерін көру туралы мәлімет",
   "server-view-server-metrics-bandwidth-as-breakdown": "Өткізу мүмкіндігін ең көп қолданған автономдық жүйелер {openItalics}(соңғы 30 күнде){closeItalics}",
-  "server-view-server-metrics-bandwidth-limit-tooltip": "High bandwidth usage detected over the last 30 days. Consider setting data limits to prevent overages and keep your service running smoothly.",
+  "server-view-server-metrics-bandwidth-limit-tooltip": "Соңғы 30 күнде өткізу мүмкіндігінің көп пайдаланылғаны анықталды. Шамадан тыс пайдалануды болдырмау және қызметтің ойдағыдай істеуі үшін, трафик шектерін қойып қойыңыз.",
   "server-view-server-metrics-bandwidth-title": "Өткізу мүмкіндігін пайдаланудың жалпы көрсеткіші {openItalics}(соңғы 30 күнде){closeItalics}",
   "server-view-server-metrics-bandwidth-tooltip": "Сервер арқылы соңғы 30 күнде тасымалданған деректердің жалпы көлемі көрсетіледі.",
   "server-view-server-metrics-bandwidth-usage": "Ағымдағы өткізу мүмкіндігін пайдалану көрсеткіші",

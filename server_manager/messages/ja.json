@@ -260,7 +260,7 @@
   "server-view-privacy-statement-link": "詳細",
   "server-view-server-metrics-advanced-metrics-link": "詳細なサーバー指標を表示する方法",
   "server-view-server-metrics-bandwidth-as-breakdown": "帯域幅の使用量が最も多い自律システム{openItalics}{closeItalics}（過去 30 日間）",
-  "server-view-server-metrics-bandwidth-limit-tooltip": "High bandwidth usage detected over the last 30 days. Consider setting data limits to prevent overages and keep your service running smoothly.",
+  "server-view-server-metrics-bandwidth-limit-tooltip": "過去 30 日間で高い帯域幅の使用が検出されました。超過を防ぎ、サービスをスムーズに運用できるよう、データの上限を設定することをおすすめします。",
   "server-view-server-metrics-bandwidth-title": "帯域幅の合計使用量（過去 30 日間）{openItalics}{closeItalics}",
   "server-view-server-metrics-bandwidth-tooltip": "過去 30 日間にサーバー経由で転送されたデータの合計量が表示されます。",
   "server-view-server-metrics-bandwidth-usage": "現在の帯域幅使用量",

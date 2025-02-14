@@ -260,7 +260,7 @@
   "server-view-privacy-statement-link": "अधिक जाणून घ्या.",
   "server-view-server-metrics-advanced-metrics-link": "तपशीलवार सर्व्हर मेट्रिक कशी पाहावी ते जाणून घ्या",
   "server-view-server-metrics-bandwidth-as-breakdown": "सर्वाधिक बँडविड्थ वापर असलेली ASes {openItalics}(मागील ३० दिवस){closeItalics}",
-  "server-view-server-metrics-bandwidth-limit-tooltip": "High bandwidth usage detected over the last 30 days. Consider setting data limits to prevent overages and keep your service running smoothly.",
+  "server-view-server-metrics-bandwidth-limit-tooltip": "मागील ३० दिवसांत जास्त बँडविड्थचा वापर डिटेक्ट झाला आहे. डेटाचा अतिवापर टाळण्यासाठी आणि तुमची सेवा सुरळीतपणे सुरू ठेवण्यासाठी डेटा मर्यादा सेट करण्याचा विचार करा.",
   "server-view-server-metrics-bandwidth-title": "बँडविड्थचा एकूण वापर {openItalics}(मागील ३० दिवस){closeItalics}",
   "server-view-server-metrics-bandwidth-tooltip": "हे मागील ३० दिवसांमध्ये सर्व्हरद्वारे ट्रान्सफर केलेल्या एकूण डेटाचे प्रमाण दाखवते.",
   "server-view-server-metrics-bandwidth-usage": "बँडविड्थचा सद्य वापर",

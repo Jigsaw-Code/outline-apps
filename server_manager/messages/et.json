@@ -260,7 +260,7 @@
   "server-view-privacy-statement-link": "Vaadake lisateavet.",
   "server-view-server-metrics-advanced-metrics-link": "Lisateave üksikasjalike serverimõõdikute vaatamise kohta",
   "server-view-server-metrics-bandwidth-as-breakdown": "Autonoomsed süsteemid, mis kasutavad kõige rohkem ribalaiust {openItalics}(viimased 30 päeva){closeItalics}",
-  "server-view-server-metrics-bandwidth-limit-tooltip": "High bandwidth usage detected over the last 30 days. Consider setting data limits to prevent overages and keep your service running smoothly.",
+  "server-view-server-metrics-bandwidth-limit-tooltip": "Viimase 30 päeva jooksul on tuvastatud suur ribalaiuse kasutus. Soovitame määrata andmepiirangud, et vältida liigset andmeedastust ja hoida teenus sujuvalt töös.",
   "server-view-server-metrics-bandwidth-title": "Ribalaiuse kasutus kokku {openItalics}(viimased 30 päeva){closeItalics}",
   "server-view-server-metrics-bandwidth-tooltip": "See näitab viimase 30 päeva jooksul serveri kaudu edastatud andmete kogumahtu.",
   "server-view-server-metrics-bandwidth-usage": "Praegune ribalaiuse kasutus",
