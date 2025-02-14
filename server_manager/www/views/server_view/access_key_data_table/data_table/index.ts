@@ -16,7 +16,6 @@
 
 import {css, html, LitElement, TemplateResult, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
-import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
 import '@material/mwc-icon';
 import '../../icon_tooltip';
@@ -31,7 +30,17 @@ const INTERNAL_LIT_ENUM_HTML_RESULT = 1;
  * @param {T} value2 The second value to compare.
  * @returns {-1 | 0 | 1} A negative number if value1 is less than value2, zero if they are equal, or a positive number if value1 is greater than value2.
  */
-export type Comparator<T> = (value1: T, value2: T) => -1 | 0 | 1;
+export type Comparator<T> = (
+  value1: T,
+  value2: T,
+  language?: string
+) => -1 | 0 | 1;
+
+function _clamp(number: number): 1 | 0 | -1 {
+  if (number <= -1) return -1;
+  if (number >= 1) return 1;
+  return 0;
+}
 
 /**
  * A default comparator function for numerical data.
@@ -44,9 +53,34 @@ export const defaultNumericComparator: Comparator<number> = (
   value1: number,
   value2: number
 ): -1 | 0 | 1 => {
-  if (value1 === value2) return 0;
-  if (value1 < value2) return -1;
-  if (value1 > value2) return 1;
+  return _clamp(value1 - value2);
+};
+
+/**
+ * A default comparator function for strings.
+ *
+ * @param {number} value1 The first string.
+ * @param {number} value2 The second string.
+ * @param {string} language The locale to compare the strings in
+ * @returns {-1 | 0 | 1}  -1 if value1 < value2, 0 if value1 === value2, 1 if value1 > value2.
+ */
+export const defaultStringComparator: Comparator<string> = (
+  value1: string,
+  value2: string,
+  language: string = 'en'
+) => _clamp(value1.localeCompare(value2, language));
+
+/**
+ * A default comparator for Dates.
+ * @param {Date} value1 The first date.
+ * @param {Date} value2 The second date.
+ * @returns {-1 | 0 | 1}  -1 if value1 < value2, 0 if value1 === value2, 1 if value1 > value2.
+ */
+export const defaultDateComparator: Comparator<Date> = (
+  value1: Date,
+  value2: Date
+) => {
+  return _clamp(value1.getTime() - value2.getTime());
 };
 
 /**
@@ -71,15 +105,15 @@ export enum DataTableEvent {
  * @template T The type of data represented in the column.
  */
 export interface DataTableColumnProperties<T> {
+  displayName?: string | TemplateResult<typeof INTERNAL_LIT_ENUM_HTML_RESULT>;
   comparator?: Comparator<T>;
-  displayName?: string;
   id: string;
   render: (_value: T) => TemplateResult<typeof INTERNAL_LIT_ENUM_HTML_RESULT>;
   tooltip?: string;
 }
 
-// TODO: this table is meant to collapse when a certain container size is reached, but
-// our current version of Electron dosen't support it. Add a container query once
+// TODO(#2384): this table is meant to collapse when a certain container size is reached, but
+// our current version of Electron doesn't support it. Add a container query once
 // electron is upgraded.
 
 @customElement('data-table')
@@ -96,14 +130,22 @@ export class DataTable<T extends object> extends LitElement {
       --data-table-background-color: hsl(197, 13%, 22%);
       --data-table-text-color: hsl(0, 0%, 79%);
       --data-table-font-family: 'Inter', system-ui;
+      --data-table-font-size: 0.8rem;
 
-      --data-table-cell-padding: 1rem;
+      --data-table-cell-padding: 0.8rem;
+      --data-table-cell-gap: 0.35rem;
+      --data-table-sides-padding: 1.5rem;
 
-      --data-table-header-icon-size: 1.2rem;
-      --data-table-header-gap: 0.5rem;
+      --data-table-header-icon-size: 1rem;
       --data-table-header-border-bottom: 0.7rem solid hsla(200, 16%, 19%, 1);
 
       --data-table-row-border-bottom: 1px solid hsla(0, 0%, 100%, 0.2);
+
+      --data-table-collapsed-vertical-padding: 1.5rem;
+      --data-table-collapsed-row-label-font-size: 0.7rem;
+      --data-table-collapsed-row-label-icon-size: 1rem;
+      --data-table-collapsed-row-label-icon-button-size: 1.35rem;
+      --data-table-collapsed-row-label-gap: 0.25rem;
     }
 
     table,
@@ -122,51 +164,154 @@ export class DataTable<T extends object> extends LitElement {
     }
 
     table {
+      background-color: var(--data-table-background-color);
       display: grid;
       grid-template-columns: repeat(var(--data-table-columns), auto);
-      background-color: var(--data-table-background-color);
+      isolation: isolate;
     }
 
     th,
     td {
       box-sizing: border-box;
       color: var(--data-table-text-color);
+      background-color: var(--data-table-background-color);
+      display: flex;
       font-family: var(--data-table-font-family);
+      gap: var(--data-table-cell-gap);
       padding: var(--data-table-cell-padding);
+      font-size: var(--data-table-font-size);
     }
 
     th {
       align-items: center;
-      background-color: var(--data-table-background-color);
       border-bottom: var(--data-table-header-border-bottom);
       cursor: pointer;
-      display: flex;
-      gap: var(--data-table-header-gap);
       position: sticky;
       top: 0;
+
+      /* ensure the header covers content when it sticks */
+      z-index: 1;
 
       --mdc-icon-size: var(--data-table-header-icon-size);
     }
 
-    th > help-tooltip {
-      --help-tooltip-icon-size: var(--data-table-header-icon-size);
+    th > icon-tooltip {
+      --icon-tooltip-icon-size: var(--data-table-header-icon-size);
+      --icon-tooltip-button-size: 1.6rem;
+    }
+
+    th > mwc-icon {
+      --mdc-icon-size: var(--data-table-header-icon-size);
+    }
+
+    th:first-child {
+      padding-left: calc(
+        var(--data-table-cell-padding) + var(--data-table-sides-padding)
+      );
+    }
+
+    :host([dir='rtl']) th:first-child {
+      padding-left: 0;
+      padding-right: calc(
+        var(--data-table-cell-padding) + var(--data-table-sides-padding)
+      );
+    }
+
+    th:last-child {
+      padding-right: calc(
+        var(--data-table-cell-padding) + var(--data-table-sides-padding)
+      );
+    }
+
+    :host([dir='rtl']) th:last-child {
+      padding-right: 0;
+      padding-left: calc(
+        var(--data-table-cell-padding) + var(--data-table-sides-padding)
+      );
     }
 
     td {
       border-bottom: var(--data-table-row-border-bottom);
-      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    td:first-child {
+      margin-left: var(--data-table-sides-padding);
+    }
+
+    :host([dir='rtl']) td:first-child {
+      margin-left: 0;
+      margin-right: var(--data-table-sides-padding);
+    }
+
+    td:last-child {
+      margin-right: var(--data-table-sides-padding);
+    }
+
+    :host([dir='rtl']) td:last-child {
+      margin-right: 0;
+      margin-left: var(--data-table-sides-padding);
+    }
+
+    label {
       align-items: center;
+      display: none;
+      font-size: var(--data-table-row-label-font-size);
+      gap: var(--data-table-collapsed-row-label-gap);
+      text-transform: uppercase;
+    }
+
+    label > icon-tooltip {
+      --icon-tooltip-icon-size: var(--data-table-collapsed-row-label-icon-size);
+      --icon-tooltip-button-size: var(
+        --data-table-collapsed-row-label-icon-button-size
+      );
+    }
+
+    /*
+      TODO (#2384): 
+        This max-width value is currently entirely dependent on the contents of the window from which the 
+        table is rendered. Convert this to a container query once we upgrade electron so it's reusable.
+    */
+    @media (max-width: 900px) {
+      table {
+        grid-template-columns: auto;
+      }
+
+      th {
+        display: none;
+      }
+
+      td {
+        border: none;
+      }
+
+      td:first-child,
+      td:last-child,
+      :host([dir='rtl']) td:first-child,
+      :host([dir='rtl']) td:last-child {
+        margin: 0;
+      }
+
+      td:first-child {
+        padding-top: var(--data-table-collapsed-vertical-padding);
+      }
+
+      td:last-child {
+        padding-bottom: var(--data-table-collapsed-vertical-padding);
+        border-bottom: var(--data-table-row-border-bottom);
+      }
+
+      label {
+        display: flex;
+      }
     }
   `;
 
   render() {
     return html`
-      <style>
-        :host {
-          --data-table-columns: ${this.columns.length};
-        }
-      </style>
-      <table>
+      <table style="--data-table-columns: ${this.columns.length};">
         <thead>
           <tr>
             ${this.columns.map(column => this.renderHeaderCell(column))}
@@ -175,9 +320,7 @@ export class DataTable<T extends object> extends LitElement {
         <tbody>
           ${this.sortedData.map(row => {
             return html`<tr>
-              ${this.columns.map(column => {
-                return html`<td>${column.render(row)}</td>`;
-              })}
+              ${this.columns.map(column => this.renderDataCell(column, row))}
             </tr>`;
           })}
         </tbody>
@@ -201,7 +344,9 @@ export class DataTable<T extends object> extends LitElement {
     }
 
     return html`<th @click=${() => this.sort(columnProperties)}>
-      <span>${unsafeHTML(columnProperties.displayName)}</span>
+      <span class="header-display-name"
+        >${columnProperties?.displayName ?? nothing}</span
+      >
       ${columnProperties?.tooltip
         ? html`<icon-tooltip text="${columnProperties.tooltip}"></icon-tooltip>`
         : nothing}
@@ -209,16 +354,57 @@ export class DataTable<T extends object> extends LitElement {
     </th>`;
   }
 
+  renderDataCell(columnProperties: DataTableColumnProperties<T>, row: T) {
+    return html`<td>
+      <label
+        >${columnProperties?.displayName ?? nothing}${columnProperties?.tooltip
+          ? html`<icon-tooltip text=${columnProperties.tooltip}></icon-tooltip>`
+          : nothing}</label
+      >
+      <span class="data-value">${columnProperties.render(row)}</span>
+    </td>`;
+  }
+
   sort(columnProperties: DataTableColumnProperties<T>) {
     if (!columnProperties.comparator) {
       return;
     }
 
+    if (this.sortColumnId && columnProperties.id !== this.sortColumnId) {
+      return this.dispatchEvent(
+        new CustomEvent(DataTableEvent.SORT, {
+          detail: {
+            columnId: columnProperties.id,
+            sortDirection:
+              this.sortDirection === DataTableSortDirection.NONE
+                ? DataTableSortDirection.ASCENDING
+                : this.sortDirection,
+          },
+          bubbles: true,
+          composed: true,
+        })
+      );
+    }
+
+    let sortDirection;
+    switch (this.sortDirection) {
+      case DataTableSortDirection.ASCENDING:
+        sortDirection = DataTableSortDirection.DESCENDING;
+        break;
+      case DataTableSortDirection.DESCENDING:
+        sortDirection = DataTableSortDirection.NONE;
+        break;
+      case DataTableSortDirection.NONE:
+      default:
+        sortDirection = DataTableSortDirection.ASCENDING;
+        break;
+    }
+
     this.dispatchEvent(
-      new CustomEvent('DataTable.Sort', {
+      new CustomEvent(DataTableEvent.SORT, {
         detail: {
           columnId: columnProperties.id,
-          sortDirection: this.sortDirection,
+          sortDirection,
         },
         bubbles: true,
         composed: true,
@@ -242,7 +428,7 @@ export class DataTable<T extends object> extends LitElement {
       return this.data;
     }
 
-    return this.data.sort((row1, row2) => {
+    return [...this.data].sort((row1, row2) => {
       if (this.sortDirection === DataTableSortDirection.DESCENDING) {
         return comparator(row2, row1);
       }

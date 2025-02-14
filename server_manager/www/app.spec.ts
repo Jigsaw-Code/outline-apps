@@ -137,7 +137,7 @@ describe('App', () => {
           certSha256: 'cert',
           apiUrl: 'api-url',
         }).getServerMetrics()
-      ).server.locations?.length
+      ).server?.locations.length
     ).toBe(1);
   });
 
@@ -180,7 +180,7 @@ describe('App', () => {
     expect(appRoot.currentPage).toEqual('serverView');
     expect(appRoot.selectedServerId).toEqual(SERVER_ID);
     setTimeout(() => {
-      expect(view.accessKeyRows.length).toEqual(1);
+      expect(view.accessKeyData.length).toEqual(1);
       done();
     }, 100);
   });
@@ -192,7 +192,7 @@ describe('App', () => {
       certSha256: 'cert',
       apiUrl: SERVER_ID,
     });
-    spyOn(server, 'getVersion').and.returnValue('dev');
+    spyOn(server, 'getVersion').and.returnValue('0.0.0');
     await server.addAccessKey();
 
     const appRoot = document.getElementById('appRoot') as AppRoot;
@@ -204,7 +204,7 @@ describe('App', () => {
     expect(appRoot.currentPage).toEqual('serverView');
     expect(appRoot.selectedServerId).toEqual(SERVER_ID);
     setTimeout(() => {
-      expect(view.accessKeyRows.length).toEqual(1);
+      expect(view.accessKeyData.length).toEqual(1);
       done();
     }, 100);
   });

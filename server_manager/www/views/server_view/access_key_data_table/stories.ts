@@ -27,13 +27,22 @@ export default {
     localize: (key: string) => {
       return (
         {
+          'server-view-access-keys-last-connected-column-header':
+            'Last connected',
+          'server-view-access-keys-last-connected-tooltip':
+            'This shows the last time the key successfully connected to the server.',
+          'server-view-access-keys-last-active-column-header': 'Last active',
+          'server-view-access-keys-last-active-tooltip':
+            'This shows the last time the key sent or received data through the server. If this time is significantly earlier than the last connected time, the key could be connecting but failing to sending data. ',
+          'server-view-access-keys-peak-devices-column-header':
+            'Peak devices <i>(last 30 days)</i>',
+          'server-view-access-keys-peak-devices-tooltip':
+            'This shows the most devices connected to the server using this key at one time, within the last 30 days. It also shows the time when this occurred.',
           'server-view-access-keys-key-column-header': 'Key',
           'server-view-access-keys-usage-column-header':
             'Usage <i>(last 30 days)</i>',
-          'server-view-access-keys-usage-tooltip': 'Lorem ipsum',
-          'server-view-access-keys-as-count-column-header':
-            'Total ASes seen <i>(last 30 days)</i>',
-          'server-view-access-keys-as-count-tooltip': 'Lorem ipsum',
+          'server-view-access-keys-usage-tooltip':
+            'This shows how much data the key transferred through the server over the last 30 days.',
           'server-view-access-keys-usage-limit': '(80%+ used)',
           'server-access-key-rename': 'Rename',
           remove: 'Remove',
@@ -43,31 +52,79 @@ export default {
     },
     accessKeys: [
       {
-        id: 'ss://key1.com:3000',
-        name: 'Key#1',
-        connected: false,
-        dataUsageBytes: 100000000,
-        dataLimitBytes: 10000000000,
-        asnCount: 3,
+        id: '0',
+        name: 'Key 001',
+        isOnline: true,
+        connection: {
+          lastTrafficSeen: new Date('2/19/2025 16:54:03'),
+          peakDeviceCount: {
+            data: 3,
+            timestamp: new Date('2/17/2025 18:32:07'),
+          },
+        },
+        dataTransferred: {
+          bytes: 62 * 1000 * 1000,
+        },
+        dataLimit: {
+          bytes: 100 * 1000 * 1000,
+        },
       },
       {
-        id: 'ss://key2.com:3000',
-        name: 'Key#2',
-        connected: true,
-        dataUsageBytes: 8000000000,
-        dataLimitBytes: 10000000000,
-        asnCount: 5,
+        id: '1',
+        name: 'Key 002',
+        isOnline: true,
+        connection: {
+          lastTrafficSeen: new Date('2/19/2025 17:02:21'),
+          peakDeviceCount: {
+            data: 17,
+            timestamp: new Date('2/19/2025 22:41:38'),
+          },
+        },
+        dataTransferred: {
+          bytes: 86 * 1000 * 1000,
+        },
+        dataLimit: {
+          bytes: 100 * 1000 * 1000,
+        },
       },
       {
-        id: 'ss://key3.com:3000',
-        name: 'Key#3',
-        connected: false,
-        dataUsageBytes: 6500000000,
-        dataLimitBytes: 10000000000,
-        asnCount: 2,
+        id: '2',
+        name: 'Key 003',
+        isOnline: false,
+        connection: {
+          lastTrafficSeen: new Date('1/30/2025 7:02:31'),
+          peakDeviceCount: {
+            data: 2,
+            timestamp: new Date('1/29/2025 8:48:29'),
+          },
+        },
+        dataTransferred: {
+          bytes: 45 * 1000 * 1000,
+        },
+        dataLimit: {
+          bytes: 100 * 1000 * 1000,
+        },
+      },
+      {
+        id: '3',
+        name: 'Key 004',
+        isOnline: false,
+        connection: {
+          lastTrafficSeen: new Date('9/14/2024 19:17:51'),
+          peakDeviceCount: {
+            data: 0,
+            timestamp: new Date('1/29/2025 8:48:29'),
+          },
+        },
+        dataTransferred: {
+          bytes: 0 * 1000 * 1000,
+        },
+        dataLimit: {
+          bytes: 100 * 1000 * 1000,
+        },
       },
     ],
-    sortColumnId: 'asnCount',
+    sortColumnId: 'peakDevices',
     sortDirection: DataTableSortDirection.DESCENDING,
     language: 'en',
   },
