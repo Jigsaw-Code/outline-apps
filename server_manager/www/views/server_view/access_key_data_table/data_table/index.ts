@@ -76,9 +76,7 @@ export const defaultDateComparator: Comparator<Date> = (
   value1: Date,
   value2: Date
 ) => {
-  if (value1 === value2) return 0;
-  if (value1 < value2) return -1;
-  if (value1 > value2) return 1;
+  return value1 - value2;
 };
 
 /**
