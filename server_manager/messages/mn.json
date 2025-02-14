@@ -260,7 +260,7 @@
   "server-view-privacy-statement-link": "Нэмэлт мэдээлэл авна уу.",
   "server-view-server-metrics-advanced-metrics-link": "Серверийн хэмжигдэхүүнийн дэлгэрэнгүй мэдээллийг хэрхэн үзэх талаар суралцаарай",
   "server-view-server-metrics-bandwidth-as-breakdown": "Зурвасын өргөний хамгийн их ашиглалттай ASes {openItalics}(сүүлийн 30 хоног){closeItalics}",
-  "server-view-server-metrics-bandwidth-limit-tooltip": "High bandwidth usage detected over the last 30 days. Consider setting data limits to prevent overages and keep your service running smoothly.",
+  "server-view-server-metrics-bandwidth-limit-tooltip": "Сүүлийн 30 хоногт илрүүлсэн зурвасын өргөний өндөр ашиглалт. Хэтрүүлэхээс сэргийлж, үйлчилгээгээ доголдолгүй явуулахын тулд дата хязгаарыг тохируулах талаар бодож үзээрэй.",
   "server-view-server-metrics-bandwidth-title": "Нийт зурвасын өргөний ашиглалт {openItalics}(сүүлийн 30 хоног){closeItalics}",
   "server-view-server-metrics-bandwidth-tooltip": "Энэ нь сүүлийн 30 хоногт серверээр дамжуулсан өгөгдлийн нийт дүнг харуулдаг.",
   "server-view-server-metrics-bandwidth-usage": "Одоогийн зурвасын өргөний ашиглалт",
