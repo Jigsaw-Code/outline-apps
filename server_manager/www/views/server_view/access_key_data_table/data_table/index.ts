@@ -110,8 +110,8 @@ export interface DataTableColumnProperties<T> {
   tooltip?: string;
 }
 
-// TODO (#2384): this table is meant to collapse when a certain container size is reached, but
-// our current version of Electron dosen't support it. Add a container query once
+// TODO(#2384): this table is meant to collapse when a certain container size is reached, but
+// our current version of Electron doesn't support it. Add a container query once
 // electron is upgraded.
 
 @customElement('data-table')
