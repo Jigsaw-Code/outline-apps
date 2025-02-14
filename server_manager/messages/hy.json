@@ -260,7 +260,7 @@
   "server-view-privacy-statement-link": "Իմանալ ավելին։",
   "server-view-server-metrics-advanced-metrics-link": "Իմացեք, թե ինչպես ստանալ սերվերի մանրամասն ցուցանիշները",
   "server-view-server-metrics-bandwidth-as-breakdown": "Ամենաբարձր թրաֆիկով ինքնավար համակարգեր (AS) {openItalics}(վերջին 30 օրվա ընթացքում){closeItalics}",
-  "server-view-server-metrics-bandwidth-limit-tooltip": "High bandwidth usage detected over the last 30 days. Consider setting data limits to prevent overages and keep your service running smoothly.",
+  "server-view-server-metrics-bandwidth-limit-tooltip": "Վերջին 30 օրվա ընթացքում հայտնաբերվել է բարձր թողունակությամբ օգտագործում։ Սահմանեք տվյալների սահմանաչափեր՝ կանխարգելելու ավելցուկը և ձեր ծառայության սահուն գործարկումն ապահովելու համար։",
   "server-view-server-metrics-bandwidth-title": "Ընդհանուր թրաֆիկը {openItalics}(վերջին 30 օրվա ընթացքում){closeItalics}",
   "server-view-server-metrics-bandwidth-tooltip": "Վերջին 30 օրվա ընթացքում սերվերի միջոցով փոխանցված տվյալների քանակը",
   "server-view-server-metrics-bandwidth-usage": "Ընթացիկ թրաֆիկը",
