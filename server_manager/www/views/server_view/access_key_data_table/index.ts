@@ -157,22 +157,6 @@ export class AccessKeyDataTable extends LitElement {
               defaultStringComparator(a.name, b.name),
           },
           {
-            id: 'lastConnected',
-            displayName: this.localize(
-              'server-view-access-keys-last-connected-column-header'
-            ),
-            tooltip: this.localize(
-              'server-view-access-keys-last-connected-tooltip'
-            ),
-            render: (key: AccessKeyDataTableRow) =>
-              this.renderDate(key.connection?.lastConnected),
-            comparator: (a: AccessKeyDataTableRow, b: AccessKeyDataTableRow) =>
-              defaultDateComparator(
-                a.connection?.lastConnected ?? new Date(0),
-                b.connection?.lastConnected ?? new Date(0)
-              ),
-          },
-          {
             id: 'lastTraffic',
             displayName: this.localize(
               'server-view-access-keys-last-active-column-header'
