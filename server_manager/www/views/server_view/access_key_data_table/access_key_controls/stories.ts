@@ -23,7 +23,10 @@ export default {
 
 export const Example = {
   args: {
-    id: 'ss://key.com:3000',
+    accessKey: {
+      id: 'ss://key.com:3000',
+      name: 'key',
+    },
     localize: (key: string) => {
       return (
         {

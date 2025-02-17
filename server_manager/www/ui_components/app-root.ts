@@ -115,12 +115,6 @@ export class AppRoot extends polymerElementWithLocalize {
           max-width: 1200px;
         }
       }
-      /* Laptop, desktops */
-      @media (min-width: 1025px) and (max-width: 1280px) {
-        .app-container {
-          max-width: 920px;
-        }
-      }
       #toast {
         align-items: center;
         display: flex;
@@ -361,7 +355,7 @@ export class AppRoot extends polymerElementWithLocalize {
       .side-bar-section > .server-icon {
         margin: 0;
       }
-      @media (max-width: 887px) {
+      @media (max-width: 1280px) {
         .app-container {
           margin-left: 50px;
         }

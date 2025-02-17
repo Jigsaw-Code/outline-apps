@@ -20,11 +20,12 @@ import (
 	"strings"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
-	"gopkg.in/yaml.v3"
+	"github.com/goccy/go-yaml"
+	"github.com/goccy/go-yaml/ast"
 )
 
 type parseTunnelConfigRequest struct {
-	Transport yaml.Node
+	Transport ast.Node
 	Error     *struct {
 		Message string
 		Details string
@@ -37,6 +38,11 @@ type tunnelConfigJson struct {
 	Transport string `json:"transport"`
 }
 
+func hasKey[K comparable, V any](m map[K]V, key K) bool {
+	_, ok := m[key]
+	return ok
+}
+
 func doParseTunnelConfig(input string) *InvokeMethodResult {
 	var transportConfigText string
 
@@ -46,11 +52,11 @@ func doParseTunnelConfig(input string) *InvokeMethodResult {
 	// - Legacy Shadowsocks JSON (parsed as YAML)
 	// - New advanced YAML format
 	if strings.HasPrefix(input, "ss://") {
+		// Legacy URL format. Input is the transport config.
 		transportConfigText = input
 	} else {
-		// Parse as YAML.
-		tunnelConfig := parseTunnelConfigRequest{}
-		if err := yaml.Unmarshal([]byte(input), &tunnelConfig); err != nil {
+		var yamlValue map[string]any
+		if err := yaml.Unmarshal([]byte(input), &yamlValue); err != nil {
 			return &InvokeMethodResult{
 				Error: &platerrors.PlatformError{
 					Code:    platerrors.InvalidConfig,
@@ -59,31 +65,47 @@ func doParseTunnelConfig(input string) *InvokeMethodResult {
 			}
 		}
 
-		// Process provider error, if present.
-		if tunnelConfig.Error != nil {
-			platErr := &platerrors.PlatformError{
-				Code:    platerrors.ProviderError,
-				Message: tunnelConfig.Error.Message,
-			}
-			if tunnelConfig.Error.Details != "" {
-				platErr.Details = map[string]any{
-					"details": tunnelConfig.Error.Details,
+		if hasKey(yamlValue, "transport") || hasKey(yamlValue, "error") {
+			// New format. Parse as tunnel config
+			tunnelConfig := parseTunnelConfigRequest{}
+			if err := yaml.Unmarshal([]byte(input), &tunnelConfig); err != nil {
+				return &InvokeMethodResult{
+					Error: &platerrors.PlatformError{
+						Code:    platerrors.InvalidConfig,
+						Message: fmt.Sprintf("failed to parse: %s", err),
+					},
 				}
 			}
-			return &InvokeMethodResult{Error: platErr}
-		}
 
-		// Extract transport config as an opaque string.
-		transportConfigBytes, err := yaml.Marshal(tunnelConfig.Transport)
-		if err != nil {
-			return &InvokeMethodResult{
-				Error: &platerrors.PlatformError{
-					Code:    platerrors.InvalidConfig,
-					Message: fmt.Sprintf("failed normalize config: %s", err),
-				},
+			// Process provider error, if present.
+			if tunnelConfig.Error != nil {
+				platErr := &platerrors.PlatformError{
+					Code:    platerrors.ProviderError,
+					Message: tunnelConfig.Error.Message,
+				}
+				if tunnelConfig.Error.Details != "" {
+					platErr.Details = map[string]any{
+						"details": tunnelConfig.Error.Details,
+					}
+				}
+				return &InvokeMethodResult{Error: platErr}
 			}
+
+			// Extract transport config as an opaque string.
+			transportConfigBytes, err := yaml.Marshal(tunnelConfig.Transport)
+			if err != nil {
+				return &InvokeMethodResult{
+					Error: &platerrors.PlatformError{
+						Code:    platerrors.InvalidConfig,
+						Message: fmt.Sprintf("failed to normalize config: %s", err),
+					},
+				}
+			}
+			transportConfigText = string(transportConfigBytes)
+		} else {
+			// Legacy JSON format. Input is the transport config.
+			transportConfigText = input
 		}
-		transportConfigText = string(transportConfigBytes)
 	}
 
 	result := NewClient(transportConfigText)

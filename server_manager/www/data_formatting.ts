@@ -29,7 +29,13 @@ interface FormatParams {
   decimalPlaces: number;
 }
 
-function getDataFormattingParams(numBytes: number): FormatParams {
+/**
+ * Returns the Intl.NumberFormat options based on the magnitude of bytes passed in
+ *
+ * @param numBytes the bytes to format
+ * @returns {FormatParams}
+ */
+export function getDataFormattingParams(numBytes: number): FormatParams {
   if (numBytes >= TERABYTE) {
     return {value: numBytes / TERABYTE, unit: 'terabyte', decimalPlaces: 2};
   } else if (numBytes >= GIGABYTE) {
@@ -110,7 +116,14 @@ export function formatBytes(numBytes: number, language: string): string {
     );
   }
   const params = getDataFormattingParams(numBytes);
-  return makeDataAmountFormatter(language, params).format(params.value);
+  return (
+    makeDataAmountFormatter(language, params)
+      .format(params.value)
+      // Special case for "byte", since we'd rather be consistent with "KB", etc.  "byte" is
+      // presumably used due to the example in the Unicode standard,
+      // http://unicode.org/reports/tr35/tr35-general.html#Example_Units
+      .replace(/\s+bytes?/, ' B')
+  );
 }
 
 // TODO(JonathanDCohen222) Differentiate between this type, which is an input data limit, and

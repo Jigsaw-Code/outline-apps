@@ -24,6 +24,7 @@ import {gte as versionGreaterThanOrEqualTo} from 'semver';
 import '@material/mwc-icon-button';
 import '@material/mwc-icon';
 import '@material/mwc-menu';
+import {type AccessKeyDataTableRow} from '..';
 
 /**
  * The version at which the outline server starts supporting data limits.
@@ -46,7 +47,7 @@ export enum AccessKeyControlsEvent {
 @customElement('access-key-controls')
 export class AccessKeyControls extends LitElement {
   @property({type: Object}) localize: (messageId: string) => string;
-  @property({type: String}) id: string;
+  @property({type: Object}) key: AccessKeyDataTableRow;
   @property({type: String}) serverVersion: string =
     SERVER_DATA_LIMITS_SUPPORT_VERSION;
 
@@ -55,11 +56,24 @@ export class AccessKeyControls extends LitElement {
 
   static styles = css`
     :host {
+      --access-key-controls-icon-size: 1.5rem;
+      --access-key-controls-button-size: 2rem;
+
       flex-grow: 1;
     }
 
+    mwc-icon-button {
+      --mdc-icon-button-size: var(--access-key-controls-button-size);
+      --mdc-icon-size: var(--access-key-controls-icon-size);
+    }
+
     .wrapper {
+      display: flex;
       float: right;
+    }
+
+    :host([dir='rtl']) {
+      float: left;
     }
 
     .menu-wrapper {
@@ -109,7 +123,7 @@ export class AccessKeyControls extends LitElement {
       new CustomEvent(AccessKeyControlsEvent.DELETE, {
         bubbles: true,
         composed: true,
-        detail: {id: this.id},
+        detail: this.key,
       })
     );
   }
@@ -119,7 +133,7 @@ export class AccessKeyControls extends LitElement {
       new CustomEvent(AccessKeyControlsEvent.EDIT_DATA_LIMIT, {
         bubbles: true,
         composed: true,
-        detail: {id: this.id},
+        detail: this.key,
       })
     );
   }
@@ -129,7 +143,7 @@ export class AccessKeyControls extends LitElement {
       new CustomEvent(AccessKeyControlsEvent.EDIT_NAME, {
         bubbles: true,
         composed: true,
-        detail: {id: this.id},
+        detail: this.key,
       })
     );
   }
@@ -139,7 +153,7 @@ export class AccessKeyControls extends LitElement {
       new CustomEvent(AccessKeyControlsEvent.SHARE, {
         bubbles: true,
         composed: true,
-        detail: {id: this.id},
+        detail: this.key,
       })
     );
   }
