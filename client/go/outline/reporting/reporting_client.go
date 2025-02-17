@@ -82,15 +82,18 @@ func Report(tcp transport.StreamDialer) (err error) {
 	}
 	defer conn.Close()
 
-	// Create an HTTP request with cookies
-	request := "GET / HTTP/1.1\r\n" +
-		"Host: example.com\r\n" +
+	// Create an HTTP POST request with cookies and a sample body
+	requestBody := "param1=value1&param2=value2"
+	request := "POST / HTTP/1.1\r\n" +
+		"Host: " + strings.TrimPrefix(testTCPWebsite, "https://") + "\r\n" +
+		"Content-Type: application/x-www-form-urlencoded\r\n" +
+		"Content-Length: " + fmt.Sprintf("%d", len(requestBody)) + "\r\n" +
 		"Connection: close\r\n"
 
 	for _, cookie := range cookies {
 		request += fmt.Sprintf("Cookie: %s=%s\r\n", cookie.Name, cookie.Value)
 	}
-	request += "\r\n"
+	request += "\r\n" + requestBody
 
 	_, err = conn.Write([]byte(request))
 	if err != nil {
