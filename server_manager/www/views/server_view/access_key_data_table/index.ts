@@ -15,32 +15,55 @@
  */
 
 import {LitElement, html} from 'lit';
-import {customElement, property} from 'lit/decorators.js';
+import {customElement, property, query} from 'lit/decorators.js';
+import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
 import './access_key_controls';
+
 import {
   AccessKeyControlsEvent,
   SERVER_DATA_LIMITS_SUPPORT_VERSION,
 } from './access_key_controls';
+import {AccessKeyStatus, AccessKeyStatusEvent} from './access_key_status';
 import './access_key_status';
 import './access_key_usage_meter';
 import './data_table';
 import {
+  DataTable,
   DataTableEvent,
   DataTableSortDirection,
+  defaultDateComparator,
   defaultNumericComparator,
+  defaultStringComparator,
 } from './data_table';
+import {formatBytes} from '../../../data_formatting';
+
+type Data = {
+  bytes: number;
+};
+
+type Duration = {
+  seconds: number;
+};
 
 /**
  * Data expected in the access key table.
  */
 export interface AccessKeyDataTableRow {
+  accessUrl: string;
+  connection?: {
+    lastTrafficSeen?: Date;
+    peakDeviceCount: {
+      data: number;
+      timestamp?: Date;
+    };
+  };
+  dataLimit?: Data;
+  dataTransferred: Data;
   id: string;
+  isOnline: boolean;
   name: string;
-  connected: boolean;
-  dataUsageBytes: number;
-  dataLimitBytes: number;
-  asnCount: number;
+  tunnelTime?: Duration;
 }
 
 /**
@@ -56,13 +79,15 @@ export enum AccessKeyDataTableEvent {
 @customElement('access-key-data-table')
 export class AccessKeyDataTable extends LitElement {
   @property({type: Array}) accessKeys: AccessKeyDataTableRow[];
-  @property({type: Object}) localize: (messageId: string) => string;
+  @property({type: Object}) localize: (...messageIds: string[]) => string;
   @property({type: String}) language: string;
   @property({type: String}) serverVersion: string =
     SERVER_DATA_LIMITS_SUPPORT_VERSION;
   @property({type: String}) sortColumnId: string;
   @property({type: String}) sortDirection: DataTableSortDirection =
     DataTableSortDirection.NONE;
+
+  @query('data-table') table: DataTable<AccessKeyDataTableRow>;
 
   connectedCallback() {
     super.connectedCallback();
@@ -82,8 +107,27 @@ export class AccessKeyDataTable extends LitElement {
       AccessKeyDataTableEvent.EDIT_KEY_DATA_LIMIT
     );
 
-    this.forwardEventListener(
+    // Redirect the controls' edit name event to the
+    // inline input in the name column.
+    this.addEventListener(
       AccessKeyControlsEvent.EDIT_NAME,
+      (event: CustomEvent) => {
+        event.stopImmediatePropagation();
+
+        (
+          (
+            this.table.shadowRoot.getElementById(
+              this.nameColumnIndex(event.detail)
+            ) as AccessKeyStatus
+          ).shadowRoot.querySelector('#nameField') as HTMLElement
+        ).focus();
+      }
+    );
+
+    // When the name columns' name field changes, _then_ fire the
+    // edit name event.
+    this.forwardEventListener(
+      AccessKeyStatusEvent.NAME_FIELD_CHANGE,
       AccessKeyDataTableEvent.EDIT_KEY_NAME
     );
 
@@ -96,49 +140,117 @@ export class AccessKeyDataTable extends LitElement {
   render() {
     return html`
       <data-table
+        .dir=${document.documentElement.dir}
         .columns=${[
           {
             id: 'name',
             displayName: this.localize(
               'server-view-access-keys-key-column-header'
             ),
-            render: ({name, connected}: AccessKeyDataTableRow) =>
+            render: (key: AccessKeyDataTableRow) =>
               html`<access-key-status
-                name=${name}
-                .connected=${connected}
+                id=${this.nameColumnIndex(key)}
+                .key=${key}
               ></access-key-status>`,
+            comparator: (a: AccessKeyDataTableRow, b: AccessKeyDataTableRow) =>
+              defaultStringComparator(a.name, b.name, this.language),
+          },
+          {
+            id: 'lastTraffic',
+            displayName: this.localize(
+              'server-view-access-keys-last-active-column-header'
+            ),
+            tooltip: this.localize(
+              'server-view-access-keys-last-active-tooltip'
+            ),
+            render: (key: AccessKeyDataTableRow) =>
+              this.renderDate(key.connection?.lastTrafficSeen),
+            comparator: (a: AccessKeyDataTableRow, b: AccessKeyDataTableRow) =>
+              defaultDateComparator(
+                a.connection?.lastTrafficSeen ?? new Date(0),
+                b.connection?.lastTrafficSeen ?? new Date(0)
+              ),
           },
           {
             id: 'usage',
-            displayName: this.localize(
-              'server-view-access-keys-usage-column-header'
-            ),
+            displayName: html`${unsafeHTML(
+              this.localize(
+                'server-view-access-keys-usage-column-header',
+                'openItalics',
+                '<i>',
+                'closeItalics',
+                '</i>'
+              )
+            )}`,
             tooltip: this.localize('server-view-access-keys-usage-tooltip'),
-            render: ({dataUsageBytes, dataLimitBytes}: AccessKeyDataTableRow) =>
-              html`<access-key-usage-meter
-                dataUsageBytes=${dataUsageBytes}
-                dataLimitBytes=${dataLimitBytes}
+            render: ({dataTransferred, dataLimit}: AccessKeyDataTableRow) => {
+              if (!dataLimit) {
+                return html`${formatBytes(
+                  dataTransferred.bytes,
+                  this.language
+                )}`;
+              }
+
+              return html`<access-key-usage-meter
+                dataUsageBytes=${dataTransferred.bytes}
+                dataLimitBytes=${dataLimit.bytes}
                 .localize=${this.localize}
                 language=${this.language}
-              ></access-key-usage-meter>`,
+              ></access-key-usage-meter>`;
+            },
+            comparator: (a: AccessKeyDataTableRow, b: AccessKeyDataTableRow) =>
+              defaultNumericComparator(
+                a.dataTransferred.bytes,
+                b.dataTransferred.bytes
+              ),
           },
           {
-            id: 'asnCount',
-            displayName: this.localize(
-              'server-view-access-keys-as-count-column-header'
+            id: 'peakDevices',
+            displayName: html`${unsafeHTML(
+              this.localize(
+                'server-view-access-keys-peak-devices-column-header',
+                'openItalics',
+                '<i>',
+                'closeItalics',
+                '</i>'
+              )
+            )}`,
+            tooltip: this.localize(
+              'server-view-access-keys-peak-devices-tooltip'
             ),
-            tooltip: this.localize('server-view-access-keys-as-count-tooltip'),
-            render: ({asnCount}: AccessKeyDataTableRow) => html`${asnCount}`,
-            comparator: (
-              row1: AccessKeyDataTableRow,
-              row2: AccessKeyDataTableRow
-            ) => defaultNumericComparator(row1.asnCount, row2.asnCount),
+            render: ({connection}: AccessKeyDataTableRow) => {
+              if (!connection) {
+                return html`<span>-</span>`;
+              }
+
+              if (connection.peakDeviceCount.timestamp === null) {
+                return html`<span style="font-weight: bold;"
+                  >${this.formatNumber(connection.peakDeviceCount.data)}</span
+                >`;
+              }
+
+              return html`<div style="display: flex; gap: 1rem;">
+                <span style="font-weight: bold;"
+                  >${this.formatNumber(connection.peakDeviceCount.data)}</span
+                ><span
+                  >${this.renderDate(
+                    connection.peakDeviceCount.timestamp
+                  )}</span
+                >
+              </div>`;
+            },
+            comparator: (a: AccessKeyDataTableRow, b: AccessKeyDataTableRow) =>
+              defaultNumericComparator(
+                a.connection?.peakDeviceCount.data ?? 0,
+                b.connection?.peakDeviceCount.data ?? 0
+              ),
           },
           {
             id: 'controls',
-            render: ({id}: AccessKeyDataTableRow) =>
+            render: (key: AccessKeyDataTableRow) =>
               html`<access-key-controls
-                id=${id}
+                .dir=${document.documentElement.dir}
+                .key=${key}
                 .localize=${this.localize}
                 serverVersion=${this.serverVersion}
               ></access-key-controls>`,
@@ -149,6 +261,23 @@ export class AccessKeyDataTable extends LitElement {
         sortDirection=${this.sortDirection}
       ></data-table>
     `;
+  }
+
+  private renderDate(date: Date | null) {
+    if (!date) {
+      return '-';
+    }
+
+    return html`<div>${date.toLocaleDateString(this.language)}</div>
+      <div>${date.toLocaleTimeString(this.language)}</div>`;
+  }
+
+  private nameColumnIndex(key: AccessKeyDataTableRow) {
+    return `status-id-${key.id}`;
+  }
+
+  private formatNumber(number: number) {
+    return new Intl.NumberFormat(this.language).format(number);
   }
 
   private forwardEventListener(
