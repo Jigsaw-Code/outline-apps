@@ -37,7 +37,7 @@ export class ServerMetricsBandwidthRow extends LitElement {
   @property({type: String}) language: string = 'en';
   @property({type: Object}) localize: (...keys: string[]) => string;
   @property({type: Object}) metrics: ServerMetricsData;
-  @property({type: Number}) dataLimitBytes: number;
+  @property({type: Number}) dataLimitBytes: number = 0;
   @property({type: Number}) dataLimitThreshold: number = 0.8;
   @property({type: Boolean}) hasAccessKeyDataLimits: boolean;
   @property({type: Array})
@@ -45,6 +45,10 @@ export class ServerMetricsBandwidthRow extends LitElement {
 
   @property({type: Boolean, reflect: true})
   get bandwidthLimitWarning() {
+    if (this.dataLimitBytes === 0) {
+      return false;
+    }
+
     return this.bandwidthPercentage >= this.dataLimitThreshold;
   }
 
@@ -314,32 +318,7 @@ export class ServerMetricsBandwidthRow extends LitElement {
               ></icon-tooltip>
             </div>
             <div class="bandwidth-container">
-              ${this.metrics.dataTransferred
-                ? html`<span class="bandwidth-percentage">
-                      ${this.formatPercentage(this.bandwidthPercentage)}
-                    </span>
-                    <span class="bandwidth-fraction"
-                      >${formatBytes(
-                        this.metrics.dataTransferred.bytes,
-                        this.language
-                      )}
-                      /${formatBytes(this.dataLimitBytes, this.language)}</span
-                    >
-                    <span class="bandwidth-progress-container">
-                      <progress
-                        max=${this.dataLimitBytes}
-                        value=${this.metrics.dataTransferred.bytes}
-                      ></progress>
-                      <icon-tooltip
-                        text=${this.hasAccessKeyDataLimits
-                          ? null
-                          : this.localize(
-                              'server-view-server-metrics-bandwidth-limit-tooltip'
-                            )}
-                        icon="warning"
-                      ></icon-tooltip>
-                    </span>`
-                : html`<span class="bandwidth-percentage">-</span>`}
+              ${this.renderBandwidthPercentage()}
             </div>
           </div>
           <div
@@ -407,8 +386,46 @@ export class ServerMetricsBandwidthRow extends LitElement {
     `;
   }
 
+  private renderBandwidthPercentage() {
+    if (!this.metrics.dataTransferred) {
+      return html`<span class="bandwidth-percentage">-</span>`;
+    }
+
+    if (this.dataLimitBytes === 0) {
+      return html`<span class="bandwidth-percentage">
+        ${formatBytes(this.metrics.dataTransferred.bytes, this.language)}
+      </span>`;
+    }
+
+    return html`<span class="bandwidth-percentage">
+        ${this.formatPercentage(this.bandwidthPercentage)}
+      </span>
+      <span class="bandwidth-fraction"
+        >${formatBytes(this.metrics.dataTransferred.bytes, this.language)}
+        /${formatBytes(this.dataLimitBytes, this.language)}</span
+      >
+      <span class="bandwidth-progress-container">
+        <progress
+          max=${this.dataLimitBytes}
+          value=${this.metrics.dataTransferred.bytes}
+        ></progress>
+        <icon-tooltip
+          text=${this.hasAccessKeyDataLimits
+            ? null
+            : this.localize(
+                'server-view-server-metrics-bandwidth-limit-tooltip'
+              )}
+          icon="warning"
+        ></icon-tooltip>
+      </span>`;
+  }
+
   // TODO: move to formatter library
   private formatPercentage(percentage: number) {
+    if (percentage > 1) {
+      return (percentage = 1);
+    }
+
     return Intl.NumberFormat(this.language, {
       style: 'percent',
       minimumFractionDigits: 0,
