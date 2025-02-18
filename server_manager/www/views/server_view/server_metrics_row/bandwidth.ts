@@ -16,6 +16,7 @@
 
 import {LitElement, html, css, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
+import {classMap} from 'lit/directives/class-map';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
 import type {ServerMetricsData} from './index';
@@ -158,7 +159,8 @@ export class ServerMetricsBandwidthRow extends LitElement {
       font-size: var(--server-metrics-bandwidth-row-value-font-size);
     }
 
-    :host([bandwidthLimitWarning]) .bandwidth-percentage {
+    :host([bandwidthLimitWarning]) .bandwidth-percentage,
+    .bandwidth-limit-warning .bandwidth-percentage {
       color: var(--server-metrics-bandwidth-row-meter-warning-color);
     }
 
@@ -206,15 +208,18 @@ export class ServerMetricsBandwidthRow extends LitElement {
       );
     }
 
-    :host([bandwidthLimitWarning]) progress[value]::-webkit-progress-value {
+    :host([bandwidthLimitWarning]) progress[value]::-webkit-progress-value,
+    .bandwidth-limit-warning progress[value]::-webkit-progress-value {
       background: var(--server-metrics-bandwidth-row-meter-warning-color);
     }
 
-    :host([bandwidthLimitWarning]) .bandwidth-progress-container {
+    :host([bandwidthLimitWarning]) .bandwidth-progress-container,
+    .bandwidth-limit-warning .bandwidth-progress-container {
       padding: 0;
     }
 
-    :host([bandwidthLimitWarning]) .bandwidth-progress-container icon-tooltip {
+    :host([bandwidthLimitWarning]) .bandwidth-progress-container icon-tooltip,
+    .bandwidth-limit-warning .bandwidth-progress-container icon-tooltip {
       display: block;
     }
 
@@ -296,7 +301,13 @@ export class ServerMetricsBandwidthRow extends LitElement {
           '</i>'
         )}
       >
-        <div class="main-container">
+        <!-- TODO: debug why the reflected property doesn't work in electron -->
+        <div
+          class=${classMap({
+            'bandwidth-limit-warning': this.bandwidthLimitWarning,
+            'main-container': true,
+          })}
+        >
           <div class="title-and-bandwidth-container">
             <div class="title-container">
               <mwc-icon>data_usage</mwc-icon>
