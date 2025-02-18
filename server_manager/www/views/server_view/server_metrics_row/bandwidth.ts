@@ -422,14 +422,21 @@ export class ServerMetricsBandwidthRow extends LitElement {
 
   // TODO: move to formatter library
   private formatPercentage(percentage: number) {
-    if (percentage > 1) {
-      return (percentage = 1);
-    }
-
-    return Intl.NumberFormat(this.language, {
+    const formatter = Intl.NumberFormat(this.language, {
       style: 'percent',
       minimumFractionDigits: 0,
-    }).format(percentage);
+    });
+
+    // TODO: properly internationalize the greater than/less than symbols
+    if (percentage > 1) {
+      return `>${formatter.format(1)}`;
+    }
+
+    if (percentage < 0.01) {
+      return `<${formatter.format(0.01)}`;
+    }
+
+    return formatter.format(percentage);
   }
 
   private formatBandwidthUnit(bytesPerSecond: number) {
