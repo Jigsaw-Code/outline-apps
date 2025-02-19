@@ -16,6 +16,7 @@
 
 import {LitElement, html, css, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
+import {classMap} from 'lit/directives/class-map.js';
 
 import {formatBytes} from '../../../../data_formatting';
 
@@ -57,7 +58,8 @@ export class AccessKeyUsageMeter extends LitElement {
       font-family: var(--access-key-usage-meter-font-family);
     }
 
-    :host([dataLimitWarning]) > label {
+    :host([dataLimitWarning]) > label,
+    label.data-limit-warning {
       color: var(--access-key-usage-meter-warning-text-color);
     }
 
@@ -77,22 +79,32 @@ export class AccessKeyUsageMeter extends LitElement {
       background: var(--access-key-usage-meter-color);
     }
 
-    :host([dataLimitWarning]) > progress[value]::-webkit-progress-value {
+    :host([dataLimitWarning]) > progress[value]::-webkit-progress-value,
+    progress.data-limit-warning[value]::-webkit-progress-value {
       background: var(--access-key-usage-meter-warning-color);
     }
   `;
 
   render() {
+    // TODO (#2400): debug why the reflected property doesn't work in electron
     return html`<progress
+        class=${classMap({
+          'data-limit-warning': this.dataLimitWarning,
+        })}
         id="progress"
         max=${this.dataLimitBytes}
         value=${this.dataUsageBytes}
       ></progress>
-      <label for="progress">
+      <label
+        class=${classMap({
+          'data-limit-warning': this.dataLimitWarning,
+        })}
+        for="progress"
+      >
         ${formatBytes(this.dataUsageBytes, this.language)} /
         ${formatBytes(this.dataLimitBytes, this.language)}
         ${this.dataLimitWarning
-          ? this.localize('server-view-access-keys-usage-limit')
+          ? `(${this.localize('server-view-access-keys-usage-limit')})`
           : nothing}
       </label>`;
   }
