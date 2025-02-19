@@ -76,6 +76,7 @@ export class UpdateNotificationBar extends LitElement {
 
     a {
       align-items: center;
+      color: var(--update-notification-bar-text-color);
       cursor: pointer;
       display: inline-flex;
       gap: var(--update-notification-bar-link-gap);
