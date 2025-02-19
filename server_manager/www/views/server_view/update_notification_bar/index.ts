@@ -31,6 +31,7 @@ export class UpdateNotificationBar extends LitElement {
       --update-notification-bar-background: hsla(42, 100%, 71%, 1);
       --update-notification-bar-text-color: hsla(0, 0%, 0%, 1);
       --update-notification-bar-padding: 1rem;
+      --update-notification-bar-gap: 1rem;
       --update-notification-bar-content-icon-size: 1.5rem;
       --update-notification-bar-content-gap: 1rem;
       --update-notification-bar-link-icon-size: 1rem;
@@ -49,6 +50,7 @@ export class UpdateNotificationBar extends LitElement {
     aside {
       align-items: center;
       display: inline-flex;
+      gap: var(--update-notification-bar-gap);
       justify-content: space-between;
       margin: 0 auto;
       max-width: var(--update-notification-bar-max-width);
@@ -95,7 +97,7 @@ export class UpdateNotificationBar extends LitElement {
 
     /* TODO(#2384): replace with a container query once we upgrade electron */
     @media (max-width: 900px) {
-      :host {
+      aside {
         flex-direction: column;
       }
       .message {
