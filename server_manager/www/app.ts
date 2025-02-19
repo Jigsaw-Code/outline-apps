@@ -954,11 +954,12 @@ export class App {
             await computeDefaultDataLimit(server, serverAccessKeys)
           )?.bytes;
         }
+        await this.refreshServerMetricsUI(server, view);
+
         // Show help bubbles once the page has rendered.
         setTimeout(() => {
           showHelpBubblesOnce(view);
         }, 250);
-        this.refreshServerMetricsUI(server, view);
       } catch (error) {
         console.error(`Failed to load access keys: ${error}`);
         this.appRoot.showError(this.appRoot.localize('error-keys-get'));
