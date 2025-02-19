@@ -86,7 +86,7 @@ export class AccessKeyUsageMeter extends LitElement {
   `;
 
   render() {
-    // TODO: debug why the reflected property doesn't work in electron
+    // TODO (#2400): debug why the reflected property doesn't work in electron
     return html`<progress
         class=${classMap({
           'data-limit-warning': this.dataLimitWarning,
