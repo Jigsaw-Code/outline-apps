@@ -301,7 +301,7 @@ export class ServerMetricsBandwidthRow extends LitElement {
           '</i>'
         )}
       >
-        <!-- TODO: debug why the reflected property doesn't work in electron -->
+        <!-- TODO(#2400): debug why the reflected property doesn't work in electron -->
         <div
           class=${classMap({
             'bandwidth-limit-warning': this.bandwidthLimitWarning,
