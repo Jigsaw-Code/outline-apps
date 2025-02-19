@@ -434,6 +434,7 @@ export class ServerView extends DirMixin(PolymerElement) {
         <div class="tabs-spacer"></div>
       </div>
       <iron-pages
+        id="pages"
         selected="[[selectedTab]]"
         attr-for-selected="name"
         on-selected-changed="_selectedTabChanged"
@@ -464,6 +465,7 @@ export class ServerView extends DirMixin(PolymerElement) {
 
             <template is="dom-if" if="{{hasAccessKeyData}}">
               <access-key-data-table
+                id="accessKeysContainer"
                 access-keys="[[accessKeyData]]"
                 language="[[language]]"
                 localize="[[localize]]"
@@ -472,7 +474,7 @@ export class ServerView extends DirMixin(PolymerElement) {
                 sort-column-id="[[accessKeyDataSortColumnId]]"
               ></access-key-data-table>
 
-              <div class="access-key-row" id="addAccessKeyRow">
+              <div class="access-key-row">
                 <span class="access-key-container">
                   <paper-icon-button
                     icon="icons:add"
@@ -744,7 +746,7 @@ export class ServerView extends DirMixin(PolymerElement) {
   showAddAccessKeyHelpBubble() {
     return this._showHelpBubble(
       'addAccessKeyHelpBubble',
-      'addAccessKeyRow',
+      'addAccessKeyButton',
       'down',
       'left'
     );
@@ -871,7 +873,10 @@ export class ServerView extends DirMixin(PolymerElement) {
   ) {
     return new Promise(resolve => {
       const helpBubble = this.$[helpBubbleId] as OutlineHelpBubble;
-      helpBubble.show(this.$[positionTargetId], arrowDirection, arrowAlignment);
+      const target =
+        this.$[positionTargetId] ??
+        this.$['pages'].querySelector(`#${positionTargetId}`);
+      helpBubble.show(target, arrowDirection, arrowAlignment);
       helpBubble.addEventListener('outline-help-bubble-dismissed', resolve);
     });
   }
