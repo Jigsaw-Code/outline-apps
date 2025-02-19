@@ -30,6 +30,6 @@ export const Example = {
     dataUsageBytes: 1000000,
     dataLimitBytes: 10000000,
     language: 'en',
-    localize: () => '(80%+ used)',
+    localize: () => '80%+ used',
   },
 };
