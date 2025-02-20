@@ -168,12 +168,6 @@ async function appleMacOsDebug(verbose) {
     );
   }
 
-  console.warn(
-    chalk.yellow(
-      'Debug mode on the MacOS client is currently broken. Try running with `--buildMode=release` instead.'
-    )
-  );
-
   await cordova.platform(
     'add',
     [`github:apache/cordova-osx#${WORKING_CORDOVA_OSX_COMMIT}`],
