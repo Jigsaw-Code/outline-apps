@@ -19,7 +19,6 @@ import url from 'url';
 import {getRootDir} from '@outline/infrastructure/build/get_root_dir.mjs';
 import {runAction} from '@outline/infrastructure/build/run_action.mjs';
 import {spawnStream} from '@outline/infrastructure/build/spawn_stream.mjs';
-import chalk from 'chalk';
 import cordovaLib from 'cordova-lib';
 import rmfr from 'rmfr';
 
