@@ -19,7 +19,7 @@ import jigsawLogo from '../../assets/jigsaw-logo.png';
 
 @customElement('about-view')
 export class AboutView extends LitElement {
-  @property({type: Function}) localize!: (
+  @property({type: Object}) localize!: (
     key: string,
     ...args: string[]
   ) => string;

@@ -16,7 +16,7 @@ import {customElement, property} from 'lit/decorators.js';
 
 @customElement('auto-connect-dialog')
 export class AutoConnectDialog extends LitElement {
-  @property({type: Function}) localize!: (
+  @property({type: Object}) localize!: (
     key: string,
     ...args: string[]
   ) => string;

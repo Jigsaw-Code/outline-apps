@@ -16,7 +16,8 @@
 
 import {LitElement, html, css, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
-import {classMap} from 'lit/directives/class-map';
+import {classMap} from 'lit/directives/class-map.js';
+import {ifDefined} from 'lit/directives/if-defined.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
 import type {ServerMetricsData} from './index';
@@ -421,11 +422,13 @@ export class ServerMetricsBandwidthRow extends LitElement {
           value=${this.metrics.dataTransferred.bytes}
         ></progress>
         <icon-tooltip
-          text=${this.hasAccessKeyDataLimits
-            ? null
-            : this.localize(
-                'server-view-server-metrics-bandwidth-limit-tooltip'
-              )}
+          text=${ifDefined(
+            this.hasAccessKeyDataLimits
+              ? undefined
+              : this.localize(
+                  'server-view-server-metrics-bandwidth-limit-tooltip'
+                )
+          )}
           icon="warning"
         ></icon-tooltip>
       </span>`;
