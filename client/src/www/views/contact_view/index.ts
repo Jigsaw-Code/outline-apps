@@ -92,7 +92,7 @@ export class ContactView extends LitElement {
       }
 
       p {
-        margin-top: .25rem;
+        margin-top: 0.25rem;
       }
 
       ol {
@@ -110,7 +110,10 @@ export class ContactView extends LitElement {
          * this issue.
          */
         --mdc-menu-max-height: 200px;
-        --mdc-menu-max-width: min(calc(100vw - calc(var(--outline-gutter) * 4)), var(--contact-view-max-width));
+        --mdc-menu-max-width: min(
+          calc(100vw - calc(var(--outline-gutter) * 4)),
+          var(--contact-view-max-width)
+        );
         margin-top: 1rem;
         max-width: var(--contact-view-max-width);
         width: 100%;
@@ -138,7 +141,6 @@ export class ContactView extends LitElement {
       mwc-list-item span {
         white-space: normal;
       }
-    }
     `,
   ];
 
@@ -151,7 +153,7 @@ export class ContactView extends LitElement {
     IssueType.GENERAL,
   ];
 
-  @property({type: Function}) localize: Localizer = msg => msg;
+  @property({type: Object}) localize: Localizer = msg => msg;
   @property({type: String}) languageCode = '';
   @property({type: Object, attribute: 'error-reporter'})
   errorReporter: OutlineErrorReporter;
@@ -279,7 +281,7 @@ export class ContactView extends LitElement {
   private get renderForm(): TemplateResult | typeof nothing {
     if (this.isFormSubmitting) {
       return html`
-        <mwc-circular-progress indeterminate></mwc-linear-progress>
+        <mwc-circular-progress indeterminate></mwc-circular-progress>
       `;
     }
     return html`
@@ -316,9 +318,10 @@ export class ContactView extends LitElement {
               element => html`
                 <li>
                   <mwc-formfield .label=${this.localize(element.labelMsg)}>
+                    <!-- mwc-radio's 'value' attribute is incorrectly typed as a string - if you pass a string, it breaks -->
                     <mwc-radio
                       name="open-ticket"
-                      .value="${element.value}"
+                      .value="${element.value as unknown as string}"
                       required
                       @change=${this.selectHasOpenTicket}
                       ${ref(element.ref)}

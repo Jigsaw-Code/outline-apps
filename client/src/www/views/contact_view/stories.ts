@@ -30,12 +30,27 @@ export default {
   },
 };
 
-export const Example = ({onSuccess, onError}: {onSuccess: Function; onError: Function}) =>
-  html`
-    <contact-view
-      .localize=${localize}
-      .errorReporter=${{report: console.log}}
-      @success=${onSuccess}
-      @error=${onError}
-    ></contact-view>
-  `;
+export const Example = ({
+  onSuccess,
+  onError,
+}: {
+  onSuccess: Function;
+  onError: Function;
+}) => html`
+  <contact-view
+    .localize=${localize}
+    .errorReporter=${{
+      report: (
+        userFeedback: string,
+        feedbackCategory: string,
+        userEmail?: string,
+        tags?: {[id: string]: string | boolean | number}
+      ) => {
+        console.log(userFeedback, feedbackCategory, userEmail, tags);
+        return Promise.resolve();
+      },
+    }}
+    @success=${onSuccess}
+    @error=${onError}
+  ></contact-view>
+`;

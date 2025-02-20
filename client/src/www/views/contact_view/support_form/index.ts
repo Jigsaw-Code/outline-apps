@@ -89,7 +89,7 @@ export class SupportForm extends LitElement {
   /** The number of visible text lines for the "Description" field. */
   private static readonly MAX_ROWS_DESCRIPTION = 5;
 
-  @property({type: Function}) localize: Localizer = msg => msg;
+  @property({type: Object}) localize: Localizer = msg => msg;
   @property({type: Boolean}) disabled = false;
   @property({type: Object}) values: Partial<FormValues> = {};
 
@@ -199,7 +199,7 @@ export class SupportForm extends LitElement {
           <md-checkbox
             touch-target="wrapper"
             name="outreachConsent"
-            .value=${live(this.values.outreachConsent ?? false)}
+            .value=${live(String(this.values.outreachConsent ?? false))}
             @input=${this.handleInput}
           ></md-checkbox>
           ${this.localize('support-form-outreach-consent')}
