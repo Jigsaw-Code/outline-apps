@@ -26,6 +26,7 @@ import '@polymer/paper-progress/paper-progress';
 import '@polymer/paper-tabs/paper-tabs';
 import '@polymer/paper-tooltip/paper-tooltip';
 import './cloud-install-styles';
+import './if_messages';
 import './outline-iconset';
 import './outline-help-bubble';
 import './outline-metrics-option-dialog';
@@ -37,6 +38,7 @@ import './outline-sort-span';
 
 import '../views/server_view/server_metrics_row/bandwidth';
 import '../views/server_view/server_metrics_row/tunnel_time';
+import '../views/server_view/update_notification_bar';
 import {html, PolymerElement} from '@polymer/polymer';
 import type {PolymerElementProperties} from '@polymer/polymer/interfaces';
 import {DirMixin} from '@polymer/polymer/lib/mixins/dir-mixin';
@@ -284,6 +286,15 @@ export class ServerView extends DirMixin(PolymerElement) {
       </style>
 
       <div class="container">
+        <template is="dom-if" if="{{hasServerUpdate}}">
+          <if-messages
+            messages="server-view-update-notification-bar-message,server-view-update-notification-bar-link"
+          >
+            <update-notification-bar
+              localize="[[localize]]"
+            ></update-notification-bar>
+          </if-messages>
+        </template>
         <iron-pages
           id="pages"
           attr-for-selected="id"
@@ -584,6 +595,7 @@ export class ServerView extends DirMixin(PolymerElement) {
       },
       hasAccessKeyData: Boolean,
       hasServerMetricsData: Boolean,
+      hasServerUpdate: Boolean,
       hasNonAdminAccessKeys: Boolean,
       installProgress: Number,
       isAccessKeyPortEditable: Boolean,
@@ -707,6 +719,7 @@ export class ServerView extends DirMixin(PolymerElement) {
   hasNonAdminAccessKeys = false;
   hasAccessKeyData = false;
   hasServerMetricsData = false;
+  hasServerUpdate = false;
   metricsEnabled = false;
   // Initialize monthlyOutboundTransferBytes and monthlyCost to 0, so they can
   // be bound to hidden attributes.  Initializing to undefined does not
