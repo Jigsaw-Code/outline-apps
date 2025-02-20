@@ -22,7 +22,7 @@ import '@material/web/all.js';
 @customElement('server-rename-dialog')
 export class ServerRenameDialog extends LitElement {
   @property({type: Boolean}) open: boolean = false;
-  @property({type: Function}) localize!: (key: string) => string;
+  @property({type: Object}) localize!: (key: string) => string;
   @property({type: String}) serverId!: string;
   @property({type: String}) serverName!: string;
 

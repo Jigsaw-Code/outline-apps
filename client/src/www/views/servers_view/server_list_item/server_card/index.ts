@@ -11,7 +11,7 @@
   limitations under the License.
 */
 
-import type {Menu} from '@material/web/menu/menu';
+import {Corner, type Menu} from '@material/web/menu/menu';
 
 import {Localizer} from '@outline/infrastructure/i18n';
 import {css, html, LitElement} from 'lit';
@@ -218,13 +218,18 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
         </div>
       `,
       menu: html`
-        <md-menu ${ref(menu)} class="card-menu" menuCorner="END" quick>
+        <md-menu
+          ${ref(menu)}
+          class="card-menu"
+          menuCorner=${Corner.END_END}
+          quick
+        >
           <md-menu-item @click="${dispatchers.beginRename}">
             ${localize('server-rename')}
           </md-menu-item>
           <md-menu-item @click="${dispatchers.forget}">
             ${localize('server-forget')}
-          </md-list-item>
+          </md-menu-item>
         </md-menu>
       `,
       menuButton: html`
@@ -265,8 +270,8 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
  */
 @customElement('server-row-card')
 export class ServerRowCard extends LitElement implements ServerListItemElement {
-  @property() server: ServerListItem;
-  @property() localize: Localizer;
+  @property({type: Object}) server: ServerListItem;
+  @property({type: Object}) localize: Localizer;
 
   @state() isRenameDialogOpen = false;
 
@@ -327,8 +332,8 @@ export class ServerHeroCard
   extends LitElement
   implements ServerListItemElement
 {
-  @property() server: ServerListItem;
-  @property() localize: Localizer;
+  @property({type: Object}) server: ServerListItem;
+  @property({type: Object}) localize: Localizer;
 
   @state() isRenameDialogOpen = false;
 
