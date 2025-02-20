@@ -318,9 +318,10 @@ export class ContactView extends LitElement {
               element => html`
                 <li>
                   <mwc-formfield .label=${this.localize(element.labelMsg)}>
+                    <!-- mwc-radio's 'value' attribute is incorrectly typed as a string - if you pass a string, it breaks -->
                     <mwc-radio
                       name="open-ticket"
-                      .value=${String(element.value)}
+                      .value="${element.value as unknown as string}"
                       required
                       @change=${this.selectHasOpenTicket}
                       ${ref(element.ref)}
