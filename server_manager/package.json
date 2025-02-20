@@ -130,6 +130,6 @@
   },
   "scripts": {
     "clean": "rm -rf node_modules install_scripts/do_install_script.ts install_scripts/gcp_install_script.ts",
-    "lint:lit": "lit-analyzer www/views"
+    "lint:lit": "echo 'Note: lit-analyzer currently does not support type-checking generics.' && lit-analyzer --rules.no-incompatible-type-binding off www/views"
   }
 }

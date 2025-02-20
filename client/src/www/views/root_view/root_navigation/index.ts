@@ -20,7 +20,7 @@ import navigationLogo from '../../../assets/logo-nav.png';
 
 @customElement('root-navigation')
 export class RootNavigation extends LitElement {
-  @property({type: Function}) localize: Localizer = msg => msg;
+  @property({type: Object}) localize: Localizer = msg => msg;
 
   @property({type: Boolean}) open: boolean;
   @property({type: Boolean}) showQuit: boolean;

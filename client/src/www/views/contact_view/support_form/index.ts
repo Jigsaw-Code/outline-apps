@@ -89,7 +89,7 @@ export class SupportForm extends LitElement {
   /** The number of visible text lines for the "Description" field. */
   private static readonly MAX_ROWS_DESCRIPTION = 5;
 
-  @property({type: Function}) localize: Localizer = msg => msg;
+  @property({type: Object}) localize: Localizer = msg => msg;
   @property({type: Boolean}) disabled = false;
   @property({type: Object}) values: Partial<FormValues> = {};
 

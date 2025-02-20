@@ -153,7 +153,7 @@ export class ContactView extends LitElement {
     IssueType.GENERAL,
   ];
 
-  @property({type: Function}) localize: Localizer = msg => msg;
+  @property({type: Object}) localize: Localizer = msg => msg;
   @property({type: String}) languageCode = '';
   @property({type: Object, attribute: 'error-reporter'})
   errorReporter: OutlineErrorReporter;

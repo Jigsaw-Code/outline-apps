@@ -24,10 +24,10 @@ import '@material/mwc-icon-button';
 // Once electron is updated, we should switch to the Popover API for better style control.
 @customElement('icon-tooltip')
 export class IconTooltip extends LitElement {
-  @property({type: String}) text: string | null;
+  @property({type: String}) text?: string;
   @property({type: String}) icon: string = 'help';
 
-  @state() tooltip: HTMLElement | null = null;
+  @state() tooltip?: HTMLElement;
   @query('mwc-icon-button') iconElement: HTMLElement;
 
   static styles = css`
@@ -50,7 +50,7 @@ export class IconTooltip extends LitElement {
   `;
 
   render() {
-    if (this.text === null) {
+    if (this.text === undefined) {
       return html`<mwc-icon>${this.icon}</mwc-icon>`;
     }
 
@@ -68,7 +68,7 @@ export class IconTooltip extends LitElement {
     event.preventDefault();
     event.stopImmediatePropagation();
 
-    if (this.tooltip || this.text === null) {
+    if (this.tooltip || this.text === undefined) {
       return;
     }
 
@@ -105,6 +105,6 @@ export class IconTooltip extends LitElement {
 
   removeTooltip() {
     this.tooltip?.remove();
-    this.tooltip = null;
+    this.tooltip = undefined;
   }
 }
