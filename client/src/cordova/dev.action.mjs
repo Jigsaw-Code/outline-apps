@@ -58,17 +58,13 @@ export async function main(...givenParameters) {
     throw new Error('This action currently only works for the MacOS platform.');
   }
 
-  if (buildMode !== 'release') {
-    throw new Error('MacOS only renders properly in the release build mode.');
-  }
-
   if (os.platform() !== 'darwin') {
     throw new Error('You must be on MacOS to develop for MacOS.');
   }
 
   const parameters = [
     'macos',
-    '--buildMode=release',
+    `--buildMode=${buildMode}`,
     `--sentryDsn=${sentryDsn}`,
     `--versionName=${versionName}`,
   ];
