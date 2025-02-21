@@ -1034,8 +1034,11 @@ export class App {
     serverView: ServerView
   ) {
     try {
+      const serverAccessKeysPromise = selectedServer.listAccessKeys();
+      const serverMetricsPromise = selectedServer.getServerMetrics();
+
       // Preload an incomplete access key table UI based on the much faster list access key endpoint:
-      const serverAccessKeys = await selectedServer.listAccessKeys();
+      const serverAccessKeys = await serverAccessKeysPromise;
 
       // (only do this if there's currently no data at all)
       if (!serverView.hasAccessKeyData) {
@@ -1043,7 +1046,7 @@ export class App {
       }
 
       // Now load the full server metrics object (slow):
-      const serverMetrics = await selectedServer.getServerMetrics();
+      const serverMetrics = await serverMetricsPromise;
 
       if (!serverMetrics.server) {
         serverView.serverMetricsData = {
