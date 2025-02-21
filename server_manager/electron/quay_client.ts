@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-const QUAY_API_BASE = 'https://quay.io/api/vi/';
+import fetch from 'node-fetch';
+
+const QUAY_API_BASE = 'https://quay.io/api/v1/';
 const OUTLINE_SERVER_REPOSITORY_PATH = 'outline/shadowbox';
 
 interface QuayTagsJson {
@@ -38,15 +40,13 @@ interface QuayTagsJson {
  *
  * @returns {Promise<string | undefined>} The latest version of the Outline Server, if found.
  */
-export async function fetchCurrentServerVersionName(): Promise<
-  string | undefined
-> {
+export async function fetchCurrentServerVersionName() {
   try {
     const response = await fetch(
       QUAY_API_BASE + `repository/${OUTLINE_SERVER_REPOSITORY_PATH}/tag`
     );
 
-    const json: QuayTagsJson = await response.json();
+    const json = (await response.json()) as QuayTagsJson;
 
     return json.tags.find(tag => tag.name.startsWith('v')).name.slice(1);
   } catch (e) {

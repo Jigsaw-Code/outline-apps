@@ -21,7 +21,6 @@ import * as semver from 'semver';
 import {DisplayDataAmount, displayDataAmountToBytes} from './data_formatting';
 import {filterOptions, getShortName} from './location_formatting';
 import {parseManualServerConfig} from './management_urls';
-import {fetchCurrentServerVersionName} from './quay_client';
 import type {AppRoot, ServerListEntry} from './ui_components/app-root';
 import {FeedbackDetail} from './ui_components/outline-feedback-dialog';
 import type {ServerView} from './ui_components/outline-server-view';

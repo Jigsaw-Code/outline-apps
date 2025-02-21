@@ -78,3 +78,7 @@ contextBridge.exposeInMainWorld('runGcpOauth', gcp_oauth.runOauth);
 contextBridge.exposeInMainWorld('bringToFront', () => {
   return ipcRenderer.send('bring-to-front');
 });
+
+contextBridge.exposeInMainWorld('fetchCurrentServerVersionName', () =>
+  ipcRenderer.invoke('fetch-current-server-version-name')
+);
