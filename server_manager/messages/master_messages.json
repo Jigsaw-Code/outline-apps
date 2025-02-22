@@ -1229,13 +1229,9 @@
       }
     }
   },
-  "server_view_access_keys_last_connected_tooltip": {
-    "description": "The tooltip displayed when hovering over the Last connected column in the Access Keys table, providing additional information about the last connection time.",
-    "message": "This shows the last time the key successfully connected to the server."
-  },
   "server_view_access_keys_last_active_tooltip": {
-    "description": "The tooltip displayed when hovering over the Traffic last seen column in the Access Keys table, providing additional information about the last activity time.",
-    "message": "This shows the last time the key sent or received data through the server. If this time is significantly earlier than the last connected time, the key could be connecting but failing to sending data."
+    "description": "The tooltip displayed when hovering over the \"Last active\" column in the Access Keys table, providing additional information about the last activity time.",
+    "message": "This shows the last time the key successfully connected to the server."
   },
   "server_view_access_keys_usage_tooltip": {
     "description": "The tooltip displayed when hovering over the Usage column in the Access Keys table, providing additional information about data transfer volume.",
@@ -1380,6 +1376,14 @@
   "server_view_server_metrics_advanced_metrics_link": {
     "description": "The text of a link that directs the user to a help center article with more detailed information about accessing advanced server metrics.",
     "message": "Learn how to view detailed server metrics"
+  },
+  "server_view_update_notification_bar_message": {
+    "description": "A banner that appears when the user's server is out of date, requesting that they upgrade.",
+    "message": "New server version available! Upgrade your server to access the latest features."
+  },
+  "server_view_update_notification_bar_link": {
+    "description": "A link in the banner that appears when the user's server is out of date, instructing them to learn how to update it.",
+    "message": "Learn how"
   },
   "server_usage": {
     "message": "Usage (last 30 days)",

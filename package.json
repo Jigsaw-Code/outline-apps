@@ -9,7 +9,9 @@
     "action": "node ./infrastructure/build/run_action.mjs",
     "clean": "npm run clean --workspaces && rm -rf output node_modules third_party/jsign/*.jar && go run github.com/go-task/task/v3/cmd/task clean",
     "format:all": "echo 'WARNING! Currently works on Linux only. Pass filepaths to fix specific files on MacOS.' && gts fix",
-    "lint:all": "echo 'WARNING! Currently works on Linux only. Pass filepaths to lint specific files on MacOS.' && gts lint",
+    "lint:gts": "echo 'WARNING! Currently works on Linux only. Pass filepaths to lint specific files on MacOS.' && gts lint",
+    "lint:lit": "npm run lint:lit --workspaces --if-present",
+    "lint:all": "npm run lint:lit && npm run lint:gts",
     "reset": "npm run clean && npm ci",
     "storybook": "storybook dev -p 6006"
   },
@@ -43,6 +45,6 @@
     "lit": "^3.2.1",
     "node-fetch": "^2.6.7",
     "storybook": "^8.2.6",
-    "typescript": "^5.4.5"
+    "typescript": "^5.7.3"
   }
 }

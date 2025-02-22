@@ -15,21 +15,23 @@
  */
 
 import './index';
-
 export default {
-  title: 'Manager/Server View/Access Key Data Table/Access Key Usage Meter',
-  component: 'access-key-usage-meter',
+  title: 'Components/UpdateNotificationBar',
+  component: 'update-notification-bar',
   argTypes: {
-    dataUsageBytes: {control: 'number'},
-    dataLimitBytes: {control: 'number'},
+    link: {control: 'text'},
   },
 };
 
-export const Example = {
+export const Default = {
   args: {
-    dataUsageBytes: 1000000,
-    dataLimitBytes: 10000000,
-    language: 'en',
-    localize: () => '80%+ used',
+    localize: (msgId: string) => {
+      return {
+        'server-view-update-notification-bar-message':
+          'New server version available! Upgrade your server to access the latest features.',
+        'server-view-update-notification-bar-link': 'Learn how',
+      }[msgId];
+    },
+    link: 'https://example.com',
   },
 };

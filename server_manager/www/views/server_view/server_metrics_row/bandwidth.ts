@@ -16,6 +16,8 @@
 
 import {LitElement, html, css, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
+import {classMap} from 'lit/directives/class-map.js';
+import {ifDefined} from 'lit/directives/if-defined.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
 import type {ServerMetricsData} from './index';
@@ -37,7 +39,7 @@ export class ServerMetricsBandwidthRow extends LitElement {
   @property({type: String}) language: string = 'en';
   @property({type: Object}) localize: (...keys: string[]) => string;
   @property({type: Object}) metrics: ServerMetricsData;
-  @property({type: Number}) dataLimitBytes: number;
+  @property({type: Number}) dataLimitBytes: number = 0;
   @property({type: Number}) dataLimitThreshold: number = 0.8;
   @property({type: Boolean}) hasAccessKeyDataLimits: boolean;
   @property({type: Array})
@@ -45,6 +47,10 @@ export class ServerMetricsBandwidthRow extends LitElement {
 
   @property({type: Boolean, reflect: true})
   get bandwidthLimitWarning() {
+    if (this.dataLimitBytes === 0) {
+      return false;
+    }
+
     return this.bandwidthPercentage >= this.dataLimitThreshold;
   }
 
@@ -154,7 +160,8 @@ export class ServerMetricsBandwidthRow extends LitElement {
       font-size: var(--server-metrics-bandwidth-row-value-font-size);
     }
 
-    :host([bandwidthLimitWarning]) .bandwidth-percentage {
+    :host([bandwidthLimitWarning]) .bandwidth-percentage,
+    .bandwidth-limit-warning .bandwidth-percentage {
       color: var(--server-metrics-bandwidth-row-meter-warning-color);
     }
 
@@ -202,15 +209,18 @@ export class ServerMetricsBandwidthRow extends LitElement {
       );
     }
 
-    :host([bandwidthLimitWarning]) progress[value]::-webkit-progress-value {
+    :host([bandwidthLimitWarning]) progress[value]::-webkit-progress-value,
+    .bandwidth-limit-warning progress[value]::-webkit-progress-value {
       background: var(--server-metrics-bandwidth-row-meter-warning-color);
     }
 
-    :host([bandwidthLimitWarning]) .bandwidth-progress-container {
+    :host([bandwidthLimitWarning]) .bandwidth-progress-container,
+    .bandwidth-limit-warning .bandwidth-progress-container {
       padding: 0;
     }
 
-    :host([bandwidthLimitWarning]) .bandwidth-progress-container icon-tooltip {
+    :host([bandwidthLimitWarning]) .bandwidth-progress-container icon-tooltip,
+    .bandwidth-limit-warning .bandwidth-progress-container icon-tooltip {
       display: block;
     }
 
@@ -292,7 +302,13 @@ export class ServerMetricsBandwidthRow extends LitElement {
           '</i>'
         )}
       >
-        <div class="main-container">
+        <!-- TODO(#2400): debug why the reflected property doesn't work in electron -->
+        <div
+          class=${classMap({
+            'bandwidth-limit-warning': this.bandwidthLimitWarning,
+            'main-container': true,
+          })}
+        >
           <div class="title-and-bandwidth-container">
             <div class="title-container">
               <mwc-icon>data_usage</mwc-icon>
@@ -314,32 +330,7 @@ export class ServerMetricsBandwidthRow extends LitElement {
               ></icon-tooltip>
             </div>
             <div class="bandwidth-container">
-              ${this.metrics.dataTransferred
-                ? html`<span class="bandwidth-percentage">
-                      ${this.formatPercentage(this.bandwidthPercentage)}
-                    </span>
-                    <span class="bandwidth-fraction"
-                      >${formatBytes(
-                        this.metrics.dataTransferred.bytes,
-                        this.language
-                      )}
-                      /${formatBytes(this.dataLimitBytes, this.language)}</span
-                    >
-                    <span class="bandwidth-progress-container">
-                      <progress
-                        max=${this.dataLimitBytes}
-                        value=${this.metrics.dataTransferred.bytes}
-                      ></progress>
-                      <icon-tooltip
-                        text=${this.hasAccessKeyDataLimits
-                          ? null
-                          : this.localize(
-                              'server-view-server-metrics-bandwidth-limit-tooltip'
-                            )}
-                        icon="warning"
-                      ></icon-tooltip>
-                    </span>`
-                : html`<span class="bandwidth-percentage">-</span>`}
+              ${this.renderBandwidthPercentage()}
             </div>
           </div>
           <div
@@ -407,12 +398,59 @@ export class ServerMetricsBandwidthRow extends LitElement {
     `;
   }
 
+  private renderBandwidthPercentage() {
+    if (!this.metrics.dataTransferred) {
+      return html`<span class="bandwidth-percentage">-</span>`;
+    }
+
+    if (this.dataLimitBytes === 0) {
+      return html`<span class="bandwidth-percentage">
+        ${formatBytes(this.metrics.dataTransferred.bytes, this.language)}
+      </span>`;
+    }
+
+    return html`<span class="bandwidth-percentage">
+        ${this.formatPercentage(this.bandwidthPercentage)}
+      </span>
+      <span class="bandwidth-fraction"
+        >${formatBytes(this.metrics.dataTransferred.bytes, this.language)}
+        /${formatBytes(this.dataLimitBytes, this.language)}</span
+      >
+      <span class="bandwidth-progress-container">
+        <progress
+          max=${this.dataLimitBytes}
+          value=${this.metrics.dataTransferred.bytes}
+        ></progress>
+        <icon-tooltip
+          text=${ifDefined(
+            this.hasAccessKeyDataLimits
+              ? undefined
+              : this.localize(
+                  'server-view-server-metrics-bandwidth-limit-tooltip'
+                )
+          )}
+          icon="warning"
+        ></icon-tooltip>
+      </span>`;
+  }
+
   // TODO: move to formatter library
   private formatPercentage(percentage: number) {
-    return Intl.NumberFormat(this.language, {
+    const formatter = Intl.NumberFormat(this.language, {
       style: 'percent',
       minimumFractionDigits: 0,
-    }).format(percentage);
+    });
+
+    // TODO: properly internationalize the greater than/less than symbols
+    if (percentage > 1) {
+      return `>${formatter.format(1)}`;
+    }
+
+    if (percentage < 0.01) {
+      return `<${formatter.format(0.01)}`;
+    }
+
+    return formatter.format(percentage);
   }
 
   private formatBandwidthUnit(bytesPerSecond: number) {
