@@ -21,6 +21,7 @@ import (
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/config"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/reporting"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
@@ -31,6 +32,11 @@ import (
 type Client struct {
 	sd *config.Dialer[transport.StreamConn]
 	pl *config.PacketListener
+}
+
+func (c *Client) OnConnected() {
+	tcpDialer := transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
+	reporting.StartReporting(&tcpDialer)
 }
 
 func (c *Client) DialStream(ctx context.Context, address string) (transport.StreamConn, error) {
