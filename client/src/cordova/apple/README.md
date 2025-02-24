@@ -33,7 +33,7 @@ open ./client/src/cordova/apple/macos.xcworkspace
 
 ## Configure code signing
 
-Apple is quite particular when it comes to making your app is properly signed, even in development.
+Apple is quite particular when it comes to making sure your app is properly signed, even in development.
 
 1. In XCode, make sure you are logged into your Apple Developer account and that your personal devices are registered to it. Go to **Preferences > Accounts** and make sure your account is set.
 1. Select the "Outline" target in the left navigation bar and go to the "Signing & Capabilities" tab.
