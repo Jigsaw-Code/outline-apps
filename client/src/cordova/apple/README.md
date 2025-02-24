@@ -79,7 +79,7 @@ For the **macOS** client, you can simply select your macOS computer: **Product >
 
 ### Build and Start the App
 
-1. Frst **clean the build** (**Product > Clean Build Folder…** (<kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>K</kbd>)
+1. First **clean the build** (**Product > Clean Build Folder…** or <kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>K</kbd>)
 
 > [!WARNING]
 > If you don't clean the build first, it will fail with `Command CodeSign failed with a nonzero exit code`.
