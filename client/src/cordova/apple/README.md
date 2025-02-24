@@ -84,7 +84,7 @@ For the **macOS** client, you can simply select your macOS computer: **Product >
 > [!WARNING]
 > If you don't clean the build first, it will fail with `Command CodeSign failed with a nonzero exit code`.
 
-1. **Run** (**Product > Run** (Cmd+Run)), via the menu or the play button:
+1. **Run** (**Product > Run** or <kbd>⌘</kbd> <kbd>R</kbd>), via the menu or the play button:
 
 <img width="802" alt="image" src="https://github.com/Jigsaw-Code/outline-internal-sdk/assets/113565/f3289c08-5f33-423a-a496-d5d764f4fce0">
 
