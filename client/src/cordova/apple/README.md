@@ -6,21 +6,21 @@ This document describes how to develop and debug the Outline Client for iOS and 
 
 You will need:
 
-- Node (`lts/hydrogen`),
+- Node (`lts/hydrogen` - [download](https://nodejs.org/en/download/)),
 - An Apple Device and Developer Account.
 - XCode 15.2 ([download](https://developer.apple.com/xcode/))
 - XCode command line tools: `xcode-select --install`
 
 ## Initalizing the XCode Project
 
-The XCode project is assembled by Cordova. To initialize and open the **iOS** project, run the following commands:
+The XCode project is assembled by Cordova. To initialize and open the **iOS/Mac Catalyst** project, run the following commands:
 
 ```sh
 npm run action client/src/cordova/setup ios
 open ./client/src/cordova/apple/ios.xcworkspace
 ```
 
-For **macOS**:
+For legacy **macOS**:
 
 ```sh
 npm run action client/src/cordova/setup macos 
