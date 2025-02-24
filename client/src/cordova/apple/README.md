@@ -55,8 +55,7 @@ Apple is quite particular when it comes to making sure your app is properly sign
 ### Specify the Run Destination
 
 For the **iOS** client, you have a few options:
-- Run on your macOS computer: **Product > Destination > My Mac (designed for iPad)**
-  - This is a great option for development, but only available on Apple Silicon computers.
+- Run on your macOS computer: **Product >> Destination >> My Mac (Mac Catalyst)**
 - Run on a simulator
   - This is helpful to test the UI, but the VPN doesn't work on simulators, so this option is not recommended.
 - **(Best)** Run on a physical iOS device
