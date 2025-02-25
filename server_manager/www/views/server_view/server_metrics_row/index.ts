@@ -16,6 +16,7 @@
 
 import {LitElement, html, css, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
+import {ifDefined} from 'lit/directives/if-defined.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
 import '../icon_tooltip';
@@ -118,10 +119,10 @@ export class ServerMetricsRow extends LitElement {
                   ${this.subcards.map(
                     ({highlight, title, subtitle, icon}) => html`
                       <server-metrics-row-subcard
-                        highlight="${highlight}"
-                        title="${title}"
-                        subtitle="${subtitle}"
-                        icon="${icon}"
+                        highlight=${ifDefined(highlight)}
+                        title=${ifDefined(title)}
+                        subtitle=${ifDefined(subtitle)}
+                        icon=${ifDefined(icon)}
                       ></server-metrics-row-subcard>
                     `
                   )}

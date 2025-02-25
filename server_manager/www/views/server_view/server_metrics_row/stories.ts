@@ -18,6 +18,7 @@ import {html} from 'lit';
 
 import './tunnel_time';
 import './bandwidth';
+import {ServerMetricsData} from '.';
 
 export default {
   title: 'Manager/Server View/Server Metrics Row',
@@ -25,17 +26,20 @@ export default {
 
 export const Bandwidth = () => {
   return html`<server-metrics-bandwidth-row
-    .localize=${(key: string) => {
-      return {
-        'server-view-server-metrics-bandwidth-title': 'Total bandwidth used',
-        'server-view-server-metrics-bandwidth-as-breakdown':
-          'ASNs with highest bandwidth usage',
-        'server-view-server-metrics-bandwidth-tooltip':
-          'This shows the total amount of data transferred through the server over the last 30 days.',
-        'server-view-server-metrics-bandwidth-usage': 'Current bandwidth usage',
-        'server-view-server-metrics-bandwidth-usage-max':
-          'Maximum bandwidth usage <i>(last 30 days)</i>',
-      }[key];
+    .localize=${(...messageIds: string[]) => {
+      return (
+        {
+          'server-view-server-metrics-bandwidth-title': 'Total bandwidth used',
+          'server-view-server-metrics-bandwidth-as-breakdown':
+            'ASNs with highest bandwidth usage',
+          'server-view-server-metrics-bandwidth-tooltip':
+            'This shows the total amount of data transferred through the server over the last 30 days.',
+          'server-view-server-metrics-bandwidth-usage':
+            'Current bandwidth usage',
+          'server-view-server-metrics-bandwidth-usage-max':
+            'Maximum bandwidth usage <i>(last 30 days)</i>',
+        }[messageIds[0]] ?? messageIds[0]
+      );
     }}
     .metrics=${{
       dataTransferred: {
@@ -87,19 +91,22 @@ export const Bandwidth = () => {
 
 export const BandwidthWarning = () => {
   return html`<server-metrics-bandwidth-row
-    .localize=${(key: string) => {
-      return {
-        'server-view-server-metrics-bandwidth-title': 'Total bandwidth used',
-        'server-view-server-metrics-bandwidth-as-breakdown':
-          'ASNs with highest bandwidth usage',
-        'server-view-server-metrics-bandwidth-tooltip':
-          'This shows the total amount of data transferred through the server over the last 30 days.',
-        'server-view-server-metrics-bandwidth-limit-tooltip':
-          'High bandwidth usage detected over the last 30 days. Consider setting data limits to prevent overages and keep your service running smoothly. <a href="https://support.google.com/outline/answer/15331326" target="_blank">Learn more.</a>',
-        'server-view-server-metrics-bandwidth-usage': 'Current bandwidth usage',
-        'server-view-server-metrics-bandwidth-usage-max':
-          'Maximum bandwidth usage <i>(last 30 days)</i>',
-      }[key];
+    .localize=${(...messageIds: string[]) => {
+      return (
+        {
+          'server-view-server-metrics-bandwidth-title': 'Total bandwidth used',
+          'server-view-server-metrics-bandwidth-as-breakdown':
+            'ASNs with highest bandwidth usage',
+          'server-view-server-metrics-bandwidth-tooltip':
+            'This shows the total amount of data transferred through the server over the last 30 days.',
+          'server-view-server-metrics-bandwidth-limit-tooltip':
+            'High bandwidth usage detected over the last 30 days. Consider setting data limits to prevent overages and keep your service running smoothly. <a href="https://support.google.com/outline/answer/15331326" target="_blank">Learn more.</a>',
+          'server-view-server-metrics-bandwidth-usage':
+            'Current bandwidth usage',
+          'server-view-server-metrics-bandwidth-usage-max':
+            'Maximum bandwidth usage <i>(last 30 days)</i>',
+        }[messageIds[0]] ?? messageIds[0]
+      );
     }}
     .metrics=${{
       dataTransferred: {
@@ -151,20 +158,22 @@ export const BandwidthWarning = () => {
 
 export const TunnelTime = () => {
   return html`<server-metrics-tunnel-time-row
-    .localize=${(key: string) => {
-      return {
-        'server-view-server-metrics-tunnel-time-title':
-          'Total tunnel time <i>(last 30 days)</i>',
-        'server-view-server-metrics-tunnel-time-as-breakdown':
-          'ASNs with highest tunnel time',
-        'server-view-server-metrics-tunnel-time-tooltip': 'Lorem ipsum',
-      }[key];
+    .localize=${(...messageIds: string[]) => {
+      return (
+        {
+          'server-view-server-metrics-tunnel-time-title':
+            'Total tunnel time <i>(last 30 days)</i>',
+          'server-view-server-metrics-tunnel-time-as-breakdown':
+            'ASNs with highest tunnel time',
+          'server-view-server-metrics-tunnel-time-tooltip': 'Lorem ipsum',
+        }[messageIds[0]] ?? messageIds[0]
+      );
     }}
     .metrics=${{
       tunnelTime: {
         seconds: 1573 * 60 * 60,
       },
-    }}
+    } as ServerMetricsData}
     .locations=${[
       {
         seconds: 1080 * 60 * 60,

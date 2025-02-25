@@ -43,7 +43,7 @@ export class ServerList extends LitElement {
     `,
   ];
 
-  @property({type: Function}) localize: Localizer = msg => msg;
+  @property({type: Object}) localize: Localizer = msg => msg;
   @property({type: Array}) servers: ServerListItem[] = [];
 
   render() {

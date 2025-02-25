@@ -294,7 +294,7 @@ export class OutlinePerKeyDataLimitDialog extends LitElement {
   }
 
   private _setSaveButtonDisabledState() {
-    this._enableSave = !this._input?.invalid ?? false;
+    this._enableSave = !(this._input?.invalid ?? false);
   }
 
   private async _onSaveButtonTapped() {
