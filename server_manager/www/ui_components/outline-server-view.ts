@@ -25,6 +25,7 @@ import '@polymer/paper-menu-button/paper-menu-button';
 import '@polymer/paper-progress/paper-progress';
 import '@polymer/paper-tabs/paper-tabs';
 import '@polymer/paper-tooltip/paper-tooltip';
+import '@material/mwc-linear-progress';
 import './cloud-install-styles';
 import './outline-iconset';
 import './outline-help-bubble';
@@ -281,6 +282,11 @@ export class ServerView extends DirMixin(PolymerElement) {
         .metrics-loading-container {
           background: hsl(197, 13%, 22%);
         }
+
+        mwc-linear-progress {
+          --mdc-theme-primary: hsla(0, 0%, 46%, 1);
+          --mdc-linear-progress-buffer-color: var(--primary-green);
+        }
       </style>
 
       <div class="container">
@@ -448,6 +454,9 @@ export class ServerView extends DirMixin(PolymerElement) {
           </aside>
 
           <div class="connections-container">
+            <template is="dom-if" if="{{!hasServerMetricsData}}">
+              <mwc-linear-progress indeterminate></mwc-linear-progress>
+            </template>
             <template is="dom-if" if="{{!hasAccessKeyData}}">
               <div class="connections-loading-container">
                 <outline-progress-spinner></outline-progress-spinner>
