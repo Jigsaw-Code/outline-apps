@@ -36,16 +36,16 @@ This will enable the Developer menu on the application window.
 To build the app binary:
 
 ```
-npm run action server_manager/electron/build ${PLATFORM} -- --buildMode=[debug,release]
+npm run action server_manager/electron/package ${PLATFORM} -- --buildMode=[debug,release]
 ```
 
 Where `${PLATFORM}` is one of `linux`, `macos`, `windows`.
 
 The per-platform standalone apps will be at `output/build/server_manager/electron/static/dist`.
 
-- Windows: zip files. Only generated if you have [wine](https://www.winehq.org/download) installed.
-- Linux: tar.gz files.
-- macOS: dmg files if built from macOS, zip files otherwise.
+- Windows: An `.exe` file. Only generated if you have [wine](https://www.winehq.org/download) installed.
+- Linux: An `.AppImage` file.
+- macOS: A `.dmg` and a `.zip` file as [required by auto update](https://www.electron.build/mac#target).
 
 > NOTE: If you are building for macOS, you may need to run `security unlock-keychain login.keychain` so electron-builder has access to your certificates.
 
