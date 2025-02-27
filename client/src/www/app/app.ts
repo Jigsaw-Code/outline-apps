@@ -549,8 +549,8 @@ export class App {
       });
       console.error(`could not connect to server ${serverId}: ${e}`);
       if (
-        e instanceof PlatformError &&
-        e.code === GoErrorCode.ROUTING_SERVICE_NOT_RUNNING
+        e instanceof errors.ProxyConnectionFailure &&
+        e.cause instanceof errors.SystemConfigurationException
       ) {
         const confirmation =
           this.localize('outline-services-installation-confirmation') +
