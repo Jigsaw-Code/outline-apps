@@ -293,6 +293,10 @@ export class AppRoot extends polymerElementWithLocalize {
       #language-icon {
         padding-top: 10px;
       }
+      #open-in-new-icon {
+        width: 16px;
+        height: 16px;
+      }
       #language-dropdown {
         padding-left: 22px;
         --paper-input-container: {
@@ -392,21 +396,31 @@ export class AppRoot extends polymerElementWithLocalize {
                 class="manager-resources-link"
                 href="https://www.reddit.com/r/outlinevpn/wiki/index/">
                   <span>[[localize('manager-resources')]]</span>
-                  <iron-icon icon="open-in-new" />
+                  <iron-icon id="open-in-new-icon" icon="open-in-new" />
               </a>
             </if-messages>
-            <span on-tap="maybeCloseDrawer"><a href="https://support.getoutline.org/s/article/Data-collection">[[localize('nav-data-collection')]]</a></span>
+            <span on-tap="maybeCloseDrawer">
+              <a href="https://support.getoutline.org/s/article/Data-collection">
+                <span>[[localize('nav-data-collection')]]</span>
+                <iron-icon id="open-in-new-icon" icon="open-in-new" />
+              </a>
+            </span>
             <template is="dom-if" if="{{featureFlags.contactView}}">
               <span on-tap="submitFeedbackTapped">[[localize('nav-contact-us')]]</span>
             </template>
             <template is="dom-if" if="{{!featureFlags.contactView}}">
               <span on-tap="submitFeedbackTapped">[[localize('nav-feedback')]]</span>
             </template>
-            <span on-tap="maybeCloseDrawer"><a href="https://support.getoutline.org/">[[localize('nav-help')]]</a></span>
+            <span on-tap="maybeCloseDrawer">
+              <a href="https://support.getoutline.org/">
+                <span>[[localize('nav-help')]]</span>
+                <iron-icon id="open-in-new-icon" icon="open-in-new" />
+              </a>
+            </span>
             <span on-tap="aboutTapped">[[localize('nav-about')]]</span>
             <div id="links-footer">
               <paper-icon-item id="language-row">
-                <iron-icon id="language-icon" icon="language" slot="item-icon"></iron-icon>
+                <iron-icon id="open-in-new-icon" icon="language" slot="item-icon"></iron-icon>
                 <outline-language-picker id="language-dropdown" selected-language="{{language}}" languages="{{supportedLanguages}}"></outline-language-picker>
               </paper-icon-item>
               <div class="legal-links" on-tap="maybeCloseDrawer">
