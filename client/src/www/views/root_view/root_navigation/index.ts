@@ -101,7 +101,10 @@ export class RootNavigation extends LitElement {
       width: 100%;
       display: flex;
       align-items: center;
-      gap: 0.25rem;
+    }
+
+    #open-in-new-icon {
+      font-size: 16px;
     }
 
     .selected {
@@ -198,7 +201,7 @@ export class RootNavigation extends LitElement {
             <md-icon slot="start">help</md-icon>
             <a href="https://support.getoutline.org">
               <span>${this.localize('help-page-title')}</span>
-              <md-icon>open_in_new</md-icon>
+              <md-icon id="open-in-new-icon">open_in_new</md-icon>
             </a>
           </md-list-item>
           <md-list-item @click=${() => this.changePage('language')}>
