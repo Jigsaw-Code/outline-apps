@@ -24,7 +24,6 @@ import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
 import * as errors from '../model/errors';
 import * as events from '../model/events';
-import {PlatformError, GoErrorCode} from '../model/platform_error';
 import {Server, ServerRepository} from '../model/server';
 import {OutlineErrorReporter} from '../shared/error_reporter';
 import {ServerConnectionState, ServerListItem} from '../views/servers_view';
