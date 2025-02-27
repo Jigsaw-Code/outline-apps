@@ -45,5 +45,7 @@ declare function runGcpOauth(): OauthSession;
 
 declare function bringToFront(): void;
 
+declare function fetchCurrentServerVersionName(): Promise<string | undefined>;
+
 // From base.webpack.js.
 declare const outline: {gcpAuthEnabled: boolean};
