@@ -13,5 +13,5 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "include": ["*.ts", "www/if_messages.ts"]
+  "include": ["*.ts", "www/*.ts"]
 }
