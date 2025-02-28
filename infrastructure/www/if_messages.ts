@@ -33,13 +33,19 @@ export class IfMessages extends LitElement {
   @property({
     type: Array,
     attribute: 'message-ids',
-    converter: (value: string) => value.split(/,\s*/),
+    converter: (value: string | null) => {
+      if (!value) {
+        return [];
+      }
+
+      return value.split(/,\s*/);
+    },
   })
   messageIDs: string[] = [];
   @property({type: Object, attribute: 'localize'}) localize: (
     msgId: string,
     ...params: string[]
-  ) => string;
+  ) => string = (msgId: string) => msgId;
 
   render() {
     if (!ifMessages(this.localize, ...this.messageIDs)) {
