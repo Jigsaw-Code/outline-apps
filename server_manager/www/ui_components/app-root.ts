@@ -43,7 +43,7 @@ import './outline-region-picker-step';
 import './outline-server-list';
 import './outline-tos-view';
 
-import './if_messages';
+import '@outline/infrastructure/www/if_messages';
 
 import type {AppDrawerElement} from '@polymer/app-layout/app-drawer/app-drawer';
 import type {AppDrawerLayoutElement} from '@polymer/app-layout/app-drawer-layout/app-drawer-layout';

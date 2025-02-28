@@ -17,7 +17,7 @@ import '@polymer/paper-button/paper-button';
 import '@polymer/paper-progress/paper-progress';
 import '@material/mwc-checkbox';
 import './outline-step-view';
-import './if_messages';
+import '@outline/infrastructure/www/if_messages';
 
 import {css, html, LitElement} from 'lit';
 import {customElement, property} from 'lit/decorators.js';

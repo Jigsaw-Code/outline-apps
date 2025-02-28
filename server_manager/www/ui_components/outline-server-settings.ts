@@ -19,6 +19,7 @@ import '@polymer/paper-button/paper-button';
 import '@polymer/paper-checkbox/paper-checkbox';
 import '@polymer/paper-dropdown-menu/paper-dropdown-menu';
 import '@polymer/paper-input/paper-input';
+import '@outline/infrastructure/www/if_messages';
 import './cloud-install-styles';
 import './outline-server-settings-styles';
 import './outline-iconset';
