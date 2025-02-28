@@ -51,6 +51,7 @@ export class ErrorDetailsDialog extends LitElement {
 
     pre {
       margin: 0;
+      font-size: 1rem;
       color: var(--outline-error);
     }
 
