@@ -47,8 +47,5 @@
     "node-fetch": "^2.6.7",
     "storybook": "^8.2.6",
     "typescript": "^5.7.3"
-  },
-  "overrides": {
-    "@typescript-eslint/typescript-estree": "^8.24.1"
   }
 }
