@@ -81,7 +81,11 @@ export class ErrorDetailsDialog extends LitElement {
               : 'error-details-dialog-copy'
           )}
         </md-text-button>
-        <md-filled-button @click="${() => (this.open = false)}"
+        <md-filled-button
+          @click="${() => {
+            this.open = false;
+            this.copied = false;
+          }}"
           >${this.localize('error-details-dialog-dismiss')}</md-filled-button
         >
       </fieldset>
