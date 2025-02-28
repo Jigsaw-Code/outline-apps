@@ -49,7 +49,7 @@ public class VpnTunnel {
   private String dnsResolverAddress;
   private ParcelFileDescriptor tunFd;
   private Tunnel tunnel;
-  private final outline.Client client;
+  private outline.Client client;
 
   /**
    * Constructor.
@@ -161,7 +161,6 @@ public class VpnTunnel {
       return;
     }
     tunnel.disconnect();
-    this.client.
     tunnel = null;
   }
 
