@@ -248,7 +248,6 @@ public class VpnTunnelService extends VpnService {
       return new PlatformError(Platerrors.SetupTrafficHandlerFailed,
           "failed to connect the tunnel");
     }
-    client.OnConnected();
     startForegroundWithNotification(config.name);
     storeActiveTunnel(config, remoteUdpForwardingEnabled);
     return null;

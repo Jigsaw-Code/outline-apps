@@ -34,9 +34,13 @@ type Client struct {
 	pl *config.PacketListener
 }
 
-func (c *Client) OnConnected() {
+func (c *Client) Connect() {
 	tcpDialer := transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
 	reporting.StartReporting(&tcpDialer)
+}
+
+func (c *Client) Disconnect() {
+	// TODO: reporting.StopReporting()
 }
 
 func (c *Client) DialStream(ctx context.Context, address string) (transport.StreamConn, error) {
