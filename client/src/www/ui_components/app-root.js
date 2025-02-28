@@ -57,6 +57,8 @@ import '../views/servers_view';
 // eslint-disable-next-line n/no-missing-import
 import '../views/root_view/add_access_key_dialog';
 // eslint-disable-next-line n/no-missing-import
+import '../views/root_view/error_details_dialog';
+// eslint-disable-next-line n/no-missing-import
 import '../views/root_view/root_header';
 // eslint-disable-next-line n/no-missing-import
 import '../views/root_view/root_navigation';
@@ -355,6 +357,11 @@ export class AppRoot extends mixinBehaviors(
         id="addServerView"
         localize="[[localize]]"
       ></add-access-key-dialog>
+
+      <error-details-dialog
+        id="errorDetailsView"
+        localize="[[localize]]"
+      ></error-details-dialog>
 
       <privacy-acknowledgement-dialog
         id="privacyView"
@@ -710,6 +717,11 @@ export class AppRoot extends mixinBehaviors(
 
   promptAddServer() {
     this.$.addServerView.open = true;
+  }
+
+  showErrorDetails(errorDetails) {
+    this.$.errorDetailsView.errorDetails = errorDetails;
+    this.$.errorDetailsView.open = true;
   }
 
   _computeLanguage(availableLanguages, defaultLanguage) {
