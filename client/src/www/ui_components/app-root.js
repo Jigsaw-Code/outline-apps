@@ -64,7 +64,7 @@ import '../views/root_view/root_header';
 import '../views/root_view/root_navigation';
 // eslint-disable-next-line n/no-missing-import
 import * as i18n from '@outline/infrastructure/i18n';
-import {ifMessages} from '@outline/infrastructure/www/if_messages';
+import {ifMessages} from '@outline/infrastructure/www/if_messages.ts';
 import {AppLocalizeBehavior} from '@polymer/app-localize-behavior/app-localize-behavior.js';
 import {PaperMenuButton} from '@polymer/paper-menu-button/paper-menu-button.js';
 import {mixinBehaviors} from '@polymer/polymer/lib/legacy/class.js';
