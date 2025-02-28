@@ -23,7 +23,7 @@ export class ErrorDetailsDialog extends LitElement {
   ) => string;
   @property({type: Boolean}) open: boolean;
 
-  @state({type: Boolean}) copied: boolean = false;
+  @state() copied: boolean = false;
 
   static styles = css`
     :host {

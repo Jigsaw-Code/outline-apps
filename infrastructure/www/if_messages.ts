@@ -17,6 +17,17 @@
 import {nothing, LitElement, html} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 
+export const ifMessages = (
+  localize: (id: string) => string,
+  ...messageIDs: string[]
+) => {
+  return !messageIDs.some(id => {
+    const result = localize(id);
+
+    return result === id || result === undefined || result === '';
+  });
+};
+
 @customElement('if-messages')
 export class IfMessages extends LitElement {
   @property({
@@ -25,19 +36,13 @@ export class IfMessages extends LitElement {
     converter: (value: string) => value.split(/,\s*/),
   })
   messageIDs: string[] = [];
-  @property({type: Function, attribute: 'localize'}) localize: (
+  @property({type: Object, attribute: 'localize'}) localize: (
     msgId: string,
     ...params: string[]
   ) => string;
 
   render() {
-    if (
-      this.messageIDs.some(id => {
-        const result = this.localize(id);
-
-        return result === id || result === undefined || result === '';
-      })
-    ) {
+    if (!ifMessages(this.localize, ...this.messageIDs)) {
       return nothing;
     }
 

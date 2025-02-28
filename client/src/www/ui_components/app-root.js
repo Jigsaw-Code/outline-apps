@@ -64,6 +64,7 @@ import '../views/root_view/root_header';
 import '../views/root_view/root_navigation';
 // eslint-disable-next-line n/no-missing-import
 import * as i18n from '@outline/infrastructure/i18n';
+import {ifMessages} from '@outline/infrastructure/www/if_messages';
 import {AppLocalizeBehavior} from '@polymer/app-localize-behavior/app-localize-behavior.js';
 import {PaperMenuButton} from '@polymer/paper-menu-button/paper-menu-button.js';
 import {mixinBehaviors} from '@polymer/polymer/lib/legacy/class.js';
@@ -358,10 +359,15 @@ export class AppRoot extends mixinBehaviors(
         localize="[[localize]]"
       ></add-access-key-dialog>
 
-      <error-details-dialog
-        id="errorDetailsView"
+      <if-messages
+        message-ids="error-details-dialog-header,error-details-dialog-copied,error-details-dialog-copy,error-details-dialog-dismiss"
         localize="[[localize]]"
-      ></error-details-dialog>
+      >
+        <error-details-dialog
+          id="errorDetailsView"
+          localize="[[localize]]"
+        ></error-details-dialog>
+      </if-messages>
 
       <privacy-acknowledgement-dialog
         id="privacyView"
@@ -720,6 +726,20 @@ export class AppRoot extends mixinBehaviors(
   }
 
   showErrorDetails(errorDetails) {
+    // <if-messages> hides the error details from view but does not remove it
+    // from the DOM entirely, we need a separate ifMessages check:
+    if (
+      !ifMessages(
+        this.localize,
+        'error-details-dialog-header',
+        'error-details-dialog-copied',
+        'error-details-dialog-copy',
+        'error-details-dialog-dismiss'
+      )
+    ) {
+      return globalThis.alert(errorDetails);
+    }
+
     this.$.errorDetailsView.errorDetails = errorDetails;
     this.$.errorDetailsView.open = true;
   }
