@@ -29,7 +29,7 @@
     "icon": "icons/mac/icon.icns",
     "target": [
       {
-        "target": "dmg",
+        "target": "default",
         "arch": "universal"
       }
     ],

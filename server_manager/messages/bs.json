@@ -273,7 +273,7 @@
   "server-view-server-metrics-tunnel-time-title": "Ukupno vrijeme tunela {openItalics}(posljednjih 30 dana){closeItalics}",
   "server-view-server-metrics-tunnel-time-tooltip": "Ovo prikazuje koliko dugo su korisnici u posljednjih 30 dana ukupno bili povezani sa serverom. Vrijeme se izračunava sabiranjem vremena povezanosti (vrijeme tunela) svih uređaja.",
   "server-view-update-notification-bar-link": "Saznajte kako",
-  "server-view-update-notification-bar-message": "Dostupna je nova verzija poslužitelja! Nadogradite poslužitelj za pristup najnovijim značajkama.",
+  "server-view-update-notification-bar-message": "Dostupna je nova verzija servera! Nadogradite server da pristupate najnovijim funkcijama.",
   "servers-add": "Dodaj server",
   "servers-digitalocean": "DigitalOcean serveri",
   "servers-gcp": "Google Cloud Platform serveri",

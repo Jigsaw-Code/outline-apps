@@ -1,82 +1,91 @@
-# Apple Development Instructions
+# Outline Client Apple Development Instructions
 
-This document describes how to develop and debug for macOS (formerly known as OS X) and iOS.
+This document describes how to develop and debug the Outline Client for iOS and MacOS.
 
-## Install requirements
+## Getting Started
 
 You will need:
 
-- An Apple Developer Account. You will need to be invited to your developer team as well.
+- Node (`lts/hydrogen` - [download](https://nodejs.org/en/download/)),
+- An Apple Device and Developer Account.
 - XCode 15.2 ([download](https://developer.apple.com/xcode/))
 - XCode command line tools: `xcode-select --install`
 
-> NOTE: Should you encounter issues with your build, there may be apple-specific dependencies that are out of date. Run `npm run reset` and try again!
+## Initalizing the XCode Project
 
-
-
-## Set up XCode project
-
-The XCode project is created by Cordova. To create the project and open it on XCode, use `npm run action client/src/cordova/setup $PLATFORM`, then open the XCode workspace file (not the project).
-
-For the **iOS** client and **Mac Catalyst** client:
+The XCode project is assembled by Cordova. To initialize and open the **iOS/Mac Catalyst** project, run the following commands:
 
 ```sh
-npm run action client/src/cordova/build ios && open ./client/src/cordova/apple/ios.xcworkspace
+npm run action client/src/cordova/setup ios
+open ./client/src/cordova/apple/ios.xcworkspace
 ```
 
-For the **macOS** client:
+For legacy **macOS**:
 
 ```sh
-SENTRY_DSN=https://public@sentry.example.com/1 npm run action client/src/cordova/setup macos -- --buildMode=release --versionName=0.0.0-dev && open ./client/src/cordova/apple/macos.xcworkspace
+npm run action client/src/cordova/setup macos 
+open ./client/src/cordova/apple/macos.xcworkspace
 ```
 
-> **Note** On Apple Silicon the macOS web UI is broken in debug mode, so we need to build it in release mode. We are specifying a fake `SENTRY_DSN`, you should specify your own in your releases.
+> [!NOTE] 
+> Should you encounter issues with your build, there may be apple-specific dependencies that are out of date.
+> Run `npm run reset` and try again!
 
-## Set up signing
+## Configure code signing
 
-1. In XCode, make sure you are logged into your Apple Developer account. Go to **Preferences > Accounts** and make sure your account is set.
-1. Select "Outline" in the left navigation bar.
-1. Under the "Signing & Capabilities" tab, select the "Jigsaw Operations LLC" for "Team".
+Apple is quite particular when it comes to making sure your app is properly signed, even in development.
 
-## Run the App
+1. In XCode, make sure you are logged into your Apple Developer account and that your personal devices are registered to it. Go to **Preferences > Accounts** and make sure your account is set.
+1. Select the "Outline" target in the left navigation bar and go to the "Signing & Capabilities" tab.
 
-### Specify the Destination
+### Internal Contributors
 
-For the **macOS** client, you can run it directly on your macOS computer: **Product > Destination > My Mac**.
+1. Ensure that the "Jigsaw Operations LLC" option is selected for "Team".
+1. Do the same for the "VPN Extension" target.
+
+### External Contributors
+
+1. Select the "Team" for your own account.
+1. Change the bundle identifier (e.g. `org.outline.ios.client`) to something unique.
+1. Remove the app group `group.org.getoutline.client`.
+1. Do the same for the "VPN Extension" target.
+
+## Running the App
+
+### Specify the Run Destination
 
 For the **iOS** client, you have a few options:
-- Run on your macOS computer: **Product > Destination > My Mac (designed for iPad)**
-  - This is a great option for development, but only available on Apple Silicon computers.
-- Run on a physical iOS device
-  - This is a great option to evaluate how it performs on a real device. You will need to enable development mode and register your device.
+- Run on your macOS computer: **Product >> Destination >> My Mac (Mac Catalyst)**
 - Run on a simulator
   - This is helpful to test the UI, but the VPN doesn't work on simulators, so this option is not recommended.
+- **(Best)** Run on a physical iOS device
+  - This is the best option to evaluate how the app performs on a real device. Remember, you will need to enable development mode on the device and register it in your developer account.
 
 See [Devices and Simulator](https://developer.apple.com/documentation/xcode/devices-and-simulator) for details on running on a physical iOS device or the simulator.
 
-#### Adding support for your iOS device in XCode
-
-You may find that your iOS version is _too modern_ for XCode. You'll need to do the following:
-
-1. Download a folder corresponding to your iOS version from [this community-managed repository](https://github.com/iGhibli/iOS-DeviceSupport/tree/master/DeviceSupport).
-2. Unzip the file and add it to XCode:
-
-```
-Applications >> Xcode >> Right Click >> Show Package Contents >> Contents >> Developer >> Platforms >> iPhoneOS.platform >> DeviceSupport
-```
+> You may find that your iOS version is _too modern_ for XCode. You'll need to do the following:
+>
+> 1. Download a folder corresponding to your iOS version from [this community-managed repository](https://github.com/iGhibli/iOS-DeviceSupport/tree/master/DeviceSupport).
+> 2. Unzip the file and add it to XCode:
+>
+> ```
+> Applications >> Xcode >> Right Click >> Show Package Contents >> Contents >> Developer >> Platforms >> iPhoneOS.platform >> DeviceSupport
+> ```
 
 3. Restart XCode.
 
+For the **macOS** client, you can simply select your macOS computer: **Product > Destination > My Mac**.
 
 ### Build and Start the App
 
-To run the app, first **clean the build** (**Product > Clean Build Folder…** (Cmd+Shift+K)), then **run** (**Product > Run** (Cmd+Run)), via the menu or the play button:
-<img width="802" alt="image" src="https://github.com/Jigsaw-Code/outline-internal-sdk/assets/113565/f3289c08-5f33-423a-a496-d5d764f4fce0">
+1. First **clean the build** (**Product >> Clean Build Folder…** or <kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>K</kbd>)
 
-> **Warning**
->
+> [!WARNING]
 > If you don't clean the build first, it will fail with `Command CodeSign failed with a nonzero exit code`.
 
+1. **Run** (**Product >> Run** or <kbd>⌘</kbd> <kbd>R</kbd>), via the menu or the play button:
+
+<img width="802" alt="image" src="https://github.com/Jigsaw-Code/outline-internal-sdk/assets/113565/f3289c08-5f33-423a-a496-d5d764f4fce0">
 
 ## Development
 
