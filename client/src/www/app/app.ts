@@ -59,7 +59,7 @@ export function unwrapInvite(possiblyInviteUrl: string): string {
         return possibleShadowsocksUrl;
       }
     }
-  } catch (e) {
+  } catch {
     // It wasn't an invite URL!
   }
 
@@ -355,7 +355,7 @@ export class App {
     try {
       const text = await this.clipboard.getContents();
       await this.handleClipboardText(text);
-    } catch (e) {
+    } catch {
       console.warn('cannot read clipboard, system may lack clipboard support');
     }
   }
@@ -363,7 +363,7 @@ export class App {
   private arePrivacyTermsAcked() {
     try {
       return this.settings.get(SettingsKey.PRIVACY_ACK) === 'true';
-    } catch (e) {
+    } catch {
       console.error(
         'could not read privacy acknowledgement setting, assuming not acknowledged'
       );
@@ -414,7 +414,7 @@ export class App {
     text = text.substring(0, 1000).trim();
     try {
       await this.confirmAddServer(text, true);
-    } catch (err) {
+    } catch {
       // Don't alert the user; high false positive rate.
     }
   }
@@ -424,7 +424,7 @@ export class App {
   }
 
   private requestPromptAddServer() {
-    this.pullClipboardText();
+    void this.pullClipboardText();
   }
 
   // Caches an ignored server access key so we don't prompt the user to add it again.
@@ -674,7 +674,7 @@ export class App {
       this.updateServerListItem(event.serverId, {
         connectionState: ServerConnectionState.DISCONNECTED,
       });
-    } catch (e) {
+    } catch {
       console.warn(
         'server card not found after disconnection event, assuming forgotten'
       );
@@ -790,7 +790,7 @@ export class App {
 
   private syncConnectivityStateToServerCards() {
     for (const server of this.serverRepo.getAll()) {
-      this.syncServerConnectivityState(server);
+      void this.syncServerConnectivityState(server);
     }
   }
 
