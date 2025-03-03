@@ -95,6 +95,8 @@ function convertRawErrorObjectToError(rawObj: object): Error {
       return new errors.InvalidServiceConfiguration(detailsMessage, {cause});
     case GoErrorCode.PROXY_SERVER_UNREACHABLE:
       return new errors.ServerUnreachable(detailsMessage, {cause});
+    case GoErrorCode.ROUTING_SERVICE_NOT_RUNNING:
+      return new errors.SystemConfigurationException(detailsMessage, {cause});
     case GoErrorCode.VPN_PERMISSION_NOT_GRANTED:
       return new errors.VpnPermissionNotGranted(detailsMessage, {cause});
     case GoErrorCode.PROVIDER_ERROR:
