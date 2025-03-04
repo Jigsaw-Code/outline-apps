@@ -45,6 +45,16 @@ func TestParseShadowsocksConfig_URL(t *testing.T) {
 		require.Equal(t, "HTTP/1.1 ", config.Prefix)
 	})
 
+	t.Run("Fully Base64 Encoded With Password Containing Host", func(t *testing.T) {
+		encoded := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString([]byte("chacha20-ietf-poly1305:SECRET@example.com:80@example.com:1234?prefix=HTTP%2F1.1%20"))
+		config, err := parseFromYAMLText("ss://" + string(encoded) + "#outline-123")
+		require.NoError(t, err)
+		require.Equal(t, "example.com:1234", config.Endpoint)
+		require.Equal(t, "chacha20-ietf-poly1305", config.Cipher)
+		require.Equal(t, "SECRET@example.com:80", config.Secret)
+		require.Equal(t, "HTTP/1.1 ", config.Prefix)
+	})
+
 	t.Run("User Info Base64 Encoded", func(t *testing.T) {
 		encoded := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString([]byte("chacha20-ietf-poly1305:SECRET/!@#"))
 		config, err := parseFromYAMLText("ss://" + string(encoded) + "@example.com:1234?prefix=HTTP%2F1.1%20" + "#outline-123")
