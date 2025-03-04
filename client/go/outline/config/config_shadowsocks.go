@@ -246,7 +246,7 @@ func parseShadowsocksLegacyBase64URL(url url.URL) (*ShadowsocksConfig, error) {
 		return nil, fmt.Errorf("failed to decode host string [%v]: %w", url.String(), err)
 	}
 
-	// The decoded URI doesn't follow RFC3986; the password is expected to be plain text.
+	// The decoded URI doesn't follow RFC3986, so we need our own parsing. The password is expected to be plain text.
 	userInfo, host, found := cutLast(string(decoded), "@")
 	if !found {
 		return nil, errors.New("invalid user info")
