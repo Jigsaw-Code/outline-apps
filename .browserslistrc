@@ -6,7 +6,7 @@ android >= 127
 chrome >= 102
 
 # This is the iOS deployment target specified in the config.xml:
-ios >= 13
+ios >= 15.5
 
 # Our MacOS project specifies 10.14 as the build target.
 # This is the corresponding Safari version:
