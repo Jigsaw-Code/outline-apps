@@ -53,6 +53,8 @@ import '../views/root_view/auto_connect_dialog';
 // eslint-disable-next-line n/no-missing-import
 import '../views/root_view/privacy_acknowledgement_dialog';
 // eslint-disable-next-line n/no-missing-import
+import '../views/root_view/error_details_dialog';
+// eslint-disable-next-line n/no-missing-import
 import '../views/servers_view';
 // eslint-disable-next-line n/no-missing-import
 import '../views/root_view/add_access_key_dialog';
@@ -355,6 +357,11 @@ export class AppRoot extends mixinBehaviors(
         id="addServerView"
         localize="[[localize]]"
       ></add-access-key-dialog>
+
+      <error-details-dialog
+        id="errorDetailsView"
+        localize="[[localize]]"
+      ></error-details-dialog>
 
       <privacy-acknowledgement-dialog
         id="privacyView"
@@ -695,6 +702,11 @@ export class AppRoot extends mixinBehaviors(
 
   showContactErrorToast() {
     this.showToast(this.localize('error-feedback-submission'));
+  }
+
+  showErrorDetails(errorDetails) {
+    this.$.errorDetailsView.errorDetails = errorDetails;
+    this.$.errorDetailsView.open = true;
   }
 
   _callToastHandler() {
