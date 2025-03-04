@@ -268,6 +268,14 @@ func parseShadowsocksLegacyBase64URL(url url.URL) (*ShadowsocksConfig, error) {
 		return nil, fmt.Errorf("failed to parse config part: %w", err)
 	}
 
+	// Check if both the secret and the host have query parameters. Parsing keys containing both can
+	// be ambiguous, so we disallow it altogether to avoid surprises.
+	if strings.Contains(secret, "?") && newURL.RawQuery != "" {
+		if _, err := neturl.ParseQuery(secret[strings.Index(secret, "?")+1:]); err == nil {
+			return nil, errors.New("only 1 of cipher info and host can have query parameters")
+		}
+	}
+
 	return &ShadowsocksConfig{
 		Endpoint: newURL.Host,
 		Cipher:   cipherName,
