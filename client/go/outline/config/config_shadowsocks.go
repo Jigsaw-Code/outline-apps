@@ -302,17 +302,11 @@ func parseShadowsocksSIP002URL(url url.URL) (*ShadowsocksConfig, error) {
 		}
 	} else {
 		// Base64 decoding failed, assume percent encoding.
-		cipherName, secret, found = strings.Cut(userInfo, ":")
-		if !found {
-			return nil, errors.New("invalid cipher info: no ':' separator")
-		}
-		cipherName, err = neturl.QueryUnescape(cipherName)
-		if err != nil {
-			return nil, errors.New("cipher not percent encoded")
-		}
-		secret, err = neturl.QueryUnescape(secret)
-		if err != nil {
-			return nil, errors.New("secret not percent encoded")
+		cipherName = url.User.Username()
+		var ok bool
+		secret, ok = url.User.Password()
+		if !ok {
+			return nil, errors.New("invalid cipher info: no secret")
 		}
 	}
 	return &ShadowsocksConfig{
