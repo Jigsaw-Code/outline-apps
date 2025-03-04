@@ -17,7 +17,9 @@ package config
 import (
 	"context"
 	"encoding/base64"
+	"fmt"
 	"net"
+	"net/url"
 	"testing"
 
 	"github.com/Jigsaw-Code/outline-sdk/transport"
@@ -33,43 +35,46 @@ func parseFromYAMLText(configText string) (*ShadowsocksConfig, error) {
 }
 
 func TestParseShadowsocksConfig_URL(t *testing.T) {
-	t.Run("Fully Encoded", func(t *testing.T) {
-		encoded := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString([]byte("chacha20-ietf-poly1305:SECRET@example.com:1234?prefix=HTTP%2F1.1%20"))
+	t.Run("Fully Base64 Encoded", func(t *testing.T) {
+		encoded := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString([]byte("chacha20-ietf-poly1305:SECRET/!@#@example.com:1234?prefix=HTTP%2F1.1%20"))
 		config, err := parseFromYAMLText("ss://" + string(encoded) + "#outline-123")
 		require.NoError(t, err)
 		require.Equal(t, "example.com:1234", config.Endpoint)
 		require.Equal(t, "chacha20-ietf-poly1305", config.Cipher)
-		require.Equal(t, "SECRET", config.Secret)
+		require.Equal(t, "SECRET/!@#", config.Secret)
 		require.Equal(t, "HTTP/1.1 ", config.Prefix)
 	})
 
-	t.Run("User Info Encoded", func(t *testing.T) {
-		encoded := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString([]byte("chacha20-ietf-poly1305:SECRET"))
+	t.Run("User Info Base64 Encoded", func(t *testing.T) {
+		encoded := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString([]byte("chacha20-ietf-poly1305:SECRET/!@#"))
 		config, err := parseFromYAMLText("ss://" + string(encoded) + "@example.com:1234?prefix=HTTP%2F1.1%20" + "#outline-123")
 		require.NoError(t, err)
 		require.Equal(t, "example.com:1234", config.Endpoint)
 		require.Equal(t, "chacha20-ietf-poly1305", config.Cipher)
-		require.Equal(t, "SECRET", config.Secret)
+		require.Equal(t, "SECRET/!@#", config.Secret)
 		require.Equal(t, "HTTP/1.1 ", config.Prefix)
 	})
 
-	t.Run("User Info Legacy Encoded", func(t *testing.T) {
-		encoded := base64.StdEncoding.EncodeToString([]byte("chacha20-ietf-poly1305:SECRET"))
+	t.Run("User Info Base64 Legacy Encoded", func(t *testing.T) {
+		encoded := base64.StdEncoding.EncodeToString([]byte("chacha20-ietf-poly1305:SECRET/!@#"))
 		config, err := parseFromYAMLText("ss://" + string(encoded) + "@example.com:1234?prefix=HTTP%2F1.1%20" + "#outline-123")
 		require.NoError(t, err)
 		require.Equal(t, "example.com:1234", config.Endpoint)
 		require.Equal(t, "chacha20-ietf-poly1305", config.Cipher)
-		require.Equal(t, "SECRET", config.Secret)
+		require.Equal(t, "SECRET/!@#", config.Secret)
 		require.Equal(t, "HTTP/1.1 ", config.Prefix)
 	})
 
-	t.Run("User Info No Encoding", func(t *testing.T) {
-		configString := "ss://chacha20-ietf-poly1305:SECRET@example.com:1234"
+	t.Run("User Info Percent Encoding", func(t *testing.T) {
+		configString := fmt.Sprintf("ss://%s:%s@example.com:1234",
+			url.QueryEscape("chacha20-ietf-poly1305"),
+			url.QueryEscape("SECRET/!@#"),
+		)
 		config, err := parseFromYAMLText(configString)
 		require.NoError(t, err)
 		require.Equal(t, "example.com:1234", config.Endpoint)
 		require.Equal(t, "chacha20-ietf-poly1305", config.Cipher)
-		require.Equal(t, "SECRET", config.Secret)
+		require.Equal(t, "SECRET/!@#", config.Secret)
 	})
 
 	t.Run("Invalid Cipher Fails", func(t *testing.T) {
@@ -87,30 +92,30 @@ func TestParseShadowsocksConfig_URL(t *testing.T) {
 
 func TestParseShadowsocksConfig_LegacyJSON(t *testing.T) {
 	t.Run("Regular", func(t *testing.T) {
-		config, err := parseFromYAMLText(`{"server":"example.com","server_port":1234,"method":"chacha20-ietf-poly1305","password":"SECRET"}`)
+		config, err := parseFromYAMLText(`{"server":"example.com","server_port":1234,"method":"chacha20-ietf-poly1305","password":"SECRET/!@#"}`)
 		require.NoError(t, err)
 		require.Equal(t, "example.com:1234", config.Endpoint)
 		require.Equal(t, "chacha20-ietf-poly1305", config.Cipher)
-		require.Equal(t, "SECRET", config.Secret)
+		require.Equal(t, "SECRET/!@#", config.Secret)
 	})
 
 	t.Run("With Prefix", func(t *testing.T) {
-		config, err := parseFromYAMLText(`{"server":"example.com","server_port":1234,"method":"chacha20-ietf-poly1305","password":"SECRET","prefix": "HTTP/1.1"}`)
+		config, err := parseFromYAMLText(`{"server":"example.com","server_port":1234,"method":"chacha20-ietf-poly1305","password":"SECRET/!@#","prefix": "HTTP/1.1"}`)
 		require.NoError(t, err)
 		require.Equal(t, "example.com:1234", config.Endpoint)
 		require.Equal(t, "chacha20-ietf-poly1305", config.Cipher)
-		require.Equal(t, "SECRET", config.Secret)
+		require.Equal(t, "SECRET/!@#", config.Secret)
 		require.Equal(t, "HTTP/1.1", config.Prefix)
 	})
 
 	t.Run("With Unprintable Prefix", func(t *testing.T) {
-		config, err := parseFromYAMLText(`{"server":"example.com","server_port":1234,"method":"chacha20-ietf-poly1305","password":"SECRET","prefix": "\u0000\u0080\u00ff"}`)
+		config, err := parseFromYAMLText(`{"server":"example.com","server_port":1234,"method":"chacha20-ietf-poly1305","password":"SECRET/!@#","prefix": "\u0000\u0080\u00ff"}`)
 		require.NoError(t, err)
 		require.Equal(t, "\u0000\u0080\u00ff", config.Prefix)
 	})
 
 	t.Run("With Multi-byte UTF-8 Prefix", func(t *testing.T) {
-		config, err := parseFromYAMLText(`{"server":"example.com","server_port":1234,"method":"chacha20-ietf-poly1305","password":"SECRET","prefix": "\u0080\u0081\u00fd\u00ff"}`)
+		config, err := parseFromYAMLText(`{"server":"example.com","server_port":1234,"method":"chacha20-ietf-poly1305","password":"SECRET/!@#","prefix": "\u0080\u0081\u00fd\u00ff"}`)
 		require.NoError(t, err)
 		require.Equal(t, "\u0080\u0081\u00fd\u00ff", config.Prefix)
 	})
@@ -135,7 +140,7 @@ func TestParseShadowsocksConfig_YAML(t *testing.T) {
 		config := map[string]any{
 			"endpoint": "example.com:1234",
 			"cipher":   "chacha20-ietf-poly1305",
-			"secret":   "SECRET",
+			"secret":   "SECRET/!@#",
 			"prefix":   "outline-123",
 		}
 		transport, err := parseShadowsocksTransport(context.Background(), config, streamEndpoints.Parse, packetEndpoints.Parse)
@@ -147,7 +152,7 @@ func TestParseShadowsocksConfig_YAML(t *testing.T) {
 		config := map[string]any{
 			"endpoint": "example.com:1234",
 			"cipher":   "NOT SUPPORTED",
-			"secret":   "SECRET",
+			"secret":   "SECRET/!@#",
 			"prefix":   "outline-123",
 		}
 		_, err := parseShadowsocksTransport(context.Background(), config, streamEndpoints.Parse, packetEndpoints.Parse)
@@ -158,7 +163,7 @@ func TestParseShadowsocksConfig_YAML(t *testing.T) {
 		config := map[string]any{
 			"endpoint": "example.com:1234",
 			"cipher":   "chacha20-ietf-poly1305",
-			"secret":   "SECRET",
+			"secret":   "SECRET/!@#",
 			"prefix":   "outline-123",
 			"extra":    "NOT SUPPORTED",
 		}
