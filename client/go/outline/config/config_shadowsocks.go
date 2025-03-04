@@ -303,9 +303,8 @@ func parseShadowsocksSIP002URL(url url.URL) (*ShadowsocksConfig, error) {
 	} else {
 		// Base64 decoding failed, assume percent encoding.
 		cipherName = url.User.Username()
-		var ok bool
-		secret, ok = url.User.Password()
-		if !ok {
+		secret, found = url.User.Password()
+		if !found {
 			return nil, errors.New("invalid cipher info: no secret")
 		}
 	}
