@@ -99,6 +99,13 @@ export class RootNavigation extends LitElement {
       height: 100%;
       text-decoration: none;
       width: 100%;
+      display: flex;
+      align-items: center;
+    }
+
+    #open-in-new-icon {
+      font-size: 16px;
+      height: 16px;
     }
 
     .selected {
@@ -130,6 +137,8 @@ export class RootNavigation extends LitElement {
     li > a {
       text-decoration: none;
       color: var(--outline-medium-gray);
+      display: flex;
+      align-items: center;
     }
 
     .backdrop {
@@ -194,7 +203,8 @@ export class RootNavigation extends LitElement {
             <md-ripple></md-ripple>
             <md-icon slot="start">help</md-icon>
             <a href="https://support.getoutline.org">
-              ${this.localize('help-page-title')}
+              <span>${this.localize('help-page-title')}</span>
+              <md-icon id="open-in-new-icon">open_in_new</md-icon>
             </a>
           </md-list-item>
           <md-list-item @click=${() => this.changePage('language')}>
@@ -214,11 +224,13 @@ export class RootNavigation extends LitElement {
           <li>
             <a href="https://www.google.com/policies/privacy/">
               ${this.localize('privacy')}
+              <md-icon id="open-in-new-icon">open_in_new</md-icon>
             </a>
           </li>
           <li>
             <a href="${this.dataCollectionPageUrl}">
               ${this.localize('data-collection')}
+              <md-icon id="open-in-new-icon">open_in_new</md-icon>
             </a>
           </li>
           <li>
@@ -226,6 +238,7 @@ export class RootNavigation extends LitElement {
               href="https://s3.amazonaws.com/outline-vpn/static_downloads/Outline-Terms-of-Service.html"
             >
               ${this.localize('terms')}
+              <md-icon id="open-in-new-icon">open_in_new</md-icon>
             </a>
           </li>
           <li @click=${() => this.changePage('licenses')}>
