@@ -22,7 +22,6 @@ import (
 	"net"
 	"net/url"
 	neturl "net/url"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -46,8 +45,6 @@ type LegacyShadowsocksConfig struct {
 	Password    string
 	Prefix      string
 }
-
-var HostDelimiter = regexp.MustCompile(`@`)
 
 func parseShadowsocksTransport(ctx context.Context, config ConfigNode, parseSE ParseFunc[*Endpoint[transport.StreamConn]], parsePE ParseFunc[*Endpoint[net.Conn]]) (*TransportPair, error) {
 	params, err := parseShadowsocksParams(config)
@@ -226,6 +223,17 @@ func parseShadowsocksURL(url url.URL) (*ShadowsocksConfig, error) {
 	return parseShadowsocksLegacyBase64URL(url)
 }
 
+// cutLust slices s around the last instance of sep, returning the text before
+// and after sep. The found result reports whether sep appears in s. If sep does
+// not appear in s, cut returns s, "", false.
+func cutLast(s, sep string) (before, after string, found bool) {
+	last := strings.LastIndex(s, sep)
+	if last == -1 {
+		return s, "", false
+	}
+	return s[:last], s[last+len(sep):], true
+}
+
 // parseShadowsocksLegacyBase64URL parses URL based on legacy base64 format:
 // https://shadowsocks.org/doc/configs.html#uri-and-qr-code
 func parseShadowsocksLegacyBase64URL(url url.URL) (*ShadowsocksConfig, error) {
@@ -239,11 +247,13 @@ func parseShadowsocksLegacyBase64URL(url url.URL) (*ShadowsocksConfig, error) {
 	}
 
 	// The decoded URI doesn't follow RFC3986, so we need our own parsing. The password is expected to be plain text.
-	// We try and parse the key in multiple ways to catch ambiguous query parameters with a value containing an
-	// unencoded host. We disallow those types of situations altogether to avoid surprises.
-	indices := HostDelimiter.FindAllIndex(decoded, -1)
-	if len(indices) == 0 {
+	userInfo, host, found := cutLast(string(decoded), "@")
+	if !found {
 		return nil, errors.New("invalid user info")
+	}
+	cipherName, secret, found := strings.Cut(userInfo, ":")
+	if !found {
+		return nil, errors.New("invalid cipher info: no ':' separator")
 	}
 
 	var fragment string
@@ -252,44 +262,26 @@ func parseShadowsocksLegacyBase64URL(url url.URL) (*ShadowsocksConfig, error) {
 	} else {
 		fragment = ""
 	}
-
-	var validConfigs []*ShadowsocksConfig
-	decodedStr := string(decoded)
-	for _, index := range indices {
-		userInfo := decodedStr[:index[0]]
-		host := decodedStr[index[1]:]
-
-		cipherName, secret, found := strings.Cut(userInfo, ":")
-		if !found {
-			err =  errors.New("invalid cipher info: no ':' separator")
-			continue
-		}
-
-		var newURL *neturl.URL
-		newURL, err = neturl.Parse(strings.ToLower(url.Scheme) + "://" + host + fragment)
-		if err != nil {
-			err = fmt.Errorf("failed to parse config part: %w", err)
-			continue
-		}
-		if newURL.Host == "" || newURL.User != nil {
-			err = errors.New("invalid host")
-			continue
-		}
-
-		validConfigs = append(validConfigs, &ShadowsocksConfig{
-			Endpoint: newURL.Host,
-			Cipher:   cipherName,
-			Secret:   secret,
-			Prefix:   newURL.Query().Get("prefix"),
-		})
+	newURL, err := neturl.Parse(strings.ToLower(url.Scheme) + "://" + host + fragment)
+	if err != nil {
+		// if parsing fails, return the original url with error
+		return nil, fmt.Errorf("failed to parse config part: %w", err)
 	}
-	if len(validConfigs) == 0 {
-		return nil, err
+
+	// Check if both the secret and the host have query parameters. Parsing keys containing both can
+	// be ambiguous, so we disallow it altogether to avoid surprises.
+	if strings.Contains(secret, "?") && newURL.RawQuery != "" {
+		if _, err := neturl.ParseQuery(secret[strings.Index(secret, "?")+1:]); err == nil {
+			return nil, errors.New("only 1 of cipher info and host can have query parameters")
+		}
 	}
-	if len(validConfigs) > 1 {
-		return nil, fmt.Errorf("ambiguous configuration: multiple valid configurations found")
-	}
-	return validConfigs[0], nil
+
+	return &ShadowsocksConfig{
+		Endpoint: newURL.Host,
+		Cipher:   cipherName,
+		Secret:   secret,
+		Prefix:   newURL.Query().Get("prefix"),
+	}, nil
 }
 
 // parseShadowsocksSIP002URL parses URL based on SIP002 format:
