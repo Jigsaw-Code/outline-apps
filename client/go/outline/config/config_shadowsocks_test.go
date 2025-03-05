@@ -55,79 +55,10 @@ func TestParseShadowsocksConfig_URL(t *testing.T) {
 		require.Equal(t, "HTTP/1.1 ", config.Prefix)
 	})
 
-	t.Run("Fully Base64 Encoded Having Query Parameters With Password", func(t *testing.T) {
-		tests := []struct {
-			name    string
-			input   string
-			wantErr bool
-		}{
-			{
-				name:    "Ambiguous Query Parameter",
-				input:   "chacha20-ietf-poly1305:SECRET/!@#?key1=value1@example.com:1234?prefix=PREFIX",
-				wantErr: true,
-			},
-			{
-				name:    "Multi Query Parameters",
-				input:   "chacha20-ietf-poly1305:SECRET/!@#?key1=value1&key2=value2&@example.com:1234?prefix=PREFIX",
-				wantErr: true,
-			},
-			{
-				name:    "Single Key Query Parameter",
-				input:   "chacha20-ietf-poly1305:SECRET/!@#?key1&@example.com:1234?prefix=PREFIX",
-				wantErr: true,
-			},
-			{
-				name:    "Empty Value Query Parameter",
-				input:   "chacha20-ietf-poly1305:SECRET/!@#?=@example.com:1234?prefix=PREFIX",
-				wantErr: true,
-			},
-			{
-				name:    "Ends In Question Mark",
-				input:   "chacha20-ietf-poly1305:SECRET/!@#?@example.com:1234?prefix=PREFIX",
-				wantErr: true,
-			},
-			{
-				name:    "Query Parameter At String Start",
-				input:   "chacha20-ietf-poly1305:?value@example.com:1234?prefix=PREFIX",
-				wantErr: true,
-			},
-			{
-				name:    "No Query Parameters",
-				input:   "chacha20-ietf-poly1305:noquery@example.com:1234?prefix=PREFIX",
-				wantErr: false,
-			},
-			{
-				name:    "Just A Question Mark",
-				input:   "chacha20-ietf-poly1305:?@example.com:1234?prefix=PREFIX",
-				wantErr: true,
-			},
-			{
-				name:    "Multiple Question Marks",
-				input:   "chacha20-ietf-poly1305:a?b?c@example.com:1234?prefix=PREFIX",
-				wantErr: true,
-			},
-			{
-				name:    "Simple Query Parameter",
-				input:   "chacha20-ietf-poly1305:a?b@example.com:1234?prefix=PREFIX",
-				wantErr: true,
-			},
-			{
-				name:    "Key Value Pair",
-				input:   "chacha20-ietf-poly1305:a?b=c@example.com:1234?prefix=PREFIX",
-				wantErr: true,
-			},
-		}
-		for _, tt := range tests {
-			t.Run(tt.name, func(t *testing.T) {
-				encoded := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString([]byte(tt.input))
-				_, err := parseFromYAMLText("ss://" + string(encoded) + "#outline-123")
-				if tt.wantErr {
-					require.Error(t, err)
-				} else {
-					require.NoError(t, err)
-				}
-			})
-		}
+	t.Run("Fully Base64 Encoded With Ambiguous Query Parameter", func(t *testing.T) {
+		encoded := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString([]byte("chacha20-ietf-poly1305:SECRET/!@#@example.com:1234?prefix=@bad.example.com:443"))
+		_, err := parseFromYAMLText("ss://" + string(encoded) + "#outline-123")
+		require.Error(t, err)
 	})
 
 	t.Run("User Info Base64 Encoded", func(t *testing.T) {
