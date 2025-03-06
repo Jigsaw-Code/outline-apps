@@ -293,13 +293,9 @@ export class ServerView extends DirMixin(PolymerElement) {
 
       <div class="container">
         <template is="dom-if" if="{{hasServerUpdate}}">
-          <if-messages
-            messages="server-view-update-notification-bar-message,server-view-update-notification-bar-link"
-          >
-            <update-notification-bar
-              localize="[[localize]]"
-            ></update-notification-bar>
-          </if-messages>
+          <update-notification-bar
+            localize="[[localize]]"
+          ></update-notification-bar>
         </template>
         <iron-pages
           id="pages"
