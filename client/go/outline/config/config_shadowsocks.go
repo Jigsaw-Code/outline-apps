@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	neturl "net/url"
 	"strconv"
 	"strings"
 
@@ -137,7 +138,7 @@ type shadowsocksParams struct {
 func parseShadowsocksConfig(node ConfigNode) (*ShadowsocksConfig, error) {
 	switch typed := node.(type) {
 	case string:
-		urlConfig, err := url.Parse(typed)
+		urlConfig, err := neturl.Parse(typed)
 		if err != nil {
 			return nil, fmt.Errorf("string config is not a valid URL")
 		}
@@ -222,6 +223,17 @@ func parseShadowsocksURL(url url.URL) (*ShadowsocksConfig, error) {
 	return parseShadowsocksLegacyBase64URL(url)
 }
 
+// cutLust slices s around the last instance of sep, returning the text before
+// and after sep. The found result reports whether sep appears in s. If sep does
+// not appear in s, cut returns s, "", false.
+func cutLast(s, sep string) (before, after string, found bool) {
+	last := strings.LastIndex(s, sep)
+	if last == -1 {
+		return s, "", false
+	}
+	return s[:last], s[last+len(sep):], true
+}
+
 // parseShadowsocksLegacyBase64URL parses URL based on legacy base64 format:
 // https://shadowsocks.org/doc/configs.html#uri-and-qr-code
 func parseShadowsocksLegacyBase64URL(url url.URL) (*ShadowsocksConfig, error) {
@@ -233,26 +245,29 @@ func parseShadowsocksLegacyBase64URL(url url.URL) (*ShadowsocksConfig, error) {
 		// If decoding fails, return the original url with error
 		return nil, fmt.Errorf("failed to decode host string [%v]: %w", url.String(), err)
 	}
+
+	// The decoded URI doesn't follow RFC3986, so we need our own parsing. The password is expected to be plain text.
+	userInfo, host, found := cutLast(string(decoded), "@")
+	if !found {
+		return nil, errors.New("invalid user info")
+	}
+	cipherName, secret, found := strings.Cut(userInfo, ":")
+	if !found {
+		return nil, errors.New("invalid cipher info: no ':' separator")
+	}
+
 	var fragment string
 	if url.Fragment != "" {
 		fragment = "#" + url.Fragment
 	} else {
 		fragment = ""
 	}
-	newURL, err := url.Parse(strings.ToLower(url.Scheme) + "://" + string(decoded) + fragment)
+	newURL, err := neturl.Parse(strings.ToLower(url.Scheme) + "://" + host + fragment)
 	if err != nil {
 		// if parsing fails, return the original url with error
 		return nil, fmt.Errorf("failed to parse config part: %w", err)
 	}
-	// extend this check to see if decoded string contains contains other valid fields
-	if newURL.User == nil {
-		return nil, fmt.Errorf("invalid user info: %w", err)
-	}
-	cipherInfoBytes := newURL.User.String()
-	cipherName, secret, found := strings.Cut(string(cipherInfoBytes), ":")
-	if !found {
-		return nil, errors.New("invalid cipher info: no ':' separator")
-	}
+
 	return &ShadowsocksConfig{
 		Endpoint: newURL.Host,
 		Cipher:   cipherName,
@@ -275,15 +290,23 @@ func parseShadowsocksSIP002URL(url url.URL) (*ShadowsocksConfig, error) {
 		// Try base64 decoding in legacy mode
 		decodedUserInfo, err = base64.StdEncoding.DecodeString(userInfo)
 	}
-	var cipherInfo string
+	var (
+		cipherName string
+		secret     string
+		found      bool
+	)
 	if err == nil {
-		cipherInfo = string(decodedUserInfo)
+		cipherName, secret, found = strings.Cut(string(decodedUserInfo), ":")
+		if !found {
+			return nil, errors.New("invalid cipher info: no ':' separator")
+		}
 	} else {
-		cipherInfo = userInfo
-	}
-	cipherName, secret, found := strings.Cut(cipherInfo, ":")
-	if !found {
-		return nil, errors.New("invalid cipher info: no ':' separator")
+		// Base64 decoding failed, assume percent encoding.
+		cipherName = url.User.Username()
+		secret, found = url.User.Password()
+		if !found {
+			return nil, errors.New("invalid cipher info: no secret")
+		}
 	}
 	return &ShadowsocksConfig{
 		Endpoint: url.Host,

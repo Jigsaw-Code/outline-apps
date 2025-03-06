@@ -1052,10 +1052,19 @@ export class App {
     serverView: ServerView
   ) {
     try {
-      const [serverMetrics, serverAccessKeys] = await Promise.all([
-        selectedServer.getServerMetrics(),
-        selectedServer.listAccessKeys(),
-      ]);
+      const serverAccessKeysPromise = selectedServer.listAccessKeys();
+      const serverMetricsPromise = selectedServer.getServerMetrics();
+
+      // Preload an incomplete access key table UI based on the much faster list access key endpoint:
+      const serverAccessKeys = await serverAccessKeysPromise;
+
+      // (only do this if there's currently no data at all)
+      if (!serverView.hasAccessKeyData) {
+        this.refreshAccessKeyTableUI(serverView, serverAccessKeys);
+      }
+
+      // Now load the full server metrics object (slow):
+      const serverMetrics = await serverMetricsPromise;
 
       if (!serverMetrics.server) {
         serverView.serverMetricsData = {
@@ -1109,58 +1118,22 @@ export class App {
             }));
       }
 
-      serverView.hasServerMetricsData = true;
+      // Join the server metrics data with the previous access key information
+      // now that we've populated the accessKeyMetricsIndex:
+      const accessKeyMetricsIndex: Map<string, server_model.AccessKeyMetrics> =
+        new Map();
 
-      const accessKeyMetricsIndex = new Map<
-        string,
-        server_model.AccessKeyMetrics
-      >();
       for (const accessKey of serverMetrics.accessKeys) {
         accessKeyMetricsIndex.set(accessKey.accessKeyId, accessKey);
       }
 
-      serverView.accessKeyData = serverAccessKeys.map(accessKey => {
-        const accessKeyMetrics = accessKeyMetricsIndex.get(accessKey.id);
+      this.refreshAccessKeyTableUI(
+        serverView,
+        serverAccessKeys,
+        accessKeyMetricsIndex
+      );
 
-        const resolveKeyName = (key: server_model.AccessKey) =>
-          key.name || this.appRoot.localize('key', 'keyId', key.id);
-
-        let dataLimit = accessKey.dataLimit;
-        if (!dataLimit && serverView.isDefaultDataLimitEnabled) {
-          dataLimit = {
-            bytes: serverView.defaultDataLimitBytes,
-          };
-        }
-
-        if (!accessKeyMetrics) {
-          return {
-            ...accessKey,
-            name: resolveKeyName(accessKey),
-            isOnline: false,
-            dataTransferred: {
-              bytes: 0,
-            },
-            dataLimit,
-          };
-        }
-
-        let isOnline = false;
-        if (accessKeyMetrics.connection) {
-          isOnline =
-            accessKeyMetrics.connection.lastTrafficSeen >=
-            new Date(Date.now() - 5 * MINUTES_TO_MILLISECONDS);
-        }
-
-        return {
-          ...accessKey,
-          ...accessKeyMetrics,
-          name: resolveKeyName(accessKey),
-          isOnline,
-          dataLimit,
-        };
-      });
-
-      serverView.hasAccessKeyData = true;
+      serverView.hasServerMetricsData = true;
     } catch (e) {
       // Since failures are invisible to users we generally want exceptions here to bubble
       // up and trigger a Sentry report. The exception is network errors, about which we can't
@@ -1173,6 +1146,55 @@ export class App {
       }
       throw e;
     }
+  }
+
+  private refreshAccessKeyTableUI(
+    serverView: ServerView,
+    serverAccessKeys: server_model.AccessKey[],
+    accessKeyMetricsIndex?: Map<string, server_model.AccessKeyMetrics>
+  ) {
+    serverView.accessKeyData = serverAccessKeys.map(accessKey => {
+      const accessKeyMetrics = accessKeyMetricsIndex?.get(accessKey.id);
+
+      const resolveKeyName = (key: server_model.AccessKey) =>
+        key.name || this.appRoot.localize('key', 'keyId', key.id);
+
+      let dataLimit = accessKey.dataLimit;
+      if (!dataLimit && serverView.isDefaultDataLimitEnabled) {
+        dataLimit = {
+          bytes: serverView.defaultDataLimitBytes,
+        };
+      }
+
+      if (!accessKeyMetrics) {
+        return {
+          ...accessKey,
+          name: resolveKeyName(accessKey),
+          isOnline: false,
+          dataTransferred: {
+            bytes: 0,
+          },
+          dataLimit,
+        };
+      }
+
+      let isOnline = false;
+      if (accessKeyMetrics.connection) {
+        isOnline =
+          accessKeyMetrics.connection.lastTrafficSeen >=
+          new Date(Date.now() - 5 * MINUTES_TO_MILLISECONDS);
+      }
+
+      return {
+        ...accessKey,
+        ...accessKeyMetrics,
+        name: resolveKeyName(accessKey),
+        isOnline,
+        dataLimit,
+      };
+    });
+
+    serverView.hasAccessKeyData = true;
   }
 
   private countryCodeToEmoji(countryCode: string) {

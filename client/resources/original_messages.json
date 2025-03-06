@@ -492,6 +492,22 @@
       }
     }
   },
+  "error_details_dialog_header": {
+    "description": "The title of the dialog box that shows the details of an error.",
+    "message": "Error Details"
+  },
+  "error_details_dialog_copied": {
+   "description": "The text of a button to copy the error details to the clipboard.",
+    "message": "Copied"
+  },
+  "error_details_dialog_copy": {
+    "description": "The text of a button to copy the error details to the clipboard.",
+    "message": "Copy"
+  },
+  "error_details_dialog_dismiss": {
+    "description": "The text of a button to close the error details dialog.",
+    "message": "Dismiss"
+  },
   "server_default_name": {
     "description": "This is the default name for an added server when the type or name is not specified by the access key.",
     "message": "Proxy Server"
