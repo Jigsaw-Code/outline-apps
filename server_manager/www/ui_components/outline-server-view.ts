@@ -773,7 +773,7 @@ export class ServerView extends DirMixin(PolymerElement) {
   _computeAccessKeyTabMessage(
     hasAccessKeyData: boolean,
     accessKeyData: AccessKeyDataTableRow[],
-    localize: Function
+    localize: (...messageIds: string[]) => string
   ) {
     if (!hasAccessKeyData) {
       return localize('server-view-access-keys-tab', 'accessKeyCount', '...');
@@ -821,7 +821,11 @@ export class ServerView extends DirMixin(PolymerElement) {
     return formatting.bytesToDisplayDataAmount(limit);
   }
 
-  _formatDisplayDataLimit(limit: number, language: string, localize: Function) {
+  _formatDisplayDataLimit(
+    limit: number,
+    language: string,
+    localize: (...messageIds: string[]) => string
+  ) {
     return exists(limit)
       ? formatting.formatBytes(limit, language)
       : localize('no-data-limit');
