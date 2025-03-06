@@ -43,6 +43,8 @@ contextBridge.exposeInMainWorld(
       try {
         breadcrumb.data.url = `(redacted)/${redactManagerUrl(breadcrumb.data.url)}`;
       } catch (e) {
+        console.error(e);
+
         // NOTE: cannot log this failure to console if console breadcrumbs are enabled
         breadcrumb.data.url = '(error redacting)';
       }

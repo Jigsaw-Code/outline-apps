@@ -60,7 +60,7 @@ if (typeof SENTRY_DSN !== 'undefined' && SENTRY_DSN) {
 console.info('Outline Manager is starting');
 
 interface IpcEvent {
-  returnValue: {};
+  returnValue: object;
 }
 
 function createMainWindow() {
@@ -85,7 +85,7 @@ function createMainWindow() {
     },
   });
   const webAppUrl = getWebAppUrl();
-  win.loadURL(webAppUrl);
+  void win.loadURL(webAppUrl);
 
   const handleNavigation = (url: string) => {
     try {
@@ -95,12 +95,12 @@ function createMainWindow() {
         parsed.protocol === 'https:' ||
         parsed.protocol === 'macappstore:'
       ) {
-        shell.openExternal(url);
+        void shell.openExternal(url);
       } else {
         console.warn(`Refusing to open URL with protocol "${parsed.protocol}"`);
       }
-    } catch (e) {
-      console.warn('Could not parse URL: ' + url);
+    } catch (error) {
+      console.error('Could not parse URL: ' + error.message);
     }
   };
   win.webContents.on('will-navigate', (event: Event, url: string) => {
@@ -114,7 +114,7 @@ function createMainWindow() {
   win.webContents.on('did-finish-load', () => {
     // Wait until now to check for updates now so that the UI won't miss the event.
     if (!debugMode) {
-      autoUpdater.checkForUpdates();
+      void autoUpdater.checkForUpdates();
     }
   });
 
