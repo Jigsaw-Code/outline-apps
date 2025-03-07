@@ -13,7 +13,6 @@
 // limitations under the License.
 
 // Functions made available to the renderer process via preload.ts.
-
 type SentryBreadcrumb = import('@sentry/electron').Breadcrumb;
 declare function redactSentryBreadcrumbUrl(
   breadcrumb: SentryBreadcrumb
@@ -45,7 +44,22 @@ declare function runGcpOauth(): OauthSession;
 
 declare function bringToFront(): void;
 
-declare function fetchCurrentServerVersionName(): Promise<string | undefined>;
+// TODO: avoid declaring this both here and in ../electron/quay_client.ts?
+interface QuayTag {
+  name: string;
+  reversion: boolean;
+  startTimestamp: number;
+  manifestDigest: string;
+  isManifestList: boolean;
+  size: number;
+  lastModified: string;
+  endTimestamp?: number;
+  expiration?: string;
+}
+
+declare function fetchRecentShadowboxVersionTags(): Promise<
+  QuayTag[] | undefined
+>;
 
 // From base.webpack.js.
 declare const outline: {gcpAuthEnabled: boolean};

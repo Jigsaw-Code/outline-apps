@@ -32,7 +32,7 @@ import * as server from '../model/server';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (global as any).bringToFront = () => {};
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-(global as any).fetchCurrentServerVersionName = () => {};
+(global as any).fetchRecentShadowboxVersionTags = () => {};
 
 // Inject app-root element into DOM once before each test.
 beforeEach(() => {
