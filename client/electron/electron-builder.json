@@ -17,7 +17,7 @@
     "!output/client/electron/build"
   ],
 
-  "beforePack": "client/electron/hooks/before_pack.cjs",
+  "afterPack": "client/electron/hooks/after_pack.cjs",
 
   "deb": {
     "depends": [

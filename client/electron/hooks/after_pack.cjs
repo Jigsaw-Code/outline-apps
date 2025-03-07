@@ -61,6 +61,9 @@ function patchLinuxRPath(binDir) {
   }
 }
 
+/**
+ * Run after pack but before pack into distributable format and sign.
+ */
 exports.default = function (buildResult) {
   if (buildResult.electronPlatformName === 'linux') {
     patchLinuxRPath(buildResult.appOutDir);
