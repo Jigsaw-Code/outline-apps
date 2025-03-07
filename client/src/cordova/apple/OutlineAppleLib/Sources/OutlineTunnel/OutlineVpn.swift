@@ -70,26 +70,31 @@ public class OutlineVpn: NSObject {
       var token: NSObjectProtocol?
     }
     let tokenHolder = TokenHolder()
-    let startDone = Task {
-      await withCheckedContinuation { continuation in
-        tokenHolder.token = NotificationCenter.default.addObserver(forName: .NEVPNStatusDidChange, object: manager.connection, queue: nil) { notification in
-          DDLogDebug("OutlineVpn.start got status \(String(describing: session.status)), notification: \(String(describing: notification))")
-
-          let status = manager.connection.status
-          // The observer may be triggered multiple times, but we only remove it when we reach an end state.
-          // A successful connection will go through .connecting -> .disconnected
-          // A failed connection will go through .connecting -> .disconnecting -> .disconnected
-          // An .invalid event may happen if the configuration is modified and ends in an invalid state.
-          if status == .connected || status == .disconnected || status == .invalid {
-            DDLogDebug("Tunnel start done.")
-            if let token = tokenHolder.token {
-              NotificationCenter.default.removeObserver(token, name: .NEVPNStatusDidChange, object: manager.connection)
-            }
-            continuation.resume()
+      let startDone = Task {
+          await withCheckedContinuation { continuation in
+              tokenHolder.token = NotificationCenter.default.addObserver(forName: .NEVPNStatusDidChange, object: manager.connection, queue: nil) { notification in
+                  // The notification object is always the session, so we can rely on that to not be nil.
+                  guard let connection = notification.object as? NETunnelProviderSession else {
+                      DDLogDebug("Failed to cast notification.object to NETunnelProviderSession")
+                      return
+                  }
+                  
+                  let status = connection.status
+                  DDLogDebug("OutlineVpn.start got status \(String(describing: status)), notification: \(String(describing: notification))")
+                  // The observer may be triggered multiple times, but we only remove it when we reach an end state.
+                  // A successful connection will go through .connecting -> .disconnected
+                  // A failed connection will go through .connecting -> .disconnecting -> .disconnected
+                  // An .invalid event may happen if the configuration is modified and ends in an invalid state.
+                  if status == .connected || status == .disconnected || status == .invalid {
+                      DDLogDebug("Tunnel start done.")
+                      if let token = tokenHolder.token {
+                          NotificationCenter.default.removeObserver(token, name: .NEVPNStatusDidChange, object: connection)
+                      }
+                      continuation.resume()
+                  }
+              }
           }
-        }
       }
-    }
 
     // Start the session.
     do {

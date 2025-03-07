@@ -1,8 +1,14 @@
 {
   "extends": "./node_modules/gts/",
+  "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaVersion": "latest",
-    "sourceType": "module"
+    "sourceType": "module",
+    "project": [
+      "./client/tsconfig.json",
+      "./infrastructure/tsconfig.json",
+      "./server_manager/tsconfig.json"
+    ]
   },
   "plugins": ["compat", "import"],
   "rules": {
@@ -90,6 +96,12 @@
       "varsIgnorePattern": "^_",
       "argsIgnorePattern": "^_"
     }],
+    "@typescript-eslint/no-floating-promises": [
+      "error",
+      {
+        "ignoreVoid": true
+      }
+    ],
     "no-unused-vars": ["error", {
       "varsIgnorePattern": "^_",
       "argsIgnorePattern": "^_"
