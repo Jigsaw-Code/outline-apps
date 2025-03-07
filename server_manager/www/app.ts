@@ -26,7 +26,6 @@ import {FeedbackDetail} from './ui_components/outline-feedback-dialog';
 import type {ServerView} from './ui_components/outline-server-view';
 import * as digitalocean_api from '../cloud/digitalocean_api';
 import {HttpError} from '../cloud/gcp_api';
-import {fetchRecentShadowboxVersionTags} from '../electron/quay_client';
 import * as accounts from '../model/accounts';
 import * as digitalocean from '../model/digitalocean';
 import * as gcp from '../model/gcp';
@@ -41,7 +40,8 @@ const CHANGE_KEYS_PORT_VERSION = '1.0.0';
 const DATA_LIMITS_VERSION = '1.1.0';
 const CHANGE_HOSTNAME_VERSION = '1.2.0';
 const KEY_SETTINGS_VERSION = '1.6.0';
-const MINUTES_TO_MILLISECONDS = 60 * 1000;
+const SECONDS_TO_MILLISECONDS = 1000;
+const MINUTES_TO_MILLISECONDS = 60 * SECONDS_TO_MILLISECONDS;
 const DAY_TO_MILLISECONDS = 24 * 60 * MINUTES_TO_MILLISECONDS;
 const MAX_ACCESS_KEY_DATA_LIMIT_BYTES = 50 * 10 ** 9; // 50GB
 const CANCELLED_ERROR = new Error('Cancelled');
@@ -1050,16 +1050,22 @@ export class App {
   ) {
     const recentShadowboxTags = await fetchRecentShadowboxVersionTags();
 
-    const latestVersionTag = recentShadowboxTags.find(tag =>
-      tag.name.startsWith('v')
+    const latestVersionTag = recentShadowboxTags.find(
+      tag =>
+        tag.name.startsWith('v') &&
+        !tag.name.includes('-rc') &&
+        !tag.endTimestamp
     );
 
     if (!latestVersionTag) {
       return (serverView.hasServerUpdate = false);
     }
 
-    // Check if the latest tag is over a day old: Watchtower may still be trying to roll out an update.
-    if (Date.now() - latestVersionTag.startTimestamp < DAY_TO_MILLISECONDS) {
+    // Check if the latest tag is less than a day old: Watchtower may still be trying to roll out an update.
+    if (
+      Date.now() - latestVersionTag.startTimestamp * SECONDS_TO_MILLISECONDS <
+      DAY_TO_MILLISECONDS
+    ) {
       return (serverView.hasServerUpdate = false);
     }
 
