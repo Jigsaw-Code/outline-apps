@@ -97,9 +97,13 @@ export class GoVpnTunnel implements VpnTunnel {
     }
 
     // Disconnect the tunnel if the routing service disconnects unexpectedly.
-    this.routing.onceDisconnected.then(async () => {
-      await this.disconnect();
-    });
+    this.routing.onceDisconnected
+      .then(async () => {
+        await this.disconnect();
+      })
+      .catch(e => {
+        console.error('error in routing service disconnection:', e);
+      });
 
     if (checkProxyConnectivity) {
       if (IS_WINDOWS) {
@@ -133,7 +137,7 @@ export class GoVpnTunnel implements VpnTunnel {
 
       // Test whether UDP availability has changed; since it won't change 99% of the time, do this
       // *after* we've informed the client we've reconnected.
-      this.updateUdpAndRestartTun2socks();
+      void this.updateUdpAndRestartTun2socks();
     } else if (status === TunnelStatus.RECONNECTING) {
       if (this.reconnectingListener) {
         this.reconnectingListener();
@@ -192,7 +196,7 @@ export class GoVpnTunnel implements VpnTunnel {
       }
       console.log(`UDP support now ${this.isUdpEnabled}`);
     } catch (e) {
-      console.error(`connectivity check failed: ${e}`);
+      console.error('connectivity check failed:', e);
     }
 
     // Restart tun2socks.
@@ -348,7 +352,13 @@ class GoTun2socks {
         console.warn('[tun2socks] - exited unexpectedly; restarting ...');
       }
       restarting = false;
-      this.monitorStarted().then(() => (restarting = true));
+      this.monitorStarted()
+        .then(() => {
+          restarting = true;
+        })
+        .catch(e => {
+          console.error('[tun2socks] - failed to monitor start:', e);
+        });
       try {
         lastError = null;
         await this.process.launch(args, false);
