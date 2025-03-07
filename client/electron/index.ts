@@ -437,12 +437,10 @@ function setUiTunnelStatus(status: TunnelStatus, tunnelId: string) {
   updateTray(status);
 }
 
-async function checkForUpdates() {
-  try {
-    await autoUpdater.checkForUpdates();
-  } catch (e) {
+function checkForUpdates() {
+  autoUpdater.checkForUpdates().catch(e => {
     console.error('Failed to check for updates', e);
-  }
+  });
 }
 
 function main() {
@@ -495,7 +493,7 @@ function main() {
     }
 
     if (!debugMode) {
-      await checkForUpdates();
+      checkForUpdates();
       // Check every six hours
       setInterval(checkForUpdates, 6 * 60 * 60 * 1000);
     }
