@@ -42,7 +42,6 @@ const CHANGE_HOSTNAME_VERSION = '1.2.0';
 const KEY_SETTINGS_VERSION = '1.6.0';
 const SECONDS_TO_MILLISECONDS = 1000;
 const MINUTES_TO_MILLISECONDS = 60 * SECONDS_TO_MILLISECONDS;
-const DAY_TO_MILLISECONDS = 24 * 60 * MINUTES_TO_MILLISECONDS;
 const MAX_ACCESS_KEY_DATA_LIMIT_BYTES = 50 * 10 ** 9; // 50GB
 const CANCELLED_ERROR = new Error('Cancelled');
 const CHARACTER_TABLE_FLAG_SYMBOL_OFFSET = 127397;
@@ -1048,31 +1047,16 @@ export class App {
     selectedServer: server_model.Server,
     serverView: ServerView
   ) {
-    const recentShadowboxTags = await fetchRecentShadowboxVersionTags();
+    try {
+      const latestAvailableUpdate =
+        await selectedServer?.getLatestAvailableUpdate();
 
-    const latestVersionTag = recentShadowboxTags.find(
-      tag =>
-        tag.name.startsWith('v') &&
-        !tag.name.includes('-rc') &&
-        !tag.endTimestamp
-    );
+      serverView.hasServerUpdate = Boolean(latestAvailableUpdate);
+    } catch (error) {
+      console.info('[refreshUpdateNotificationBarUI]', error);
 
-    if (!latestVersionTag) {
-      return (serverView.hasServerUpdate = false);
+      serverView.hasServerUpdate = false;
     }
-
-    // Check if the latest tag is less than a day old: Watchtower may still be trying to roll out an update.
-    if (
-      Date.now() - latestVersionTag.startTimestamp * SECONDS_TO_MILLISECONDS <
-      DAY_TO_MILLISECONDS
-    ) {
-      return (serverView.hasServerUpdate = false);
-    }
-
-    serverView.hasServerUpdate = semver.gt(
-      latestVersionTag.name.slice(1),
-      selectedServer.getVersion()
-    );
   }
 
   private async refreshServerMetricsUI(
