@@ -1,6 +1,6 @@
 {
   "productName": "Outline",
-  "artifactName": "Outline-Client.${ext}",
+  "artifactName": "Outline-Client-${arch}.${ext}",
   "asarUnpack": [ "client" ],
   "directories": {
     "buildResources": "output/client/electron",
@@ -37,11 +37,9 @@
     "maintainer": "Jigsaw LLC",
     "target": [{
       "arch": [
-        "x64"
+        "x64",
+        "arm64"
       ],
-      "target": "AppImage"
-    }, {
-      "arch": "x64",
       "target": "deb"
     }]
   },
