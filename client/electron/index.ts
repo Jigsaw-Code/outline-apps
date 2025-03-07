@@ -432,9 +432,9 @@ function setUiTunnelStatus(status: TunnelStatus, tunnelId: string) {
   updateTray(status);
 }
 
-function checkForUpdates() {
+async function checkForUpdates() {
   try {
-    autoUpdater.checkForUpdates();
+    await autoUpdater.checkForUpdates();
   } catch (e) {
     console.error('Failed to check for updates', e);
   }
