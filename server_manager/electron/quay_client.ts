@@ -49,15 +49,17 @@ interface QuayTag {
 /**
  * Fetches the latest version tags of Shadowbox from Quay.io (does not paginate).
  *
- * @returns {Promise<QuayTag[] | undefined>} The latest version of the Outline Server, if found.
+ * @returns {Promise<QuayTag[]>} The latest version of the Outline Server, if found.
  */
-export async function fetchRecentShadowboxVersionTags(): Promise<
-  QuayTag[] | undefined
-> {
+export async function fetchRecentShadowboxVersionTags(): Promise<QuayTag[]> {
   try {
     const response = await fetch(
       QUAY_API_BASE + `repository/${OUTLINE_SERVER_REPOSITORY_PATH}/tag`
     );
+
+    if (!(response.status === 200 && response.ok)) {
+      return Promise.reject(response.statusText);
+    }
 
     const json = (await response.json()) as QuayTagsJsonPayload;
 
@@ -75,6 +77,6 @@ export async function fetchRecentShadowboxVersionTags(): Promise<
   } catch (e) {
     console.error(e);
 
-    return undefined;
+    return Promise.reject(e.message);
   }
 }
