@@ -21,7 +21,7 @@ import * as url from 'url';
 
 import * as net from '@outline/infrastructure/net';
 import * as Sentry from '@sentry/electron/main';
-import autoLaunch = require('auto-launch'); // tslint:disable-line
+import autoLaunch = require('auto-launch'); // eslint-disable-line @typescript-eslint/no-require-imports
 import {
   app,
   BrowserWindow,
@@ -234,7 +234,7 @@ function setupWindow(): void {
         console.warn(`Refusing to open URL with protocol "${parsed.protocol}"`);
       }
     } catch (e) {
-      console.warn('Could not parse URL: ' + url);
+      console.warn(`Could not parse URL ${url}:`, e);
     }
     event.preventDefault();
   });
@@ -318,7 +318,7 @@ async function setupAutoLaunch(request: StartRequestJson): Promise<void> {
           name: 'OutlineClient',
           path: process.env.APPIMAGE,
         });
-        outlineAutoLauncher.enable();
+        await outlineAutoLauncher.enable();
       }
     } else {
       app.setLoginItemSettings({openAtLogin: true, args: [Options.AUTOSTART]});
@@ -334,7 +334,7 @@ async function tearDownAutoLaunch() {
       const outlineAutoLauncher = new autoLaunch({
         name: 'OutlineClient',
       });
-      outlineAutoLauncher.disable();
+      await outlineAutoLauncher.disable();
     } else {
       app.setLoginItemSettings({openAtLogin: false});
     }
@@ -383,11 +383,16 @@ async function startVpn(request: StartRequestJson, isAutoConnect: boolean) {
     currentTunnel.enableDebugMode();
   }
 
-  currentTunnel.onceDisconnected.then(() => {
-    console.log(`disconnected from ${request.id}`);
-    currentTunnel = undefined;
-    setUiTunnelStatus(TunnelStatus.DISCONNECTED, request.id);
-  });
+  currentTunnel.onceDisconnected
+    .then(() => {
+      console.log(`disconnected from ${request.id}`);
+      currentTunnel = undefined;
+      setUiTunnelStatus(TunnelStatus.DISCONNECTED, request.id);
+    })
+    .catch(e => {
+      console.error(`failed to disconnect from ${request.id}:`, e);
+      throw e;
+    });
 
   currentTunnel.onReconnecting(() => {
     console.log(`reconnecting to ${request.id}`);
@@ -416,7 +421,7 @@ async function stopVpn() {
     return;
   }
 
-  currentTunnel.disconnect();
+  void currentTunnel.disconnect();
   await tearDownAutoLaunch();
   await currentTunnel.onceDisconnected;
 }
@@ -490,7 +495,7 @@ function main() {
     }
 
     if (!debugMode) {
-      checkForUpdates();
+      await checkForUpdates();
       // Check every six hours
       setInterval(checkForUpdates, 6 * 60 * 60 * 1000);
     }
@@ -543,7 +548,7 @@ function main() {
           //       this).
           if (currentTunnel) {
             console.log('disconnecting from current server...');
-            currentTunnel.disconnect();
+            void currentTunnel.disconnect();
             await currentTunnel.onceDisconnected;
           }
 
@@ -560,7 +565,7 @@ function main() {
           } catch (e) {
             console.error('could not connect:', e);
             // clean up the state, no need to await because stopVpn might throw another error which can be ignored
-            stopVpn();
+            void stopVpn();
             throw e;
           }
           break;
