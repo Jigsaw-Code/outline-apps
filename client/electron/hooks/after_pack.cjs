@@ -18,12 +18,16 @@ const {execSync} = require('node:child_process');
 const {join} = require('node:path');
 
 /**
- * Patches the RPATH of the Outline binary in the Debian package.
+ * Patches the RPATH of the Linux Outline binary.
  *
- * This is necessary because setting capabilities (setcap) on the binary
- * disables `LD_LIBRARY_PATH` and relative RPATH (e.g., `$ORIGIN`), preventing
- * the app from finding libraries (like libffmpeg.so) in the install directory.
+ * For Debian, this is necessary because setting capabilities (setcap) on the
+ * binary disables `LD_LIBRARY_PATH` and relative RPATH (e.g., `$ORIGIN`),
+ * preventing the app from finding libraries (like libffmpeg.so) in the install
+ * directory.
  * So we need to add the absolute path of the install directory to RPATH.
+ *
+ * For AppImage, the relative RPATH `$ORIGIN` works, and it doesn't hurt to add
+ * additional absolute paths.
  *
  * We also need to patch the RPATH at build time because the user's system
  * might not have a compatible `patchelf` at runtime.
@@ -38,7 +42,7 @@ function patchLinuxRPath(binDir) {
     console.log(`Patching RPATH for ${outlineBinFile}`);
     execSync('patchelf --version', {stdio: 'inherit'});
   } catch (e) {
-    console.error('`patchelf --version` failed, `patchelf` is required');
+    console.error('`patchelf --version` failed, `patchelf` 0.14+ is required');
     console.error('Install `patchelf` using:');
     console.error('\tDebian:  sudo apt install patchelf');
     console.error('\tmacOS:   brew install patchelf');
@@ -62,7 +66,7 @@ function patchLinuxRPath(binDir) {
 }
 
 /**
- * Run after pack but before pack into distributable format and sign.
+ * Runs after pack into .asar and before pack into distributable file (.exe/.deb).
  */
 exports.default = function (buildResult) {
   if (buildResult.electronPlatformName === 'linux') {
