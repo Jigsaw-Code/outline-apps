@@ -17,10 +17,12 @@
     "!output/client/electron/build"
   ],
 
+  "afterPack": "client/electron/hooks/after_pack.cjs",
+
   "deb": {
     "depends": [
       "libnotify4", "libxtst6", "libnss3",
-      "libcap2-bin", "patchelf"
+      "libcap2-bin"
     ],
     "afterInstall": "client/electron/debian/after_install.sh"
   },

@@ -26,7 +26,9 @@ You can download the binary tarball, or [use a package manager](https://github.c
 brew install zig 
 ```
 
-## Requirements for building from Windows
+## Requirements
+
+### Windows
 
 - Visual Studio 2022 or later
 
@@ -34,6 +36,13 @@ If you see an error about `node-gyp` not finding Visual Studio, try one of the f
 
 - (Recommended) Install the VSSetup PowerShell package using `Install-Module VSSetup -Scope CurrentUser`
 - Change PowerShell LanguageMode using `$ExecutionContext.SessionState.LanguageMode="FullLanguage"`
+
+### Linux
+
+- `patchelf` 0.14+ is required for building the Debian package:
+  - Debian/Ubuntu: `sudo apt install patchelf`
+  - macOS: `brew install patchelf`
+  - Windows: https://github.com/NixOS/patchelf/releases
 
 ## Release
 

@@ -16,14 +16,8 @@
 
 # Dependencies:
 #   - libcap2-bin: setcap
-#   - patchelf: patchelf
 
 set -eux
-
-# Capabilitites will disable LD_LIBRARY_PATH, and $ORIGIN evaluation in binary's
-# rpath. So we need to set the rpath to an absolute path. (for libffmpeg.so)
-# This command will also reset capabilitites, so we need to run this before setcap.
-/usr/bin/patchelf --add-rpath /opt/Outline /opt/Outline/Outline
 
 # Grant specific capabilities so Outline can run without root permisssion
 #   - cap_net_admin: configure network interfaces, set up routing tables, etc.
