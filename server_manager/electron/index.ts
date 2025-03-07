@@ -23,7 +23,7 @@ import {autoUpdater} from 'electron-updater';
 
 import {fetchWithPin} from './fetch';
 import * as menu from './menu';
-import {fetchCurrentServerVersionName} from './quay_client';
+import {fetchRecentShadowboxVersionTags} from './quay_client';
 
 // Injected by webpack during build
 declare const SENTRY_DSN: string | undefined;
@@ -281,8 +281,8 @@ function main() {
   });
 
   ipcMain.handle(
-    'fetch-current-server-version-name',
-    fetchCurrentServerVersionName
+    'fetch-recent-shadowbox-version-tags',
+    fetchRecentShadowboxVersionTags
   );
 
   // Handle "show me where" requests from the renderer process.

@@ -26,6 +26,7 @@ import {FeedbackDetail} from './ui_components/outline-feedback-dialog';
 import type {ServerView} from './ui_components/outline-server-view';
 import * as digitalocean_api from '../cloud/digitalocean_api';
 import {HttpError} from '../cloud/gcp_api';
+import {fetchRecentShadowboxVersionTags} from '../electron/quay_client';
 import * as accounts from '../model/accounts';
 import * as digitalocean from '../model/digitalocean';
 import * as gcp from '../model/gcp';
@@ -41,6 +42,7 @@ const DATA_LIMITS_VERSION = '1.1.0';
 const CHANGE_HOSTNAME_VERSION = '1.2.0';
 const KEY_SETTINGS_VERSION = '1.6.0';
 const MINUTES_TO_MILLISECONDS = 60 * 1000;
+const DAY_TO_MILLISECONDS = 24 * 60 * MINUTES_TO_MILLISECONDS;
 const MAX_ACCESS_KEY_DATA_LIMIT_BYTES = 50 * 10 ** 9; // 50GB
 const CANCELLED_ERROR = new Error('Cancelled');
 const CHARACTER_TABLE_FLAG_SYMBOL_OFFSET = 127397;
@@ -1046,14 +1048,23 @@ export class App {
     selectedServer: server_model.Server,
     serverView: ServerView
   ) {
-    const latestVersion = await fetchCurrentServerVersionName();
+    const recentShadowboxTags = await fetchRecentShadowboxVersionTags();
 
-    if (!latestVersion) {
+    const latestVersionTag = recentShadowboxTags.find(tag =>
+      tag.name.startsWith('v')
+    );
+
+    if (!latestVersionTag) {
+      return (serverView.hasServerUpdate = false);
+    }
+
+    // Check if the latest tag is over a day old: Watchtower may still be trying to roll out an update.
+    if (Date.now() - latestVersionTag.startTimestamp < DAY_TO_MILLISECONDS) {
       return (serverView.hasServerUpdate = false);
     }
 
     serverView.hasServerUpdate = semver.gt(
-      latestVersion,
+      latestVersionTag.name.slice(1),
       selectedServer.getVersion()
     );
   }

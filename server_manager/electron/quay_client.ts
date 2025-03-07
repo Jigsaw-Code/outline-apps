@@ -19,7 +19,7 @@ import fetch from 'node-fetch';
 const QUAY_API_BASE = 'https://quay.io/api/v1/';
 const OUTLINE_SERVER_REPOSITORY_PATH = 'outline/shadowbox';
 
-interface QuayTagsJson {
+interface QuayTagsJsonPayload {
   tags: {
     name: string;
     reversion: boolean;
@@ -34,21 +34,44 @@ interface QuayTagsJson {
   page: number;
   has_additional: boolean;
 }
+interface QuayTag {
+  name: string;
+  reversion: boolean;
+  startTimestamp: number;
+  manifestDigest: string;
+  isManifestList: boolean;
+  size: number;
+  lastModified: string;
+  endTimestamp?: number;
+  expiration?: string;
+}
 
 /**
- * Fetches the latest version name of the Outline Server from Quay.io.
+ * Fetches the latest version tags of Shadowbox from Quay.io (does not paginate).
  *
- * @returns {Promise<string | undefined>} The latest version of the Outline Server, if found.
+ * @returns {Promise<QuayTag[] | undefined>} The latest version of the Outline Server, if found.
  */
-export async function fetchCurrentServerVersionName() {
+export async function fetchRecentShadowboxVersionTags(): Promise<
+  QuayTag[] | undefined
+> {
   try {
     const response = await fetch(
       QUAY_API_BASE + `repository/${OUTLINE_SERVER_REPOSITORY_PATH}/tag`
     );
 
-    const json = (await response.json()) as QuayTagsJson;
+    const json = (await response.json()) as QuayTagsJsonPayload;
 
-    return json.tags.find(tag => tag.name.startsWith('v')).name.slice(1);
+    return json.tags.map(tag => ({
+      endTimestamp: tag.end_ts,
+      expiration: tag.expiration,
+      isManifestList: tag.is_manifest_list,
+      lastModified: tag.last_modified,
+      manifestDigest: tag.manifest_digest,
+      name: tag.name,
+      reversion: tag.reversion,
+      size: tag.size,
+      startTimestamp: tag.start_ts,
+    }));
   } catch (e) {
     console.error(e);
 

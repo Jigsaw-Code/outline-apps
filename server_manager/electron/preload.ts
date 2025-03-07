@@ -81,6 +81,6 @@ contextBridge.exposeInMainWorld('bringToFront', () => {
   return ipcRenderer.send('bring-to-front');
 });
 
-contextBridge.exposeInMainWorld('fetchCurrentServerVersionName', () =>
-  ipcRenderer.invoke('fetch-current-server-version-name')
+contextBridge.exposeInMainWorld('fetchRecentShadowboxVersionTags', () =>
+  ipcRenderer.invoke('fetch-recent-shadowbox-version-tags')
 );
