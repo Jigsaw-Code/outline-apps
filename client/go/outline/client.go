@@ -36,8 +36,8 @@ type Client struct {
 
 func (c *Client) Connect() {
 	// TODO: only report if transportConfig is configured to report. 
-	tcpDialer := transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
-	reporting.StartReporting(&tcpDialer)
+	// tcpDialer := transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
+	reporting.StartReporting(c)
 }
 
 func (c *Client) Disconnect() {
