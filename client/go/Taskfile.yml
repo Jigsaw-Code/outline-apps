@@ -37,23 +37,22 @@ tasks:
     cmds:
       - rm -rf "{{dir .OUTPUT}}" && mkdir -p "{{dir .OUTPUT}}"
       # C cross-compile (zig) targets:
-      #   Linux (x64)   = x86_64-linux-gnu (`x86_64-linux` defaults to `x86_64-linux-musl`, prefer `gnu` over `musl`)
+      #   Linux (x64)   = x86_64-linux-gnu.2.27 (`x86_64-linux` defaults to `x86_64-linux-musl`, prefer `gnu` over `musl`)
       #   Windows (x86) = x86-windows
+      # Cross-compilation must always be enabled regardless the native OS because:
+      #   Windows: requires 32-bit
+      #   Linux: requires older glibc for wider compatibility
       # Linker flags: https://pkg.go.dev/cmd/link
       #   -s Omit the symbol table and debug information.
       #   -w Omit the DWARF symbol table.
       #   -X Set the value of the string variable.
       - |
-        {{if or (ne OS .TARGET_OS) (ne ARCH .TARGET_ARCH) -}}
-          GOOS={{.TARGET_OS}} GOARCH={{.TARGET_ARCH}} CGO_ENABLED=1 \
-          CC='zig cc -target {{if eq .TARGET_ARCH "386"}}x86{{else}}x86_64{{end}}-{{.TARGET_OS}}{{if eq .TARGET_OS "linux"}}-gnu{{end}}'
-        {{- end}} \
+        GOOS={{.TARGET_OS}} GOARCH={{.TARGET_ARCH}} CGO_ENABLED=1 \
+        CC='zig cc -target {{if eq .TARGET_ARCH "386"}}x86{{else}}x86_64{{end}}-{{.TARGET_OS}}{{if eq .TARGET_OS "linux"}}-gnu.2.27{{end}}'
         go build -trimpath -ldflags="-s -w -X=main.version={{.TUN2SOCKS_VERSION}}" -o '{{.OUTPUT}}' '{{.TASKFILE_DIR}}/outline/electron'
       - |
-        {{if or (ne OS .TARGET_OS) (ne ARCH .TARGET_ARCH) -}}
-          GOOS={{.TARGET_OS}} GOARCH={{.TARGET_ARCH}} CGO_ENABLED=1 \
-          CC='zig cc -target {{if eq .TARGET_ARCH "386"}}x86{{else}}x86_64{{end}}-{{.TARGET_OS}}{{if eq .TARGET_OS "linux"}}-gnu{{end}}'
-        {{- end}} \
+        GOOS={{.TARGET_OS}} GOARCH={{.TARGET_ARCH}} CGO_ENABLED=1 \
+        CC='zig cc -target {{if eq .TARGET_ARCH "386"}}x86{{else}}x86_64{{end}}-{{.TARGET_OS}}{{if eq .TARGET_OS "linux"}}-gnu.2.27{{end}}' \
         go build -trimpath -buildmode=c-shared -ldflags="-s -w -X=main.version={{.TUN2SOCKS_VERSION}}" -o '{{.OUTPUT_LIB}}' '{{.TASKFILE_DIR}}/outline/electron'
 
   windows:
