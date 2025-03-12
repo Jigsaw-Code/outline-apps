@@ -37,7 +37,7 @@ Polymer({
       <div class="dialogBanner"><img src="images/metrics.png" /></div>
       <h3>[[localize('metrics-title')]]</h3>
       <p
-        inner-h-t-m-l="[[localize('metrics-description', 'openLink', '<a class=link href=https://support.getoutline.org/s/article/Data-collection>', 'closeLink', '</a>')]]"
+        inner-h-t-m-l="[[localize('metrics-description', 'openLink', '<a class=link href=https://support.google.com/outline/answer/15331222>', 'closeLink', '</a>')]]"
       ></p>
       <div class="buttons">
         <paper-button dialog-dismiss="" on-tap="disableMetricsRequested"
