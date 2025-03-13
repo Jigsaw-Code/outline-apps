@@ -57,7 +57,7 @@ export async function fetchRecentShadowboxVersionTags(): Promise<QuayTag[]> {
       QUAY_API_BASE + `repository/${OUTLINE_SERVER_REPOSITORY_PATH}/tag/?onlyActiveTags=true`
     );
 
-    if (!(response.status === 200 && response.ok)) {
+    if (!response.ok) {
       return Promise.reject(response.statusText);
     }
 
