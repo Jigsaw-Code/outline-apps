@@ -52,16 +52,16 @@ enum IssueType {
 const UNSUPPORTED_ISSUE_TYPES = new Map([
   [
     IssueType.NO_SERVER,
-    'https://support.getoutline.org/s/article/How-do-I-get-an-access-key',
+    'https://support.google.com/outline/answer/15331628',
   ],
   [
     IssueType.CANNOT_ADD_SERVER,
-    'https://support.getoutline.org/s/article/What-if-my-access-key-doesn-t-work',
+    'https://support.google.com/outline/answer/15331223',
   ],
   [IssueType.BILLING, null],
   [
     IssueType.CONNECTION,
-    'https://support.getoutline.org/s/article/Why-can-t-I-connect-to-the-Outline-service',
+    'https://support.google.com/outline/answer/15331126',
   ],
 ]);
 
