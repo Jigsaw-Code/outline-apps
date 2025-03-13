@@ -54,7 +54,7 @@ interface QuayTag {
 export async function fetchRecentShadowboxVersionTags(): Promise<QuayTag[]> {
   try {
     const response = await fetch(
-      QUAY_API_BASE + `repository/${OUTLINE_SERVER_REPOSITORY_PATH}/tag`
+      QUAY_API_BASE + `repository/${OUTLINE_SERVER_REPOSITORY_PATH}/tag/?onlyActiveTags=true`
     );
 
     if (!(response.status === 200 && response.ok)) {
