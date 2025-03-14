@@ -20,6 +20,19 @@ class AppKitController: NSObject {
 
     override public required init() {
         super.init()
+
+        NSApp.setActivationPolicy(.regular)
+        NotificationCenter.default.addObserver(forName: NSWindow.willCloseNotification,
+                                               object: nil,
+                                               queue: nil)
+        { n in
+            guard let window = n.object as? NSWindow else {
+                return
+            }
+            if String(describing: window).contains("UINSWindow") {
+                NSApp.setActivationPolicy(.accessory)
+            }
+        }
     }
 
     /// Set the connection status in the app's menu in the system-wide menu bar.

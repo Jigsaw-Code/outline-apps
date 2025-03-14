@@ -89,6 +89,7 @@ class StatusItemController: NSObject {
     @objc func openApplication(_: AnyObject?) {
         NSLog("[StatusItemController] Opening application")
         NSApp.activate(ignoringOtherApps: true)
+        NSApp.setActivationPolicy(.regular)
         guard let uiWindow = getUiWindow() else {
             return
         }
