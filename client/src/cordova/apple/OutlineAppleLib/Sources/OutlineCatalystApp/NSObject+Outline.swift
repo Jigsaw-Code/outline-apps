@@ -22,7 +22,5 @@ public enum ConnectionStatus: Int {
 }
 
 public extension NSObject {
-    @objc func _AppKitBridge_terminate() {}
     @objc func _AppKitBridge_setConnectionStatus(_: ConnectionStatus) {}
-    @objc func _AppKitBridge_loadMainApp(_: String) {}
 }
