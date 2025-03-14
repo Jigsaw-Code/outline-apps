@@ -103,6 +103,7 @@ jobs:
         uses: mlugg/setup-zig@v1
         with:
           version: 0.13.0
+          use-cache: false
 
       - name: Build Linux Client
         run: npm run action client/electron/build linux
@@ -138,6 +139,7 @@ jobs:
         uses: mlugg/setup-zig@v1
         with:
           version: 0.13.0
+          use-cache: false
 
       - name: Build Windows Client
         run: npm run action client/electron/build windows
