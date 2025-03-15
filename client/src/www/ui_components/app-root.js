@@ -348,7 +348,7 @@ export class AppRoot extends mixinBehaviors(
         localize="[[localize]]"
         id="drawer"
         show-quit="[[shouldShowQuitButton]]"
-        data-collection-page-url="[[_computeSupportSiteUrl(language, 'https://support.getoutline.org/s/article/Data-collection')]]"
+        data-collection-page-url="[[_computeSupportSiteUrl(language, 'https://support.google.com/outline/answer/15331222')]]"
       ></root-navigation>
 
       <add-access-key-dialog
@@ -359,7 +359,7 @@ export class AppRoot extends mixinBehaviors(
       <privacy-acknowledgement-dialog
         id="privacyView"
         localize="[[localize]]"
-        privacy-page-url="[[_computeSupportSiteUrl(language, 'https://support.getoutline.org/s/article/Data-collection')]]"
+        privacy-page-url="[[_computeSupportSiteUrl(language, 'https://support.google.com/outline/answer/15331222')]]"
       ></privacy-acknowledgement-dialog>
 
       <auto-connect-dialog

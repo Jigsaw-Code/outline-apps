@@ -395,14 +395,14 @@ export class AppRoot extends polymerElementWithLocalize {
                   <iron-icon icon="open-in-new" />
               </a>
             </if-messages>
-            <span on-tap="maybeCloseDrawer"><a href="https://support.getoutline.org/s/article/Data-collection">[[localize('nav-data-collection')]]</a></span>
+            <span on-tap="maybeCloseDrawer"><a href="https://support.google.com/outline/answer/15331222">[[localize('nav-data-collection')]]</a></span>
             <template is="dom-if" if="{{featureFlags.contactView}}">
               <span on-tap="submitFeedbackTapped">[[localize('nav-contact-us')]]</span>
             </template>
             <template is="dom-if" if="{{!featureFlags.contactView}}">
               <span on-tap="submitFeedbackTapped">[[localize('nav-feedback')]]</span>
             </template>
-            <span on-tap="maybeCloseDrawer"><a href="https://support.getoutline.org/">[[localize('nav-help')]]</a></span>
+            <span on-tap="maybeCloseDrawer"><a href="https://support.google.com/outline/">[[localize('nav-help')]]</a></span>
             <span on-tap="aboutTapped">[[localize('nav-about')]]</span>
             <div id="links-footer">
               <paper-icon-item id="language-row">
@@ -824,6 +824,7 @@ export class AppRoot extends polymerElementWithLocalize {
 
     try {
       message = this.localize(key);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       // failed to find translation
       message = '';
@@ -838,7 +839,7 @@ export class AppRoot extends polymerElementWithLocalize {
     this.currentPage = 'intro';
   }
 
-  getDigitalOceanOauthFlow(onCancel: Function): OutlineDoOauthStep {
+  getDigitalOceanOauthFlow(onCancel: () => void): OutlineDoOauthStep {
     const oauthFlow = this.$.digitalOceanOauth as OutlineDoOauthStep;
     oauthFlow.onCancel = onCancel;
     return oauthFlow;
@@ -848,14 +849,14 @@ export class AppRoot extends polymerElementWithLocalize {
     this.currentPage = 'digitalOceanOauth';
   }
 
-  getAndShowDigitalOceanOauthFlow(onCancel: Function) {
+  getAndShowDigitalOceanOauthFlow(onCancel: () => void) {
     this.currentPage = 'digitalOceanOauth';
     const oauthFlow = this.getDigitalOceanOauthFlow(onCancel);
     oauthFlow.showConnectAccount();
     return oauthFlow;
   }
 
-  getAndShowGcpOauthFlow(onCancel: Function) {
+  getAndShowGcpOauthFlow(onCancel: () => void) {
     this.currentPage = 'gcpOauth';
     const oauthFlow = this.$.gcpOauth as GcpConnectAccountApp;
     oauthFlow.onCancel = onCancel;
@@ -967,7 +968,7 @@ export class AppRoot extends polymerElementWithLocalize {
   showConnectivityDialog(cb: (retry: boolean) => void) {
     const dialogTitle = this.localize('error-connectivity-title');
     const dialogText = this.localize('error-connectivity');
-    this.showModalDialog(dialogTitle, dialogText, [
+    void this.showModalDialog(dialogTitle, dialogText, [
       this.localize('digitalocean-disconnect'),
       this.localize('retry'),
     ]).then(clickedButtonIndex => {
@@ -979,9 +980,9 @@ export class AppRoot extends polymerElementWithLocalize {
     title: string,
     text: string,
     confirmButtonText: string,
-    continueFunc: Function
+    continueFunc: () => void
   ) {
-    this.showModalDialog(title, text, [
+    void this.showModalDialog(title, text, [
       this.localize('cancel'),
       confirmButtonText,
     ]).then(clickedButtonIndex => {
@@ -993,7 +994,7 @@ export class AppRoot extends polymerElementWithLocalize {
   }
 
   showManualServerError(errorTitle: string, errorText: string) {
-    this.showModalDialog(errorTitle, errorText, [
+    void this.showModalDialog(errorTitle, errorText, [
       this.localize('cancel'),
       this.localize('retry'),
     ]).then(clickedButtonIndex => {
