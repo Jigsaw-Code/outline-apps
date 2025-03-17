@@ -21,7 +21,7 @@ class AppKitController: NSObject {
     override public required init() {
         super.init()
 
-        NSApp.setActivationPolicy(.regular)
+        NSApp.showMainWindow()
         NotificationCenter.default.addObserver(forName: NSWindow.willCloseNotification,
                                                object: nil,
                                                queue: nil)

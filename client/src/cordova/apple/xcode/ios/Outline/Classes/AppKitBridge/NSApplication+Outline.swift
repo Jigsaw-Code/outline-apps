@@ -15,6 +15,16 @@
 import AppKit
 
 extension NSApplication {
+    func showMainWindow() {
+        mainMenu = MainMenu()
+        activate(ignoringOtherApps: true)
+        setActivationPolicy(.regular)
+        guard let mainWindow = getMainWindow() else {
+            return
+        }
+        mainWindow.makeKeyAndOrderFront(self)
+    }
+
     func getMainWindow() -> NSWindow? {
         for window in windows {
             if String(describing: window).contains("UINSWindow") {
