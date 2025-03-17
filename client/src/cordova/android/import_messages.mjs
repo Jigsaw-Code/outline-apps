@@ -17,7 +17,15 @@ import path from 'path';
 
 import XML from 'xmlbuilder2';
 
-const STRINGS_DIR = ['client', 'src', 'cordova', 'plugin', 'android', 'resources', 'strings'];
+const STRINGS_DIR = [
+  'client',
+  'src',
+  'cordova',
+  'plugin',
+  'android',
+  'resources',
+  'strings',
+];
 const STRINGS_FILENAME = 'strings.xml';
 const XML_STRING_ID_PROPERTY = '@name';
 const XML_TEXT_CONTENT = '#';
@@ -58,8 +66,9 @@ export function getStringsFilepath(locale) {
  * @return {Map<string, string>} messages The messages to translate.
  */
 export async function readMessages() {
-  const strings = await XML.create(await readFile(getStringsFilepath(), 'utf8')).end({format: 'object'}).resources
-    .string;
+  const strings = await XML.create(
+    await readFile(getStringsFilepath(), 'utf8')
+  ).end({format: 'object'}).resources.string;
   return strings.reduce((acc, string) => {
     return acc.set(string[XML_STRING_ID_PROPERTY], string[XML_TEXT_CONTENT]);
   }, new Map());
@@ -81,6 +90,9 @@ export async function writeMessages(path, messages) {
 
   await writeFile(
     path,
-    XML.create({encoding: 'UTF-8'}, {resources: {string: output}}).end({prettyPrint: true, wellFormed: true})
+    XML.create({encoding: 'UTF-8'}, {resources: {string: output}}).end({
+      prettyPrint: true,
+      wellFormed: true,
+    })
   );
 }

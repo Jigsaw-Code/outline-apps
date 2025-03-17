@@ -58,7 +58,10 @@ async function loadMessages() {
 
   const messagesDir = path.join(getRootDir(), SOURCE_MESSAGES_DIR);
   for (const messagesFilename of await readdir(messagesDir)) {
-    const lang = path.basename(messagesFilename, path.extname(messagesFilename));
+    const lang = path.basename(
+      messagesFilename,
+      path.extname(messagesFilename)
+    );
     const messagesFilepath = path.join(messagesDir, messagesFilename);
     const messageData = JSON.parse(await readFile(messagesFilepath, 'utf8'));
     messages.set(lang, messageData);
@@ -89,7 +92,13 @@ async function importMessages(getStringsFilepath, readMessages, writeMessages) {
     }
 
     const outputPath = getStringsFilepath(locale);
-    console.log(chalk.gray(`Writing ${Object.values(outputMessages).length} messages to \`${outputPath}\``));
+    console.log(
+      chalk.gray(
+        `Writing ${
+          Object.values(outputMessages).length
+        } messages to \`${outputPath}\``
+      )
+    );
     await mkdir(path.dirname(outputPath), {recursive: true});
     writeMessages(outputPath, outputMessages);
   }
@@ -112,10 +121,16 @@ async function main(...parameters) {
       );
       break;
     case IOS:
-      await importMessages(IOS_IMPORTER.getStringsFilepath, IOS_IMPORTER.readMessages, IOS_IMPORTER.writeMessages);
+      await importMessages(
+        IOS_IMPORTER.getStringsFilepath,
+        IOS_IMPORTER.readMessages,
+        IOS_IMPORTER.writeMessages
+      );
       break;
     default:
-      throw new Error(`Message import not implemented for platform "${platform}"`);
+      throw new Error(
+        `Message import not implemented for platform "${platform}"`
+      );
   }
 
   console.groupEnd();
