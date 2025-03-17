@@ -30,6 +30,8 @@
 		A27B36532B07C51500004A08 /* CocoaLumberjackSwift in Frameworks */ = {isa = PBXBuildFile; productRef = A27B36522B07C51500004A08 /* CocoaLumberjackSwift */; };
 		A27F43AA29F6EC43002C3678 /* config.xml in Copy Files */ = {isa = PBXBuildFile; fileRef = F840E1F0165FE0F500CFE078 /* config.xml */; };
 		A27F43AB29F6EC43002C3678 /* www in Copy Files */ = {isa = PBXBuildFile; fileRef = 301BF56E109A69640062928A /* www */; };
+		A29688D82D84BFD70070772E /* MainMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = A29688D72D84BFD70070772E /* MainMenu.swift */; };
+		A29688DC2D88BA050070772E /* NSApplication+Outline.swift in Sources */ = {isa = PBXBuildFile; fileRef = A29688DB2D88BA010070772E /* NSApplication+Outline.swift */; };
 		A2AC1A4F2B082197004E13CB /* AppKitController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2AC1A4E2B082197004E13CB /* AppKitController.swift */; };
 		A2AC1A9C2B082526004E13CB /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = A2AC1A582B082526004E13CB /* Localizable.strings */; };
 		A2AC1A9D2B082526004E13CB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A2AC1A9B2B082526004E13CB /* Assets.xcassets */; };
@@ -78,6 +80,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = A246B7DC2B07AACF00ECACD5;
 			remoteInfo = AppKitIntegration;
+		};
+		A29688D02D84A5F60070772E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5260B0572C4F09FB00CDF289 /* OutlineLib.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 522E63ED2C768BA30010C3FA;
+			remoteInfo = VpnExtensionTest;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -147,6 +156,8 @@
 		A271D42C2A708240009981B2 /* AppDelegate+Outline.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "AppDelegate+Outline.m"; sourceTree = "<group>"; };
 		A271D42E2A708253009981B2 /* AppDelegate+Outline.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AppDelegate+Outline.h"; sourceTree = "<group>"; };
 		A272490D2B0D20530018A598 /* AppKitIntegration.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppKitIntegration.h; sourceTree = "<group>"; };
+		A29688D72D84BFD70070772E /* MainMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenu.swift; sourceTree = "<group>"; };
+		A29688DB2D88BA010070772E /* NSApplication+Outline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSApplication+Outline.swift"; sourceTree = "<group>"; };
 		A2AC1A4E2B082197004E13CB /* AppKitController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppKitController.swift; sourceTree = "<group>"; };
 		A2AC1A502B0821A7004E13CB /* StatusItemController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusItemController.swift; sourceTree = "<group>"; };
 		A2AC1A592B082526004E13CB /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -357,6 +368,7 @@
 			isa = PBXGroup;
 			children = (
 				5260B05C2C4F09FB00CDF289 /* VpnExtension.appex */,
+				A29688D12D84A5F60070772E /* VpnExtensionTest.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -383,6 +395,8 @@
 			children = (
 				A2AC1A562B082526004E13CB /* Resources */,
 				A2AC1A4E2B082197004E13CB /* AppKitController.swift */,
+				A29688D72D84BFD70070772E /* MainMenu.swift */,
+				A29688DB2D88BA010070772E /* NSApplication+Outline.swift */,
 				A2AC1A502B0821A7004E13CB /* StatusItemController.swift */,
 				A272490D2B0D20530018A598 /* AppKitIntegration.h */,
 			);
@@ -611,6 +625,13 @@
 			remoteRef = 5260B05B2C4F09FB00CDF289 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
+		A29688D12D84A5F60070772E /* VpnExtensionTest.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = VpnExtensionTest.xctest;
+			remoteRef = A29688D02D84A5F60070772E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 /* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
@@ -673,7 +694,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				A272490F2B0D24200018A598 /* StatusItemController.swift in Sources */,
+				A29688DC2D88BA050070772E /* NSApplication+Outline.swift in Sources */,
 				A2AC1A4F2B082197004E13CB /* AppKitController.swift in Sources */,
+				A29688D82D84BFD70070772E /* MainMenu.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -26,10 +26,13 @@ class AppKitController: NSObject {
                                                object: nil,
                                                queue: nil)
         { n in
+            guard let mainWindow = NSApp.getMainWindow() else {
+                return
+            }
             guard let window = n.object as? NSWindow else {
                 return
             }
-            if String(describing: window).contains("UINSWindow") {
+            if mainWindow == window {
                 NSApp.setActivationPolicy(.accessory)
             }
         }
