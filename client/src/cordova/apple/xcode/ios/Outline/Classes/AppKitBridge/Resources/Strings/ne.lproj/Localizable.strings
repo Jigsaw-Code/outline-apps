@@ -1,4 +1,8 @@
 "connected_server_state" = "कनेक्ट गरिएको छ";
 "disconnected_server_state" = "डिस्कनेक्ट गरिएको छ";
-"tray_open_window" = "खोल्नुहोस्";
+"quit_confirm_alert_info" = "Keep Outline running in the background, accessible from the menu bar, or quit the application completely?";
+"quit_confirm_alert" = "Close window or quit Outline?";
+"quit_confirm_close_window" = "Close window";
+"quit_confirm_terminate_application" = "Quit Outline";
 "quit" = "बाहिरिनुहोस्";
+"tray_open_window" = "खोल्नुहोस्";

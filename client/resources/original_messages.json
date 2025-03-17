@@ -366,6 +366,22 @@
     "description": "The text for a button that quits (closes) the application.",
     "message": "Quit"
   },
+  "quitConfirmAlert": {
+    "description": "Alert title to confirm quitting the application.",
+    "message": "Close window or quit Outline?"
+  },
+  "quitConfirmAlertInfo": {
+    "description": "Alert info to confirm quitting the application.",
+    "message": "Keep Outline running in the background, accessible from the menu bar, or quit the application completely?"
+  },
+  "quitConfirmCloseWindow": {
+    "description": "Alert button to close the application window.",
+    "message": "Close window"
+  },
+  "quitConfirmTerminateApplication": {
+    "description": "Alert button to terminate the application.",
+    "message": "Quit Outline"
+  },
   "reconnecting_server_state": {
     "description": "A status message on a particular that indicates the application is in the process of reestablishing a connection with the labeled server.",
     "message": "Reconnecting..."

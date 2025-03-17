@@ -1,4 +1,8 @@
 "connected_server_state" = "Bağlanıldı";
 "disconnected_server_state" = "Bağlantı kesildi";
-"tray_open_window" = "Aç";
+"quit_confirm_alert_info" = "Keep Outline running in the background, accessible from the menu bar, or quit the application completely?";
+"quit_confirm_alert" = "Close window or quit Outline?";
+"quit_confirm_close_window" = "Close window";
+"quit_confirm_terminate_application" = "Quit Outline";
 "quit" = "Çık";
+"tray_open_window" = "Aç";
