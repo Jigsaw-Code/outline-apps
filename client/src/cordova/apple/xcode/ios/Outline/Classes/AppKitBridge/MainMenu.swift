@@ -21,26 +21,6 @@ class MainMenu: NSMenu {
             bundle: Bundle(for: MainMenu.self),
             comment: "Tray menu entry to quit the application."
         )
-        static let confirmAlert = NSLocalizedString(
-            "quitConfirmAlert",
-            bundle: Bundle(for: MainMenu.self),
-            comment: "Alert title to confirm quitting the application."
-        )
-        static let confirmAlertInfo = NSLocalizedString(
-            "quitConfirmAlertInfo",
-            bundle: Bundle(for: MainMenu.self),
-            comment: "Alert info to confirm quitting the application."
-        )
-        static let confirmCloseWindow = NSLocalizedString(
-            "quitConfirmCloseWindow",
-            bundle: Bundle(for: MainMenu.self),
-            comment: "Alert button to close the application window."
-        )
-        static let confirmQuitApplication = NSLocalizedString(
-            "quitConfirmTerminateApplication",
-            bundle: Bundle(for: MainMenu.self),
-            comment: "Alert button to terminate the application."
-        )
     }
 
     init() {
@@ -64,34 +44,10 @@ class MainMenu: NSMenu {
     private func createApplicationMenu() -> NSMenu {
         let menu = NSMenu()
 
-        let closeMenuItem = NSMenuItem(title: Messages.quit, action: #selector(confirmAndQuit), keyEquivalent: "q")
+        let closeMenuItem = NSMenuItem(title: Messages.quit, action: #selector(confirmAndQuit), keyEquivalent: "Q")
         closeMenuItem.target = self
         menu.addItem(closeMenuItem)
 
         return menu
-    }
-
-    @objc func confirmAndQuit() {
-        let alert = NSAlert()
-        alert.messageText = Messages.confirmAlert
-        alert.informativeText = Messages.confirmAlertInfo
-        alert.addButton(withTitle: Messages.confirmCloseWindow)
-        alert.addButton(withTitle: Messages.confirmQuitApplication)
-
-        guard let mainWindow = NSApp.getMainWindow() else {
-            NSApp.terminate(nil)
-            return
-        }
-        mainWindow.orderFront(self)
-        alert.beginSheetModal(for: mainWindow) { response in
-            switch response {
-            case .alertFirstButtonReturn:
-                mainWindow.close()
-            case .alertSecondButtonReturn:
-                NSApp.terminate(nil)
-            default:
-                break
-            }
-        }
     }
 }
