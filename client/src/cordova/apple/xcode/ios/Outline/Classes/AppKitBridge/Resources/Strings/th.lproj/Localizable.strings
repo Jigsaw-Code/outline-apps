@@ -1,8 +1,4 @@
 "connected_server_state" = "เชื่อมต่อแล้ว";
 "disconnected_server_state" = "ยกเลิกการเชื่อมต่อแล้ว";
-"quit_confirm_alert_info" = "Keep Outline running in the background, accessible from the menu bar, or quit the application completely?";
-"quit_confirm_alert" = "Close window or quit Outline?";
-"quit_confirm_close_window" = "Close window";
-"quit_confirm_terminate_application" = "Quit Outline";
-"quit" = "ปิด";
 "tray_open_window" = "เปิด";
+"quit" = "ปิด";

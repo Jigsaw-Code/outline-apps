@@ -1,8 +1,4 @@
 "connected_server_state" = "Tengt";
 "disconnected_server_state" = "Aftengt";
-"quit_confirm_alert_info" = "Keep Outline running in the background, accessible from the menu bar, or quit the application completely?";
-"quit_confirm_alert" = "Close window or quit Outline?";
-"quit_confirm_close_window" = "Close window";
-"quit_confirm_terminate_application" = "Quit Outline";
-"quit" = "Hætta";
 "tray_open_window" = "Opna";
+"quit" = "Hætta";

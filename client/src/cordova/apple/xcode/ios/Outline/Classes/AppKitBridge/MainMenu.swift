@@ -22,22 +22,22 @@ class MainMenu: NSMenu {
             comment: "Tray menu entry to quit the application."
         )
         static let confirmAlert = NSLocalizedString(
-            "quit_confirm_alert",
+            "quitConfirmAlert",
             bundle: Bundle(for: MainMenu.self),
             comment: "Alert title to confirm quitting the application."
         )
         static let confirmAlertInfo = NSLocalizedString(
-            "quit_confirm_alert_info",
+            "quitConfirmAlertInfo",
             bundle: Bundle(for: MainMenu.self),
             comment: "Alert info to confirm quitting the application."
         )
         static let confirmCloseWindow = NSLocalizedString(
-            "quit_confirm_close_window",
+            "quitConfirmCloseWindow",
             bundle: Bundle(for: MainMenu.self),
             comment: "Alert button to close the application window."
         )
         static let confirmQuitApplication = NSLocalizedString(
-            "quit_confirm_terminate_application",
+            "quitConfirmTerminateApplication",
             bundle: Bundle(for: MainMenu.self),
             comment: "Alert button to terminate the application."
         )

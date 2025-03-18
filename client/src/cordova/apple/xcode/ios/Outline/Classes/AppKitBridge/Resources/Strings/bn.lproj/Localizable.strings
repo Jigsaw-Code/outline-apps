@@ -1,8 +1,4 @@
 "connected_server_state" = "কানেক্ট করা আছে";
 "disconnected_server_state" = "ডিসকানেক্ট হয়ে গেছে";
-"quit_confirm_alert_info" = "Keep Outline running in the background, accessible from the menu bar, or quit the application completely?";
-"quit_confirm_alert" = "Close window or quit Outline?";
-"quit_confirm_close_window" = "Close window";
-"quit_confirm_terminate_application" = "Quit Outline";
-"quit" = "বেরিয়ে আসুন";
 "tray_open_window" = "খুলুন";
+"quit" = "বেরিয়ে আসুন";

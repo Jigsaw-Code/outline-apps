@@ -1,8 +1,4 @@
 "connected_server_state" = "연결됨";
 "disconnected_server_state" = "연결 해제됨";
-"quit_confirm_alert_info" = "Keep Outline running in the background, accessible from the menu bar, or quit the application completely?";
-"quit_confirm_alert" = "Close window or quit Outline?";
-"quit_confirm_close_window" = "Close window";
-"quit_confirm_terminate_application" = "Quit Outline";
-"quit" = "종료";
 "tray_open_window" = "열기";
+"quit" = "종료";
