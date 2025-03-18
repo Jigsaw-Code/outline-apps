@@ -88,7 +88,11 @@ class StatusItemController: NSObject {
 
     @objc func openApplication(_: AnyObject?) {
         NSLog("[StatusItemController] Opening application")
-        NSApp.showMainWindow()
+        NSApp.activate(ignoringOtherApps: true)
+        guard let mainWindow = getMainWindow() else {
+            return
+        }
+        mainWindow.makeKeyAndOrderFront(self)
     }
 
     @objc func closeApplication(_: AnyObject?) {
@@ -96,6 +100,15 @@ class StatusItemController: NSObject {
         NotificationCenter.default.post(name: Notification.Name("appQuit"), object: nil)
         NSApp.terminate(self)
     }
+}
+
+func getMainWindow() -> NSWindow? {
+    for window in NSApp.windows {
+        if String(describing: window).contains("UINSWindow") {
+            return window
+        }
+    }
+    return nil
 }
 
 private func getImage(name: String) -> NSImage {
