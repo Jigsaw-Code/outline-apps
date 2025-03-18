@@ -21,6 +21,7 @@ class AppKitController: NSObject {
     override public required init() {
         super.init()
 
+        // Indicates that the application is an ordinary app that appears in the Dock and may have a user interface.
         NSApp.setActivationPolicy(.regular)
     }
 
