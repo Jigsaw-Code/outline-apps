@@ -89,20 +89,20 @@ class StatusItemController: NSObject {
     @objc func openApplication(_: AnyObject?) {
         NSLog("[StatusItemController] Opening application")
         NSApp.activate(ignoringOtherApps: true)
-        guard let mainWindow = getMainWindow() else {
+        guard let uiWindow = getUiWindow() else {
             return
         }
-        mainWindow.makeKeyAndOrderFront(self)
+        uiWindow.makeKeyAndOrderFront(self)
     }
 
     @objc func closeApplication(_: AnyObject?) {
         NSLog("[StatusItemController] Closing application")
         NotificationCenter.default.post(name: Notification.Name("appQuit"), object: nil)
-        NSApp.terminate(self)
+        NSApplication.shared.terminate(self)
     }
 }
 
-func getMainWindow() -> NSWindow? {
+private func getUiWindow() -> NSWindow? {
     for window in NSApp.windows {
         if String(describing: window).contains("UINSWindow") {
             return window
