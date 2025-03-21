@@ -61,7 +61,7 @@ type NewClientResult struct {
 }
 
 // NewClient creates a new Outline client from a configuration string.
-func NewClient(transportConfig string) *NewClientResult {
+func NewClient(transportConfig string, usageReportConfig string) *NewClientResult {
 	tcpDialer := transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
 	udpDialer := transport.UDPDialer{}
 	client, err := NewClientWithBaseDialers(transportConfig, &tcpDialer, &udpDialer)

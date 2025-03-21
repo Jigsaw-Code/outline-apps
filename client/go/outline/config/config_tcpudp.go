@@ -29,7 +29,7 @@ type TCPUDPConfig struct {
 	UsageReporter ConfigNode
 }
 
-func parseTCPUDPTransportPair(ctx context.Context, configMap map[string]any, parseSD ParseFunc[*Dialer[transport.StreamConn]], parsePL ParseFunc[*PacketListener], parseUR ParseFunc[*UsageReporter]) (*TransportPair, error) {
+func parseTCPUDPTransportPair(ctx context.Context, configMap map[string]any, parseSD ParseFunc[*Dialer[transport.StreamConn]], parsePL ParseFunc[*PacketListener]) (*TransportPair, error) {
 	var config TCPUDPConfig
 	if err := mapToAny(configMap, &config); err != nil {
 		return nil, fmt.Errorf("invalid config format: %w", err)
@@ -45,14 +45,8 @@ func parseTCPUDPTransportPair(ctx context.Context, configMap map[string]any, par
 		return nil, fmt.Errorf("failed to parse PacketListener: %w", err)
 	}
 
-	ur, err := parseUR(ctx, config.UsageReporter)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse UsageReporter: %w", err)
-	}
-
 	return &TransportPair{
 		StreamDialer:   sd,
 		PacketListener: pl,
-		UsageReporter:  ur,
 	}, nil
 }

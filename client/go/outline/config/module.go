@@ -24,15 +24,15 @@ import (
 )
 
 type UsageReporter struct {
-	frequency time.Duration
-	url       string
+	frequency     time.Duration
+	url           string
+	enableCookies bool
 }
 
 // TransportPair provides a StreamDialer and PacketListener, to use as the transport in a Tun2Socks VPN.
 type TransportPair struct {
 	StreamDialer   *Dialer[transport.StreamConn]
 	PacketListener *PacketListener
-	UsageReporter  *UsageReporter
 }
 
 var _ transport.StreamDialer = (*TransportPair)(nil)
@@ -142,19 +142,23 @@ func NewDefaultTransportProvider(tcpDialer transport.StreamDialer, udpDialer tra
 		return parseWebsocketPacketEndpoint(ctx, input, streamEndpoints.Parse)
 	})
 
+	// Support distinct TCP and UDP configuration.
+	transports.RegisterSubParser("tcpudp", func(ctx context.Context, config map[string]any) (*TransportPair, error) {
+		return parseTCPUDPTransportPair(ctx, config, streamDialers.Parse, packetListeners.Parse)
+	})
+
+
+	return transports
+}
+
+func NewUsageReportProvide(tcpDialer transport.StreamDialer) *TypeParser[*UsageReporter] {
 	usageReporting := NewTypeParser(func(ctx context.Context, input ConfigNode) (*UsageReporter, error) {
-		// If parser directive is missing, parse as Shadowsocks for backwards-compatibility.
 		return nil, errors.New("parser not specified")
 	})
 
-	usageReporting.RegisterSubParser("usage-reporter", func(ctx context.Context, config map[string]any) (*UsageReporter, error) {
+	usageReporting.RegisterSubParser("sessionreport", func(ctx context.Context, config map[string]any) (*UsageReporter, error) {
 		return parseUsageReporterConfig(ctx, config)
 	})
 
-	// Support distinct TCP and UDP configuration.
-	transports.RegisterSubParser("tcpudp", func(ctx context.Context, config map[string]any) (*TransportPair, error) {
-		return parseTCPUDPTransportPair(ctx, config, streamDialers.Parse, packetListeners.Parse, usageReporting.Parse)
-	})
-
-	return transports
+	return usageReporting
 }
