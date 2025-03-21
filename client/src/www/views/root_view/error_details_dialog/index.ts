@@ -62,7 +62,7 @@ export class ErrorDetailsDialog extends LitElement {
   `;
 
   render() {
-    return html`<md-dialog .open="${this.open}" quick>
+    return html`<md-dialog .open="${this.open}" quick @closed="${this.cleanup}">
       <header slot="headline">
         ${this.localize('error-details-dialog-header')}
       </header>
@@ -82,14 +82,15 @@ export class ErrorDetailsDialog extends LitElement {
               : 'error-details-dialog-copy'
           )}
         </md-text-button>
-        <md-filled-button
-          @click="${() => {
-            this.open = false;
-            this.copied = false;
-          }}"
+        <md-filled-button @click="${this.cleanup}"
           >${this.localize('error-details-dialog-dismiss')}</md-filled-button
         >
       </fieldset>
     </md-dialog>`;
+  }
+
+  cleanup() {
+    this.open = false;
+    this.copied = false;
   }
 }

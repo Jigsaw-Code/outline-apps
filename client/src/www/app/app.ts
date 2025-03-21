@@ -752,7 +752,7 @@ export class App {
       }
       return message;
     };
-    return alert(makeString(error, ''));
+    return this.rootEl.showErrorDetails(makeString(error, ''));
   }
   //#endregion UI dialogs
 
