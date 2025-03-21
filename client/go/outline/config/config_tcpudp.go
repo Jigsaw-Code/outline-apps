@@ -24,8 +24,9 @@ import (
 // TCPUDPConfig is the format for the TCPUDP config. It specifies separate TCP and UDP configs
 // to create a [TransportPair].
 type TCPUDPConfig struct {
-	TCP ConfigNode
-	UDP ConfigNode
+	TCP           ConfigNode
+	UDP           ConfigNode
+	UsageReporter ConfigNode
 }
 
 func parseTCPUDPTransportPair(ctx context.Context, configMap map[string]any, parseSD ParseFunc[*Dialer[transport.StreamConn]], parsePL ParseFunc[*PacketListener]) (*TransportPair, error) {
