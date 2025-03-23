@@ -101,7 +101,7 @@ tcp: &shared
 udp: *shared
 usagereporter:
   $type: usage-reporter
-  frequency: 1h
+  interval: 1h
   url: https://example.com/report`)
 	require.NoError(t, err)
 
@@ -115,6 +115,6 @@ usagereporter:
 	require.Equal(t, "example.com:1234", d.PacketListener.FirstHop)
 	require.Equal(t, ConnTypeTunneled, d.PacketListener.ConnType)
 	require.NotNil(t, d.UsageReporter)
-	require.Equal(t, d.UsageReporter.frequency, 1*time.Hour)
+	require.Equal(t, d.UsageReporter.interval, 1*time.Hour)
 	require.Equal(t, d.UsageReporter.url, "https://example.com/report")
 }

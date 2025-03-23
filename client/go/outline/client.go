@@ -32,6 +32,7 @@ import (
 type Client struct {
 	sd *config.Dialer[transport.StreamConn]
 	pl *config.PacketListener
+	ur *config.UsageReporter
 }
 
 func (c *Client) Connect() {
@@ -52,6 +53,11 @@ func (c *Client) ListenPacket(ctx context.Context) (net.PacketConn, error) {
 	return c.pl.ListenPacket(ctx)
 }
 
+type UsageReportingClient struct {
+	sd *config.Dialer[transport.StreamConn]
+	usageReporterConfig *config.UsageReporter
+}
+
 // NewClientResult represents the result of [NewClientAndReturnError].
 //
 // We use a struct instead of a tuple to preserve a strongly typed error that gobind recognizes.
@@ -68,6 +74,11 @@ func NewClient(transportConfig string, usageReportConfig string) *NewClientResul
 	if err != nil {
 		return &NewClientResult{Error: platerrors.ToPlatformError(err)}
 	}
+	usageReporter, err := NewUsageReportWithBaseDialers(usageReportConfig, &tcpDialer)
+	if err != nil {
+		return &NewClientResult{Error: platerrors.ToPlatformError(err)}
+	}
+	client.ur = usageReporter
 	return &NewClientResult{Client: client}
 }
 
@@ -113,4 +124,32 @@ func NewClientWithBaseDialers(transportConfig string, tcpDialer transport.Stream
 	}
 
 	return &Client{sd: transportPair.StreamDialer, pl: transportPair.PacketListener}, nil
+}
+
+func NewUsageReportWithBaseDialers(usageReportConfig string, tcpDialer transport.StreamDialer) (*config.UsageReporter, error) {
+	usageReportYAML, err := config.ParseConfigYAML(usageReportConfig)
+	if err != nil {
+		return nil, &platerrors.PlatformError{
+			Code:    platerrors.InvalidConfig,
+			Message: "config is not valid YAML",
+			Cause:   platerrors.ToPlatformError(err),
+		}
+	}
+	usageReporter, err := config.NewUsageReportProvide(tcpDialer).Parse(context.Background(), usageReportYAML)
+	if err != nil {
+		if errors.Is(err, errors.ErrUnsupported) {
+			return nil, &platerrors.PlatformError{
+				Code:    platerrors.InvalidConfig,
+				Message: "unsupported config",
+				Cause:   platerrors.ToPlatformError(err),
+			}
+		} else {
+			return nil, &platerrors.PlatformError{
+				Code:    platerrors.InvalidConfig,
+				Message: "failed to create usage report",
+				Cause:   platerrors.ToPlatformError(err),
+			}
+		}
+	}
+	return usageReporter, nil
 }

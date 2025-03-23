@@ -26,7 +26,6 @@ import (
 type TCPUDPConfig struct {
 	TCP           ConfigNode
 	UDP           ConfigNode
-	UsageReporter ConfigNode
 }
 
 func parseTCPUDPTransportPair(ctx context.Context, configMap map[string]any, parseSD ParseFunc[*Dialer[transport.StreamConn]], parsePL ParseFunc[*PacketListener]) (*TransportPair, error) {

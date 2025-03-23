@@ -24,7 +24,7 @@ import (
 )
 
 type UsageReporter struct {
-	frequency     time.Duration
+	interval      time.Duration
 	url           string
 	enableCookies bool
 }
@@ -153,7 +153,13 @@ func NewDefaultTransportProvider(tcpDialer transport.StreamDialer, udpDialer tra
 
 func NewUsageReportProvide(tcpDialer transport.StreamDialer) *TypeParser[*UsageReporter] {
 	usageReporting := NewTypeParser(func(ctx context.Context, input ConfigNode) (*UsageReporter, error) {
-		return nil, errors.New("parser not specified")
+		switch input.(type) {
+		// An absent config is acceptable.
+		case nil:
+			return nil, nil
+		default:
+			return nil, errors.New("parser not specified")
+		}
 	})
 
 	usageReporting.RegisterSubParser("sessionreport", func(ctx context.Context, config map[string]any) (*UsageReporter, error) {

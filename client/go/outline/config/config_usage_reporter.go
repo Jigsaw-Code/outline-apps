@@ -24,8 +24,9 @@ import (
 
 // UsageReporterConfig is the format for the Usage Reporter config.
 type UsageReporterConfig struct {
-	Frequency string
+	Interval string
 	Url       string
+	Enable_Cookies bool
 }
 
 func parseUsageReporterConfig(ctx context.Context, configMap map[string]any) (*UsageReporter, error) {
@@ -34,14 +35,15 @@ func parseUsageReporterConfig(ctx context.Context, configMap map[string]any) (*U
 		return nil, fmt.Errorf("invalid config format: %w", err)
 	}
 
-	duration, err := ParseHumanDuration(config.Frequency)
+	duration, err := ParseHumanDuration(config.Interval)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse frequency: %w", err)
+		return nil, fmt.Errorf("failed to parse interval: %w", err)
 	}
 
 	return &UsageReporter{
-		frequency: duration,
+		interval:  duration,
 		url:       config.Url,
+		enableCookies: config.Enable_Cookies,
 	}, nil
 }
 
