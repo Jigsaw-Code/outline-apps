@@ -497,7 +497,7 @@
     "message": "Error Details"
   },
   "error_details_dialog_copied": {
-   "description": "The text of a button to copy the error details to the clipboard.",
+    "description": "The text of a button after we have copied the error details to the user's clipboard.",
     "message": "Copied"
   },
   "error_details_dialog_copy": {
