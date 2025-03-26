@@ -145,7 +145,7 @@ async function main() {
     console.info(
       chalk.gray(`
   =========================================================
-               © The Outline Authors, 2023
+               © The Outline Authors, 2025
   =========================================================
   `)
     );
