@@ -53,7 +53,7 @@ export class ServerList extends LitElement {
         width: 100%;
       }
       :host a {
-        color: var(--medium-green);
+        color: var(--outline-primary);
         text-decoration: none;
       }
       section {
@@ -72,21 +72,23 @@ export class ServerList extends LitElement {
       h1,
       h2,
       footer {
-        color: rgba(0, 0, 0, 0.54);
+        color: var(--outline-label-color);
         margin: 0;
       }
       h1 {
-        color: rgba(0, 0, 0, 0.87);
+        color: var(--outline-text-color);
         font-size: 1.25rem;
         font-weight: 400;
       }
       h2 {
+        color: var(--outline-text-color);
         font-size: 0.9rem;
         font-weight: initial;
         line-height: 1.5;
       }
       footer {
-        border-top: 1px solid rgba(0, 0, 0, 0.08);
+        border-top: 1px solid var(--outline-hairline);
+        color: var(--outline-text-color);
         padding: 24px 0 max(16px, env(safe-area-inset-bottom));
         text-align: center;
       }
@@ -94,6 +96,7 @@ export class ServerList extends LitElement {
         align-items: center;
         background-color: transparent;
         border: 0;
+        color: var(--outline-text-color);
         display: flex;
         flex-direction: column;
         justify-content: center;

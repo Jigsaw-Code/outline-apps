@@ -34,6 +34,10 @@ export class AddAccessKeyDialog extends LitElement {
   static styles = css`
     :host {
       --md-sys-color-primary: var(--outline-primary);
+      --md-sys-color-error: var(--outline-error);
+      --md-sys-color-on-error: var(--outline-white);
+      --md-sys-color-on-surface: var(--outline-text-color);
+      --md-sys-color-on-surface-variant: var(--outline-text-color);
       --md-sys-shape-corner-extra-large: 2px;
       --md-sys-shape-corner-full: 2px;
 
@@ -45,16 +49,19 @@ export class AddAccessKeyDialog extends LitElement {
       --md-dialog-container-color: var(
         --outline-app-dialog-primary-background-color
       );
+      --md-dialog-headline-color: var(--outline-text-color);
+      --md-dialog-supporting-text-color: var(--outline-text-color);
 
       min-width: 300px;
     }
 
     section {
       margin-bottom: 12px;
+      color: var(--outline-text-color);
     }
 
     section.help-text {
-      color: var(--outline-medium-gray);
+      color: var(--outline-label-color);
     }
 
     a {
@@ -63,7 +70,14 @@ export class AddAccessKeyDialog extends LitElement {
 
     md-filled-text-field {
       --md-filled-text-field-input-text-font: 'Menlo', monospace;
-      --md-filled-text-field-container-color: var(--outline-light-gray);
+      --md-filled-text-field-container-color: var(--outline-input-bg);
+      --md-filled-text-field-input-text-color: var(--outline-input-text);
+      --md-filled-text-field-label-text-color: var(--outline-label-color);
+      --md-filled-text-field-focus-label-text-color: var(--outline-primary);
+      --md-filled-text-field-error-color: var(--outline-error);
+      --md-filled-text-field-error-focus-label-text-color: var(--outline-error);
+      --md-filled-text-field-error-hover-label-text-color: var(--outline-error);
+      --md-filled-text-field-error-input-text-color: var(--outline-input-text);
 
       width: 100%;
     }
@@ -71,6 +85,20 @@ export class AddAccessKeyDialog extends LitElement {
     fieldset {
       border: none;
       text-transform: uppercase;
+    }
+
+    md-text-button {
+      --md-text-button-label-text-color: var(--outline-primary);
+    }
+
+    md-filled-button {
+      --md-filled-button-container-color: var(--outline-primary);
+      --md-filled-button-label-text-color: var(--outline-white);
+    }
+
+    /* Explicit fixing for error text */
+    md-filled-text-field::part(error) {
+      color: var(--outline-error);
     }
   `;
 
@@ -91,13 +119,19 @@ export class AddAccessKeyDialog extends LitElement {
   }
 
   render() {
-    return html`<md-dialog .open="${this.open}" @cancel=${this.cancel} quick>
-      <header slot="headline">
+    return html`<md-dialog
+      .open="${this.open}"
+      @cancel=${this.cancel}
+      quick
+      style="--md-dialog-container-color: var(--outline-card-background); --md-dialog-headline-color: var(--outline-text-color); --md-dialog-supporting-text-color: var(--outline-text-color);"
+    >
+      <header slot="headline" style="color: var(--outline-text-color);">
         ${this.localize('add-access-key-dialog-header')}
       </header>
-      <article slot="content">
+      <article slot="content" style="color: var(--outline-text-color);">
         <section
           class="help-text"
+          style="color: var(--outline-label-color);"
           .innerHTML=${this.localize(
             'add-access-key-dialog-help-text',
             'openLink',
@@ -115,6 +149,7 @@ export class AddAccessKeyDialog extends LitElement {
             rows="5"
             type="textarea"
             .value=${this.accessKey ?? ''}
+            style="--md-filled-text-field-container-color: var(--outline-input-bg); --md-filled-text-field-input-text-color: var(--outline-input-text); --md-filled-text-field-label-text-color: var(--outline-label-color);"
           ></md-filled-text-field>
         </section>
       </article>

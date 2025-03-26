@@ -50,19 +50,13 @@ enum IssueType {
 
 /** A map of unsupported issue types to helppage URLs to redirect users to. */
 const UNSUPPORTED_ISSUE_TYPES = new Map([
-  [
-    IssueType.NO_SERVER,
-    'https://support.google.com/outline/answer/15331628',
-  ],
+  [IssueType.NO_SERVER, 'https://support.google.com/outline/answer/15331628'],
   [
     IssueType.CANNOT_ADD_SERVER,
     'https://support.google.com/outline/answer/15331223',
   ],
   [IssueType.BILLING, null],
-  [
-    IssueType.CONNECTION,
-    'https://support.google.com/outline/answer/15331126',
-  ],
+  [IssueType.CONNECTION, 'https://support.google.com/outline/answer/15331126'],
 ]);
 
 @customElement('contact-view')
@@ -70,7 +64,7 @@ export class ContactView extends LitElement {
   static styles = [
     css`
       :host {
-        background: #fff;
+        background: var(--outline-card-background);
         color: var(--outline-text-color);
         font-family: var(--outline-font-family);
         padding: var(--contact-view-gutter, var(--outline-gutter));
@@ -99,6 +93,7 @@ export class ContactView extends LitElement {
         list-style-type: none;
         margin: 1.5rem 0;
         padding-inline-start: 0;
+        color: var(--outline-text-color);
       }
 
       mwc-select {
@@ -117,6 +112,12 @@ export class ContactView extends LitElement {
         margin-top: 1rem;
         max-width: var(--contact-view-max-width);
         width: 100%;
+        --mdc-theme-primary: var(--outline-primary);
+        --mdc-select-ink-color: var(--outline-text-color);
+        --mdc-select-label-ink-color: var(--outline-label-color);
+        --mdc-select-dropdown-icon-color: var(--outline-text-color);
+        --mdc-select-hover-line-color: var(--outline-text-color);
+        background-color: var(--outline-card-background);
       }
 
       mwc-select[hidden] {
@@ -136,10 +137,24 @@ export class ContactView extends LitElement {
         --mdc-menu-item-height: auto;
         padding-bottom: var(--outline-mini-gutter);
         padding-top: var(--outline-mini-gutter);
+        color: var(--outline-text-color);
+        --mdc-theme-text-primary-on-background: var(--outline-text-color);
       }
 
       mwc-list-item span {
         white-space: normal;
+        color: var(--outline-text-color);
+      }
+
+      /* Fix radio buttons */
+      mwc-radio {
+        --mdc-theme-secondary: var(--outline-primary);
+        --mdc-radio-unchecked-color: var(--outline-text-color);
+      }
+
+      mwc-formfield {
+        color: var(--outline-text-color);
+        --mdc-theme-text-primary-on-background: var(--outline-text-color);
       }
     `,
   ];
@@ -317,7 +332,10 @@ export class ContactView extends LitElement {
             ${this.openTicketSelectionOptions.map(
               element => html`
                 <li>
-                  <mwc-formfield .label=${this.localize(element.labelMsg)}>
+                  <mwc-formfield
+                    .label=${this.localize(element.labelMsg)}
+                    style="color: var(--outline-text-color); --mdc-theme-text-primary-on-background: var(--outline-text-color); font-weight: normal; padding: 8px 0;"
+                  >
                     <!-- mwc-radio's 'value' attribute is incorrectly typed as a string - if you pass a string, it breaks -->
                     <mwc-radio
                       name="open-ticket"
@@ -325,6 +343,7 @@ export class ContactView extends LitElement {
                       required
                       @change=${this.selectHasOpenTicket}
                       ${ref(element.ref)}
+                      style="--mdc-radio-unchecked-color: var(--outline-text-color) !important; --mdc-theme-secondary: var(--outline-primary) !important; --mdc-radio-disabled-color: var(--outline-label-color) !important; border-color: var(--outline-text-color) !important;"
                     >
                     </mwc-radio>
                   </mwc-formfield>
@@ -338,11 +357,18 @@ export class ContactView extends LitElement {
             ?hidden=${!this.showIssueSelector}
             ?fixedMenuPosition=${true}
             @selected="${this.selectIssue}"
+            style="--mdc-select-ink-color: var(--outline-text-color); --mdc-theme-primary: var(--outline-primary); --mdc-select-label-ink-color: var(--outline-label-color); --mdc-select-dropdown-icon-color: var(--outline-text-color); --mdc-notched-outline-border-color: var(--outline-input-border); border: 1px solid var(--outline-hairline); border-radius: 4px; background-color: var(--outline-card-background); padding: 4px 0; margin-top: 16px;"
           >
             ${ContactView.ISSUES.map(value => {
               return html`
-                <mwc-list-item value="${value}">
-                  <span>${this.localize(`contact-view-issue-${value}`)}</span>
+                <mwc-list-item
+                  value="${value}"
+                  style="color: var(--outline-text-color); --mdc-theme-text-primary-on-background: var(--outline-text-color); background-color: var(--outline-card-background); padding: 8px 16px;"
+                >
+                  <span
+                    style="color: var(--outline-text-color) !important; display: block; width: 100%;"
+                    >${this.localize(`contact-view-issue-${value}`)}</span
+                  >
                 </mwc-list-item>
               `;
             })}

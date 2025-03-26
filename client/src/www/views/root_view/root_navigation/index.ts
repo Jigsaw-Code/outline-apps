@@ -29,7 +29,7 @@ export class RootNavigation extends LitElement {
 
   static styles = css`
     :host {
-      --md-list-container-color: var(--outline-white);
+      --md-list-container-color: var(--outline-card-background);
     }
 
     .container {
@@ -46,17 +46,30 @@ export class RootNavigation extends LitElement {
     }
 
     nav {
-      background-color: var(--outline-white);
+      background-color: var(--outline-card-background);
+      color: var(--outline-text-color);
       display: block;
       height: 100vh;
       overflow-y: scroll;
       position: absolute;
-      transition:
-        transform 0.3s ease,
-        visibility 0.3s ease;
+      transition: transform 0.3s ease, visibility 0.3s ease;
       width: 250px;
       will-change: transform;
       visibility: hidden;
+      box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
+    }
+
+    md-list {
+      background-color: var(--outline-card-background);
+      color: var(--outline-text-color);
+      --md-list-container-color: var(--outline-card-background);
+    }
+
+    md-list-item {
+      --md-list-item-label-text-color: var(--outline-text-color);
+      --md-list-item-headline-color: var(--outline-text-color);
+      --md-list-item-supporting-text-color: var(--outline-text-color);
+      color: var(--outline-text-color);
     }
 
     nav.left {
@@ -110,6 +123,7 @@ export class RootNavigation extends LitElement {
 
     .selected {
       --md-list-item-label-text-color: var(--outline-primary);
+      background-color: rgba(0, 0, 0, 0.05);
     }
 
     .selected md-icon {
@@ -117,7 +131,7 @@ export class RootNavigation extends LitElement {
     }
 
     ul {
-      border-top: 1px solid var(--outline-light-gray);
+      border-top: 1px solid var(--outline-hairline);
       display: block;
       list-style-type: none;
       margin-bottom: 124px;
@@ -126,7 +140,7 @@ export class RootNavigation extends LitElement {
     }
 
     li {
-      color: var(--outline-medium-gray);
+      color: var(--outline-text-color);
       cursor: pointer;
       display: block;
       font-family: var(--outline-font-family);
@@ -136,7 +150,7 @@ export class RootNavigation extends LitElement {
 
     li > a {
       text-decoration: none;
-      color: var(--outline-medium-gray);
+      color: var(--outline-text-color);
       display: flex;
       align-items: center;
     }
@@ -211,6 +225,11 @@ export class RootNavigation extends LitElement {
             <md-ripple></md-ripple>
             <md-icon slot="start">language</md-icon>
             ${this.localize('change-language-page-title')}
+          </md-list-item>
+          <md-list-item @click=${() => this.changePage('theme')}>
+            <md-ripple></md-ripple>
+            <md-icon slot="start">brightness_medium</md-icon>
+            ${this.localize('theme-page-title')}
           </md-list-item>
           ${this.showQuit
             ? html`<md-list-item @click=${this.quit}>

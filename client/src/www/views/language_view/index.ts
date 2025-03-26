@@ -35,20 +35,60 @@ export class LanguageView extends LitElement {
     :host {
       height: 100%;
       width: 100%;
+      background-color: var(--outline-card-background);
+      color: var(--outline-text-color);
+      display: block;
+    }
 
-      --md-list-container-color: var(--outline-white);
+    md-list {
+      background-color: var(--outline-card-background);
+      --md-list-container-color: var(--outline-card-background);
+      color: var(--outline-text-color);
+      padding: 8px 0;
     }
 
     md-list-item {
       cursor: pointer;
       position: relative;
+      --md-list-item-label-text-color: var(--outline-text-color);
+      --md-list-item-headline-color: var(--outline-text-color);
+      --md-list-item-supporting-text-color: var(--outline-text-color);
+      color: var(--outline-text-color) !important;
+    }
+
+    /* Important direct override for language text - needed for dark mode */
+    md-list-item span,
+    md-list-item div,
+    md-list-item::before,
+    md-list-item::after {
+      color: var(--outline-text-color) !important;
     }
 
     md-list-item.selected {
       --md-list-item-label-text-color: var(--outline-primary);
+      --md-list-item-headline-color: var(--outline-primary);
+      background-color: rgba(var(--outline-primary-rgb, 0, 0, 0), 0.1);
     }
 
     md-list-item.selected md-icon {
+      color: var(--outline-primary);
+    }
+
+    md-icon {
+      color: var(--outline-text-color);
+      font-size: 24px;
+    }
+
+    /* Explicitly set text color for list items */
+    md-list-item::part(label),
+    md-list-item::part(supporting-text),
+    md-list-item::part(headline) {
+      color: var(--outline-text-color);
+    }
+
+    md-list-item.selected::part(label),
+    md-list-item.selected::part(supporting-text),
+    md-list-item.selected::part(headline) {
       color: var(--outline-primary);
     }
   `;
