@@ -394,7 +394,7 @@ export class AppRoot extends polymerElementWithLocalize {
             <if-messages message-ids="manager-resources" localize="[[localize]]">
               <a
                 class="manager-resources-link"
-                href="https://www.reddit.com/r/outlinevpn/wiki/index/">
+                href="https://developers.google.com/outline/">
                   <span>[[localize('manager-resources')]]</span>
                   <iron-icon id="open-in-new-icon" icon="open-in-new" />
               </a>
