@@ -104,11 +104,20 @@ export class App {
     document = window.document
   ) {
     this.localize = this.rootEl.localize.bind(this.rootEl);
-    this.themeManager = new ThemeManager(settings, document);
+
+    // Get dark mode feature flag from rootEl (app-root)
+    // Access it safely as a property of rootEl
+    let darkModeEnabled = false;
+    if (this.rootEl && 'darkModeEnabled' in this.rootEl) {
+      darkModeEnabled = Boolean(this.rootEl['darkModeEnabled']);
+    }
+
+    // Initialize ThemeManager with the feature flag
+    this.themeManager = new ThemeManager(settings, document, darkModeEnabled);
 
     // Store ThemeManager reference on rootEl for access from the app-root component
     if (this.rootEl && typeof this.rootEl === 'object') {
-      (this.rootEl as any).__themeManager = this.themeManager;
+      this.rootEl.__themeManager = this.themeManager;
     }
 
     this.syncServersToUI();

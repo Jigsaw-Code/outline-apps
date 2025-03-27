@@ -17,6 +17,7 @@
 import {LitElement, html, css, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
+
 import {ThemePreference} from '../../app/settings';
 
 export type ThemeDef = {
@@ -42,17 +43,17 @@ export class ThemeView extends LitElement {
     this.themes = [
       {
         id: ThemePreference.SYSTEM,
-        name: this.localize('theme-system') || "System",
+        name: this.localize('theme-system') || 'System',
         icon: 'brightness_auto',
       },
       {
         id: ThemePreference.LIGHT,
-        name: this.localize('theme-light') || "Light",
+        name: this.localize('theme-light') || 'Light',
         icon: 'light_mode',
       },
       {
         id: ThemePreference.DARK,
-        name: this.localize('theme-dark') || "Dark",
+        name: this.localize('theme-dark') || 'Dark',
         icon: 'dark_mode',
       },
     ];

@@ -19,10 +19,18 @@ import {Settings, SettingsKey, ThemePreference} from './settings';
 export class ThemeManager {
   private mediaQueryList: MediaQueryList | null = null;
 
-  constructor(private settings: Settings, private document = window.document) {
+  constructor(
+    private settings: Settings,
+    private document = window.document,
+    private darkModeEnabled = true
+  ) {
     // Initialize theme immediately during construction
     this.initializeTheme();
-    this.setupSystemThemeListener();
+
+    // Only setup system theme listener if dark mode is enabled
+    if (this.darkModeEnabled) {
+      this.setupSystemThemeListener();
+    }
 
     // Apply theme once the DOM is fully loaded
     if (document.readyState === 'loading') {
@@ -33,13 +41,21 @@ export class ThemeManager {
   }
 
   public getThemePreference(): ThemePreference {
+    // If dark mode is disabled, always return LIGHT
+    if (!this.darkModeEnabled) {
+      return ThemePreference.LIGHT;
+    }
+
     const savedTheme = this.settings.get(SettingsKey.THEME_PREFERENCE);
     return (savedTheme as ThemePreference) || ThemePreference.SYSTEM;
   }
 
   public setThemePreference(theme: ThemePreference): void {
-    this.settings.set(SettingsKey.THEME_PREFERENCE, theme);
-    this.applyTheme(theme);
+    // Only save theme preference if dark mode is enabled
+    if (this.darkModeEnabled) {
+      this.settings.set(SettingsKey.THEME_PREFERENCE, theme);
+      this.applyTheme(theme);
+    }
   }
 
   private initializeTheme(): void {

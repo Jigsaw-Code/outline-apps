@@ -43,14 +43,14 @@ body {
   --outline-light-gray: hsl(0, 0%, 95%);
   --outline-white: hsl(0, 0%, 100%);
 
-  /* New dark mode colors - softer grays instead of pure black */
-  --outline-dark-bg: hsl(220, 10%, 17%);
-  /* Dark background but not pitch black */
-  --outline-dark-card: hsl(220, 10%, 20%);
+  /* New dark mode colors - matching Outline Manager */
+  --outline-dark-bg: #263238;
+  /* Dark background from Outline Manager */
+  --outline-dark-card: #263238;
   /* Card background for dark mode */
-  --outline-dark-footer: hsl(220, 10%, 12%);
+  --outline-dark-footer: #1c2429;
   /* Footer background for dark mode */
-  --outline-dark-border: hsl(220, 10%, 30%);
+  --outline-dark-border: #37474f;
   /* Border color for dark mode */
 
   --outline-font-family: Roboto, sans-serif;
@@ -271,4 +271,3 @@ section,
 .zerostate-footer {
   color: var(--outline-text-color);
 }
-

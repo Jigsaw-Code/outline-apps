@@ -370,6 +370,7 @@ export class AppRoot extends mixinBehaviors(
         id="drawer"
         show-quit="[[shouldShowQuitButton]]"
         data-collection-page-url="[[_computeSupportSiteUrl(language, 'https://support.google.com/outline/answer/15331222')]]"
+        dark-mode-enabled="[[darkModeEnabled]]"
       ></root-navigation>
 
       <add-access-key-dialog
@@ -587,6 +588,13 @@ export class AppRoot extends mixinBehaviors(
       useAltAccessMessage: {
         type: Boolean,
         computed: '_computeUseAltAccessMessage(language)',
+      },
+      // Feature flag to control whether dark mode is enabled
+      // When set to true, the theme option will appear in the navigation menu
+      // and the app will respect system theme or user theme selection
+      darkModeEnabled: {
+        type: Boolean,
+        value: true,
       },
     };
   }
@@ -889,7 +897,7 @@ export class AppRoot extends mixinBehaviors(
       new CustomEvent('SetThemeRequested', {
         bubbles: true,
         composed: true,
-        detail: event.detail
+        detail: event.detail,
       })
     );
   }
