@@ -117,12 +117,9 @@ export class ContactView extends LitElement {
         --mdc-select-label-ink-color: var(--outline-label-color);
         --mdc-select-dropdown-icon-color: var(--outline-text-color);
         --mdc-select-hover-line-color: var(--outline-text-color);
-        background-color: var(--outline-card-background);
-        --mdc-select-ink-color: var(--outline-text-color);
-        --mdc-theme-primary: var(--outline-primary);
-        --mdc-select-label-ink-color: var(--outline-label-color);
-        --mdc-select-dropdown-icon-color: var(--outline-text-color);
-        --mdc-notched-outline-border-color: var(--outline-input-border);
+        --mdc-select-fill-color: rgba(0, 0, 0, 0.08);
+        --mdc-menu-surface-fill-color: var(--outline-card-background);
+        --mdc-theme-surface: var(--outline-card-background);
         border: 1px solid var(--outline-hairline);
         border-radius: 4px;
         padding: 4px 0;
@@ -131,6 +128,16 @@ export class ContactView extends LitElement {
 
       mwc-select[hidden] {
         display: none;
+      }
+
+      /* Style the dropdown list */
+      mwc-select mwc-menu {
+        --mdc-theme-surface: var(--outline-card-background);
+      }
+
+      /* Style the list items properly for dark mode */
+      mwc-select mwc-list-item {
+        background-color: var(--outline-card-background);
       }
 
       mwc-list-item {

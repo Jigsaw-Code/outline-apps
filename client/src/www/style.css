@@ -70,6 +70,7 @@ body {
   --outline-hairline: 1px solid hsl(0, 0%, 85%);
   --outline-elevation-color: rgb(0 0 0 / 30%);
   --outline-elevation: var(--outline-elevation-color) 0px 2px 3px 2px;
+  --outline-icon-color:rgb(73, 69, 79);
 
   --outline-comms-dialog-primary-background-color: var(--outline-dark-primary);
   --outline-comms-dialog-primary-text-color: hsl(0, 0%, 87%);
@@ -131,6 +132,7 @@ iron-input {
     --outline-input-bg: var(--outline-dark-bg);
     --outline-input-text: var(--outline-white);
     --outline-input-border: var(--outline-dark-border);
+    --outline-icon-color: var(--outline-label-color);
 
     color-scheme: dark;
   }
@@ -151,6 +153,7 @@ iron-input {
   --outline-input-bg: var(--outline-dark-bg);
   --outline-input-text: var(--outline-white);
   --outline-input-border: var(--outline-dark-border);
+  --outline-icon-color: var(--outline-label-color);
 
   color-scheme: dark;
 }

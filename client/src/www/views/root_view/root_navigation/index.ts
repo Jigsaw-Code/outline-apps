@@ -174,6 +174,11 @@ export class RootNavigation extends LitElement {
       opacity: 1;
       pointer-events: auto;
     }
+
+    md-icon {
+      color: var(--outline-icon-color);
+      font-size: 24px;
+    }
   `;
 
   render() {

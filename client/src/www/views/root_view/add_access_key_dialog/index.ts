@@ -73,7 +73,7 @@ export class AddAccessKeyDialog extends LitElement {
 
     md-filled-text-field {
       --md-filled-text-field-input-text-font: 'Menlo', monospace;
-      --md-filled-text-field-container-color: var(--outline-input-bg);
+      --md-filled-text-field-container-color: rgba(0, 0, 0, 0.08);
       --md-filled-text-field-input-text-color: var(--outline-input-text);
       --md-filled-text-field-label-text-color: var(--outline-label-color);
       --md-filled-text-field-focus-label-text-color: var(--outline-primary);
@@ -81,7 +81,8 @@ export class AddAccessKeyDialog extends LitElement {
       --md-filled-text-field-error-focus-label-text-color: var(--outline-error);
       --md-filled-text-field-error-hover-label-text-color: var(--outline-error);
       --md-filled-text-field-error-input-text-color: var(--outline-input-text);
-
+      --md-filled-text-field-hover-container-color: rgba(0, 0, 0, 0.12);
+      --md-filled-text-field-focus-container-color: rgba(0, 0, 0, 0.15);
       width: 100%;
     }
 
