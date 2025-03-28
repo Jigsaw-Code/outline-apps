@@ -360,6 +360,7 @@ export class AppRoot extends mixinBehaviors(
             name="theme"
             id="themeView"
             localize="[[localize]]"
+            selected-theme-id="[[currentTheme]]"
             on-set-theme-requested="_onThemeRequested"
           ></appearance-view>
         </iron-pages>
@@ -603,9 +604,6 @@ export class AppRoot extends mixinBehaviors(
     super.ready();
     this.setLanguage(this.language);
 
-    // Additional initialization
-    this.addEventListener('iron-select', this._onIronSelect.bind(this));
-
     // Workaround for paper-behaviors' craptastic keyboard focus detection:
     // https://github.com/PolymerElements/paper-behaviors/issues/80
     // Monkeypatch the faulty Polymer.IronButtonStateImpl._detectKeyboardFocus implementation
@@ -652,6 +650,11 @@ export class AppRoot extends mixinBehaviors(
     } else {
       // Don't use cordova?.platformId, ReferenceError will be thrown
       this.platform = globalThis.cordova.platformId;
+    }
+
+    // Initialize current theme if theme manager is available
+    if (this.__themeManager) {
+      this.currentTheme = this.__themeManager.getThemePreference();
     }
   }
 
@@ -878,21 +881,9 @@ export class AppRoot extends mixinBehaviors(
     );
   }
 
-  // Handle page selection to update the theme view with current settings
-  _onIronSelect(event) {
-    const selectedPage = event.detail.item.getAttribute('name');
-
-    // If the theme page was selected, update the selected theme
-    if (selectedPage === 'theme' && this.$.themeView) {
-      const themeManager = this.__themeManager;
-      if (themeManager) {
-        this.$.themeView.selectedThemeId = themeManager.getThemePreference();
-      }
-    }
-  }
-
   // Handle theme selection from the theme view
   _onThemeRequested(event) {
+    // Forward the theme change event to app.ts
     this.dispatchEvent(
       new globalThis.CustomEvent('SetThemeRequested', {
         bubbles: true,
@@ -900,6 +891,11 @@ export class AppRoot extends mixinBehaviors(
         detail: event.detail,
       })
     );
+
+    // Update the current theme property to reflect the change
+    if (this.__themeManager) {
+      this.currentTheme = this.__themeManager.getThemePreference();
+    }
   }
 }
 globalThis.customElements.define(AppRoot.is, AppRoot);
