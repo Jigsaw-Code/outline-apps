@@ -18,9 +18,16 @@ import (
 	"context"
 	"errors"
 	"net"
+	"time"
 
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
+
+type UsageReporter struct {
+	interval      time.Duration
+	url           string
+	enableCookies bool
+}
 
 // TransportPair provides a StreamDialer and PacketListener, to use as the transport in a Tun2Socks VPN.
 type TransportPair struct {
@@ -140,5 +147,24 @@ func NewDefaultTransportProvider(tcpDialer transport.StreamDialer, udpDialer tra
 		return parseTCPUDPTransportPair(ctx, config, streamDialers.Parse, packetListeners.Parse)
 	})
 
+
 	return transports
+}
+
+func NewUsageReportProvide(tcpDialer transport.StreamDialer) *TypeParser[*UsageReporter] {
+	usageReporting := NewTypeParser(func(ctx context.Context, input ConfigNode) (*UsageReporter, error) {
+		switch input.(type) {
+		// An absent config is acceptable.
+		case nil:
+			return nil, nil
+		default:
+			return nil, errors.New("parser not specified")
+		}
+	})
+
+	usageReporting.RegisterSubParser("sessionreport", func(ctx context.Context, config map[string]any) (*UsageReporter, error) {
+		return parseUsageReporterConfig(ctx, config)
+	})
+
+	return usageReporting
 }

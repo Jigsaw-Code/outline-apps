@@ -25,7 +25,7 @@ func Test_doParseTunnel_SSURL(t *testing.T) {
 	result := doParseTunnelConfig("ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@example.com:4321/")
 	require.Nil(t, result.Error)
 	require.Equal(t,
-		"{\"firstHop\":\"example.com:4321\",\"transport\":\"ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@example.com:4321/\"}",
+		"{\"firstHop\":\"example.com:4321\",\"transport\":\"ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@example.com:4321/\",\"usage_report\":\"\"}",
 		result.Value)
 }
 
@@ -38,7 +38,7 @@ func Test_doParseTunnel_LegacyJSON(t *testing.T) {
 }`)
 	require.Nil(t, result.Error)
 	require.Equal(t,
-		"{\"firstHop\":\"example.com:4321\",\"transport\":\"{\\n    \\\"server\\\": \\\"example.com\\\",\\n    \\\"server_port\\\": 4321,\\n    \\\"method\\\": \\\"chacha20-ietf-poly1305\\\",\\n    \\\"password\\\": \\\"SECRET\\\"\\n}\"}",
+		"{\"firstHop\":\"example.com:4321\",\"transport\":\"{\\n    \\\"server\\\": \\\"example.com\\\",\\n    \\\"server_port\\\": 4321,\\n    \\\"method\\\": \\\"chacha20-ietf-poly1305\\\",\\n    \\\"password\\\": \\\"SECRET\\\"\\n}\",\"usage_report\":\"\"}",
 		result.Value)
 }
 
@@ -55,7 +55,29 @@ transport:
 
 	require.Nil(t, result.Error)
 	require.Equal(t,
-		"{\"firstHop\":\"example.com:80\",\"transport\":\"  $type: tcpudp\\n  tcp: \\u0026shared\\n    $type: shadowsocks\\n    endpoint: example.com:80\\n    cipher: chacha20-ietf-poly1305\\n    secret: SECRET\\n  udp: *shared\\n\"}",
+		"{\"firstHop\":\"example.com:80\",\"transport\":\"  $type: tcpudp\\n  tcp: \\u0026shared\\n    $type: shadowsocks\\n    endpoint: example.com:80\\n    cipher: chacha20-ietf-poly1305\\n    secret: SECRET\\n  udp: *shared\\n\",\"usage_report\":\"null\\n\"}",
+		result.Value)
+}
+
+func Test_doParseTunnelConfig_SessionReport(t *testing.T) {
+	result := doParseTunnelConfig(`
+transport:
+  $type: tcpudp
+  tcp: &shared
+    $type: shadowsocks
+    endpoint: example.com:80
+    cipher: chacha20-ietf-poly1305
+    secret: SECRET
+  udp: *shared
+usage_report:
+  $type: sessionreport
+  url: https://your-callback-server.com/outline_callback
+  interval: 24h
+  enable_cookies: true`)
+
+	require.Nil(t, result.Error)
+	require.Equal(t,
+		"{\"firstHop\":\"example.com:80\",\"transport\":\"  $type: tcpudp\\n  tcp: \\u0026shared\\n    $type: shadowsocks\\n    endpoint: example.com:80\\n    cipher: chacha20-ietf-poly1305\\n    secret: SECRET\\n  udp: *shared\\n\",\"usage_report\":\"  $type: sessionreport\\n  url: https://your-callback-server.com/outline_callback\\n  interval: 24h\\n  enable_cookies: true\\n\"}",
 		result.Value)
 }
 

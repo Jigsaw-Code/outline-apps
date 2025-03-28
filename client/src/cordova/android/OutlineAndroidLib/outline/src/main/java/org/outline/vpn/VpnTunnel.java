@@ -49,6 +49,7 @@ public class VpnTunnel {
   private String dnsResolverAddress;
   private ParcelFileDescriptor tunFd;
   private Tunnel tunnel;
+  private outline.Client client;
 
   /**
    * Constructor.
@@ -134,6 +135,8 @@ public class VpnTunnel {
     if (client == null) {
       throw new IllegalArgumentException("Must provide an Outline client.");
     }
+    this.client = client;
+    this.client.connect();
     if (tunFd == null) {
       throw new IllegalStateException("Must establish the VPN before connecting the tunnel.");
     }
