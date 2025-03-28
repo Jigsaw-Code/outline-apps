@@ -27,6 +27,7 @@ module.exports = {
         'client/linux',
         'client/macos',
         'client/windows',
+        'deps',
         'devtools',
         'docs',
         'infrastructure',

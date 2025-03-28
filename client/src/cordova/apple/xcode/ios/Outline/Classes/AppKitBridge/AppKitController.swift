@@ -17,15 +17,12 @@ import ServiceManagement
 
 class AppKitController: NSObject {
     private var statusItemController: StatusItemController?
-    static let kAppLauncherName = "launcher3"
 
     override public required init() {
         super.init()
-    }
 
-    /// Terminates the application.
-    @objc public func _AppKitBridge_terminate() {
-        NSApp.terminate(self)
+        // Indicates that the application is an ordinary app that appears in the Dock and may have a user interface.
+        NSApp.setActivationPolicy(.regular)
     }
 
     /// Set the connection status in the app's menu in the system-wide menu bar.
@@ -36,44 +33,4 @@ class AppKitController: NSObject {
         }
         statusItemController!.setStatus(status: status)
     }
-
-    /// Enables or disables the embedded app launcher as a login item.
-    @objc public func _AppKitBridge_setAppLauncherEnabled(_ isEnabled: Bool) {
-        guard let launcherBundleId = getLauncherBundleId() else {
-            return NSLog("[AppKitController] Unable to set launcher for missing bundle ID.")
-        }
-
-        if !SMLoginItemSetEnabled(launcherBundleId as! CFString, isEnabled) {
-            return NSLog("[AppKitController] Failed to set enable=\(isEnabled) for launcher \(launcherBundleId).")
-        }
-
-        return NSLog("[AppKitController] Successfully set enable=\(isEnabled) for launcher \(launcherBundleId).")
-    }
-
-    /// Loads the main application from a given launcher bundle.
-    @objc public func _AppKitBridge_loadMainApp(_ launcherBundleId: String) {
-        // Retrieve the main app's bundle ID programmatically from the embedded launcher bundle ID.
-        let mainAppBundleId = getMainBundleId(launcherBundleId)
-        NSLog("[AppKitController] Loading main app \(mainAppBundleId) from launcher \(launcherBundleId).")
-
-        let descriptor = NSAppleEventDescriptor(string: launcherBundleId)
-        NSWorkspace.shared.launchApplication(withBundleIdentifier: mainAppBundleId,
-                                             options: [.withoutActivation, .andHide],
-                                             additionalEventParamDescriptor: descriptor,
-                                             launchIdentifier: nil)
-    }
-}
-
-/// Returns the embedded launcher application's bundle ID.
-private func getLauncherBundleId() -> String? {
-    guard let bundleId = Bundle.main.bundleIdentifier else {
-        NSLog("[AppKitController] Failed to retrieve the application's bundle ID.")
-        return nil
-    }
-    return String(format: "%@.%@", bundleId, AppKitController.kAppLauncherName)
-}
-
-/// Returns the main application's bundle ID from the embedded launcher bundle ID.
-private func getMainBundleId(_ launcherBundleId: String) -> String {
-    return (launcherBundleId as NSString).deletingPathExtension
 }

@@ -27,7 +27,7 @@
   "data-limit": "データの上限",
   "data-limit-per-key": "キーあたりのデータの上限",
   "data-limits": "データの上限",
-  "data-limits-description": "このサーバーのアクセスキーに対して、データ転送量の上限の追跡期間を 30 日に設定しました。",
+  "data-limits-description": "このサーバーのアクセスキーに対して、直近 30 日間のデータ転送量の上限を設定します。",
   "data-limits-dialog-text": "[設定] に移動して、このサーバーのアクセスキーに対するデータ転送量の上限を設定します。",
   "data-limits-dialog-title": "過剰なデータ転送の回避",
   "data-limits-disclaimer": "現在指標をレポートしているため、データ制限機能の使用が含まれることになります。詳しくは、{openLink}データ収集ポリシー{closeLink}をご覧ください。",

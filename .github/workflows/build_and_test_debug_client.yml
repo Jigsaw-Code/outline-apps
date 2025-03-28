@@ -32,7 +32,7 @@ on:
 jobs:
   web_test:
     name: Web Test
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 20
     steps:
       - name: Checkout
@@ -61,7 +61,7 @@ jobs:
 
   backend_test:
     name: Go Backend Test
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 20
     steps:
       - name: Checkout
@@ -136,7 +136,7 @@ jobs:
           go-version-file: '${{ github.workspace }}/go.mod'
 
       - name: Install zig
-        uses: mlugg/setup-zig@v1
+        uses: mlugg/setup-zig@153c8d5202cbb8c7e10831110a3afd27593eb960
         with:
           version: 0.13.0
           use-cache: false
@@ -269,7 +269,7 @@ jobs:
 
   android_debug_build:
     name: Android Debug Build
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 20
     needs: [web_test, backend_test]
     steps:

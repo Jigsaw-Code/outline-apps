@@ -79,6 +79,13 @@
 			remoteGlobalIDString = A246B7DC2B07AACF00ECACD5;
 			remoteInfo = AppKitIntegration;
 		};
+		A29688D02D84A5F60070772E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5260B0572C4F09FB00CDF289 /* OutlineLib.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 522E63ED2C768BA30010C3FA;
+			remoteInfo = VpnExtensionTest;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -357,6 +364,7 @@
 			isa = PBXGroup;
 			children = (
 				5260B05C2C4F09FB00CDF289 /* VpnExtension.appex */,
+				A29688D12D84A5F60070772E /* VpnExtensionTest.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -609,6 +617,13 @@
 			fileType = "wrapper.app-extension";
 			path = VpnExtension.appex;
 			remoteRef = 5260B05B2C4F09FB00CDF289 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		A29688D12D84A5F60070772E /* VpnExtensionTest.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = VpnExtensionTest.xctest;
+			remoteRef = A29688D02D84A5F60070772E /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
