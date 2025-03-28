@@ -63,7 +63,7 @@ import '../views/root_view/root_header';
 // eslint-disable-next-line n/no-missing-import
 import '../views/root_view/root_navigation';
 // eslint-disable-next-line n/no-missing-import
-import '../views/theme_view';
+import '../views/appearance_view';
 // eslint-disable-next-line n/no-missing-import
 import * as i18n from '@outline/infrastructure/i18n';
 import {AppLocalizeBehavior} from '@polymer/app-localize-behavior/app-localize-behavior.js';
@@ -155,7 +155,7 @@ export class AppRoot extends mixinBehaviors(
           color: var(--outline-text-color);
         }
 
-        theme-view {
+        appearance-view {
           background-color: var(--outline-card-background);
           color: var(--outline-text-color);
         }
@@ -356,12 +356,12 @@ export class AppRoot extends mixinBehaviors(
             localize="[[localize]]"
             root-path="[[rootPath]]"
           ></licenses-view>
-          <theme-view
+          <appearance-view
             name="theme"
             id="themeView"
             localize="[[localize]]"
             on-set-theme-requested="_onThemeRequested"
-          ></theme-view>
+          ></appearance-view>
         </iron-pages>
       </app-header-layout>
 

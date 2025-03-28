@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Outline Authors
+ * Copyright 2025 The Outline Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,8 @@ export type ThemeDef = {
   icon: string;
 };
 
-@customElement('theme-view')
-export class ThemeView extends LitElement {
+@customElement('appearance-view')
+export class AppearanceView extends LitElement {
   @property({type: Array}) themes: ThemeDef[] = [
     {id: ThemePreference.SYSTEM, name: 'System', icon: 'brightness_auto'},
     {id: ThemePreference.LIGHT, name: 'Light', icon: 'light_mode'},
