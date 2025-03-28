@@ -53,6 +53,9 @@ export class AddAccessKeyDialog extends LitElement {
       --md-dialog-supporting-text-color: var(--outline-text-color);
 
       min-width: 300px;
+      --md-dialog-container-color: var(--outline-card-background);
+      --md-dialog-headline-color: var(--outline-text-color);
+      --md-dialog-supporting-text-color: var(--outline-text-color);
     }
 
     section {
@@ -119,12 +122,7 @@ export class AddAccessKeyDialog extends LitElement {
   }
 
   render() {
-    return html`<md-dialog
-      .open="${this.open}"
-      @cancel=${this.cancel}
-      quick
-      style="--md-dialog-container-color: var(--outline-card-background); --md-dialog-headline-color: var(--outline-text-color); --md-dialog-supporting-text-color: var(--outline-text-color);"
-    >
+    return html`<md-dialog .open="${this.open}" @cancel=${this.cancel} quick>
       <header slot="headline" style="color: var(--outline-text-color);">
         ${this.localize('add-access-key-dialog-header')}
       </header>
@@ -149,7 +147,6 @@ export class AddAccessKeyDialog extends LitElement {
             rows="5"
             type="textarea"
             .value=${this.accessKey ?? ''}
-            style="--md-filled-text-field-container-color: var(--outline-input-bg); --md-filled-text-field-input-text-color: var(--outline-input-text); --md-filled-text-field-label-text-color: var(--outline-label-color);"
           ></md-filled-text-field>
         </section>
       </article>

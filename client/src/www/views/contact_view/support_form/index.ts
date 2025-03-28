@@ -83,6 +83,16 @@ export class SupportForm extends LitElement {
         --md-sys-color-on-primary: var(--outline-card-background);
       }
 
+      md-checkbox {
+        --md-sys-color-primary: var(--outline-primary);
+        --md-sys-color-outline: var(--outline-text-color);
+      }
+
+      mwc-button {
+        --mdc-theme-primary: var(--outline-primary);
+        --mdc-theme-on-primary: var(--outline-card-background);
+      }
+
       p {
         color: var(--outline-label-color);
         font-size: 0.8rem;
@@ -173,7 +183,6 @@ export class SupportForm extends LitElement {
           required
           @input=${this.handleInput}
           @blur=${this.checkFormValidity}
-          style="--mdc-text-field-fill-color: var(--outline-input-bg); --mdc-text-field-ink-color: var(--outline-text-color); --mdc-text-field-label-ink-color: var(--outline-label-color);"
         ></mwc-textfield>
 
         <mwc-textfield
@@ -185,7 +194,6 @@ export class SupportForm extends LitElement {
           required
           @input=${this.handleInput}
           @blur=${this.checkFormValidity}
-          style="--mdc-text-field-fill-color: var(--outline-input-bg); --mdc-text-field-ink-color: var(--outline-text-color); --mdc-text-field-label-ink-color: var(--outline-label-color);"
         ></mwc-textfield>
 
         <mwc-textfield
@@ -197,7 +205,6 @@ export class SupportForm extends LitElement {
           required
           @input=${this.handleInput}
           @blur=${this.checkFormValidity}
-          style="--mdc-text-field-fill-color: var(--outline-input-bg); --mdc-text-field-ink-color: var(--outline-text-color); --mdc-text-field-label-ink-color: var(--outline-label-color);"
         ></mwc-textfield>
         <mwc-textarea
           name="description"
@@ -209,7 +216,6 @@ export class SupportForm extends LitElement {
           required
           @input=${this.handleInput}
           @blur=${this.checkFormValidity}
-          style="--mdc-text-field-fill-color: var(--outline-input-bg); --mdc-text-field-ink-color: var(--outline-text-color);"
         >
         </mwc-textarea>
 
@@ -219,7 +225,6 @@ export class SupportForm extends LitElement {
             name="outreachConsent"
             .value=${live(String(this.values.outreachConsent ?? false))}
             @input=${this.handleInput}
-            style="--md-sys-color-primary: var(--outline-primary); --md-sys-color-outline: var(--outline-text-color);"
           ></md-checkbox>
           ${this.localize('support-form-outreach-consent')}
         </label>
@@ -231,14 +236,12 @@ export class SupportForm extends LitElement {
             .label=${this.localize('cancel')}
             .disabled=${this.disabled}
             @click=${this.cancel}
-            style="--mdc-theme-primary: var(--outline-primary); --mdc-theme-on-primary: var(--outline-card-background);"
           ></mwc-button>
           <mwc-button
             type="submit"
             .label=${this.localize('submit')}
             .disabled=${!this.valid || this.disabled}
             @click=${this.submit}
-            style="--mdc-theme-primary: var(--outline-primary); --mdc-theme-on-primary: var(--outline-card-background);"
           ></mwc-button>
         </span>
       </form>

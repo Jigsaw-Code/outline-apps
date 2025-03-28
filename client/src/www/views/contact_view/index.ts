@@ -156,6 +156,13 @@ export class ContactView extends LitElement {
         color: var(--outline-text-color);
         --mdc-theme-text-primary-on-background: var(--outline-text-color);
       }
+
+      .formfield {
+        color: var(--outline-text-color);
+        --mdc-theme-text-primary-on-background: var(--outline-text-color);
+        font-weight: normal;
+        padding: 8px 0;
+      }
     `,
   ];
 
@@ -332,10 +339,7 @@ export class ContactView extends LitElement {
             ${this.openTicketSelectionOptions.map(
               element => html`
                 <li>
-                  <mwc-formfield
-                    .label=${this.localize(element.labelMsg)}
-                    style="color: var(--outline-text-color); --mdc-theme-text-primary-on-background: var(--outline-text-color); font-weight: normal; padding: 8px 0;"
-                  >
+                  <mwc-formfield .label=${this.localize(element.labelMsg)}>
                     <!-- mwc-radio's 'value' attribute is incorrectly typed as a string - if you pass a string, it breaks -->
                     <mwc-radio
                       name="open-ticket"

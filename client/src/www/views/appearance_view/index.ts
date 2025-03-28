@@ -152,7 +152,7 @@ export class AppearanceView extends LitElement {
               ${this.selectedThemeId === id
                 ? html`<md-icon
                     slot="end"
-                    style="color: var(--outline-primary) !important;"
+                    style="color: var(--outline-primary);"
                     >check</md-icon
                   >`
                 : nothing}
