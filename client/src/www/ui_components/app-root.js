@@ -63,6 +63,8 @@ import '../views/root_view/root_header';
 // eslint-disable-next-line n/no-missing-import
 import '../views/root_view/root_navigation';
 // eslint-disable-next-line n/no-missing-import
+import '../views/appearance_view';
+// eslint-disable-next-line n/no-missing-import
 import * as i18n from '@outline/infrastructure/i18n';
 import {AppLocalizeBehavior} from '@polymer/app-localize-behavior/app-localize-behavior.js';
 import {PaperMenuButton} from '@polymer/paper-menu-button/paper-menu-button.js';
@@ -99,6 +101,8 @@ export class AppRoot extends mixinBehaviors(
           display: flex;
           flex-direction: column;
           font-family: var(--outline-font-family);
+          color: var(--outline-text-color);
+          background-color: var(--outline-card-background);
         }
 
         app-header {
@@ -147,11 +151,19 @@ export class AppRoot extends mixinBehaviors(
         iron-pages {
           display: flex;
           flex: 1;
-          background-color: #efefef;
+          background-color: var(--outline-card-background);
+          color: var(--outline-text-color);
+        }
+
+        appearance-view {
+          background-color: var(--outline-card-background);
+          color: var(--outline-text-color);
         }
 
         #drawer-nav {
           padding: 0;
+          background-color: var(--outline-card-background);
+          color: var(--outline-text-color);
         }
 
         #nav-scrollable-container {
@@ -163,6 +175,7 @@ export class AppRoot extends mixinBehaviors(
         #drawer-nav paper-item {
           cursor: pointer;
           font-size: 16px;
+          color: var(--outline-text-color);
           --paper-item-selected: {
             color: var(--medium-green);
             background-color: var(--light-gray);
@@ -343,6 +356,13 @@ export class AppRoot extends mixinBehaviors(
             localize="[[localize]]"
             root-path="[[rootPath]]"
           ></licenses-view>
+          <appearance-view
+            name="theme"
+            id="themeView"
+            localize="[[localize]]"
+            selected-theme-id="[[currentTheme]]"
+            on-set-theme-requested="_onThemeRequested"
+          ></appearance-view>
         </iron-pages>
       </app-header-layout>
 
@@ -351,6 +371,7 @@ export class AppRoot extends mixinBehaviors(
         id="drawer"
         show-quit="[[shouldShowQuitButton]]"
         data-collection-page-url="[[_computeSupportSiteUrl(language, 'https://support.google.com/outline/answer/15331222')]]"
+        dark-mode-enabled="[[darkModeEnabled]]"
       ></root-navigation>
 
       <add-access-key-dialog
@@ -569,6 +590,13 @@ export class AppRoot extends mixinBehaviors(
         type: Boolean,
         computed: '_computeUseAltAccessMessage(language)',
       },
+      // Feature flag to control whether dark mode is enabled
+      // When set to true, the theme option will appear in the navigation menu
+      // and the app will respect system theme or user theme selection
+      darkModeEnabled: {
+        type: Boolean,
+        value: false,
+      },
     };
   }
 
@@ -622,6 +650,11 @@ export class AppRoot extends mixinBehaviors(
     } else {
       // Don't use cordova?.platformId, ReferenceError will be thrown
       this.platform = globalThis.cordova.platformId;
+    }
+
+    // Initialize current theme if theme manager is available
+    if (this.__themeManager) {
+      this.currentTheme = this.__themeManager.getThemePreference();
     }
   }
 
@@ -846,6 +879,23 @@ export class AppRoot extends mixinBehaviors(
     return (
       language === 'fa' && this.platform !== 'ios' && this.platform !== 'osx'
     );
+  }
+
+  // Handle theme selection from the theme view
+  _onThemeRequested(event) {
+    // Forward the theme change event to app.ts
+    this.dispatchEvent(
+      new globalThis.CustomEvent('SetThemeRequested', {
+        bubbles: true,
+        composed: true,
+        detail: event.detail,
+      })
+    );
+
+    // Update the current theme property to reflect the change
+    if (this.__themeManager) {
+      this.currentTheme = this.__themeManager.getThemePreference();
+    }
   }
 }
 globalThis.customElements.define(AppRoot.is, AppRoot);

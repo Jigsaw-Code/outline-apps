@@ -39,12 +39,24 @@ export class ServerRenameDialog extends LitElement {
       --md-dialog-container-color: var(
         --outline-app-dialog-primary-background-color
       );
-      --md-filled-text-field-container-color: var(--outline-light-gray);
+      --md-filled-text-field-container-color: var(--outline-input-bg);
+      --md-filled-text-field-input-text-color: var(--outline-input-text);
     }
 
     fieldset {
       border: none;
       text-transform: uppercase;
+    }
+
+    mwc-textfield {
+      --mdc-text-field-fill-color: var(--outline-input-bg);
+      --mdc-text-field-ink-color: var(--outline-input-text);
+      --mdc-text-field-label-ink-color: var(--outline-label-color);
+      --mdc-text-field-outlined-idle-border-color: var(--outline-input-border);
+      --mdc-theme-primary: var(--outline-primary);
+      background-color: var(--outline-input-bg);
+      color: var(--outline-input-text);
+      border-radius: 4px;
     }
   `;
 

@@ -46,27 +46,51 @@ export class SupportForm extends LitElement {
     css`
       :host {
         --md-sys-color-primary: var(--outline-primary);
+        --md-sys-color-on-surface: var(--outline-text-color);
+        --md-sys-color-surface: var(--outline-card-background);
 
         font-family: var(--outline-font-family);
         width: 100%;
+        color: var(--outline-text-color);
       }
 
       mwc-select {
         width: 100%;
+        --mdc-select-ink-color: var(--outline-text-color);
+        --mdc-select-label-ink-color: var(--outline-label-color);
+        --mdc-select-dropdown-icon-color: var(--outline-text-color);
+        --mdc-select-hover-line-color: var(--outline-text-color);
       }
 
       mwc-textarea,
       mwc-textfield {
         display: flex;
         margin: var(--outline-slim-gutter) 0;
+        --mdc-text-field-ink-color: var(--outline-text-color);
+        --mdc-text-field-label-ink-color: var(--outline-label-color);
+        --mdc-text-field-fill-color: var(--outline-input-bg);
+        --mdc-text-field-disabled-fill-color: var(--outline-input-bg);
+        --mdc-text-field-disabled-ink-color: var(--outline-label-color);
       }
 
       label {
         align-items: center;
         display: inline-flex;
+        color: var(--outline-text-color);
       }
       label md-checkbox {
         flex-shrink: 0;
+        --md-sys-color-on-primary: var(--outline-card-background);
+      }
+
+      md-checkbox {
+        --md-sys-color-primary: var(--outline-primary);
+        --md-sys-color-outline: var(--outline-text-color);
+      }
+
+      mwc-button {
+        --mdc-theme-primary: var(--outline-primary);
+        --mdc-theme-on-primary: var(--outline-card-background);
       }
 
       p {
@@ -195,7 +219,7 @@ export class SupportForm extends LitElement {
         >
         </mwc-textarea>
 
-        <label>
+        <label style="color: var(--outline-text-color);">
           <md-checkbox
             touch-target="wrapper"
             name="outreachConsent"

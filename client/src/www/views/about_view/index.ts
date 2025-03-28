@@ -37,6 +37,8 @@ export class AboutView extends LitElement {
       max-width: 600px;
       text-align: center;
       width: 100%;
+      color: var(--outline-text-color);
+      background-color: var(--outline-card-background);
     }
 
     article {
@@ -49,13 +51,13 @@ export class AboutView extends LitElement {
     }
 
     header h2 {
-      color: var(--outline-medium-gray);
+      color: var(--outline-label-color);
       font-size: 12px;
       margin: 8px auto;
     }
 
     section {
-      color: var(--outline-off-black);
+      color: var(--outline-text-color);
       font-size: 16px;
       line-height: 22px;
       margin: 32px auto;
@@ -88,6 +90,7 @@ export class AboutView extends LitElement {
           </h2>
         </header>
         <section
+          id="about-outline-content"
           .innerHTML=${this.localize(
             'about-outline',
             'jigsawUrl',

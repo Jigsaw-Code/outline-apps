@@ -14,23 +14,25 @@
  * limitations under the License.
  */
 
- html {
-   background: #efefef;
- }
+html {
+  background: #efefef;
+}
 
- body {
+body {
   /*
     We're not properly CSS resetting - this is to prevent
     the browser agent from insetting the main window weirdly.
   */
   margin: 0;
- }
+}
 
 :root {
   /* tokens */
   --min-supported-device-width: 320px;
 
   --outline-primary: hsl(170, 60%, 46%);
+  --outline-primary-rgb: 47, 186, 156;
+  /* RGB values for primary color */
   --outline-dark-primary: hsl(200, 19%, 18%);
   --outline-error: hsl(4, 90%, 58%);
 
@@ -40,6 +42,16 @@
   --outline-medium-gray: hsl(0, 0%, 45%);
   --outline-light-gray: hsl(0, 0%, 95%);
   --outline-white: hsl(0, 0%, 100%);
+
+  /* New dark mode colors - matching Outline Manager */
+  --outline-dark-bg: #263238;
+  /* Dark background from Outline Manager */
+  --outline-dark-card: #263238;
+  /* Card background for dark mode */
+  --outline-dark-footer: #1c2429;
+  /* Footer background for dark mode */
+  --outline-dark-border: #37474f;
+  /* Border color for dark mode */
 
   --outline-font-family: Roboto, sans-serif;
 
@@ -58,30 +70,155 @@
   --outline-hairline: 1px solid hsl(0, 0%, 85%);
   --outline-elevation-color: rgb(0 0 0 / 30%);
   --outline-elevation: var(--outline-elevation-color) 0px 2px 3px 2px;
+  --outline-icon-color:rgb(73, 69, 79);
 
   --outline-comms-dialog-primary-background-color: var(--outline-dark-primary);
   --outline-comms-dialog-primary-text-color: hsl(0, 0%, 87%);
   --outline-comms-dialog-secondary-text-color: rgba(255, 255, 255, 0.54);
   --outline-app-dialog-primary-background-color: var(--outline-white);
 
+  /* Input field colors */
+  --outline-input-bg: var(--outline-white);
+  --outline-input-text: var(--outline-black);
+  --outline-input-border: var(--outline-medium-gray);
+
   --mdc-typography-font-family: var(--outline-font-family);
   --mdc-theme-primary: var(--outline-primary);
 
   --md-ref-typeface-brand: 'Jigsaw Sans';
   --md-ref-typeface-plain: var(--outline-font-family);
+
+  /* Style Material inputs */
+  --md-sys-color-surface: var(--outline-card-background);
+  --md-sys-color-on-surface: var(--outline-text-color);
+  --md-sys-color-outline: var(--outline-input-border);
+  --md-filled-text-field-container-color: var(--outline-input-bg);
+  --md-filled-text-field-input-text-color: var(--outline-input-text);
+  --md-outlined-text-field-input-text-color: var(--outline-input-text);
+  --md-outlined-text-field-outline-color: var(--outline-input-border);
+
+  /* Style older Material Web Components */
+  --mdc-theme-surface: var(--outline-card-background);
+  --mdc-theme-on-surface: var(--outline-text-color);
+  --mdc-text-field-fill-color: var(--outline-input-bg);
+  --mdc-text-field-ink-color: var(--outline-input-text);
+  --mdc-text-field-label-ink-color: var(--outline-label-color);
+  --mdc-text-field-outlined-idle-border-color: var(--outline-input-border);
 }
 
-/* TODO(daniellacosse): enable this when everything has been color scheme'd */
-/* @media (prefers-color-scheme: dark) {
-  :root {
-    --outline-card-background: var(--outline-black);
-    --outline-card-footer: var(--outline-off-black);
+/* Style paper and iron inputs from Polymer */
+paper-input,
+iron-input {
+  --paper-input-container-color: var(--outline-input-text);
+  --paper-input-container-input-color: var(--outline-input-text);
+  --paper-input-container-focus-color: var(--outline-primary);
+  --iron-input-container-color: var(--outline-input-text);
+  --paper-input-container-shared-input-style_-_color: var(--outline-input-text);
+}
+
+/* Dark mode support - automatically applies when system preference is dark */
+@media (prefers-color-scheme: dark) {
+  :root.system-theme {
+    --outline-card-background: var(--outline-dark-card);
+    --outline-card-footer: var(--outline-dark-footer);
     --outline-text-color: var(--outline-white);
-    --outline-label-color: hsl(0, 0%, 60%);
-    --outline-hairline: 1px solid var(--outline-dark-gray);
-    --outline-elevation: rgb(255 255 255 / 30%) 0px 2px 3px 2px;
+    --outline-label-color: hsl(0, 0%, 70%);
+    --outline-hairline: 1px solid var(--outline-dark-border);
+    --outline-elevation: rgb(0 0 0 / 30%) 0px 2px 3px 2px;
+    --outline-comms-dialog-primary-background-color: var(--outline-dark-primary);
+    --outline-app-dialog-primary-background-color: var(--outline-dark-card);
+
+    /* Input field colors for dark mode */
+    --outline-input-bg: var(--outline-dark-bg);
+    --outline-input-text: var(--outline-white);
+    --outline-input-border: var(--outline-dark-border);
+    --outline-icon-color: var(--outline-label-color);
+
+    color-scheme: dark;
   }
-} */
+}
+
+/* Class-based dark mode - applied when user selects dark theme */
+:root.dark-theme {
+  --outline-card-background: var(--outline-dark-card);
+  --outline-card-footer: var(--outline-dark-footer);
+  --outline-text-color: var(--outline-white);
+  --outline-label-color: hsl(0, 0%, 70%);
+  --outline-hairline: 1px solid var(--outline-dark-border);
+  --outline-elevation: rgb(0 0 0 / 30%) 0px 2px 3px 2px;
+  --outline-comms-dialog-primary-background-color: var(--outline-dark-primary);
+  --outline-app-dialog-primary-background-color: var(--outline-dark-card);
+
+  /* Input field colors for dark mode */
+  --outline-input-bg: var(--outline-dark-bg);
+  --outline-input-text: var(--outline-white);
+  --outline-input-border: var(--outline-dark-border);
+  --outline-icon-color: var(--outline-label-color);
+
+  color-scheme: dark;
+}
+
+/* Class-based light mode - applied when user selects light theme */
+:root.light-theme {
+  --outline-card-background: var(--outline-white);
+  --outline-card-footer: var(--outline-light-gray);
+  --outline-text-color: var(--outline-black);
+  --outline-label-color: var(--outline-medium-gray);
+  --outline-hairline: 1px solid hsl(0, 0%, 85%);
+  --outline-elevation: rgb(0 0 0 / 30%) 0px 2px 3px 2px;
+  --outline-app-dialog-primary-background-color: var(--outline-white);
+
+  /* Input field colors for light mode */
+  --outline-input-bg: var(--outline-white);
+  --outline-input-text: var(--outline-black);
+  --outline-input-border: var(--outline-medium-gray);
+
+  color-scheme: light;
+}
+
+/* Add general input styling to ensure proper contrast */
+input,
+textarea,
+select,
+md-text-field,
+md-filled-text-field,
+md-outlined-text-field,
+md-textarea,
+md-filled-textarea,
+md-outlined-textarea,
+paper-input,
+iron-input {
+  background-color: var(--outline-input-bg);
+  color: var(--outline-input-text);
+  border: 1px solid var(--outline-input-border);
+}
+
+/* Style Material Web Components textfields */
+mwc-textfield {
+  --mdc-text-field-fill-color: var(--outline-input-bg);
+  --mdc-text-field-ink-color: var(--outline-input-text);
+  --mdc-text-field-label-ink-color: var(--outline-label-color);
+  --mdc-text-field-outlined-idle-border-color: var(--outline-input-border);
+  --mdc-theme-primary: var(--outline-primary);
+}
+
+/* Fix for language selector */
+language-view {
+  color: var(--outline-text-color);
+  background-color: var(--outline-card-background);
+}
+
+/* Force text colors for specific elements */
+* {
+  color-scheme: normal;
+}
+
+/* Set default text color for all pages */
+html,
+body {
+  color: var(--outline-text-color);
+  background-color: var(--outline-card-background);
+}
 
 @font-face {
   font-family: 'Jigsaw Sans';
@@ -105,6 +242,7 @@
   src: url(./assets/material_icons.woff2) format('woff2');
 }
 
+/* Material icons styling - consider moving to a component-specific file if only used in certain components */
 .material-icons {
   -webkit-font-smoothing: antialiased;
   direction: ltr;
@@ -119,4 +257,13 @@
   text-transform: none;
   white-space: nowrap;
   word-wrap: normal;
+}
+
+/* Ensure that all footer text is visible in all themes */
+footer,
+h1,
+h2,
+section,
+.zerostate-footer {
+  color: var(--outline-text-color);
 }
