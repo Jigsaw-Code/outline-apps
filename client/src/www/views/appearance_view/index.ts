@@ -81,16 +81,16 @@ export class AppearanceView extends LitElement {
       --md-list-item-label-text-color: var(--outline-text-color);
       --md-list-item-headline-color: var(--outline-text-color);
       --md-list-item-supporting-text-color: var(--outline-text-color);
-      color: var(--outline-text-color) !important;
+      color: var(--outline-text-color);
       margin: 4px 0;
     }
 
-    /* Important direct override for theme text - needed for dark mode */
+    /* Direct override for theme text - needed for dark mode */
     md-list-item span,
     md-list-item div,
     md-list-item::before,
     md-list-item::after {
-      color: var(--outline-text-color) !important;
+      color: var(--outline-text-color);
     }
 
     md-list-item.selected {
@@ -108,6 +108,20 @@ export class AppearanceView extends LitElement {
       font-size: 24px;
     }
 
+    /* Text elements in list items */
+    .theme-item-text {
+      color: var(--outline-text-color);
+    }
+
+    /* Icon colors */
+    .theme-icon {
+      color: var(--outline-text-color);
+    }
+
+    .theme-icon-selected {
+      color: var(--outline-primary);
+    }
+
     /* Explicitly set text color for list items */
     md-list-item::part(label),
     md-list-item::part(supporting-text),
@@ -123,7 +137,7 @@ export class AppearanceView extends LitElement {
 
     /* Override Material Web styling to ensure proper text visibility */
     ::slotted(*) {
-      color: var(--outline-text-color) !important;
+      color: var(--outline-text-color);
     }
   `;
 
@@ -136,23 +150,18 @@ export class AppearanceView extends LitElement {
               class=${classMap({selected: this.selectedThemeId === id})}
               data-value="${id}"
               @click=${() => this.handleThemeSelection(id)}
-              style="color: var(--outline-text-color) !important;"
             >
               <md-icon
                 slot="start"
-                style="color: ${this.selectedThemeId === id
-                  ? 'var(--outline-primary)'
-                  : 'var(--outline-text-color)'} !important;"
+                class=${this.selectedThemeId === id
+                  ? 'theme-icon-selected'
+                  : 'theme-icon'}
                 >${icon}</md-icon
               >
               <md-ripple></md-ripple>
-              <span style="color: var(--outline-text-color) !important;"
-                >${name}</span
-              >
+              <span class="theme-item-text">${name}</span>
               ${this.selectedThemeId === id
-                ? html`<md-icon
-                    slot="end"
-                    style="color: var(--outline-primary);"
+                ? html`<md-icon slot="end" class="theme-icon-selected"
                     >check</md-icon
                   >`
                 : nothing}

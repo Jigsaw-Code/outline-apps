@@ -118,19 +118,19 @@ iron-input {
 /* Dark mode support - automatically applies when system preference is dark */
 @media (prefers-color-scheme: dark) {
   :root.system-theme {
-    --outline-card-background: var(--outline-dark-card) !important;
-    --outline-card-footer: var(--outline-dark-footer) !important;
-    --outline-text-color: var(--outline-white) !important;
-    --outline-label-color: hsl(0, 0%, 70%) !important;
-    --outline-hairline: 1px solid var(--outline-dark-border) !important;
-    --outline-elevation: rgb(0 0 0 / 30%) 0px 2px 3px 2px !important;
-    --outline-comms-dialog-primary-background-color: var(--outline-dark-primary) !important;
-    --outline-app-dialog-primary-background-color: var(--outline-dark-card) !important;
+    --outline-card-background: var(--outline-dark-card);
+    --outline-card-footer: var(--outline-dark-footer);
+    --outline-text-color: var(--outline-white);
+    --outline-label-color: hsl(0, 0%, 70%);
+    --outline-hairline: 1px solid var(--outline-dark-border);
+    --outline-elevation: rgb(0 0 0 / 30%) 0px 2px 3px 2px;
+    --outline-comms-dialog-primary-background-color: var(--outline-dark-primary);
+    --outline-app-dialog-primary-background-color: var(--outline-dark-card);
 
     /* Input field colors for dark mode */
-    --outline-input-bg: var(--outline-dark-bg) !important;
-    --outline-input-text: var(--outline-white) !important;
-    --outline-input-border: var(--outline-dark-border) !important;
+    --outline-input-bg: var(--outline-dark-bg);
+    --outline-input-text: var(--outline-white);
+    --outline-input-border: var(--outline-dark-border);
 
     color-scheme: dark;
   }
@@ -138,37 +138,37 @@ iron-input {
 
 /* Class-based dark mode - applied when user selects dark theme */
 :root.dark-theme {
-  --outline-card-background: var(--outline-dark-card) !important;
-  --outline-card-footer: var(--outline-dark-footer) !important;
-  --outline-text-color: var(--outline-white) !important;
-  --outline-label-color: hsl(0, 0%, 70%) !important;
-  --outline-hairline: 1px solid var(--outline-dark-border) !important;
-  --outline-elevation: rgb(0 0 0 / 30%) 0px 2px 3px 2px !important;
-  --outline-comms-dialog-primary-background-color: var(--outline-dark-primary) !important;
-  --outline-app-dialog-primary-background-color: var(--outline-dark-card) !important;
+  --outline-card-background: var(--outline-dark-card);
+  --outline-card-footer: var(--outline-dark-footer);
+  --outline-text-color: var(--outline-white);
+  --outline-label-color: hsl(0, 0%, 70%);
+  --outline-hairline: 1px solid var(--outline-dark-border);
+  --outline-elevation: rgb(0 0 0 / 30%) 0px 2px 3px 2px;
+  --outline-comms-dialog-primary-background-color: var(--outline-dark-primary);
+  --outline-app-dialog-primary-background-color: var(--outline-dark-card);
 
   /* Input field colors for dark mode */
-  --outline-input-bg: var(--outline-dark-bg) !important;
-  --outline-input-text: var(--outline-white) !important;
-  --outline-input-border: var(--outline-dark-border) !important;
+  --outline-input-bg: var(--outline-dark-bg);
+  --outline-input-text: var(--outline-white);
+  --outline-input-border: var(--outline-dark-border);
 
   color-scheme: dark;
 }
 
 /* Class-based light mode - applied when user selects light theme */
 :root.light-theme {
-  --outline-card-background: var(--outline-white) !important;
-  --outline-card-footer: var(--outline-light-gray) !important;
-  --outline-text-color: var(--outline-black) !important;
-  --outline-label-color: var(--outline-medium-gray) !important;
-  --outline-hairline: 1px solid hsl(0, 0%, 85%) !important;
-  --outline-elevation: rgb(0 0 0 / 30%) 0px 2px 3px 2px !important;
-  --outline-app-dialog-primary-background-color: var(--outline-white) !important;
+  --outline-card-background: var(--outline-white);
+  --outline-card-footer: var(--outline-light-gray);
+  --outline-text-color: var(--outline-black);
+  --outline-label-color: var(--outline-medium-gray);
+  --outline-hairline: 1px solid hsl(0, 0%, 85%);
+  --outline-elevation: rgb(0 0 0 / 30%) 0px 2px 3px 2px;
+  --outline-app-dialog-primary-background-color: var(--outline-white);
 
   /* Input field colors for light mode */
-  --outline-input-bg: var(--outline-white) !important;
-  --outline-input-text: var(--outline-black) !important;
-  --outline-input-border: var(--outline-medium-gray) !important;
+  --outline-input-bg: var(--outline-white);
+  --outline-input-text: var(--outline-black);
+  --outline-input-border: var(--outline-medium-gray);
 
   color-scheme: light;
 }

@@ -154,7 +154,7 @@ export class ContactView extends LitElement {
 
       mwc-list-item span {
         white-space: normal;
-        color: var(--outline-text-color) !important;
+        color: var(--outline-text-color);
         display: block;
         width: 100%;
       }
@@ -163,10 +163,10 @@ export class ContactView extends LitElement {
       mwc-radio {
         --mdc-theme-secondary: var(--outline-primary);
         --mdc-radio-unchecked-color: var(--outline-text-color);
-        --mdc-radio-unchecked-color: var(--outline-text-color) !important;
-        --mdc-theme-secondary: var(--outline-primary) !important;
-        --mdc-radio-disabled-color: var(--outline-label-color) !important;
-        border-color: var(--outline-text-color) !important;
+        --mdc-radio-unchecked-color: var(--outline-text-color);
+        --mdc-theme-secondary: var(--outline-primary);
+        --mdc-radio-disabled-color: var(--outline-label-color);
+        border-color: var(--outline-text-color);
       }
 
       mwc-formfield {

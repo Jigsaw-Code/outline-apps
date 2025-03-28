@@ -53,7 +53,7 @@ export class LanguageView extends LitElement {
       --md-list-item-label-text-color: var(--outline-text-color);
       --md-list-item-headline-color: var(--outline-text-color);
       --md-list-item-supporting-text-color: var(--outline-text-color);
-      color: var(--outline-text-color) !important;
+      color: var(--outline-text-color);
     }
 
     /* Important direct override for language text - needed for dark mode */
@@ -61,7 +61,7 @@ export class LanguageView extends LitElement {
     md-list-item div,
     md-list-item::before,
     md-list-item::after {
-      color: var(--outline-text-color) !important;
+      color: var(--outline-text-color);
     }
 
     md-list-item.selected {
