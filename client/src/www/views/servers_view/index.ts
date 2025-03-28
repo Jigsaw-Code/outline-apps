@@ -92,6 +92,13 @@ export class ServerList extends LitElement {
         padding: 24px 0 max(16px, env(safe-area-inset-bottom));
         text-align: center;
       }
+      /* Moved from global CSS - specific styling for zero state footer */
+      section footer {
+        color: var(--outline-text-color);
+      }
+      section footer a {
+        color: var(--outline-primary);
+      }
       button {
         align-items: center;
         background-color: transparent;

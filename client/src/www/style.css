@@ -210,22 +210,6 @@ language-view {
   color-scheme: normal;
 }
 
-md-list-item,
-iron-pages>*,
-.page,
-app-header,
-app-toolbar,
-md-list,
-servers-view,
-contact-view,
-about-view,
-language-view,
-licenses-view,
-theme-view,
-.page-title {
-  color: var(--outline-text-color);
-}
-
 /* Set default text color for all pages */
 html,
 body {
@@ -255,6 +239,7 @@ body {
   src: url(./assets/material_icons.woff2) format('woff2');
 }
 
+/* Material icons styling - consider moving to a component-specific file if only used in certain components */
 .material-icons {
   -webkit-font-smoothing: antialiased;
   direction: ltr;
@@ -269,15 +254,6 @@ body {
   text-transform: none;
   white-space: nowrap;
   word-wrap: normal;
-}
-
-/* Add specific styling for "Don't have a server" message in zero state view */
-servers-view section footer {
-  color: var(--outline-text-color) !important;
-}
-
-servers-view section footer a {
-  color: var(--outline-primary) !important;
 }
 
 /* Ensure that all footer text is visible in all themes */
