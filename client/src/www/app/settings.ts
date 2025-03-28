@@ -68,12 +68,12 @@ export class Settings {
   private loadSettings() {
     const settingsJson = this.storage.getItem(Settings.STORAGE_KEY);
     if (!settingsJson) {
-      console.debug(`No settings found in storage`);
+      console.debug('No settings found in storage');
       return;
     }
     const storageSettings = JSON.parse(settingsJson);
     for (const key in storageSettings) {
-      if (storageSettings.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(storageSettings, key)) {
         this.settings.set(key, storageSettings[key]);
       }
     }

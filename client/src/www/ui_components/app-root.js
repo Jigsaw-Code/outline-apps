@@ -180,7 +180,7 @@ export class AppRoot extends mixinBehaviors(
             color: var(--medium-green);
             background-color: var(--light-gray);
             font-weight: normal;
-          }
+          };
         }
 
         #drawer-nav paper-item:focus::before,
@@ -884,7 +884,7 @@ export class AppRoot extends mixinBehaviors(
 
     // If the theme page was selected, update the selected theme
     if (selectedPage === 'theme' && this.$.themeView) {
-      const themeManager = document.querySelector('app-root').__themeManager;
+      const themeManager = this.__themeManager;
       if (themeManager) {
         this.$.themeView.selectedThemeId = themeManager.getThemePreference();
       }
@@ -894,7 +894,7 @@ export class AppRoot extends mixinBehaviors(
   // Handle theme selection from the theme view
   _onThemeRequested(event) {
     this.dispatchEvent(
-      new CustomEvent('SetThemeRequested', {
+      new globalThis.CustomEvent('SetThemeRequested', {
         bubbles: true,
         composed: true,
         detail: event.detail,

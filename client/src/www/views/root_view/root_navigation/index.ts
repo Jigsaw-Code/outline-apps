@@ -53,7 +53,9 @@ export class RootNavigation extends LitElement {
       height: 100vh;
       overflow-y: scroll;
       position: absolute;
-      transition: transform 0.3s ease, visibility 0.3s ease;
+      transition:
+        transform 0.3s ease,
+        visibility 0.3s ease;
       width: 250px;
       will-change: transform;
       visibility: hidden;
