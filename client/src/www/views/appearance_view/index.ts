@@ -135,7 +135,7 @@ export class AppearanceView extends LitElement {
             <md-list-item
               class=${classMap({selected: this.selectedThemeId === id})}
               data-value="${id}"
-              @click="${this.handleThemeSelection}"
+              @click=${() => this.handleThemeSelection(id)}
               style="color: var(--outline-text-color) !important;"
             >
               <md-icon
@@ -163,24 +163,16 @@ export class AppearanceView extends LitElement {
     `;
   }
 
-  private handleThemeSelection({target}: Event) {
-    const element = target as HTMLElement;
-    const closestListItem = element.closest('md-list-item');
-
-    if (closestListItem) {
-      const themeValue = closestListItem.getAttribute('data-value');
-      if (themeValue) {
-        this.selectedThemeId = themeValue;
-        this.dispatchEvent(
-          new CustomEvent('SetThemeRequested', {
-            bubbles: true,
-            composed: true,
-            detail: {
-              themePreference: themeValue,
-            },
-          })
-        );
-      }
-    }
+  private handleThemeSelection(themeValue: ThemePreference) {
+    this.selectedThemeId = themeValue;
+    this.dispatchEvent(
+      new CustomEvent('SetThemeRequested', {
+        bubbles: true,
+        composed: true,
+        detail: {
+          themePreference: themeValue,
+        },
+      })
+    );
   }
 }
