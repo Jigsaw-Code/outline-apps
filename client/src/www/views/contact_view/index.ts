@@ -118,6 +118,15 @@ export class ContactView extends LitElement {
         --mdc-select-dropdown-icon-color: var(--outline-text-color);
         --mdc-select-hover-line-color: var(--outline-text-color);
         background-color: var(--outline-card-background);
+        --mdc-select-ink-color: var(--outline-text-color);
+        --mdc-theme-primary: var(--outline-primary);
+        --mdc-select-label-ink-color: var(--outline-label-color);
+        --mdc-select-dropdown-icon-color: var(--outline-text-color);
+        --mdc-notched-outline-border-color: var(--outline-input-border);
+        border: 1px solid var(--outline-hairline);
+        border-radius: 4px;
+        padding: 4px 0;
+        margin-top: 16px;
       }
 
       mwc-select[hidden] {
@@ -139,17 +148,25 @@ export class ContactView extends LitElement {
         padding-top: var(--outline-mini-gutter);
         color: var(--outline-text-color);
         --mdc-theme-text-primary-on-background: var(--outline-text-color);
+        background-color: var(--outline-card-background);
+        padding: 8px 16px;
       }
 
       mwc-list-item span {
         white-space: normal;
-        color: var(--outline-text-color);
+        color: var(--outline-text-color) !important;
+        display: block;
+        width: 100%;
       }
 
       /* Fix radio buttons */
       mwc-radio {
         --mdc-theme-secondary: var(--outline-primary);
         --mdc-radio-unchecked-color: var(--outline-text-color);
+        --mdc-radio-unchecked-color: var(--outline-text-color) !important;
+        --mdc-theme-secondary: var(--outline-primary) !important;
+        --mdc-radio-disabled-color: var(--outline-label-color) !important;
+        border-color: var(--outline-text-color) !important;
       }
 
       mwc-formfield {
@@ -347,7 +364,6 @@ export class ContactView extends LitElement {
                       required
                       @change=${this.selectHasOpenTicket}
                       ${ref(element.ref)}
-                      style="--mdc-radio-unchecked-color: var(--outline-text-color) !important; --mdc-theme-secondary: var(--outline-primary) !important; --mdc-radio-disabled-color: var(--outline-label-color) !important; border-color: var(--outline-text-color) !important;"
                     >
                     </mwc-radio>
                   </mwc-formfield>
@@ -361,18 +377,11 @@ export class ContactView extends LitElement {
             ?hidden=${!this.showIssueSelector}
             ?fixedMenuPosition=${true}
             @selected="${this.selectIssue}"
-            style="--mdc-select-ink-color: var(--outline-text-color); --mdc-theme-primary: var(--outline-primary); --mdc-select-label-ink-color: var(--outline-label-color); --mdc-select-dropdown-icon-color: var(--outline-text-color); --mdc-notched-outline-border-color: var(--outline-input-border); border: 1px solid var(--outline-hairline); border-radius: 4px; background-color: var(--outline-card-background); padding: 4px 0; margin-top: 16px;"
           >
             ${ContactView.ISSUES.map(value => {
               return html`
-                <mwc-list-item
-                  value="${value}"
-                  style="color: var(--outline-text-color); --mdc-theme-text-primary-on-background: var(--outline-text-color); background-color: var(--outline-card-background); padding: 8px 16px;"
-                >
-                  <span
-                    style="color: var(--outline-text-color) !important; display: block; width: 100%;"
-                    >${this.localize(`contact-view-issue-${value}`)}</span
-                  >
+                <mwc-list-item value="${value}">
+                  <span>${this.localize(`contact-view-issue-${value}`)}</span>
                 </mwc-list-item>
               `;
             })}
