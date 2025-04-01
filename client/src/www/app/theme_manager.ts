@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+// TODO(daniellacosse): Evaluate the existence of the theme manager with the team and refactor it into app-root if necessary
+
 import {Settings, SettingsKey, ThemePreference} from './settings';
 
 export class ThemeManager {
