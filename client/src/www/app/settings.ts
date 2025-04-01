@@ -73,9 +73,7 @@ export class Settings {
     }
     const storageSettings = JSON.parse(settingsJson);
     for (const key in storageSettings) {
-      if (storageSettings.hasOwnProperty(key)) {
-        this.settings.set(key, storageSettings[key]);
-      }
+      this.settings.set(key, storageSettings[key]);
     }
   }
 
