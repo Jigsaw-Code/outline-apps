@@ -115,6 +115,10 @@ const sharedCSS = css`
     position: relative;
   }
 
+  .card-menu-button md-icon {
+    color: var(--outline-text-color);
+  }
+
   .card-footer {
     background: var(--outline-card-footer);
     border-top: var(--outline-hairline);

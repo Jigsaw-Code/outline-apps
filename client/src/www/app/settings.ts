@@ -21,6 +21,14 @@ export enum SettingsKey {
   VPN_WARNING_DISMISSED = 'vpn-warning-dismissed',
   AUTO_CONNECT_DIALOG_DISMISSED = 'auto-connect-dialog-dismissed',
   PRIVACY_ACK = 'privacy-ack',
+  THEME_PREFERENCE = 'theme-preference',
+}
+
+// Theme options
+export enum ThemePreference {
+  LIGHT = 'light',
+  DARK = 'dark',
+  SYSTEM = 'system',
 }
 
 // Persistent storage for user settings that supports a limited set of keys.
@@ -30,8 +38,8 @@ export class Settings {
   private readonly settings = new Map<string, string>();
 
   constructor(
-      private storage: Storage = window.localStorage,
-      private validKeys: string[] = Object.values(SettingsKey)
+    private storage: Storage = window.localStorage,
+    private validKeys: string[] = Object.values(SettingsKey)
   ) {
     this.loadSettings();
   }
@@ -60,14 +68,12 @@ export class Settings {
   private loadSettings() {
     const settingsJson = this.storage.getItem(Settings.STORAGE_KEY);
     if (!settingsJson) {
-      console.debug(`No settings found in storage`);
+      console.debug('No settings found in storage');
       return;
     }
     const storageSettings = JSON.parse(settingsJson);
     for (const key in storageSettings) {
-      if (storageSettings.hasOwnProperty(key)) {
-        this.settings.set(key, storageSettings[key]);
-      }
+      this.settings.set(key, storageSettings[key]);
     }
   }
 
@@ -80,4 +86,3 @@ export class Settings {
     this.storage.setItem(Settings.STORAGE_KEY, storageSettingsJson);
   }
 }
-
