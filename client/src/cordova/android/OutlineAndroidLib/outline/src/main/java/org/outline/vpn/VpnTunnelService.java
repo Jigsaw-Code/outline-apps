@@ -416,7 +416,7 @@ public class VpnTunnelService extends VpnService {
     }
   }
 
-  private void storeActiveTunnel(final TunnelConfig config, final String serverName, boolean isUdpSupported) {
+  private void storeActiveTunnel(final TunnelConfig config, boolean isUdpSupported) {
     LOG.info("Storing active tunnel.");
     JSONObject tunnel = new JSONObject();
     try {
