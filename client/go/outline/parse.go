@@ -25,9 +25,9 @@ import (
 )
 
 type parseTunnelConfigRequest struct {
-	Transport ast.Node
+	Transport    ast.Node
 	Usage_Report ast.Node
-	Error     *struct {
+	Error        *struct {
 		Message string
 		Details string
 	}
@@ -35,8 +35,8 @@ type parseTunnelConfigRequest struct {
 
 // tunnelConfigJson must match the definition in config.ts.
 type tunnelConfigJson struct {
-	FirstHop  string `json:"firstHop"`
-	Transport string `json:"transport"`
+	FirstHop    string `json:"firstHop"`
+	Transport   string `json:"transport"`
 	UsageReport string `json:"usage_report"`
 }
 
@@ -122,7 +122,7 @@ func doParseTunnelConfig(input string) *InvokeMethodResult {
 		}
 	}
 
-	result := NewClient(transportConfigText, usageReportConfigText)
+	result := NewClient(transportConfigText)
 	if result.Error != nil {
 		return &InvokeMethodResult{
 			Error: result.Error,

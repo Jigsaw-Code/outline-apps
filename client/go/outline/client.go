@@ -32,11 +32,14 @@ import (
 type Client struct {
 	sd *config.Dialer[transport.StreamConn]
 	pl *config.PacketListener
+}
+
+type SessionClient struct {
 	ur *config.UsageReporter
 }
 
 func (c *Client) Connect() {
-	// TODO: only report if transportConfig is configured to report. 
+	// TODO: only report if transportConfig is configured to report.
 	// tcpDialer := transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
 	reporting.StartReporting(c)
 }
@@ -54,7 +57,7 @@ func (c *Client) ListenPacket(ctx context.Context) (net.PacketConn, error) {
 }
 
 type UsageReportingClient struct {
-	sd *config.Dialer[transport.StreamConn]
+	sd                  *config.Dialer[transport.StreamConn]
 	usageReporterConfig *config.UsageReporter
 }
 
@@ -66,19 +69,30 @@ type NewClientResult struct {
 	Error  *platerrors.PlatformError
 }
 
+type NewSessionClientResult struct {
+	SessionClient *SessionClient
+	Error         *platerrors.PlatformError
+}
+
+func NewSessionClient(transportAndSessionConfig string, dialer transport.StreamDialer) *NewSessionClientResult {
+	usageReporter, err := NewUsageReportWithBaseDialers(transportAndSessionConfig, dialer)
+	if err != nil {
+		return &NewSessionClientResult{Error: platerrors.ToPlatformError(err)}
+	}
+	sessionClient := &SessionClient{
+		ur: usageReporter,
+	}
+	return &NewSessionClientResult{SessionClient: sessionClient}
+}
+
 // NewClient creates a new Outline client from a configuration string.
-func NewClient(transportConfig string, usageReportConfig string) *NewClientResult {
+func NewClient(transportConfig string) *NewClientResult {
 	tcpDialer := transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
 	udpDialer := transport.UDPDialer{}
 	client, err := NewClientWithBaseDialers(transportConfig, &tcpDialer, &udpDialer)
 	if err != nil {
 		return &NewClientResult{Error: platerrors.ToPlatformError(err)}
 	}
-	usageReporter, err := NewUsageReportWithBaseDialers(usageReportConfig, &tcpDialer)
-	if err != nil {
-		return &NewClientResult{Error: platerrors.ToPlatformError(err)}
-	}
-	client.ur = usageReporter
 	return &NewClientResult{Client: client}
 }
 
