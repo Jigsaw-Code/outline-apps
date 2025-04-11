@@ -53,6 +53,7 @@ export interface TunnelConfigJson {
   /** transport describes how to establish connections to the destinations.
    * See https://github.com/Jigsaw-Code/outline-apps/blob/master/client/go/outline/config.go for format. */
   transport: string;
+  usage_report: string;
 }
 
 /**

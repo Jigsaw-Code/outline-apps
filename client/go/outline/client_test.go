@@ -148,6 +148,35 @@ udp:
 	require.Equal(t, "example.com:53", result.Client.pl.FirstHop)
 }
 
+func Test_SessionReport(t *testing.T) {
+	config := `
+$type: tcpudp
+tcp:
+    $type: shadowsocks
+    endpoint: example.com:80
+    cipher: chacha20-ietf-poly1305
+    secret: SECRET
+    prefix: "POST "
+udp:
+    $type: shadowsocks
+    endpoint: example.com:53
+    cipher: chacha20-ietf-poly1305
+    secret: SECRET`
+	sessionConfig := `
+$type: sessionreport
+url: https://your-callback-server.com/outline_callback
+interval: 24h
+enable_cookies: true`
+
+	transportClient := NewClient(config)
+	require.Nil(t, transportClient.Error, "Got %v", transportClient.Error)
+	sessionClient := NewSessionClient(sessionConfig, transportClient.Client)
+	require.Nil(t, sessionClient.Error, "Got %v", sessionClient.Error)
+	require.NotNil(t, sessionClient.SessionClient, "SessionClient is nil")
+	require.NotNil(t, sessionClient.SessionClient.ur, "UsageReporter is nil")
+	require.Equal(t, "https://your-callback-server.com/outline_callback", sessionClient.SessionClient.ur.Url)
+}
+
 func Test_NewTransport_YAML_Reuse(t *testing.T) {
 	config := `
 $type: tcpudp

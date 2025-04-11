@@ -24,9 +24,9 @@ import (
 )
 
 type UsageReporter struct {
-	interval      time.Duration
-	url           string
-	enableCookies bool
+	Interval      time.Duration
+	Url           string
+	EnableCookies bool
 }
 
 // TransportPair provides a StreamDialer and PacketListener, to use as the transport in a Tun2Socks VPN.
@@ -146,7 +146,6 @@ func NewDefaultTransportProvider(tcpDialer transport.StreamDialer, udpDialer tra
 	transports.RegisterSubParser("tcpudp", func(ctx context.Context, config map[string]any) (*TransportPair, error) {
 		return parseTCPUDPTransportPair(ctx, config, streamDialers.Parse, packetListeners.Parse)
 	})
-
 
 	return transports
 }

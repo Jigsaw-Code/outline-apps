@@ -24,8 +24,8 @@ import (
 
 // UsageReporterConfig is the format for the Usage Reporter config.
 type UsageReporterConfig struct {
-	Interval string
-	Url       string
+	Interval       string
+	Url            string
 	Enable_Cookies bool
 }
 
@@ -41,9 +41,9 @@ func parseUsageReporterConfig(ctx context.Context, configMap map[string]any) (*U
 	}
 
 	return &UsageReporter{
-		interval:  duration,
-		url:       config.Url,
-		enableCookies: config.Enable_Cookies,
+		Interval:      duration,
+		Url:           config.Url,
+		EnableCookies: config.Enable_Cookies,
 	}, nil
 }
 

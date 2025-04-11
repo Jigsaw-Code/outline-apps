@@ -17,12 +17,14 @@ package outline
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/config"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/reporting"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
+	"github.com/goccy/go-yaml"
 )
 
 // Client provides a transparent container for [transport.StreamDialer] and [transport.PacketListener]
@@ -140,8 +142,20 @@ func NewClientWithBaseDialers(transportConfig string, tcpDialer transport.Stream
 	return &Client{sd: transportPair.StreamDialer, pl: transportPair.PacketListener}, nil
 }
 
-func NewUsageReportWithBaseDialers(usageReportConfig string, tcpDialer transport.StreamDialer) (*config.UsageReporter, error) {
-	usageReportYAML, err := config.ParseConfigYAML(usageReportConfig)
+func NewUsageReportWithBaseDialers(transportAndSessionConfig string, tcpDialer transport.StreamDialer) (*config.UsageReporter, error) {
+	var yamlValue map[string]any
+	if err := yaml.Unmarshal([]byte(transportAndSessionConfig), &yamlValue); err != nil {
+		return nil, &platerrors.PlatformError{
+			Code:    platerrors.InvalidConfig,
+			Message: "config is not valid YAML",
+			Cause:   platerrors.ToPlatformError(err),
+		}
+	}
+	fmt.Println("yamlValue: ", yamlValue)
+	// if !hasKey(yamlValue, "usage_report") {
+	// 	return nil, nil
+	// }
+	usageReportYAML, err := config.ParseConfigYAML(transportAndSessionConfig)
 	if err != nil {
 		return nil, &platerrors.PlatformError{
 			Code:    platerrors.InvalidConfig,
@@ -165,5 +179,6 @@ func NewUsageReportWithBaseDialers(usageReportConfig string, tcpDialer transport
 			}
 		}
 	}
+	fmt.Println("usageReporter", usageReporter)
 	return usageReporter, nil
 }

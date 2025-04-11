@@ -209,7 +209,8 @@ public class OutlinePlugin extends CordovaPlugin {
           final String tunnelId = args.getString(0);
           final String serverName = args.getString(1);
           final String transportConfig = args.getString(2);
-          sendActionResult(callback, startVpnTunnel(tunnelId, transportConfig, serverName));
+          final String usageReportConfig = args.getString(3);
+          sendActionResult(callback, startVpnTunnel(tunnelId, transportConfig, usageReportConfig, serverName));
         } else if (Action.STOP.is(action)) {
           final String tunnelId = args.getString(0);
           LOG.info(String.format(Locale.ROOT, "Stopping VPN tunnel %s", tunnelId));
@@ -272,13 +273,14 @@ public class OutlinePlugin extends CordovaPlugin {
   }
 
   private DetailedJsonError startVpnTunnel(
-      final String tunnelId, final String transportConfig, final String serverName
+      final String tunnelId, final String transportConfig, final String usageReportConfig, final String serverName
   ) throws RemoteException {
     LOG.info(String.format(Locale.ROOT, "Starting VPN tunnel %s for server %s", tunnelId, serverName));
     final TunnelConfig tunnelConfig = new TunnelConfig();
     tunnelConfig.id = tunnelId;
     tunnelConfig.name = serverName;
     tunnelConfig.transportConfig = transportConfig;
+    tunnelConfig.usageReportConfig = usageReportConfig;
     return vpnTunnelService.startTunnel(tunnelConfig);
   }
 
