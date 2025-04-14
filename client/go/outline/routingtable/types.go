@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package router
+package routingtable
 
-// Router defines a generic interface for adding matching rules (like an IP prefix)
+// The RoutingTable defines a generic interface for adding matching routes (like an IP prefix)
 // to match a potentially different key (like a specific IP address) to find a value.
-type Router[R any, M any, V any] interface {
+type RoutingTable[R any, M any, V any] interface {
 	// Implementations should handle potential conflicts or errors.
-	AddRule(rule R, value V) error
+	AddRoute(rule R, value V) error
 
-	// Implementations should define the matching logic (e.g., exact, longest prefix).
-	Match(matchKey M) (V, error)
+	// Implementations should define the lookup logic (e.g., exact, longest prefix).
+	Lookup(matchKey M) (V, error)
 }

@@ -13,6 +13,8 @@ require (
 	github.com/google/go-licenses v1.6.0
 	github.com/songgao/water v0.0.0-20200317203138-2b4b6d7c09d8
 	github.com/stretchr/testify v1.9.0
+	github.com/yl2chen/cidranger v1.0.2
+	go4.org/netipx v0.0.0-20231129151722-fdeea329fbba
 	golang.org/x/mobile v0.0.0-20241213221354-a87c1cf6cf46
 	golang.org/x/sys v0.28.0
 )

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package router
+package routingtable
 
 import (
 	"math/rand"
@@ -111,19 +111,19 @@ func generateAddresses(count int, seed int64) []netip.Addr {
 var benchmarkPrefixes = generatePrefixes(numBenchmarkRules, time.Now().UnixNano())
 var benchmarkMatchAddrs = generateAddresses(numBenchmarkMatchIPs, time.Now().UnixNano()+1) // Use different seed
 
-// Benchmark adding rules to an empty router.
-func BenchmarkIPRouter_AddRule_Growing(b *testing.B) {
-	router := NewIPRouter[string]()
+// Benchmark adding rules to an empty routing table.
+func BenchmarkIPRoutingTable_AddRule_Growing(b *testing.B) {
+	table := NewIPRoutingTable[string]()
 	value := "benchmark_value"
 
 	b.ResetTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
 		prefix := benchmarkPrefixes[i%len(benchmarkPrefixes)]
-		err := router.AddRule(prefix, value)
+		err := table.AddRoute(prefix, value)
 		if err != nil {
 			b.StopTimer()
-			b.Fatalf("AddRule failed during growing benchmark: %v", err)
+			b.Fatalf("AddRoute failed during growing benchmark: %v", err)
 		}
 	}
 }
@@ -132,18 +132,18 @@ var benchVal string
 var benchErr error
 
 // Benchmark matching against a pre-filled router.
-func BenchmarkIPRouter_Match(b *testing.B) {
-	router := NewIPRouter[string]()
+func BenchmarkIPRoutingTable_Lookup(b *testing.B) {
+	table := NewIPRoutingTable[string]()
 	value := "benchmark_value"
 	defaultV4 := mustParsePrefix("0.0.0.0/0")
 	defaultV6 := mustParsePrefix("::/0")
-	router.AddRule(defaultV4, "default")
-	router.AddRule(defaultV6, "default")
+	table.AddRoute(defaultV4, "default")
+	table.AddRoute(defaultV6, "default")
 
 	for _, prefix := range benchmarkPrefixes {
-		err := router.AddRule(prefix, value)
+		err := table.AddRoute(prefix, value)
 		if err != nil {
-			b.Fatalf("Setup failed: AddRule error: %v", err)
+			b.Fatalf("Setup failed: AddRoute error: %v", err)
 		}
 	}
 
@@ -153,7 +153,7 @@ func BenchmarkIPRouter_Match(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		ipToMatch := benchmarkMatchAddrs[i%len(benchmarkMatchAddrs)]
 
-		v, err := router.Match(ipToMatch)
+		v, err := table.Lookup(ipToMatch)
 
 		benchVal = v
 		benchErr = err

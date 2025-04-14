@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package router
+package routingtable
 
 import (
 	"fmt"
@@ -36,23 +36,23 @@ func mustParseAddr(s string) netip.Addr {
 	return a
 }
 
-func TestIPRouter_Empty(t *testing.T) {
-	router := NewIPRouter[string]()
+func TestIPRoutingTable_Empty(t *testing.T) {
+	table := NewIPRoutingTable[string]()
 	ip := mustParseAddr("192.0.2.1")
 
-	_, err := router.Match(ip)
+	_, err := table.Lookup(ip)
 	if err == nil {
-		t.Errorf("Match(%v) on empty router succeeded unexpectedly, want error", ip)
+		t.Errorf("Lookup(%v) on empty table succeeded unexpectedly, want error", ip)
 	}
 }
 
-func TestIPRouter_BasicMatch(t *testing.T) {
-	router := NewIPRouter[string]()
+func TestIPRoutingTable_BasicLookup(t *testing.T) {
+	table := NewIPRoutingTable[string]()
 	prefix := mustParsePrefix("192.168.1.0/24")
 	dialerID := "lan_dialer"
-	err := router.AddRule(prefix, dialerID)
+	err := table.AddRoute(prefix, dialerID)
 	if err != nil {
-		t.Fatalf("AddRule failed: %v", err)
+		t.Fatalf("AddRoute failed: %v", err)
 	}
 
 	tests := []struct {
@@ -70,37 +70,37 @@ func TestIPRouter_BasicMatch(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			gotValue, gotErr := router.Match(tc.ip)
+			gotValue, gotErr := table.Lookup(tc.ip)
 
 			if tc.wantErr {
 				if gotErr == nil {
-					t.Errorf("Match(%v) = %q, nil; want error", tc.ip, gotValue)
+					t.Errorf("Lookup(%v) = %q, nil; want error", tc.ip, gotValue)
 				}
 			} else {
 				if gotErr != nil {
-					t.Errorf("Match(%v) unexpected error: %v", tc.ip, gotErr)
+					t.Errorf("Lookup(%v) unexpected error: %v", tc.ip, gotErr)
 				}
 				if gotValue != tc.wantValue {
-					t.Errorf("Match(%v) = %q, want %q", tc.ip, gotValue, tc.wantValue)
+					t.Errorf("Lookup(%v) = %q, want %q", tc.ip, gotValue, tc.wantValue)
 				}
 			}
 		})
 	}
 }
 
-func TestIPRouter_LongestPrefixMatch(t *testing.T) {
-	router := NewIPRouter[string]()
+func TestIPRoutingTable_LongestPrefixLookup(t *testing.T) {
+	table := NewIPRoutingTable[string]()
 
-	// Add rules - order shouldn't matter for matching logic if AddRule is correct
+	// Add routes - order shouldn't matter for matching logic if AddRoute is correct
 	p16 := mustParsePrefix("192.168.0.0/16")
 	p24 := mustParsePrefix("192.168.1.0/24")
 	p25 := mustParsePrefix("192.168.1.128/25")
 	pDefault := mustParsePrefix("0.0.0.0/0")
 
-	router.AddRule(p16, "dialer_16")           // Wider
-	router.AddRule(p24, "dialer_24")           // Specific
-	router.AddRule(pDefault, "dialer_default") // Default
-	router.AddRule(p25, "dialer_25")           // Most specific
+	table.AddRoute(p16, "dialer_16")           // Wider
+	table.AddRoute(p24, "dialer_24")           // Specific
+	table.AddRoute(pDefault, "dialer_default") // Default
+	table.AddRoute(p25, "dialer_25")           // Most specific
 
 	tests := []struct {
 		name      string
@@ -118,36 +118,36 @@ func TestIPRouter_LongestPrefixMatch(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			gotValue, gotErr := router.Match(tc.ip)
+			gotValue, gotErr := table.Lookup(tc.ip)
 
 			if tc.wantErr { // Although none are expected here
 				if gotErr == nil {
-					t.Errorf("Match(%v) = %q, nil; want error", tc.ip, gotValue)
+					t.Errorf("Lookup(%v) = %q, nil; want error", tc.ip, gotValue)
 				}
 			} else {
 				if gotErr != nil {
-					t.Errorf("Match(%v) unexpected error: %v", tc.ip, gotErr)
+					t.Errorf("Lookup(%v) unexpected error: %v", tc.ip, gotErr)
 				}
 				if gotValue != tc.wantValue {
-					t.Errorf("Match(%v) = %q, want %q", tc.ip, gotValue, tc.wantValue)
+					t.Errorf("Lookup(%v) = %q, want %q", tc.ip, gotValue, tc.wantValue)
 				}
 			}
 		})
 	}
 }
 
-func TestIPRouter_IPv6Match(t *testing.T) {
-	router := NewIPRouter[string]()
+func TestIPRoutingTable_IPv6Lookup(t *testing.T) {
+	table := NewIPRoutingTable[string]()
 
 	p32 := mustParsePrefix("2001:db8::/32")
 	p48 := mustParsePrefix("2001:db8:1::/48")
 	p64 := mustParsePrefix("2001:db8:1:1::/64")
 	pDefault := mustParsePrefix("::/0")
 
-	router.AddRule(p32, "dialer_32")
-	router.AddRule(p48, "dialer_48")
-	router.AddRule(p64, "dialer_64")
-	router.AddRule(pDefault, "dialer_default_v6")
+	table.AddRoute(p32, "dialer_32")
+	table.AddRoute(p48, "dialer_48")
+	table.AddRoute(p64, "dialer_64")
+	table.AddRoute(pDefault, "dialer_default_v6")
 
 	tests := []struct {
 		name      string
@@ -164,36 +164,36 @@ func TestIPRouter_IPv6Match(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			gotValue, gotErr := router.Match(tc.ip)
+			gotValue, gotErr := table.Lookup(tc.ip)
 
 			if tc.wantErr {
 				if gotErr == nil {
-					t.Errorf("Match(%v) = %q, nil; want error", tc.ip, gotValue)
+					t.Errorf("Lookup(%v) = %q, nil; want error", tc.ip, gotValue)
 				}
 			} else {
 				if gotErr != nil {
-					t.Errorf("Match(%v) unexpected error: %v", tc.ip, gotErr)
+					t.Errorf("Lookup(%v) unexpected error: %v", tc.ip, gotErr)
 				}
 				if gotValue != tc.wantValue {
-					t.Errorf("Match(%v) = %q, want %q", tc.ip, gotValue, tc.wantValue)
+					t.Errorf("Lookup(%v) = %q, want %q", tc.ip, gotValue, tc.wantValue)
 				}
 			}
 		})
 	}
 }
 
-func TestIPRouter_MixedIPv4IPv6(t *testing.T) {
-	router := NewIPRouter[string]()
+func TestIPRoutingTable_MixedIPv4IPv6(t *testing.T) {
+	table := NewIPRoutingTable[string]()
 
 	p24 := mustParsePrefix("192.168.1.0/24")
 	p64 := mustParsePrefix("2001:db8:1:1::/64")
 	pDefaultV4 := mustParsePrefix("0.0.0.0/0")
 	pDefaultV6 := mustParsePrefix("::/0")
 
-	router.AddRule(p24, "dialer_v4_lan")
-	router.AddRule(p64, "dialer_v6_lan")
-	router.AddRule(pDefaultV4, "dialer_default_v4")
-	router.AddRule(pDefaultV6, "dialer_default_v6")
+	table.AddRoute(p24, "dialer_v4_lan")
+	table.AddRoute(p64, "dialer_v6_lan")
+	table.AddRoute(pDefaultV4, "dialer_default_v4")
+	table.AddRoute(pDefaultV6, "dialer_default_v6")
 
 	tests := []struct {
 		name      string
@@ -201,10 +201,10 @@ func TestIPRouter_MixedIPv4IPv6(t *testing.T) {
 		wantValue string
 		wantErr   bool
 	}{
-		{"Match IPv4 LAN", mustParseAddr("192.168.1.100"), "dialer_v4_lan", false},
-		{"Match IPv4 Default", mustParseAddr("8.8.8.8"), "dialer_default_v4", false},
-		{"Match IPv6 LAN", mustParseAddr("2001:db8:1:1:aaaa::1"), "dialer_v6_lan", false},
-		{"Match IPv6 Default", mustParseAddr("2606:4700:4700::1111"), "dialer_default_v6", false},
+		{"Lookup IPv4 LAN", mustParseAddr("192.168.1.100"), "dialer_v4_lan", false},
+		{"Lookup IPv4 Default", mustParseAddr("8.8.8.8"), "dialer_default_v4", false},
+		{"Lookup IPv6 LAN", mustParseAddr("2001:db8:1:1:aaaa::1"), "dialer_v6_lan", false},
+		{"Lookup IPv6 Default", mustParseAddr("2606:4700:4700::1111"), "dialer_default_v6", false},
 		// Ensure IPv4 doesn't match IPv6 default and vice-versa IF they were different
 		// (Here they might point to the same conceptual 'default', but test specificity)
 		{"IPv4 doesn't match v6 route", mustParseAddr("192.168.1.1"), "dialer_v4_lan", false},            // Should not match v6 /64
@@ -212,9 +212,9 @@ func TestIPRouter_MixedIPv4IPv6(t *testing.T) {
 	}
 
 	// If default v4 and v6 point to different things:
-	router2 := NewIPRouter[string]()
-	router2.AddRule(pDefaultV4, "ONLY_V4_DEFAULT")
-	router2.AddRule(pDefaultV6, "ONLY_V6_DEFAULT")
+	table2 := NewIPRoutingTable[string]()
+	table2.AddRoute(pDefaultV4, "ONLY_V4_DEFAULT")
+	table2.AddRoute(pDefaultV6, "ONLY_V6_DEFAULT")
 	tests = append(tests,
 		struct {
 			name      string
@@ -236,51 +236,51 @@ func TestIPRouter_MixedIPv4IPv6(t *testing.T) {
 
 	for _, tc := range tests {
 		// Use appropriate router for the test case
-		currentRouter := router
+		currentTable := table
 		if tc.wantValue == "ONLY_V4_DEFAULT" || tc.wantValue == "ONLY_V6_DEFAULT" {
-			currentRouter = router2
+			currentTable = table2
 		}
 
 		t.Run(tc.name, func(t *testing.T) {
-			gotValue, gotErr := currentRouter.Match(tc.ip)
+			gotValue, gotErr := currentTable.Lookup(tc.ip)
 
 			if tc.wantErr {
 				if gotErr == nil {
-					t.Errorf("Match(%v) = %q, nil; want error", tc.ip, gotValue)
+					t.Errorf("Lookup(%v) = %q, nil; want error", tc.ip, gotValue)
 				}
 			} else {
 				if gotErr != nil {
-					t.Errorf("Match(%v) unexpected error: %v", tc.ip, gotErr)
+					t.Errorf("Lookup(%v) unexpected error: %v", tc.ip, gotErr)
 				}
 				if gotValue != tc.wantValue {
-					t.Errorf("Match(%v) = %q, want %q", tc.ip, gotValue, tc.wantValue)
+					t.Errorf("Lookup(%v) = %q, want %q", tc.ip, gotValue, tc.wantValue)
 				}
 			}
 		})
 	}
 }
 
-func TestIPRouter_OverwriteRule(t *testing.T) {
-	router := NewIPRouter[string]()
+func TestIPRoutingTable_OverwriteRule(t *testing.T) {
+	table := NewIPRoutingTable[string]()
 	prefix := mustParsePrefix("10.0.0.0/8")
 
-	err := router.AddRule(prefix, "first_value")
+	err := table.AddRoute(prefix, "first_value")
 	if err != nil {
-		t.Fatalf("First AddRule failed: %v", err)
+		t.Fatalf("First AddRoute failed: %v", err)
 	}
 
-	err = router.AddRule(prefix, "second_value") // Add same prefix again
+	err = table.AddRoute(prefix, "second_value") // Add same prefix again
 	if err != nil {
-		t.Fatalf("Second AddRule failed: %v", err)
+		t.Fatalf("Second AddRoute failed: %v", err)
 	}
 
 	ip := mustParseAddr("10.1.2.3")
-	gotValue, gotErr := router.Match(ip)
+	gotValue, gotErr := table.Lookup(ip)
 
 	if gotErr != nil {
-		t.Errorf("Match(%v) unexpected error: %v", ip, gotErr)
+		t.Errorf("Lookup(%v) unexpected error: %v", ip, gotErr)
 	}
 	if gotValue != "second_value" {
-		t.Errorf("Match(%v) = %q, want %q (expected overwrite)", ip, gotValue, "second_value")
+		t.Errorf("Lookup(%v) = %q, want %q (expected overwrite)", ip, gotValue, "second_value")
 	}
 }
