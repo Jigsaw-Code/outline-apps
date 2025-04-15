@@ -289,7 +289,7 @@ export class ServerMetricsBandwidthRow extends LitElement {
     return html`
       <server-metrics-row
         .subcards=${this.locations.map(asn => {
-          if (!asn.asOrg) {
+          if (!asn.asOrg || asn.asOrg === 'ASnull') {
             return {
               title: '[AS# MISSING]',
               highlight: formatBytes(asn.bytes, this.language),
