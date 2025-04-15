@@ -122,7 +122,7 @@ export class ServerMetricsTunnelTimeRow extends LitElement {
     return html`
       <server-metrics-row
         .subcards=${this.locations.map(asn => {
-          if (!asn.asOrg || asn.asOrg === 'ASnull') {
+          if (!asn.asOrg) {
             return {
               title: '[AS# MISSING]',
               highlight: this.formatter.format(asn.seconds / SECONDS_IN_HOUR),
