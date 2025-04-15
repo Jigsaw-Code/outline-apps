@@ -124,7 +124,7 @@ export class ServerMetricsTunnelTimeRow extends LitElement {
         .subcards=${this.locations.map(asn => {
           if (!asn.asOrg) {
             return {
-              title: 'unknown',
+              title: 'Unknown',
               highlight: this.formatter.format(asn.seconds / SECONDS_IN_HOUR),
             };
           }
