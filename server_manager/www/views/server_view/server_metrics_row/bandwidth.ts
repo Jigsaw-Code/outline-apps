@@ -291,7 +291,7 @@ export class ServerMetricsBandwidthRow extends LitElement {
         .subcards=${this.locations.map(asn => {
           if (!asn.asOrg) {
             return {
-              title: 'unknown',
+              title: 'Unknown',
               highlight: formatBytes(asn.bytes, this.language),
             };
           }
