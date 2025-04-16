@@ -121,12 +121,21 @@ export class ServerMetricsTunnelTimeRow extends LitElement {
   render() {
     return html`
       <server-metrics-row
-        .subcards=${this.locations.map(asn => ({
-          title: asn.asOrg,
-          subtitle: asn.asn,
-          highlight: this.formatter.format(asn.seconds / SECONDS_IN_HOUR),
-          icon: asn.countryFlag,
-        }))}
+        .subcards=${this.locations.map(asn => {
+          if (!asn.asOrg) {
+            return {
+              title: 'Unknown',
+              highlight: this.formatter.format(asn.seconds / SECONDS_IN_HOUR),
+            };
+          }
+
+          return {
+            title: asn.asOrg,
+            subtitle: asn.asn,
+            highlight: this.formatter.format(asn.seconds / SECONDS_IN_HOUR),
+            icon: asn.countryFlag,
+          };
+        })}
         .subtitle=${this.localize(
           'server-view-server-metrics-tunnel-time-as-breakdown',
           'openItalics',
