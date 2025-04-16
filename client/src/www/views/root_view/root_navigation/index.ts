@@ -30,7 +30,7 @@ export class RootNavigation extends LitElement {
 
   static styles = css`
     :host {
-      --md-list-container-color: var(--outline-card-background);
+      --md-list-container-color: var(--outline-background);
     }
 
     .container {
@@ -47,25 +47,23 @@ export class RootNavigation extends LitElement {
     }
 
     nav {
-      background-color: var(--outline-card-background);
+      background-color: var(--outline-background);
       color: var(--outline-text-color);
       display: block;
       height: 100vh;
-      overflow-y: scroll;
       position: absolute;
       transition:
         transform 0.3s ease,
         visibility 0.3s ease;
-      width: 250px;
       will-change: transform;
       visibility: hidden;
       box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
     }
 
     md-list {
-      background-color: var(--outline-card-background);
+      background-color: var(--outline-background);
       color: var(--outline-text-color);
-      --md-list-container-color: var(--outline-card-background);
+      --md-list-container-color: var(--outline-background);
     }
 
     md-list-item {

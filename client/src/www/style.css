@@ -44,13 +44,13 @@ body {
   --outline-white: hsl(0, 0%, 100%);
 
   /* New dark mode colors - matching Outline Manager */
-  --outline-dark-bg: #263238;
+  --outline-dark-bg: hsl(203, 19%, 14%);
   /* Dark background from Outline Manager */
-  --outline-dark-card: #263238;
+  --outline-dark-card: hsl(203, 12%, 22%);
   /* Card background for dark mode */
-  --outline-dark-footer: #1c2429;
+  --outline-dark-footer: hsl(200, 19%, 18%);
   /* Footer background for dark mode */
-  --outline-dark-border: #37474f;
+  --outline-dark-border: hsl(200, 18%, 26%);
   /* Border color for dark mode */
 
   --outline-font-family: Roboto, sans-serif;
@@ -119,6 +119,7 @@ iron-input {
 /* Dark mode support - automatically applies when system preference is dark */
 @media (prefers-color-scheme: dark) {
   :root.system-theme {
+    --outline-background: var(--outline-dark-bg);
     --outline-card-background: var(--outline-dark-card);
     --outline-card-footer: var(--outline-dark-footer);
     --outline-text-color: var(--outline-white);
@@ -140,6 +141,7 @@ iron-input {
 
 /* Class-based dark mode - applied when user selects dark theme */
 :root.dark-theme {
+  --outline-background: var(--outline-dark-bg);
   --outline-card-background: var(--outline-dark-card);
   --outline-card-footer: var(--outline-dark-footer);
   --outline-text-color: var(--outline-white);
@@ -160,6 +162,7 @@ iron-input {
 
 /* Class-based light mode - applied when user selects light theme */
 :root.light-theme {
+  --outline-background: var(--outline-white);
   --outline-card-background: var(--outline-white);
   --outline-card-footer: var(--outline-light-gray);
   --outline-text-color: var(--outline-black);
@@ -205,7 +208,7 @@ mwc-textfield {
 /* Fix for language selector */
 language-view {
   color: var(--outline-text-color);
-  background-color: var(--outline-card-background);
+  background-color: var(--outline-background);
 }
 
 /* Force text colors for specific elements */
@@ -217,7 +220,7 @@ language-view {
 html,
 body {
   color: var(--outline-text-color);
-  background-color: var(--outline-card-background);
+  background-color: var(--outline-background);
 }
 
 @font-face {

@@ -63,13 +63,13 @@ export class AppearanceView extends LitElement {
     :host {
       height: 100%;
       width: 100%;
-      background-color: var(--outline-card-background);
+      background-color: var(--outline-background);
       color: var(--outline-text-color);
       display: block;
     }
 
     md-list {
-      background-color: var(--outline-card-background);
+      background-color: var(--outline-background);
       --md-list-container-color: var(--outline-card-background);
       color: var(--outline-text-color);
       padding: 8px 0;

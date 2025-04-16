@@ -108,6 +108,10 @@ export class ThemeManager {
         this.document.documentElement.classList.add('light-theme');
         // Ensure light theme variables are explicitly set
         this.document.documentElement.style.setProperty(
+          '--outline-background',
+          'var(--outline-white)'
+        );
+        this.document.documentElement.style.setProperty(
           '--outline-card-background',
           'var(--outline-white)'
         );
@@ -140,7 +144,10 @@ export class ThemeManager {
 
       case ThemePreference.DARK:
         this.document.documentElement.classList.add('dark-theme');
-        // Ensure dark theme variables are explicitly set using the new dark gray colors
+        this.document.documentElement.style.setProperty(
+          '--outline-background',
+          'var(--outline-dark-bg)'
+        );
         this.document.documentElement.style.setProperty(
           '--outline-card-background',
           'var(--outline-dark-card)'

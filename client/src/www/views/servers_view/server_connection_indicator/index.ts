@@ -32,9 +32,11 @@ const CIRCLE_SIZES = [css`large`, css`medium`, css`small`];
 
 @customElement('server-connection-indicator')
 export class ServerConnectionIndicator extends LitElement {
-  @property({attribute: 'connection-state'}) connectionState: ServerConnectionState;
+  @property({attribute: 'connection-state'})
+  connectionState: ServerConnectionState;
 
-  @state() private animationState: ServerConnectionState = ServerConnectionState.DISCONNECTED;
+  @state() private animationState: ServerConnectionState =
+    ServerConnectionState.DISCONNECTED;
   private animationStartMS: number;
 
   static styles = [
@@ -58,11 +60,12 @@ export class ServerConnectionIndicator extends LitElement {
         --circle-small-scale: scale(0.33);
         --circle-small-delay: 0ms;
 
+        /* TODO: modify brightness only in dark mode */
         --circle-connected-opacity: 1;
-        --circle-connected-color: grayscale(0);
+        --circle-connected-color: grayscale(0) brightness(1);
 
         --circle-disconnected-opacity: 1;
-        --circle-disconnected-color: grayscale(1);
+        --circle-disconnected-color: grayscale(1) brightness(0.5);
       }
 
       .circle {
@@ -150,7 +153,12 @@ export class ServerConnectionIndicator extends LitElement {
     ),
   ];
 
-  willUpdate(changedProperties: Map<keyof ServerConnectionIndicator, ServerConnectionState>) {
+  willUpdate(
+    changedProperties: Map<
+      keyof ServerConnectionIndicator,
+      ServerConnectionState
+    >
+  ) {
     if (!changedProperties.has('connectionState')) {
       return;
     }
@@ -169,12 +177,17 @@ export class ServerConnectionIndicator extends LitElement {
       // is included in the total play time.
       const animationDurationMS =
         this.animationState === ServerConnectionState.DISCONNECTING
-          ? SERVER_CONNECTION_INDICATOR_DURATION_MS + SERVER_CONNECTION_INDICATOR_DELAY_MS
+          ? SERVER_CONNECTION_INDICATOR_DURATION_MS +
+            SERVER_CONNECTION_INDICATOR_DELAY_MS
           : SERVER_CONNECTION_INDICATOR_DURATION_MS;
 
-      const remainingAnimationMS = animationDurationMS - (elapsedAnimationMS % animationDurationMS);
+      const remainingAnimationMS =
+        animationDurationMS - (elapsedAnimationMS % animationDurationMS);
 
-      setTimeout(() => (this.animationState = this.connectionState), remainingAnimationMS);
+      setTimeout(
+        () => (this.animationState = this.connectionState),
+        remainingAnimationMS
+      );
     } else {
       this.animationState = this.connectionState;
     }
@@ -183,15 +196,14 @@ export class ServerConnectionIndicator extends LitElement {
   render() {
     return html`
       ${CIRCLE_SIZES.map(
-        circleSize =>
-          html`
-            <img
-              class="circle circle-${circleSize} circle-${this.animationState}"
-              src="${circle}"
-              height="100%"
-              draggable="false"
-            />
-          `
+        circleSize => html`
+          <img
+            class="circle circle-${circleSize} circle-${this.animationState}"
+            src="${circle}"
+            height="100%"
+            draggable="false"
+          />
+        `
       )}
     `;
   }

@@ -102,7 +102,7 @@ export class AppRoot extends mixinBehaviors(
           flex-direction: column;
           font-family: var(--outline-font-family);
           color: var(--outline-text-color);
-          background-color: var(--outline-card-background);
+          background-color: var(--outline-background);
         }
 
         app-header {
@@ -151,18 +151,18 @@ export class AppRoot extends mixinBehaviors(
         iron-pages {
           display: flex;
           flex: 1;
-          background-color: var(--outline-card-background);
+          background-color: var(--outline-background);
           color: var(--outline-text-color);
         }
 
         appearance-view {
-          background-color: var(--outline-card-background);
+          background-color: var(--outline-background);
           color: var(--outline-text-color);
         }
 
         #drawer-nav {
           padding: 0;
-          background-color: var(--outline-card-background);
+          background-color: var(--outline-background);
           color: var(--outline-text-color);
         }
 

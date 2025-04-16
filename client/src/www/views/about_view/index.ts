@@ -38,7 +38,7 @@ export class AboutView extends LitElement {
       text-align: center;
       width: 100%;
       color: var(--outline-text-color);
-      background-color: var(--outline-card-background);
+      background-color: var(--outline-background);
     }
 
     article {
