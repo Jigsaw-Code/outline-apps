@@ -15,7 +15,6 @@
 package routingtable
 
 import (
-	"container/list"
 	"fmt"
 	"net/netip"
 )
@@ -25,50 +24,65 @@ var _ RoutingTable[netip.Prefix, netip.Addr, any] = (*IPRoutingTable[any])(nil)
 
 // "V" is typically expected to be a dialer of some kind
 type IPRoutingTable[V any] struct {
-	prefixBuckets map[int]map[netip.Prefix]V
-	prefixLengths *list.List
+	ipv4Buckets [maxIPv4PrefixLen + 1]map[netip.Prefix]V
+	ipv6Buckets [maxIPv6PrefixLen + 1]map[netip.Prefix]V
 }
 
+const (
+	maxIPv4PrefixLen = 32
+	maxIPv6PrefixLen = 128
+)
+
 func NewIPRoutingTable[V any]() *IPRoutingTable[V] {
-	return &IPRoutingTable[V]{
-		prefixBuckets: make(map[int]map[netip.Prefix]V),
-		prefixLengths: list.New(),
+	return &IPRoutingTable[V]{}
+}
+
+func addInBuckets[V any](buckets []map[netip.Prefix]V, prefixRule netip.Prefix, dialer V) {
+	if buckets[prefixRule.Bits()] == nil {
+		buckets[prefixRule.Bits()] = make(map[netip.Prefix]V)
 	}
+
+	buckets[prefixRule.Bits()][prefixRule] = dialer
 }
 
 func (table *IPRoutingTable[V]) AddRecord(prefixRule netip.Prefix, dialer V) error {
-	length := prefixRule.Bits()
-	if _, ok := table.prefixBuckets[length]; !ok {
-		table.prefixBuckets[length] = make(map[netip.Prefix]V)
-
-		inserted := false
-
-		for node := table.prefixLengths.Front(); node != nil; node = node.Next() {
-			currentLength := node.Value.(int)
-			if length > currentLength {
-				table.prefixLengths.InsertBefore(length, node)
-				inserted = true
-				break
-			}
-		}
-
-		if !inserted {
-			table.prefixLengths.PushBack(length)
-		}
+	if prefixRule.Addr().Is4() {
+		addInBuckets(table.ipv4Buckets[:], prefixRule, dialer)
+	} else {
+		addInBuckets(table.ipv6Buckets[:], prefixRule, dialer)
 	}
-
-	table.prefixBuckets[length][prefixRule] = dialer
 	return nil
 }
 
-func (table *IPRoutingTable[V]) Lookup(lookupAddress netip.Addr) (V, error) {
-	for node := table.prefixLengths.Front(); node != nil; node = node.Next() {
-		bucket := table.prefixBuckets[node.Value.(int)]
-		for route, dialer := range bucket {
-			if route.Contains(lookupAddress) {
-				return dialer, nil
+func lookupInBuckets[V any](lookupAddress netip.Addr, buckets []map[netip.Prefix]V) (V, bool) {
+	for length := len(buckets) - 1; length >= 0; length-- {
+		bucket := buckets[length]
+		if bucket == nil {
+			continue
+		}
+		for prefix, value := range bucket {
+			if prefix.Contains(lookupAddress) {
+				return value, true
 			}
 		}
+	}
+
+	var zeroV V
+	return zeroV, false
+}
+
+func (table *IPRoutingTable[V]) Lookup(lookupAddress netip.Addr) (V, error) {
+	var value V
+	var found bool
+
+	if lookupAddress.Is4() {
+		value, found = lookupInBuckets(lookupAddress, table.ipv4Buckets[:])
+	} else {
+		value, found = lookupInBuckets(lookupAddress, table.ipv6Buckets[:])
+	}
+
+	if found {
+		return value, nil
 	}
 
 	var zeroV V
