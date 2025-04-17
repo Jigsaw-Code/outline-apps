@@ -120,10 +120,10 @@ func BenchmarkIPRoutingTable_AddRule_Growing(b *testing.B) {
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
 		prefix := benchmarkPrefixes[i%len(benchmarkPrefixes)]
-		err := table.AddRoute(prefix, value)
+		err := table.AddRecord(prefix, value)
 		if err != nil {
 			b.StopTimer()
-			b.Fatalf("AddRoute failed during growing benchmark: %v", err)
+			b.Fatalf("AddRecord failed during growing benchmark: %v", err)
 		}
 	}
 }
@@ -137,13 +137,13 @@ func BenchmarkIPRoutingTable_Lookup(b *testing.B) {
 	value := "benchmark_value"
 	defaultV4 := mustParsePrefix("0.0.0.0/0")
 	defaultV6 := mustParsePrefix("::/0")
-	table.AddRoute(defaultV4, "default")
-	table.AddRoute(defaultV6, "default")
+	table.AddRecord(defaultV4, "default")
+	table.AddRecord(defaultV6, "default")
 
 	for _, prefix := range benchmarkPrefixes {
-		err := table.AddRoute(prefix, value)
+		err := table.AddRecord(prefix, value)
 		if err != nil {
-			b.Fatalf("Setup failed: AddRoute error: %v", err)
+			b.Fatalf("Setup failed: AddRecord error: %v", err)
 		}
 	}
 

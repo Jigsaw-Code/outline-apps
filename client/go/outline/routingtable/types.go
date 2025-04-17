@@ -18,8 +18,8 @@ package routingtable
 // to match a potentially different key (like a specific IP address) to find a value.
 type RoutingTable[R any, M any, V any] interface {
 	// Implementations should handle potential conflicts or errors.
-	AddRoute(rule R, value V) error
+	AddRecord(key R, value V) error
 
 	// Implementations should define the lookup logic (e.g., exact, longest prefix).
-	Lookup(matchKey M) (V, error)
+	Lookup(query M) (V, error)
 }

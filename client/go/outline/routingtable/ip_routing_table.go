@@ -36,7 +36,7 @@ func NewIPRoutingTable[V any]() *IPRoutingTable[V] {
 	}
 }
 
-func (table *IPRoutingTable[V]) AddRoute(prefixRule netip.Prefix, dialer V) error {
+func (table *IPRoutingTable[V]) AddRecord(prefixRule netip.Prefix, dialer V) error {
 	length := prefixRule.Bits()
 	if _, ok := table.prefixBuckets[length]; !ok {
 		table.prefixBuckets[length] = make(map[netip.Prefix]V)
