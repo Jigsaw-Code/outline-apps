@@ -12,44 +12,49 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package routingtable
+package iptable
 
 import (
 	"fmt"
 	"net/netip"
 )
 
-// Compile-time check
-var _ RoutingTable[netip.Prefix, netip.Addr, any] = (*IPRoutingTable[any])(nil)
-
-// "V" is typically expected to be a dialer of some kind
-type IPRoutingTable[V any] struct {
-	ipv4Buckets [maxIPv4PrefixLen + 1]map[netip.Prefix]V
-	ipv6Buckets [maxIPv6PrefixLen + 1]map[netip.Prefix]V
+type IPTable[D any] interface {
+	AddPrefix(prefix netip.Prefix, dialer D) error
+	Lookup(ip netip.Addr) (D, error)
 }
+
+// Compile-time check
+var _ IPTable[any] = (*ipTable[any])(nil)
 
 const (
 	maxIPv4PrefixLen = 32
 	maxIPv6PrefixLen = 128
 )
 
-func NewIPRoutingTable[V any]() *IPRoutingTable[V] {
-	return &IPRoutingTable[V]{}
+// "D" is typically expected to be a dialer of some kind
+type ipTable[D any] struct {
+	ipv4Buckets [maxIPv4PrefixLen + 1]map[netip.Prefix]D
+	ipv6Buckets [maxIPv6PrefixLen + 1]map[netip.Prefix]D
 }
 
-func addInBuckets[V any](buckets []map[netip.Prefix]V, prefixRule netip.Prefix, dialer V) {
-	if buckets[prefixRule.Bits()] == nil {
-		buckets[prefixRule.Bits()] = make(map[netip.Prefix]V)
+func NewIPTable[V any]() IPTable[V] {
+	return &ipTable[V]{}
+}
+
+func addInBuckets[V any](buckets []map[netip.Prefix]V, prefix netip.Prefix, dialer V) {
+	if buckets[prefix.Bits()] == nil {
+		buckets[prefix.Bits()] = make(map[netip.Prefix]V)
 	}
 
-	buckets[prefixRule.Bits()][prefixRule] = dialer
+	buckets[prefix.Bits()][prefix] = dialer
 }
 
-func (table *IPRoutingTable[V]) AddRecord(prefixRule netip.Prefix, dialer V) error {
-	if prefixRule.Addr().Is4() {
-		addInBuckets(table.ipv4Buckets[:], prefixRule, dialer)
+func (table *ipTable[V]) AddPrefix(prefix netip.Prefix, dialer V) error {
+	if prefix.Addr().Is4() {
+		addInBuckets(table.ipv4Buckets[:], prefix, dialer)
 	} else {
-		addInBuckets(table.ipv6Buckets[:], prefixRule, dialer)
+		addInBuckets(table.ipv6Buckets[:], prefix, dialer)
 	}
 	return nil
 }
@@ -71,7 +76,7 @@ func lookupInBuckets[V any](lookupAddress netip.Addr, buckets []map[netip.Prefix
 	return zeroV, false
 }
 
-func (table *IPRoutingTable[V]) Lookup(lookupAddress netip.Addr) (V, error) {
+func (table *ipTable[V]) Lookup(lookupAddress netip.Addr) (V, error) {
 	var value V
 	var found bool
 

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package routingtable
+package iptable
 
 import (
 	"math/rand"
@@ -113,17 +113,17 @@ var benchmarkMatchAddrs = generateAddresses(numBenchmarkMatchIPs, time.Now().Uni
 
 // Benchmark adding rules to an empty routing table.
 func BenchmarkIPRoutingTable_AddRule_Growing(b *testing.B) {
-	table := NewIPRoutingTable[string]()
+	table := NewIPTable[string]()
 	value := "benchmark_value"
 
 	b.ResetTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
 		prefix := benchmarkPrefixes[i%len(benchmarkPrefixes)]
-		err := table.AddRecord(prefix, value)
+		err := table.AddPrefix(prefix, value)
 		if err != nil {
 			b.StopTimer()
-			b.Fatalf("AddRecord failed during growing benchmark: %v", err)
+			b.Fatalf("AddPrefix failed during growing benchmark: %v", err)
 		}
 	}
 }
@@ -133,17 +133,17 @@ var benchErr error
 
 // Benchmark matching against a pre-filled router.
 func BenchmarkIPRoutingTable_Lookup(b *testing.B) {
-	table := NewIPRoutingTable[string]()
+	table := NewIPTable[string]()
 	value := "benchmark_value"
 	defaultV4 := mustParsePrefix("0.0.0.0/0")
 	defaultV6 := mustParsePrefix("::/0")
-	table.AddRecord(defaultV4, "default")
-	table.AddRecord(defaultV6, "default")
+	table.AddPrefix(defaultV4, "default")
+	table.AddPrefix(defaultV6, "default")
 
 	for _, prefix := range benchmarkPrefixes {
-		err := table.AddRecord(prefix, value)
+		err := table.AddPrefix(prefix, value)
 		if err != nil {
-			b.Fatalf("Setup failed: AddRecord error: %v", err)
+			b.Fatalf("Setup failed: AddPrefix error: %v", err)
 		}
 	}
 

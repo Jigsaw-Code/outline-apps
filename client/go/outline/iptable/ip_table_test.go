@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package routingtable
+package iptable
 
 import (
 	"fmt"
@@ -37,7 +37,7 @@ func mustParseAddr(s string) netip.Addr {
 }
 
 func TestIPRoutingTable_Empty(t *testing.T) {
-	table := NewIPRoutingTable[string]()
+	table := NewIPTable[string]()
 	ip := mustParseAddr("192.0.2.1")
 
 	_, err := table.Lookup(ip)
@@ -47,12 +47,12 @@ func TestIPRoutingTable_Empty(t *testing.T) {
 }
 
 func TestIPRoutingTable_BasicLookup(t *testing.T) {
-	table := NewIPRoutingTable[string]()
+	table := NewIPTable[string]()
 	prefix := mustParsePrefix("192.168.1.0/24")
 	dialerID := "lan_dialer"
-	err := table.AddRecord(prefix, dialerID)
+	err := table.AddPrefix(prefix, dialerID)
 	if err != nil {
-		t.Fatalf("AddRecord failed: %v", err)
+		t.Fatalf("AddPrefix failed: %v", err)
 	}
 
 	tests := []struct {
@@ -89,18 +89,18 @@ func TestIPRoutingTable_BasicLookup(t *testing.T) {
 }
 
 func TestIPRoutingTable_LongestPrefixLookup(t *testing.T) {
-	table := NewIPRoutingTable[string]()
+	table := NewIPTable[string]()
 
-	// Add routes - order shouldn't matter for matching logic if AddRecord is correct
+	// Add routes - order shouldn't matter for matching logic if AddPrefix is correct
 	p16 := mustParsePrefix("192.168.0.0/16")
 	p24 := mustParsePrefix("192.168.1.0/24")
 	p25 := mustParsePrefix("192.168.1.128/25")
 	pDefault := mustParsePrefix("0.0.0.0/0")
 
-	table.AddRecord(p16, "dialer_16")           // Wider
-	table.AddRecord(p24, "dialer_24")           // Specific
-	table.AddRecord(pDefault, "dialer_default") // Default
-	table.AddRecord(p25, "dialer_25")           // Most specific
+	table.AddPrefix(p16, "dialer_16")           // Wider
+	table.AddPrefix(p24, "dialer_24")           // Specific
+	table.AddPrefix(pDefault, "dialer_default") // Default
+	table.AddPrefix(p25, "dialer_25")           // Most specific
 
 	tests := []struct {
 		name      string
@@ -137,17 +137,17 @@ func TestIPRoutingTable_LongestPrefixLookup(t *testing.T) {
 }
 
 func TestIPRoutingTable_IPv6Lookup(t *testing.T) {
-	table := NewIPRoutingTable[string]()
+	table := NewIPTable[string]()
 
 	p32 := mustParsePrefix("2001:db8::/32")
 	p48 := mustParsePrefix("2001:db8:1::/48")
 	p64 := mustParsePrefix("2001:db8:1:1::/64")
 	pDefault := mustParsePrefix("::/0")
 
-	table.AddRecord(p32, "dialer_32")
-	table.AddRecord(p48, "dialer_48")
-	table.AddRecord(p64, "dialer_64")
-	table.AddRecord(pDefault, "dialer_default_v6")
+	table.AddPrefix(p32, "dialer_32")
+	table.AddPrefix(p48, "dialer_48")
+	table.AddPrefix(p64, "dialer_64")
+	table.AddPrefix(pDefault, "dialer_default_v6")
 
 	tests := []struct {
 		name      string
@@ -183,17 +183,17 @@ func TestIPRoutingTable_IPv6Lookup(t *testing.T) {
 }
 
 func TestIPRoutingTable_MixedIPv4IPv6(t *testing.T) {
-	table := NewIPRoutingTable[string]()
+	table := NewIPTable[string]()
 
 	p24 := mustParsePrefix("192.168.1.0/24")
 	p64 := mustParsePrefix("2001:db8:1:1::/64")
 	pDefaultV4 := mustParsePrefix("0.0.0.0/0")
 	pDefaultV6 := mustParsePrefix("::/0")
 
-	table.AddRecord(p24, "dialer_v4_lan")
-	table.AddRecord(p64, "dialer_v6_lan")
-	table.AddRecord(pDefaultV4, "dialer_default_v4")
-	table.AddRecord(pDefaultV6, "dialer_default_v6")
+	table.AddPrefix(p24, "dialer_v4_lan")
+	table.AddPrefix(p64, "dialer_v6_lan")
+	table.AddPrefix(pDefaultV4, "dialer_default_v4")
+	table.AddPrefix(pDefaultV6, "dialer_default_v6")
 
 	tests := []struct {
 		name      string
@@ -212,9 +212,9 @@ func TestIPRoutingTable_MixedIPv4IPv6(t *testing.T) {
 	}
 
 	// If default v4 and v6 point to different things:
-	table2 := NewIPRoutingTable[string]()
-	table2.AddRecord(pDefaultV4, "ONLY_V4_DEFAULT")
-	table2.AddRecord(pDefaultV6, "ONLY_V6_DEFAULT")
+	table2 := NewIPTable[string]()
+	table2.AddPrefix(pDefaultV4, "ONLY_V4_DEFAULT")
+	table2.AddPrefix(pDefaultV6, "ONLY_V6_DEFAULT")
 	tests = append(tests,
 		struct {
 			name      string
@@ -260,18 +260,62 @@ func TestIPRoutingTable_MixedIPv4IPv6(t *testing.T) {
 	}
 }
 
-func TestIPRoutingTable_OverwriteRule(t *testing.T) {
-	table := NewIPRoutingTable[string]()
-	prefix := mustParsePrefix("10.0.0.0/8")
+func TestIPRoutingTable_SameLengthPrefixes(t *testing.T) {
+	table := NewIPTable[string]()
 
-	err := table.AddRecord(prefix, "first_value")
-	if err != nil {
-		t.Fatalf("First AddRecord failed: %v", err)
+	pLen := 24
+	pV4 := mustParsePrefix(fmt.Sprintf("198.51.100.0/%d", pLen))
+	pV6 := mustParsePrefix(fmt.Sprintf("2001:db8:cafe::/%d", pLen))
+
+	valV4 := "value_v4_len24"
+	valV6 := "value_v6_len24"
+
+	table.AddPrefix(pV4, valV4)
+	table.AddPrefix(pV6, valV6)
+
+	tests := []struct {
+		name      string
+		ip        netip.Addr
+		wantValue string
+		wantErr   bool
+	}{
+		{"IPv4 within its /24", mustParseAddr("198.51.100.50"), valV4, false},
+		{"IPv6 within its /24", mustParseAddr("2001:db8:ca00::1"), valV6, false},
 	}
 
-	err = table.AddRecord(prefix, "second_value") // Add same prefix again
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			gotValue, gotErr := table.Lookup(tc.ip)
+
+			if tc.wantErr {
+				if gotErr == nil {
+					t.Errorf("Lookup(%v) = %q, nil; want error", tc.ip, gotValue)
+				}
+				// Can add specific error checking here if needed
+			} else {
+				if gotErr != nil {
+					t.Errorf("Lookup(%v) unexpected error: %v", tc.ip, gotErr)
+				}
+				if gotValue != tc.wantValue {
+					t.Errorf("Lookup(%v) = %q, want %q", tc.ip, gotValue, tc.wantValue)
+				}
+			}
+		})
+	}
+}
+
+func TestIPRoutingTable_OverwriteRule(t *testing.T) {
+	table := NewIPTable[string]()
+	prefix := mustParsePrefix("10.0.0.0/8")
+
+	err := table.AddPrefix(prefix, "first_value")
 	if err != nil {
-		t.Fatalf("Second AddRecord failed: %v", err)
+		t.Fatalf("First AddPrefix failed: %v", err)
+	}
+
+	err = table.AddPrefix(prefix, "second_value") // Add same prefix again
+	if err != nil {
+		t.Fatalf("Second AddPrefix failed: %v", err)
 	}
 
 	ip := mustParseAddr("10.1.2.3")
