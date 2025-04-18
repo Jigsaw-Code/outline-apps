@@ -74,13 +74,13 @@ func (s *SessionClient) Start() {
 	reporting.StartReporting(s.sd, s.ur)
 }
 
-func NewSessionClient(transportAndSessionConfig string, tcpDialer transport.StreamDialer) *NewSessionClientResult {
-	usageReporter, err := NewUsageReportWithBaseDialers(transportAndSessionConfig, tcpDialer)
+func NewSessionClient(transportAndSessionConfig string, client *Client) *NewSessionClientResult {
+	usageReporter, err := NewUsageReportWithBaseDialers(transportAndSessionConfig, client)
 	if err != nil {
 		return &NewSessionClientResult{Error: platerrors.ToPlatformError(err)}
 	}
 	sessionClient := &SessionClient{
-		sd: tcpDialer,
+		sd: client,
 		ur: usageReporter,
 	}
 	return &NewSessionClientResult{SessionClient: sessionClient}
