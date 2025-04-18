@@ -49,6 +49,14 @@ type SessionClient struct {
 	ur *config.UsageReporter
 }
 
+func (c *Client) GetStreamDialer() *config.Dialer[transport.StreamConn] {
+	return c.sd
+}
+
+func (s *SessionClient) GetUsageReporter() *config.UsageReporter {
+	return s.ur
+}
+
 // NewClientResult represents the result of [NewClientAndReturnError].
 //
 // We use a struct instead of a tuple to preserve a strongly typed error that gobind recognizes.
