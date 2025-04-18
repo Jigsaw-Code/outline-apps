@@ -36,20 +36,6 @@ type Client struct {
 	pl *config.PacketListener
 }
 
-type SessionClient struct {
-	ur *config.UsageReporter
-}
-
-func (c *Client) Connect() {
-	// TODO: only report if transportConfig is configured to report.
-	// tcpDialer := transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
-	reporting.StartReporting(c)
-}
-
-func (c *Client) Disconnect() {
-	// TODO: reporting.StopReporting()
-}
-
 func (c *Client) DialStream(ctx context.Context, address string) (transport.StreamConn, error) {
 	return c.sd.Dial(ctx, address)
 }
@@ -58,9 +44,9 @@ func (c *Client) ListenPacket(ctx context.Context) (net.PacketConn, error) {
 	return c.pl.ListenPacket(ctx)
 }
 
-type UsageReportingClient struct {
-	sd                  *config.Dialer[transport.StreamConn]
-	usageReporterConfig *config.UsageReporter
+type SessionClient struct {
+	sd transport.StreamDialer
+	ur *config.UsageReporter
 }
 
 // NewClientResult represents the result of [NewClientAndReturnError].
@@ -76,12 +62,17 @@ type NewSessionClientResult struct {
 	Error         *platerrors.PlatformError
 }
 
-func NewSessionClient(transportAndSessionConfig string, dialer transport.StreamDialer) *NewSessionClientResult {
-	usageReporter, err := NewUsageReportWithBaseDialers(transportAndSessionConfig, dialer)
+func (s *SessionClient) Start() {
+	reporting.StartReporting(s.sd, s.ur)
+}
+
+func NewSessionClient(transportAndSessionConfig string, tcpDialer transport.StreamDialer) *NewSessionClientResult {
+	usageReporter, err := NewUsageReportWithBaseDialers(transportAndSessionConfig, tcpDialer)
 	if err != nil {
 		return &NewSessionClientResult{Error: platerrors.ToPlatformError(err)}
 	}
 	sessionClient := &SessionClient{
+		sd: tcpDialer,
 		ur: usageReporter,
 	}
 	return &NewSessionClientResult{SessionClient: sessionClient}

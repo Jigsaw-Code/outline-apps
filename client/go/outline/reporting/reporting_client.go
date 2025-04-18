@@ -30,16 +30,13 @@ import (
 	"net/url"
 	"os"
 
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/config"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/connectivity"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
-const (
-	testTCPWebsite = "https://example.com:443"
-)
-
-func CheckTCPConnectivity(tcp transport.StreamDialer) error {
-	tcpErr := connectivity.CheckTCPConnectivityWithHTTP(tcp, testTCPWebsite)
+func CheckTCPConnectivity(tcp transport.StreamDialer, reportingUrl string) error {
+	tcpErr := connectivity.CheckTCPConnectivityWithHTTP(tcp, reportingUrl)
 	if tcpErr != nil {
 		return tcpErr
 	}
@@ -48,9 +45,9 @@ func CheckTCPConnectivity(tcp transport.StreamDialer) error {
 
 const cookiesFile = "cookies.json"
 
-func Report(tcp transport.StreamDialer) (err error) {
+func Report(tcp transport.StreamDialer, reportingUrl string) (err error) {
 	// Perform a TCP connectivity check.
-	if err := CheckTCPConnectivity(tcp); err != nil {
+	if err := CheckTCPConnectivity(tcp, reportingUrl); err != nil {
 		return fmt.Errorf("TCP connectivity check failed: %w", err)
 	}
 
@@ -65,7 +62,7 @@ func Report(tcp transport.StreamDialer) (err error) {
 		return fmt.Errorf("failed to load cookies: %w", err)
 	}
 
-	u, err := url.Parse(testTCPWebsite)
+	u, err := url.Parse(reportingUrl)
 	if err != nil {
 		return fmt.Errorf("failed to parse URL: %w", err)
 	}
@@ -76,16 +73,16 @@ func Report(tcp transport.StreamDialer) (err error) {
 	defer cancel()
 
 	// Dial the stream using the StreamDialer.
-	conn, err := tcp.DialStream(ctx, testTCPWebsite)
+	conn, err := tcp.DialStream(ctx, reportingUrl)
 	if err != nil {
-		return fmt.Errorf("failed to connect to %s: %w", testTCPWebsite, err)
+		return fmt.Errorf("failed to connect to %s: %w", reportingUrl, err)
 	}
 	defer conn.Close()
 
 	// Create an HTTP POST request with cookies and a sample body
 	requestBody := "param1=value1&param2=value2"
 	request := "POST / HTTP/1.1\r\n" +
-		"Host: " + strings.TrimPrefix(testTCPWebsite, "https://") + "\r\n" +
+		"Host: " + strings.TrimPrefix(reportingUrl, "https://") + "\r\n" +
 		"Content-Type: application/x-www-form-urlencoded\r\n" +
 		"Content-Length: " + fmt.Sprintf("%d", len(requestBody)) + "\r\n" +
 		"Connection: close\r\n"
@@ -253,18 +250,18 @@ func loadCookies(jar http.CookieJar, filename string) ([]*url.URL, error) {
 	return urls, nil
 }
 
-// Time duration constant
-const reportInterval = 10 * time.Second
-
 // StartReporting calls the Report function every 10 seconds
-func StartReporting(tcp transport.StreamDialer) {
-	ticker := time.NewTicker(reportInterval)
+func StartReporting(tcp transport.StreamDialer, ur *config.UsageReporter) {
+	if !ur.EnableCookies {
+		return
+	}
+	ticker := time.NewTicker(ur.Interval)
 	defer ticker.Stop()
 
 	for {
 		select {
 		case <-ticker.C:
-			err := Report(tcp)
+			err := Report(tcp, ur.Url)
 			if err != nil {
 				// Handle error (e.g., log it)
 				fmt.Printf("Report failed: %v\n", err)

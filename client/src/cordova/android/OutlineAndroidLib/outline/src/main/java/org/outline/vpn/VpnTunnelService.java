@@ -204,6 +204,11 @@ public class VpnTunnelService extends VpnService {
       return clientResult.getError();
     }
     final outline.Client client = clientResult.getClient();
+    final outline.NewSessionClientResult sessionClientResult = outline.newSessionClient(config.transportConfig, client);
+    if (sessionClientResult.getError() != null) {
+      LOG.log(Level.WARNING, "Failed to create Outline SessionClient", sessionClientResult.getError());
+    }
+    final outline.SessionClient sessionClient = sessionClientResult.getSessionClient();
 
     PlatformError udpConnError = null;
     if (!isAutoStart) {
@@ -237,6 +242,7 @@ public class VpnTunnelService extends VpnService {
         isAutoStart ? tunnelStore.isUdpSupported() : udpConnError == null;
     try {
       final PlatformError tunError = vpnTunnel.connectTunnel(client, remoteUdpForwardingEnabled);
+      sessionClient.start();
       if (tunError != null) {
         LOG.log(Level.SEVERE, "Failed to connect the tunnel", tunError);
         tearDownActiveTunnel();
