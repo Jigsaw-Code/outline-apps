@@ -49,8 +49,8 @@ type SessionClient struct {
 	ur *config.UsageReporter
 }
 
-func (c *Client) GetStreamDialer() *config.Dialer[transport.StreamConn] {
-	return c.sd
+func (s *SessionClient) GetStreamDialer() transport.StreamDialer {
+	return s.sd
 }
 
 func (s *SessionClient) GetUsageReporter() *config.UsageReporter {
