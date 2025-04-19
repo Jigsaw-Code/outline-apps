@@ -55,7 +55,6 @@ type OutlineTunnel = Tunnel
 type outlinetunnel struct {
 	tunnel.Tunnel
 	lwipStack    core.LWIPStack
-	streamDialer transport.StreamDialer
 	packetDialer transport.PacketListener
 	udpHandler   *toggleUDPConnHandler
 }
@@ -80,8 +79,8 @@ func newTunnel(streamDialer transport.StreamDialer, packetListener transport.Pac
 		FallbackHandler: dnsfallback.NewUDPHandler(),
 	}
 	udpHandler.IsEnabled.Store(isUDPEnabled)
-	t := &outlinetunnel{base, lwipStack, streamDialer, packetListener, udpHandler}
-	core.RegisterTCPConnHandler(NewTCPHandler(t.streamDialer))
+	t := &outlinetunnel{base, lwipStack, packetListener, udpHandler}
+	core.RegisterTCPConnHandler(NewTCPHandler(streamDialer))
 	core.RegisterUDPConnHandler(udpHandler)
 	return t, nil
 }
