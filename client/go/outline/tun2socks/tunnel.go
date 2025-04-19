@@ -18,6 +18,7 @@ import (
 	"errors"
 	"io"
 	"net"
+	"sync/atomic"
 	"time"
 
 	"github.com/eycorsican/go-tun2socks/core"
@@ -56,7 +57,7 @@ type outlinetunnel struct {
 	lwipStack    core.LWIPStack
 	streamDialer transport.StreamDialer
 	packetDialer transport.PacketListener
-	isUDPEnabled bool // Whether the tunnel supports proxying UDP.
+	udpHandler   *toggleUDPConnHandler
 }
 
 // newTunnel connects a tunnel to the given stream and packet dialers and returns an `outline.Tunnel`.
@@ -74,31 +75,46 @@ func newTunnel(streamDialer transport.StreamDialer, packetListener transport.Pac
 	})
 	lwipStack := core.NewLWIPStack()
 	base := tunnel.NewTunnel(tunWriter, lwipStack)
-	t := &outlinetunnel{base, lwipStack, streamDialer, packetListener, isUDPEnabled}
-	t.registerConnectionHandlers()
+	udpHandler := &toggleUDPConnHandler{
+		Handler:         NewUDPHandler(packetListener, 30*time.Second),
+		FallbackHandler: dnsfallback.NewUDPHandler(),
+	}
+	udpHandler.IsEnabled.Store(isUDPEnabled)
+	t := &outlinetunnel{base, lwipStack, streamDialer, packetListener, udpHandler}
+	core.RegisterTCPConnHandler(NewTCPHandler(t.streamDialer))
+	core.RegisterUDPConnHandler(udpHandler)
 	return t, nil
 }
 
 func (t *outlinetunnel) UpdateUDPSupport() bool {
 	resolverAddr := &net.UDPAddr{IP: net.ParseIP("1.1.1.1"), Port: 53}
 	isUDPEnabled := connectivity.CheckUDPConnectivityWithDNS(t.packetDialer, resolverAddr) == nil
-	if t.isUDPEnabled != isUDPEnabled {
-		t.isUDPEnabled = isUDPEnabled
-		t.lwipStack.Close() // Close existing connections to avoid using the previous handlers.
-		t.registerConnectionHandlers()
-	}
+	t.udpHandler.IsEnabled.Store(isUDPEnabled)
 	return isUDPEnabled
 }
 
-// Registers UDP and TCP connection handlers to the tunnel's host and port.
-// Registers a DNS/TCP fallback UDP handler when UDP is disabled.
-func (t *outlinetunnel) registerConnectionHandlers() {
-	var udpHandler core.UDPConnHandler
-	if t.isUDPEnabled {
-		udpHandler = NewUDPHandler(t.packetDialer, 30*time.Second)
-	} else {
-		udpHandler = dnsfallback.NewUDPHandler()
-	}
-	core.RegisterTCPConnHandler(NewTCPHandler(t.streamDialer))
-	core.RegisterUDPConnHandler(udpHandler)
+type toggleUDPConnHandler struct {
+	IsEnabled       atomic.Bool
+	Handler         core.UDPConnHandler
+	FallbackHandler core.UDPConnHandler
 }
+
+// Connect implements core.UDPConnHandler.
+func (r *toggleUDPConnHandler) Connect(conn core.UDPConn, target *net.UDPAddr) error {
+	if r.IsEnabled.Load() {
+		return r.Handler.Connect(conn, target)
+	} else {
+		return r.FallbackHandler.Connect(conn, target)
+	}
+}
+
+// ReceiveTo implements core.UDPConnHandler.
+func (r *toggleUDPConnHandler) ReceiveTo(conn core.UDPConn, data []byte, addr *net.UDPAddr) error {
+	if r.IsEnabled.Load() {
+		return r.Handler.ReceiveTo(conn, data, addr)
+	} else {
+		return r.FallbackHandler.ReceiveTo(conn, data, addr)
+	}
+}
+
+var _ core.UDPConnHandler = &toggleUDPConnHandler{}
