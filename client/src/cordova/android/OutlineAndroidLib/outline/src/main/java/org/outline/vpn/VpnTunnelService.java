@@ -197,25 +197,24 @@ public class VpnTunnelService extends VpnService {
       }
     }
 
-    final NewClientResult clientResult = Outline.newClient(config.transportConfig);
-    if (clientResult.getError() != null) {
-      LOG.log(Level.WARNING, "Failed to create Outline Client", clientResult.getError());
+    final NewRemoteDeviceResult deviceResult = Outline.newRemoteDevice(config.transportConfig);
+    if (deviceResult.getError() != null) {
+      LOG.log(Level.WARNING, "Failed to create Outline remote IP device", deviceResult.getError());
       tearDownActiveTunnel();
-      return clientResult.getError();
+      return deviceResult.getError();
     }
-    final outline.Client client = clientResult.getClient();
+    final outline.RemoteDevice remoteDevice = deviceResult.getRemoteDevice();
 
-    PlatformError udpConnError = null;
+    PlatformError deviceConnError = null;
     if (!isAutoStart) {
       try {
         // Do not perform connectivity checks when connecting on startup. We should avoid failing
         // the connection due to a network error, as network may not be ready.
-        final TCPAndUDPConnectivityResult connResult = checkServerConnectivity(client);
-        if (connResult.getTCPError() != null) {
+        deviceConnError = remoteDevice.HasConnectivity();
+        if (deviceConnError != null) {
           tearDownActiveTunnel();
-          return connResult.getTCPError();
+          return deviceConnError;
         }
-        udpConnError = connResult.getUDPError();
       } catch (Exception e) {
         tearDownActiveTunnel();
         return new PlatformError(Platerrors.InternalError, "failed to check connectivity");
@@ -233,10 +232,8 @@ public class VpnTunnelService extends VpnService {
       startNetworkConnectivityMonitor();
     }
 
-    final boolean remoteUdpForwardingEnabled =
-        isAutoStart ? tunnelStore.isUdpSupported() : udpConnError == null;
     try {
-      final PlatformError tunError = vpnTunnel.connectTunnel(client, remoteUdpForwardingEnabled);
+      final PlatformError tunError = vpnTunnel.connectTunnel(remoteDevice);
       if (tunError != null) {
         LOG.log(Level.SEVERE, "Failed to connect the tunnel", tunError);
         tearDownActiveTunnel();
@@ -249,7 +246,7 @@ public class VpnTunnelService extends VpnService {
           "failed to connect the tunnel");
     }
     startForegroundWithNotification(config.name);
-    storeActiveTunnel(config, remoteUdpForwardingEnabled);
+    storeActiveTunnel(config);
     return null;
   }
 
@@ -279,20 +276,13 @@ public class VpnTunnelService extends VpnService {
     tunnelStore.setTunnelStatus(TunnelStatus.DISCONNECTED);
   }
 
-  /* Helper method that stops the Outline client, tun2socks, and tears down the VPN. */
+  /* Helper method that stops the Outline remote device, and tears down the VPN. */
   private void stopVpnTunnel() {
     vpnTunnel.disconnectTunnel();
     vpnTunnel.tearDownVpn();
   }
 
   // Connectivity
-
-  private TCPAndUDPConnectivityResult checkServerConnectivity(final outline.Client client) {
-    final TCPAndUDPConnectivityResult result = Outline.checkTCPAndUDPConnectivity(client);
-    LOG.info(String.format(Locale.ROOT, "Go connectivity check result: %s", result));
-    return result;
-  }
-
   private class NetworkConnectivityMonitor extends ConnectivityManager.NetworkCallback {
     private final ConnectivityManager connectivityManager;
 
@@ -320,10 +310,7 @@ public class VpnTunnelService extends VpnService {
         // `getActiveNetworkInfo` have been observed to return the underlying network set by us.
         setUnderlyingNetworks(new Network[] {network});
       }
-      boolean isUdpSupported = vpnTunnel.updateUDPSupport();
-      LOG.info(
-          String.format("UDP support: %s -> %s", tunnelStore.isUdpSupported(), isUdpSupported));
-      tunnelStore.setIsUdpSupported(isUdpSupported);
+      vpnTunnel.notifyNetworkChange();
     }
 
     @Override
@@ -416,7 +403,7 @@ public class VpnTunnelService extends VpnService {
     }
   }
 
-  private void storeActiveTunnel(final TunnelConfig config, boolean isUdpSupported) {
+  private void storeActiveTunnel(final TunnelConfig config) {
     LOG.info("Storing active tunnel.");
     JSONObject tunnel = new JSONObject();
     try {
@@ -427,7 +414,6 @@ public class VpnTunnelService extends VpnService {
       LOG.log(Level.SEVERE, "Failed to store JSON tunnel data", e);
     }
     tunnelStore.setTunnelStatus(TunnelStatus.CONNECTED);
-    tunnelStore.setIsUdpSupported(isUdpSupported);
   }
 
   // Error reporting
