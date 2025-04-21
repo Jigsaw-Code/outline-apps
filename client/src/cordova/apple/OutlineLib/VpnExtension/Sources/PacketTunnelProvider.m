@@ -36,7 +36,6 @@ NSString *const kDefaultPathKey = @"defaultPath";
 @property (nonatomic) DDFileLogger *fileLogger;
 @property (nonatomic, nullable) NSString *transportConfig;
 @property (nonatomic) dispatch_queue_t packetQueue;
-@property (nonatomic) BOOL isUdpSupported;
 @end
 
 @implementation PacketTunnelProvider
@@ -102,18 +101,17 @@ NSString *const kDefaultPathKey = @"defaultPath";
   // network unusable with no indication to the user. By bypassing the checks, the network would
   // still be unusable, but at least the user will have a visual indication that Outline is the
   // culprit and can explicitly disconnect.
-  PlaterrorsPlatformError *udpConnectionError = nil;
+  PlaterrorsPlatformError *connectionError = nil;
   if (!isOnDemand) {
-    OutlineNewClientResult* clientResult = [SwiftBridge newClientWithTransportConfig:self.transportConfig];
-    if (clientResult.error != nil) {
-      return startDone([SwiftBridge newOutlineErrorFromPlatformError:clientResult.error]);
+    OutlineNewRemoteDeviceResult* deviceResult = [SwiftBridge newRemoteDeviceWithTransportConfig:self.transportConfig];
+    if (deviceResult.error != nil) {
+      return startDone([SwiftBridge newOutlineErrorFromPlatformError:deviceResult.error]);
     }
-    OutlineTCPAndUDPConnectivityResult *connResult = OutlineCheckTCPAndUDPConnectivity(clientResult.client);
-    DDLogDebug(@"Check connectivity result: tcpErr=%@, udpErr=%@", connResult.tcpError, connResult.udpError);
-    if (connResult.tcpError != nil) {
-      return startDone([SwiftBridge newOutlineErrorFromPlatformError:connResult.tcpError]);
+    connectionError = deviceResult.remoteDevice.HasConnectivity();
+    DDLogDebug(@"Check connectivity result: %@", connectionError);
+    if (connectionError != nil) {
+      return startDone([SwiftBridge newOutlineErrorFromPlatformError:connectionError]);
     }
-    udpConnectionError = connResult.udpError;
   }
 
   [self startRouting:[SwiftBridge getTunnelNetworkSettings]
@@ -121,9 +119,7 @@ NSString *const kDefaultPathKey = @"defaultPath";
             if (error != nil) {
               return startDone([SwiftBridge newOutlineErrorFromNsError:error]);
             }
-            BOOL isUdpSupported =
-                isOnDemand ? self.isUdpSupported : udpConnectionError == nil;
-            PlaterrorsPlatformError *tun2socksError = [self startTun2Socks:isUdpSupported];
+            PlaterrorsPlatformError *tun2socksError = [self startTun2Socks];
             if (tun2socksError != nil) {
               return startDone([SwiftBridge newOutlineErrorFromPlatformError:tun2socksError]);
             }
@@ -204,11 +200,7 @@ NSString *const kDefaultPathKey = @"defaultPath";
   DDLogInfo(@"Network connectivity changed");
   if (newDefaultPath.status == NWPathStatusSatisfied) {
     DDLogInfo(@"Reconnecting tunnel.");
-    // Check whether UDP support has changed with the network.
-    BOOL isUdpSupported = [self.tunnel updateUDPSupport];
-    DDLogDebug(@"UDP support: %d -> %d", self.isUdpSupported, isUdpSupported);
-    self.isUdpSupported = isUdpSupported;
-    [self reconnectTunnel];
+    [self.remoteDevice notifyNetworkUpdate];
   } else {
     DDLogInfo(@"Clearing tunnel settings.");
     [self startRouting:nil completion:^(NSError * _Nullable error) {
@@ -246,21 +238,6 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
 
 #pragma mark - tun2socks
 
-/** Restarts tun2socks if |configChanged| or the host's IP address has changed in the network. */
-- (void)reconnectTunnel {
-  if (!self.transportConfig || !self.tunnel) {
-    DDLogError(@"Failed to reconnect tunnel, missing tunnel configuration.");
-    return;
-  }
-  // Nothing changed. Connect the tunnel with the current settings.
-  [self startRouting:[SwiftBridge getTunnelNetworkSettings]
-         completion:^(NSError *_Nullable error) {
-           if (error != nil) {
-             [self cancelTunnelWithError:error];
-           }
-         }];
-}
-
 - (BOOL)close:(NSError *_Nullable *)error {
   return YES;
 }
@@ -285,18 +262,18 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
   }];
 }
 
-- (PlaterrorsPlatformError*)startTun2Socks:(BOOL)isUdpSupported {
+- (PlaterrorsPlatformError*)startTun2Socks {
   BOOL isRestart = self.tunnel != nil && self.tunnel.isConnected;
   if (isRestart) {
     [self.tunnel disconnect];
   }
   __weak PacketTunnelProvider *weakSelf = self;
-  OutlineNewClientResult* clientResult = [SwiftBridge newClientWithTransportConfig:self.transportConfig];
-  if (clientResult.error != nil) {
-    return clientResult.error;
+  OutlineNewRemoteDeviceResult* deviceResult = [SwiftBridge newRemoteDEviceWithTransportConfig:self.transportConfig];
+  if (deviceResult.error != nil) {
+    return deviceResult.error;
   }
   Tun2socksConnectOutlineTunnelResult *result =
-    Tun2socksConnectOutlineTunnel(weakSelf, clientResult.client, isUdpSupported);
+    Tun2socksConnectOutlineTunnel(weakSelf, deviceResult.remoteDevice);
   if (result.error != nil) {
     DDLogError(@"Failed to start tun2socks: %@", result.error);
     return result.error;
