@@ -108,5 +108,6 @@ func (h *udpHandler) close(tunConn core.UDPConn) {
 	defer h.Unlock()
 	if proxyConn, ok := h.conns[tunConn]; ok {
 		proxyConn.Close()
+		delete(h.conns, tunConn)
 	}
 }
