@@ -19,9 +19,9 @@ import (
 	"net/netip"
 )
 
-type IPTable[D any] interface {
-	AddPrefix(prefix netip.Prefix, dialer D) error
-	Lookup(ip netip.Addr) (D, error)
+type IPTable[V any] interface {
+	AddPrefix(prefix netip.Prefix, value V) error
+	Lookup(ip netip.Addr) (V, error)
 }
 
 // Compile-time check
