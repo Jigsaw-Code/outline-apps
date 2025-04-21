@@ -32,22 +32,22 @@ const (
 	maxIPv6PrefixLen = 128
 )
 
-// "D" is typically expected to be a dialer of some kind
-type ipTable[D any] struct {
-	ipv4Buckets [maxIPv4PrefixLen + 1]map[netip.Prefix]D
-	ipv6Buckets [maxIPv6PrefixLen + 1]map[netip.Prefix]D
+// "V" is typically expected to be a dialer of some kind
+type ipTable[V any] struct {
+	ipv4Buckets [maxIPv4PrefixLen + 1]map[netip.Addr]V
+	ipv6Buckets [maxIPv6PrefixLen + 1]map[netip.Addr]V
 }
 
 func NewIPTable[V any]() IPTable[V] {
 	return &ipTable[V]{}
 }
 
-func addInBuckets[V any](buckets []map[netip.Prefix]V, prefix netip.Prefix, dialer V) {
+func addInBuckets[V any](buckets []map[netip.Addr]V, prefix netip.Prefix, dialer V) {
 	if buckets[prefix.Bits()] == nil {
-		buckets[prefix.Bits()] = make(map[netip.Prefix]V)
+		buckets[prefix.Bits()] = make(map[netip.Addr]V)
 	}
 
-	buckets[prefix.Bits()][prefix] = dialer
+	buckets[prefix.Bits()][prefix.Masked().Addr()] = dialer
 }
 
 func (table *ipTable[V]) AddPrefix(prefix netip.Prefix, dialer V) error {
@@ -59,16 +59,17 @@ func (table *ipTable[V]) AddPrefix(prefix netip.Prefix, dialer V) error {
 	return nil
 }
 
-func lookupInBuckets[V any](lookupAddress netip.Addr, buckets []map[netip.Prefix]V) (V, bool) {
+func lookupInBuckets[V any](lookupAddress netip.Addr, buckets []map[netip.Addr]V) (V, bool) {
 	for bits := len(buckets) - 1; bits >= 0; bits-- {
 		bucket := buckets[bits]
 		if bucket == nil {
 			continue
 		}
-		for prefix, value := range bucket {
-			if prefix.Contains(lookupAddress) {
-				return value, true
-			}
+
+		value, exists := bucket[netip.PrefixFrom(lookupAddress, bits).Masked().Addr()]
+
+		if exists {
+			return value, true
 		}
 	}
 
