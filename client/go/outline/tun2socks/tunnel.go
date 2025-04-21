@@ -77,7 +77,7 @@ func newTunnel(streamDialer transport.StreamDialer, packetListener transport.Pac
 		Handler:         NewUDPHandler(packetListener, 30*time.Second),
 		FallbackHandler: dnsfallback.NewUDPHandler(),
 	}
-	udpHandler.IsEnabled.Store(isUDPEnabled)
+	udpHandler.UseFallback.Store(!isUDPEnabled)
 	t := &outlinetunnel{base, packetListener, udpHandler}
 	core.RegisterTCPConnHandler(NewTCPHandler(streamDialer))
 	core.RegisterUDPConnHandler(udpHandler)
@@ -87,31 +87,31 @@ func newTunnel(streamDialer transport.StreamDialer, packetListener transport.Pac
 func (t *outlinetunnel) UpdateUDPSupport() bool {
 	resolverAddr := &net.UDPAddr{IP: net.ParseIP("1.1.1.1"), Port: 53}
 	isUDPEnabled := connectivity.CheckUDPConnectivityWithDNS(t.packetDialer, resolverAddr) == nil
-	t.udpHandler.IsEnabled.Store(isUDPEnabled)
+	t.udpHandler.UseFallback.Store(!isUDPEnabled)
 	return isUDPEnabled
 }
 
 type toggleUDPConnHandler struct {
-	IsEnabled       atomic.Bool
+	UseFallback     atomic.Bool
 	Handler         core.UDPConnHandler
 	FallbackHandler core.UDPConnHandler
 }
 
 // Connect implements core.UDPConnHandler.
 func (r *toggleUDPConnHandler) Connect(conn core.UDPConn, target *net.UDPAddr) error {
-	if r.IsEnabled.Load() {
-		return r.Handler.Connect(conn, target)
-	} else {
+	if r.UseFallback.Load() {
 		return r.FallbackHandler.Connect(conn, target)
+	} else {
+		return r.Handler.Connect(conn, target)
 	}
 }
 
 // ReceiveTo implements core.UDPConnHandler.
 func (r *toggleUDPConnHandler) ReceiveTo(conn core.UDPConn, data []byte, addr *net.UDPAddr) error {
-	if r.IsEnabled.Load() {
-		return r.Handler.ReceiveTo(conn, data, addr)
-	} else {
+	if r.UseFallback.Load() {
 		return r.FallbackHandler.ReceiveTo(conn, data, addr)
+	} else {
+		return r.Handler.ReceiveTo(conn, data, addr)
 	}
 }
 
