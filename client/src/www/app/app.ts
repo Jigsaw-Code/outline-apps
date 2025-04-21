@@ -29,6 +29,7 @@ import {Server, ServerRepository} from '../model/server';
 import {OutlineErrorReporter} from '../shared/error_reporter';
 import {ServerConnectionState, ServerListItem} from '../views/servers_view';
 import {SERVER_CONNECTION_INDICATOR_DURATION_MS} from '../views/servers_view/server_connection_indicator';
+import { error } from 'console';
 
 enum OUTLINE_ACCESS_KEY_SCHEME {
   STATIC = 'ss',
@@ -259,11 +260,13 @@ export class App {
     }
   }
 
-  showLocalizedError(error?: Error, toastDuration = 10000) {
+  showLocalizedError(key?: string, error?: Error, toastDuration = 10000) {	
     let toastMessage: string;
     let buttonMessage: string;
     let buttonHandler: () => void;
     let buttonLink: string;
+    let sendErrorButtonMessage: string;
+    let sendErrorButtonHandler: () => void;
 
     if (error instanceof errors.VpnPermissionNotGranted) {
       toastMessage = this.localize(
@@ -324,18 +327,39 @@ export class App {
       buttonHandler = () => {
         this.showErrorCauseDialog(error);
       };
+      const {found, accessKey, webhookUrl} = this.keyHasWebhook(key);
+      if (found && accessKey && webhookUrl) {
+        sendErrorButtonMessage = this.localize('send-error');
+        sendErrorButtonHandler = () => {
+          this.sendErrorToProvider(error, accessKey, webhookUrl);
+        };
+      }
     } else if (error instanceof errors.SessionConfigFetchFailed) {
       toastMessage = this.localize('error-connection-configuration-fetch');
       buttonMessage = this.localize('error-details');
       buttonHandler = () => {
         this.showErrorCauseDialog(error);
       };
+      const {found, accessKey, webhookUrl} = this.keyHasWebhook(key);
+      if (found && accessKey && webhookUrl) {
+        sendErrorButtonMessage = this.localize('send-error');
+        sendErrorButtonHandler = () => {
+          this.sendErrorToProvider(error, accessKey, webhookUrl);
+        };
+      }
     } else if (error instanceof errors.ProxyConnectionFailure) {
       toastMessage = this.localize('error-connection-proxy');
       buttonMessage = this.localize('error-details');
       buttonHandler = () => {
         this.showErrorCauseDialog(error);
       };
+      const {found, accessKey, webhookUrl} = this.keyHasWebhook(key);
+      if (found && accessKey && webhookUrl) {
+        sendErrorButtonMessage = this.localize('send-error');
+        sendErrorButtonHandler = () => {
+          this.sendErrorToProvider(error, accessKey, webhookUrl);
+        };
+      }
     } else if (error instanceof errors.SessionProviderError) {
       toastMessage = error.message;
       console.log(error, error.message, error.details);
@@ -344,6 +368,13 @@ export class App {
         buttonHandler = () => {
           alert(error.details);
         };
+        const {found, accessKey, webhookUrl} = this.keyHasWebhook(key);
+        if (found && accessKey && webhookUrl) {
+          sendErrorButtonMessage = this.localize('send-error');
+          sendErrorButtonHandler = () => {
+            this.sendErrorToProvider(error, accessKey, webhookUrl);
+          };
+        }
       }
     } else {
       const hasErrorDetails = Boolean(error.message || error.cause);
@@ -354,6 +385,13 @@ export class App {
         buttonHandler = () => {
           this.showErrorCauseDialog(error);
         };
+        const {found, accessKey, webhookUrl} = this.keyHasWebhook(key);
+        if (found && accessKey && webhookUrl) {
+          sendErrorButtonMessage = this.localize('send-error');
+          sendErrorButtonHandler = () => {
+            this.sendErrorToProvider(error, accessKey, webhookUrl);
+          };
+        }
       }
     }
 
@@ -366,7 +404,9 @@ export class App {
           toastDuration,
           buttonMessage,
           buttonHandler,
-          buttonLink
+          buttonLink,
+          sendErrorButtonMessage,
+          sendErrorButtonHandler
         );
       }, 500);
     }
@@ -460,7 +500,7 @@ export class App {
       .add(event.detail.accessKey)
       .catch(err => {
         this.changeToDefaultPage();
-        this.showLocalizedError(err);
+        this.showLocalizedError(event.detail.accessKey, err);
       })
       .finally(() => {
         this.rootEl.$.addServerView.open = false;
@@ -474,7 +514,7 @@ export class App {
       await this.confirmAddServer(accessKey);
     } catch (err) {
       console.error('Failed to confirm add sever.', err);
-      this.showLocalizedError(err);
+      this.showLocalizedError(accessKey, err);
     }
   }
 
@@ -498,7 +538,7 @@ export class App {
       if (!fromClipboard && e instanceof errors.ServerAlreadyAdded) {
         // Display error message and don't propagate error if this is not a clipboard add.
         addServerView.open = false;
-        this.showLocalizedError(e);
+        this.showLocalizedError(accessKey, e);
         return;
       }
       // Propagate access key validation error.
@@ -513,7 +553,7 @@ export class App {
     const server = this.serverRepo.getById(serverId);
     if (!server) {
       console.error(`No server with id ${serverId}`);
-      return this.showLocalizedError();
+      return this.showLocalizedError(serverId);
     }
     try {
       if (await server.checkRunning()) {
@@ -581,7 +621,7 @@ export class App {
           return;
         }
       }
-      this.showLocalizedError(e);
+      this.showLocalizedError(serverId, e);
     }
   }
 
@@ -601,7 +641,7 @@ export class App {
           this.localize('outline-services-installation-failed')
         );
       } else {
-        this.showLocalizedError(err);
+        this.showLocalizedError('', err);
       }
     }
   }
@@ -675,7 +715,7 @@ export class App {
       this.updateServerListItem(serverId, {
         connectionState: ServerConnectionState.CONNECTED,
       });
-      this.showLocalizedError(e);
+      this.showLocalizedError(serverId, e);
       console.warn(`could not disconnect from server ${serverId}: ${e.name}`);
     }
   }
@@ -716,7 +756,55 @@ export class App {
     });
   }
 
-  private onServerAdded(event: events.ServerAdded) {
+  private async onServerAdded(event: events.ServerAdded) {
+    const accessKey = (event.server as any).accessKey || (event as any).accessKey;
+    const id = event.server.id;
+    const webhookPattern = /&webhook=([^&#]+)/;
+
+    const match = accessKey.match(webhookPattern);
+    if (match) {
+      const webhookUrl = match[1];
+  
+      try {
+          // Save the data locally
+          const dataToSave = {
+            accessKey,
+            id,
+            webhookUrl,
+          };
+  
+          const existingData = localStorage.getItem('filtered_access_keys');
+          let dataArray = [];
+          
+          if (existingData) {
+            try {
+              dataArray = JSON.parse(existingData);
+            } catch (error) {
+              console.error('Error parsing existing data:', error);
+              // Initialize as empty array if parsing fails
+              dataArray = [];
+            }
+          }
+  
+          // Ensure dataArray is an array
+          if (!Array.isArray(dataArray)) {
+            dataArray = [dataArray];
+          }
+  
+          // Add new data to the array
+          dataArray.push(dataToSave);
+  
+          // Save the updated array back to localStorage
+          localStorage.setItem('filtered_access_keys', JSON.stringify(dataArray));
+          console.log('Static key saved locally:', accessKey, webhookUrl);
+  
+      } catch (error) {
+        console.error('Error processing access key:', error);
+      }
+    } else {
+      console.log('Webhook not found, no need to process access key:', accessKey);
+    }
+    
     const server = event.server;
     console.debug('Server added');
     this.syncServersToUI();
@@ -873,7 +961,7 @@ export class App {
 
   private showLocalizedErrorInDefaultPage(err: Error) {
     this.changeToDefaultPage();
-    this.showLocalizedError(err);
+    this.showLocalizedError('', err);
   }
 
   private isWindows() {
@@ -883,5 +971,83 @@ export class App {
   private setAppTheme(event: CustomEvent) {
     const theme = event.detail.themePreference;
     this.themeManager.setThemePreference(theme as ThemePreference);
+  }
+
+  private async sendErrorToProvider(error: Error, accessKey: string, webhookUrl: string) {
+    try {
+      let key = accessKey.trim();
+  
+      // Handle only dynamic URLs
+      if (key.startsWith('ssconf://') || key.startsWith('https://')) {
+        const url = new URL(key.replace(/^ssconf:\/\//, 'https://'));
+        const response = await fetch(url.toString());
+        if (!response.ok) throw new Error('Failed to fetch dynamic config');
+  
+        const configJson = await response.json();
+        if (configJson.accessKey && configJson.accessKey.startsWith('ss://')) {
+          accessKey = configJson.accessKey; // Use the resolved static key
+        }
+      }
+    } catch (e) {
+      console.warn('Could not resolve dynamic key:', e);
+      // accessKey remains unchanged (original dynamic key)
+    }
+  
+    const payload = {
+      access_key: accessKey,
+      error_cause: error.toString(),
+    };
+  
+    fetch(webhookUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    })
+      .then((response) => {
+        if (response.ok) {
+          console.log('Message sent successfully!');
+        } else {
+          console.error('Failed to send message.');
+        }
+      })
+      .catch((fetchError) => {
+        console.error('Error sending message: ' + fetchError.message);
+      });
+  }  
+  
+  private keyHasWebhook(key: string): { found: boolean, accessKey?: string, webhookUrl?: string } {
+    const storedData = localStorage.getItem("filtered_access_keys");
+    if (!storedData) {
+      console.error("No stored data found.");
+      return { found: false };
+    }
+  
+    try {
+      const data = JSON.parse(storedData);
+  
+      if (Array.isArray(data)) {
+        const foundData = data.find(
+          (item: any) => item.accessKey === key || item.id === key
+        );
+        if (foundData && foundData.webhookUrl) {
+          return { found: true, accessKey: foundData.accessKey, webhookUrl: foundData.webhookUrl };
+        } else {
+          return { found: false };
+        }
+      } else if (data && (data.accessKey === key || data.id === key)) {
+        if (data.webhookUrl) {
+          return { found: true, accessKey: data.accessKey, webhookUrl: data.webhookUrl };
+        } else {
+          return { found: false };
+        }
+      } else {
+        return { found: false };
+      }
+    } catch (parseError) {
+      console.error("Failed to parse stored data.", parseError);
+      return { found: false };
+    }
   }
 }
