@@ -60,8 +60,8 @@ func (table *ipTable[V]) AddPrefix(prefix netip.Prefix, dialer V) error {
 }
 
 func lookupInBuckets[V any](lookupAddress netip.Addr, buckets []map[netip.Prefix]V) (V, bool) {
-	for length := len(buckets) - 1; length >= 0; length-- {
-		bucket := buckets[length]
+	for bits := len(buckets) - 1; bits >= 0; bits-- {
+		bucket := buckets[bits]
 		if bucket == nil {
 			continue
 		}
