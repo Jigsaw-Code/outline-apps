@@ -77,20 +77,10 @@ func lookupInBuckets[V any](lookupAddress netip.Addr, buckets []map[netip.Addr]V
 	return zeroV, false
 }
 
-func (table *ipTable[V]) Lookup(lookupAddress netip.Addr) (V, error) {
-	var value V
-	var found bool
-
+func (table *ipTable[V]) Lookup(lookupAddress netip.Addr) (V, bool) {
 	if lookupAddress.Is4() {
-		value, found = lookupInBuckets(lookupAddress, table.ipv4Buckets[:])
+		return lookupInBuckets(lookupAddress, table.ipv4Buckets[:])
 	} else {
-		value, found = lookupInBuckets(lookupAddress, table.ipv6Buckets[:])
+		return lookupInBuckets(lookupAddress, table.ipv6Buckets[:])
 	}
-
-	if found {
-		return value, nil
-	}
-
-	var zeroV V
-	return zeroV, fmt.Errorf("no matching prefix found for %s", lookupAddress.String())
 }
