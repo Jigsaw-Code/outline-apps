@@ -293,6 +293,10 @@ export class AppRoot extends polymerElementWithLocalize {
       #language-icon {
         padding-top: 10px;
       }
+      #open-in-new-icon {
+        width: 16px;
+        height: 16px;
+      }
       #language-dropdown {
         padding-left: 22px;
         --paper-input-container: {
@@ -392,17 +396,27 @@ export class AppRoot extends polymerElementWithLocalize {
                 class="manager-resources-link"
                 href="https://www.reddit.com/r/outlinevpn/wiki/index/">
                   <span>[[localize('manager-resources')]]</span>
-                  <iron-icon icon="open-in-new" />
+                  <iron-icon id="open-in-new-icon" icon="open-in-new" />
               </a>
             </if-messages>
-            <span on-tap="maybeCloseDrawer"><a href="https://support.getoutline.org/s/article/Data-collection">[[localize('nav-data-collection')]]</a></span>
+            <span on-tap="maybeCloseDrawer">
+              <a href="https://support.google.com/outline/answer/15331222">
+                <span>[[localize('nav-data-collection')]]</span>
+                <iron-icon id="open-in-new-icon" icon="open-in-new" />
+              </a>
+            </span>
             <template is="dom-if" if="{{featureFlags.contactView}}">
               <span on-tap="submitFeedbackTapped">[[localize('nav-contact-us')]]</span>
             </template>
             <template is="dom-if" if="{{!featureFlags.contactView}}">
               <span on-tap="submitFeedbackTapped">[[localize('nav-feedback')]]</span>
             </template>
-            <span on-tap="maybeCloseDrawer"><a href="https://support.getoutline.org/">[[localize('nav-help')]]</a></span>
+            <span on-tap="maybeCloseDrawer">
+              <a href="https://support.google.com/outline/">
+                <span>[[localize('nav-help')]]</span>
+                <iron-icon id="open-in-new-icon" icon="open-in-new" />
+              </a>
+            </span>
             <span on-tap="aboutTapped">[[localize('nav-about')]]</span>
             <div id="links-footer">
               <paper-icon-item id="language-row">
@@ -410,8 +424,14 @@ export class AppRoot extends polymerElementWithLocalize {
                 <outline-language-picker id="language-dropdown" selected-language="{{language}}" languages="{{supportedLanguages}}"></outline-language-picker>
               </paper-icon-item>
               <div class="legal-links" on-tap="maybeCloseDrawer">
-                <a href="https://www.google.com/policies/privacy/">[[localize('nav-privacy')]]</a>
-                <a href="https://s3.amazonaws.com/outline-vpn/static_downloads/Outline-Terms-of-Service.html">[[localize('nav-terms')]]</a>
+                <a href="https://www.google.com/policies/privacy/">
+                  <span>[[localize('nav-privacy')]]</span>
+                  <iron-icon id="open-in-new-icon" icon="open-in-new" />
+                </a>
+                <a href="https://s3.amazonaws.com/outline-vpn/static_downloads/Outline-Terms-of-Service.html">
+                  <span>[[localize('nav-terms')]]</span>
+                  <iron-icon id="open-in-new-icon" icon="open-in-new" />
+                </a>
                 <span on-tap="showLicensesTapped">[[localize('nav-licenses')]]</span>
               </div>
             </div>
@@ -824,6 +844,7 @@ export class AppRoot extends polymerElementWithLocalize {
 
     try {
       message = this.localize(key);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       // failed to find translation
       message = '';
@@ -838,7 +859,7 @@ export class AppRoot extends polymerElementWithLocalize {
     this.currentPage = 'intro';
   }
 
-  getDigitalOceanOauthFlow(onCancel: Function): OutlineDoOauthStep {
+  getDigitalOceanOauthFlow(onCancel: () => void): OutlineDoOauthStep {
     const oauthFlow = this.$.digitalOceanOauth as OutlineDoOauthStep;
     oauthFlow.onCancel = onCancel;
     return oauthFlow;
@@ -848,14 +869,14 @@ export class AppRoot extends polymerElementWithLocalize {
     this.currentPage = 'digitalOceanOauth';
   }
 
-  getAndShowDigitalOceanOauthFlow(onCancel: Function) {
+  getAndShowDigitalOceanOauthFlow(onCancel: () => void) {
     this.currentPage = 'digitalOceanOauth';
     const oauthFlow = this.getDigitalOceanOauthFlow(onCancel);
     oauthFlow.showConnectAccount();
     return oauthFlow;
   }
 
-  getAndShowGcpOauthFlow(onCancel: Function) {
+  getAndShowGcpOauthFlow(onCancel: () => void) {
     this.currentPage = 'gcpOauth';
     const oauthFlow = this.$.gcpOauth as GcpConnectAccountApp;
     oauthFlow.onCancel = onCancel;
@@ -967,7 +988,7 @@ export class AppRoot extends polymerElementWithLocalize {
   showConnectivityDialog(cb: (retry: boolean) => void) {
     const dialogTitle = this.localize('error-connectivity-title');
     const dialogText = this.localize('error-connectivity');
-    this.showModalDialog(dialogTitle, dialogText, [
+    void this.showModalDialog(dialogTitle, dialogText, [
       this.localize('digitalocean-disconnect'),
       this.localize('retry'),
     ]).then(clickedButtonIndex => {
@@ -979,9 +1000,9 @@ export class AppRoot extends polymerElementWithLocalize {
     title: string,
     text: string,
     confirmButtonText: string,
-    continueFunc: Function
+    continueFunc: () => void
   ) {
-    this.showModalDialog(title, text, [
+    void this.showModalDialog(title, text, [
       this.localize('cancel'),
       confirmButtonText,
     ]).then(clickedButtonIndex => {
@@ -993,7 +1014,7 @@ export class AppRoot extends polymerElementWithLocalize {
   }
 
   showManualServerError(errorTitle: string, errorText: string) {
-    this.showModalDialog(errorTitle, errorText, [
+    void this.showModalDialog(errorTitle, errorText, [
       this.localize('cancel'),
       this.localize('retry'),
     ]).then(clickedButtonIndex => {

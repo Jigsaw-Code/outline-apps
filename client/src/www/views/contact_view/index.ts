@@ -50,19 +50,13 @@ enum IssueType {
 
 /** A map of unsupported issue types to helppage URLs to redirect users to. */
 const UNSUPPORTED_ISSUE_TYPES = new Map([
-  [
-    IssueType.NO_SERVER,
-    'https://support.getoutline.org/s/article/How-do-I-get-an-access-key',
-  ],
+  [IssueType.NO_SERVER, 'https://support.google.com/outline/answer/15331628'],
   [
     IssueType.CANNOT_ADD_SERVER,
-    'https://support.getoutline.org/s/article/What-if-my-access-key-doesn-t-work',
+    'https://support.google.com/outline/answer/15331223',
   ],
   [IssueType.BILLING, null],
-  [
-    IssueType.CONNECTION,
-    'https://support.getoutline.org/s/article/Why-can-t-I-connect-to-the-Outline-service',
-  ],
+  [IssueType.CONNECTION, 'https://support.google.com/outline/answer/15331126'],
 ]);
 
 @customElement('contact-view')
@@ -70,7 +64,7 @@ export class ContactView extends LitElement {
   static styles = [
     css`
       :host {
-        background: #fff;
+        background: var(--outline-card-background);
         color: var(--outline-text-color);
         font-family: var(--outline-font-family);
         padding: var(--contact-view-gutter, var(--outline-gutter));
@@ -99,6 +93,7 @@ export class ContactView extends LitElement {
         list-style-type: none;
         margin: 1.5rem 0;
         padding-inline-start: 0;
+        color: var(--outline-text-color);
       }
 
       mwc-select {
@@ -117,10 +112,32 @@ export class ContactView extends LitElement {
         margin-top: 1rem;
         max-width: var(--contact-view-max-width);
         width: 100%;
+        --mdc-theme-primary: var(--outline-primary);
+        --mdc-select-ink-color: var(--outline-text-color);
+        --mdc-select-label-ink-color: var(--outline-label-color);
+        --mdc-select-dropdown-icon-color: var(--outline-text-color);
+        --mdc-select-hover-line-color: var(--outline-text-color);
+        --mdc-select-fill-color: rgba(0, 0, 0, 0.08);
+        --mdc-menu-surface-fill-color: var(--outline-card-background);
+        --mdc-theme-surface: var(--outline-card-background);
+        border: 1px solid var(--outline-hairline);
+        border-radius: 4px;
+        padding: 4px 0;
+        margin-top: 16px;
       }
 
       mwc-select[hidden] {
         display: none;
+      }
+
+      /* Style the dropdown list */
+      mwc-select mwc-menu {
+        --mdc-theme-surface: var(--outline-card-background);
+      }
+
+      /* Style the list items properly for dark mode */
+      mwc-select mwc-list-item {
+        background-color: var(--outline-card-background);
       }
 
       mwc-list-item {
@@ -136,10 +153,39 @@ export class ContactView extends LitElement {
         --mdc-menu-item-height: auto;
         padding-bottom: var(--outline-mini-gutter);
         padding-top: var(--outline-mini-gutter);
+        color: var(--outline-text-color);
+        --mdc-theme-text-primary-on-background: var(--outline-text-color);
+        background-color: var(--outline-card-background);
+        padding: 8px 16px;
       }
 
       mwc-list-item span {
         white-space: normal;
+        color: var(--outline-text-color);
+        display: block;
+        width: 100%;
+      }
+
+      /* Fix radio buttons */
+      mwc-radio {
+        --mdc-theme-secondary: var(--outline-primary);
+        --mdc-radio-unchecked-color: var(--outline-text-color);
+        --mdc-radio-unchecked-color: var(--outline-text-color);
+        --mdc-theme-secondary: var(--outline-primary);
+        --mdc-radio-disabled-color: var(--outline-label-color);
+        border-color: var(--outline-text-color);
+      }
+
+      mwc-formfield {
+        color: var(--outline-text-color);
+        --mdc-theme-text-primary-on-background: var(--outline-text-color);
+      }
+
+      .formfield {
+        color: var(--outline-text-color);
+        --mdc-theme-text-primary-on-background: var(--outline-text-color);
+        font-weight: normal;
+        padding: 8px 0;
       }
     `,
   ];

@@ -172,11 +172,7 @@ function start_docker() {
 }
 
 function docker_container_exists() {
-  docker ps -a --format '{{.Names}}'| grep --quiet "^$1$"
-}
-
-function remove_shadowbox_container() {
-  remove_docker_container "${CONTAINER_NAME}"
+  docker ps -a --format '{{.Names}}' | grep --quiet "^$1$"
 }
 
 function remove_watchtower_container() {
@@ -356,13 +352,8 @@ EOF
   STDERR_OUTPUT="$({ "${START_SCRIPT}" >/dev/null; } 2>&1)" && return
   readonly STDERR_OUTPUT
   log_error "FAILED"
-  if docker_container_exists "${CONTAINER_NAME}"; then
-    handle_docker_container_conflict "${CONTAINER_NAME}" true
-    return
-  else
-    log_error "${STDERR_OUTPUT}"
-    return 1
-  fi
+  log_error "${STDERR_OUTPUT}"
+  return 1
 }
 
 function start_watchtower() {

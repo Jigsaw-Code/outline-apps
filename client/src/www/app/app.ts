@@ -18,7 +18,8 @@ import {OperationTimedOut} from '@outline/infrastructure/timeout_promise';
 import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import * as config from './outline_server_repository/config';
-import {Settings, SettingsKey} from './settings';
+import {Settings, SettingsKey, ThemePreference} from './settings';
+import {ThemeManager} from './theme_manager';
 import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
@@ -85,6 +86,7 @@ export class App {
   private localize: Localizer;
   private ignoredAccessKeys: {[accessKey: string]: boolean} = {};
   private serverConnectionChangeTimeouts: {[serverId: string]: boolean} = {};
+  private themeManager: ThemeManager;
 
   constructor(
     private eventQueue: events.EventQueue,
@@ -102,6 +104,21 @@ export class App {
     document = window.document
   ) {
     this.localize = this.rootEl.localize.bind(this.rootEl);
+
+    // Get dark mode feature flag from rootEl (app-root)
+    // Access it safely as a property of rootEl
+    let darkModeEnabled = false;
+    if (this.rootEl && 'darkModeEnabled' in this.rootEl) {
+      darkModeEnabled = Boolean(this.rootEl['darkModeEnabled']);
+    }
+
+    // Initialize ThemeManager with the feature flag
+    this.themeManager = new ThemeManager(settings, document, darkModeEnabled);
+
+    // Store ThemeManager reference on rootEl for access from the app-root component
+    if (this.rootEl && typeof this.rootEl === 'object') {
+      this.rootEl.__themeManager = this.themeManager;
+    }
 
     this.syncServersToUI();
     this.syncConnectivityStateToServerCards();
@@ -183,6 +200,10 @@ export class App {
     this.rootEl.addEventListener(
       'SetLanguageRequested',
       this.setAppLanguage.bind(this)
+    );
+    this.rootEl.addEventListener(
+      'SetThemeRequested',
+      this.setAppTheme.bind(this)
     );
 
     // Register handlers for events published to our event queue.
@@ -752,7 +773,7 @@ export class App {
       }
       return message;
     };
-    return alert(makeString(error, ''));
+    return this.rootEl.showErrorDetails(makeString(error, ''));
   }
   //#endregion UI dialogs
 
@@ -857,5 +878,10 @@ export class App {
 
   private isWindows() {
     return !('cordova' in window);
+  }
+
+  private setAppTheme(event: CustomEvent) {
+    const theme = event.detail.themePreference;
+    this.themeManager.setThemePreference(theme as ThemePreference);
   }
 }

@@ -497,7 +497,7 @@
     "message": "Error Details"
   },
   "error_details_dialog_copied": {
-   "description": "The text of a button to copy the error details to the clipboard.",
+    "description": "The text of a button after we have copied the error details to the user's clipboard.",
     "message": "Copied"
   },
   "error_details_dialog_copy": {
@@ -643,5 +643,21 @@
   "yes": {
     "description": "Affirmative answer to a form question.",
     "message": "Yes"
+  },
+  "theme_dark": {
+    "description": "The text for a main menu item that takes the user to a page to set the application theme to dark mode.",
+    "message": "Dark"
+  },
+  "theme_light": {
+    "description": "The text for a main menu item that takes the user to a page to set the application theme to light mode.",
+    "message": "Light"
+  },
+  "theme_system": {
+    "description": "The text for a main menu item that takes the user to a page to set the application theme to system mode.",
+    "message": "System"
+  },
+  "theme_page_title": {
+    "description": "The title of a page for a user to set the app theme.",
+    "message": "Appearance"
   }
 }

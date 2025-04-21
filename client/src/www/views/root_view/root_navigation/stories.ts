@@ -24,7 +24,7 @@ export default {
   args: {
     open: true,
     dataCollectionPageUrl:
-      'https://support.getoutline.org/s/article/Data-collection',
+      'https://support.google.com/outline/answer/15331222',
   },
 };
 
