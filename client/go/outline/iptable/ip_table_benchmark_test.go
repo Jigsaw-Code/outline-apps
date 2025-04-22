@@ -129,7 +129,7 @@ func BenchmarkIPRoutingTable_AddRule_Growing(b *testing.B) {
 }
 
 var benchVal string
-var benchErr error
+var benchOk bool
 
 // Benchmark matching against a pre-filled router.
 func BenchmarkIPRoutingTable_Lookup(b *testing.B) {
@@ -153,9 +153,9 @@ func BenchmarkIPRoutingTable_Lookup(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		ipToMatch := benchmarkMatchAddrs[i%len(benchmarkMatchAddrs)]
 
-		v, err := table.Lookup(ipToMatch)
+		v, ok := table.Lookup(ipToMatch)
 
 		benchVal = v
-		benchErr = err
+		benchOk = ok
 	}
 }

@@ -40,9 +40,9 @@ func TestIPRoutingTable_Empty(t *testing.T) {
 	table := NewIPTable[string]()
 	ip := mustParseAddr("192.0.2.1")
 
-	_, err := table.Lookup(ip)
-	if err == nil {
-		t.Errorf("Lookup(%v) on empty table succeeded unexpectedly, want error", ip)
+	_, ok := table.Lookup(ip)
+	if ok {
+		t.Errorf("Lookup(%v) on empty table unexpectedly found a value", ip)
 	}
 }
 
@@ -56,33 +56,33 @@ func TestIPRoutingTable_BasicLookup(t *testing.T) {
 	}
 
 	tests := []struct {
-		name      string
-		ip        netip.Addr
-		wantValue string
-		wantErr   bool
+		name        string
+		ip          netip.Addr
+		wantValue   string
+		expectFound bool
 	}{
-		{"IP within prefix", mustParseAddr("192.168.1.100"), dialerID, false},
-		{"Network address", mustParseAddr("192.168.1.0"), dialerID, false},
-		{"Broadcast address", mustParseAddr("192.168.1.255"), dialerID, false},
-		{"IP outside prefix", mustParseAddr("192.168.2.1"), "", true},
-		{"Different private range", mustParseAddr("10.0.0.1"), "", true},
+		{"IP within prefix", mustParseAddr("192.168.1.100"), dialerID, true},
+		{"Network address", mustParseAddr("192.168.1.0"), dialerID, true},
+		{"Broadcast address", mustParseAddr("192.168.1.255"), dialerID, true},
+		{"IP outside prefix", mustParseAddr("192.168.2.1"), "", false},
+		{"Different private range", mustParseAddr("10.0.0.1"), "", false},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			gotValue, gotErr := table.Lookup(tc.ip)
+			gotValue, gotOk := table.Lookup(tc.ip)
 
-			if tc.wantErr {
-				if gotErr == nil {
-					t.Errorf("Lookup(%v) = %q, nil; want error", tc.ip, gotValue)
-				}
-			} else {
-				if gotErr != nil {
-					t.Errorf("Lookup(%v) unexpected error: %v", tc.ip, gotErr)
-				}
-				if gotValue != tc.wantValue {
-					t.Errorf("Lookup(%v) = %q, want %q", tc.ip, gotValue, tc.wantValue)
-				}
+			if gotOk != tc.expectFound {
+				t.Errorf("Lookup(%v) ok = %v; want %v", tc.ip, gotOk, tc.expectFound)
+			}
+
+			// Only check the value if we expected to find something
+			if tc.expectFound && gotValue != tc.wantValue {
+				t.Errorf("Lookup(%v) = %q, want %q", tc.ip, gotValue, tc.wantValue)
+			}
+
+			if !tc.expectFound && gotValue != "" {
+				t.Errorf("Lookup(%v) returned non-zero value %q when not found", tc.ip, gotValue)
 			}
 		})
 	}
@@ -97,40 +97,34 @@ func TestIPRoutingTable_LongestPrefixLookup(t *testing.T) {
 	p25 := mustParsePrefix("192.168.1.128/25")
 	pDefault := mustParsePrefix("0.0.0.0/0")
 
-	table.AddPrefix(p16, "dialer_16")           // Wider
-	table.AddPrefix(p24, "dialer_24")           // Specific
-	table.AddPrefix(pDefault, "dialer_default") // Default
-	table.AddPrefix(p25, "dialer_25")           // Most specific
+	table.AddPrefix(p16, "dialer_16")
+	table.AddPrefix(p24, "dialer_24")
+	table.AddPrefix(pDefault, "dialer_default")
+	table.AddPrefix(p25, "dialer_25")
 
 	tests := []struct {
-		name      string
-		ip        netip.Addr
-		wantValue string
-		wantErr   bool
+		name        string
+		ip          netip.Addr
+		wantValue   string
+		expectFound bool
 	}{
-		{"Matches /25", mustParseAddr("192.168.1.200"), "dialer_25", false},
-		{"Matches /24", mustParseAddr("192.168.1.10"), "dialer_24", false},
-		{"Matches /16", mustParseAddr("192.168.2.50"), "dialer_16", false},
-		{"Matches default", mustParseAddr("10.1.1.1"), "dialer_default", false},
-		{"Matches /25 network addr", mustParseAddr("192.168.1.128"), "dialer_25", false},
-		{"Matches /25 broadcast addr", mustParseAddr("192.168.1.255"), "dialer_25", false},
+		{"Matches /25", mustParseAddr("192.168.1.200"), "dialer_25", true},
+		{"Matches /24", mustParseAddr("192.168.1.10"), "dialer_24", true},
+		{"Matches /16", mustParseAddr("192.168.2.50"), "dialer_16", true},
+		{"Matches default", mustParseAddr("10.1.1.1"), "dialer_default", true},
+		{"Matches /25 network addr", mustParseAddr("192.168.1.128"), "dialer_25", true},
+		{"Matches /25 broadcast addr", mustParseAddr("192.168.1.255"), "dialer_25", true},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			gotValue, gotErr := table.Lookup(tc.ip)
+			gotValue, gotOk := table.Lookup(tc.ip)
 
-			if tc.wantErr { // Although none are expected here
-				if gotErr == nil {
-					t.Errorf("Lookup(%v) = %q, nil; want error", tc.ip, gotValue)
-				}
-			} else {
-				if gotErr != nil {
-					t.Errorf("Lookup(%v) unexpected error: %v", tc.ip, gotErr)
-				}
-				if gotValue != tc.wantValue {
-					t.Errorf("Lookup(%v) = %q, want %q", tc.ip, gotValue, tc.wantValue)
-				}
+			if gotOk != tc.expectFound {
+				t.Errorf("Lookup(%v) ok = %v; want %v", tc.ip, gotOk, tc.expectFound)
+			}
+			if tc.expectFound && gotValue != tc.wantValue {
+				t.Errorf("Lookup(%v) = %q, want %q", tc.ip, gotValue, tc.wantValue)
 			}
 		})
 	}
@@ -150,33 +144,27 @@ func TestIPRoutingTable_IPv6Lookup(t *testing.T) {
 	table.AddPrefix(pDefault, "dialer_default_v6")
 
 	tests := []struct {
-		name      string
-		ip        netip.Addr
-		wantValue string
-		wantErr   bool
+		name        string
+		ip          netip.Addr
+		wantValue   string
+		expectFound bool
 	}{
-		{"Matches /64", mustParseAddr("2001:db8:1:1::1"), "dialer_64", false},
-		{"Matches /48", mustParseAddr("2001:db8:1:2::1"), "dialer_48", false},
-		{"Matches /32", mustParseAddr("2001:db8:2::1"), "dialer_32", false},
-		{"Matches default v6", mustParseAddr("2001:db9::1"), "dialer_default_v6", false},
-		{"Matches different default v6", mustParseAddr("::1"), "dialer_default_v6", false}, // Loopback matches ::/0
+		{"Matches /64", mustParseAddr("2001:db8:1:1::1"), "dialer_64", true},
+		{"Matches /48", mustParseAddr("2001:db8:1:2::1"), "dialer_48", true},
+		{"Matches /32", mustParseAddr("2001:db8:2::1"), "dialer_32", true},
+		{"Matches default v6", mustParseAddr("2001:db9::1"), "dialer_default_v6", true},
+		{"Matches different default v6", mustParseAddr("::1"), "dialer_default_v6", true}, // Loopback matches ::/0
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			gotValue, gotErr := table.Lookup(tc.ip)
+			gotValue, gotOk := table.Lookup(tc.ip)
 
-			if tc.wantErr {
-				if gotErr == nil {
-					t.Errorf("Lookup(%v) = %q, nil; want error", tc.ip, gotValue)
-				}
-			} else {
-				if gotErr != nil {
-					t.Errorf("Lookup(%v) unexpected error: %v", tc.ip, gotErr)
-				}
-				if gotValue != tc.wantValue {
-					t.Errorf("Lookup(%v) = %q, want %q", tc.ip, gotValue, tc.wantValue)
-				}
+			if gotOk != tc.expectFound {
+				t.Errorf("Lookup(%v) ok = %v; want %v", tc.ip, gotOk, tc.expectFound)
+			}
+			if tc.expectFound && gotValue != tc.wantValue {
+				t.Errorf("Lookup(%v) = %q, want %q", tc.ip, gotValue, tc.wantValue)
 			}
 		})
 	}
@@ -196,19 +184,17 @@ func TestIPRoutingTable_MixedIPv4IPv6(t *testing.T) {
 	table.AddPrefix(pDefaultV6, "dialer_default_v6")
 
 	tests := []struct {
-		name      string
-		ip        netip.Addr
-		wantValue string
-		wantErr   bool
+		name        string
+		ip          netip.Addr
+		wantValue   string
+		expectFound bool
 	}{
-		{"Lookup IPv4 LAN", mustParseAddr("192.168.1.100"), "dialer_v4_lan", false},
-		{"Lookup IPv4 Default", mustParseAddr("8.8.8.8"), "dialer_default_v4", false},
-		{"Lookup IPv6 LAN", mustParseAddr("2001:db8:1:1:aaaa::1"), "dialer_v6_lan", false},
-		{"Lookup IPv6 Default", mustParseAddr("2606:4700:4700::1111"), "dialer_default_v6", false},
-		// Ensure IPv4 doesn't match IPv6 default and vice-versa IF they were different
-		// (Here they might point to the same conceptual 'default', but test specificity)
-		{"IPv4 doesn't match v6 route", mustParseAddr("192.168.1.1"), "dialer_v4_lan", false},            // Should not match v6 /64
-		{"IPv6 doesn't match v4 route", mustParseAddr("::ffff:192.168.1.1"), "dialer_default_v6", false}, // IPv4-mapped shouldn't match /24, hits default v6
+		{"Lookup IPv4 LAN", mustParseAddr("192.168.1.100"), "dialer_v4_lan", true},
+		{"Lookup IPv4 Default", mustParseAddr("8.8.8.8"), "dialer_default_v4", true},
+		{"Lookup IPv6 LAN", mustParseAddr("2001:db8:1:1:aaaa::1"), "dialer_v6_lan", true},
+		{"Lookup IPv6 Default", mustParseAddr("2606:4700:4700::1111"), "dialer_default_v6", true},
+		{"IPv4 doesn't match v6 route", mustParseAddr("192.168.1.1"), "dialer_v4_lan", true},
+		{"IPv6 doesn't match v4 route", mustParseAddr("::ffff:192.168.1.1"), "dialer_default_v6", true},
 	}
 
 	// If default v4 and v6 point to different things:
@@ -217,44 +203,38 @@ func TestIPRoutingTable_MixedIPv4IPv6(t *testing.T) {
 	table2.AddPrefix(pDefaultV6, "ONLY_V6_DEFAULT")
 	tests = append(tests,
 		struct {
-			name      string
-			ip        netip.Addr
-			wantValue string
-			wantErr   bool
+			name        string
+			ip          netip.Addr
+			wantValue   string
+			expectFound bool
 		}{
-			"IPv4 hits V4 default", mustParseAddr("8.8.8.8"), "ONLY_V4_DEFAULT", false,
+			"IPv4 hits V4 default", mustParseAddr("8.8.8.8"), "ONLY_V4_DEFAULT", true,
 		},
 		struct {
-			name      string
-			ip        netip.Addr
-			wantValue string
-			wantErr   bool
+			name        string
+			ip          netip.Addr
+			wantValue   string
+			expectFound bool
 		}{
-			"IPv6 hits V6 default", mustParseAddr("2001::1"), "ONLY_V6_DEFAULT", false,
+			"IPv6 hits V6 default", mustParseAddr("2001::1"), "ONLY_V6_DEFAULT", true,
 		},
 	)
 
 	for _, tc := range tests {
-		// Use appropriate router for the test case
+		// Use appropriate table for the test case
 		currentTable := table
 		if tc.wantValue == "ONLY_V4_DEFAULT" || tc.wantValue == "ONLY_V6_DEFAULT" {
 			currentTable = table2
 		}
 
 		t.Run(tc.name, func(t *testing.T) {
-			gotValue, gotErr := currentTable.Lookup(tc.ip)
+			gotValue, gotOk := currentTable.Lookup(tc.ip)
 
-			if tc.wantErr {
-				if gotErr == nil {
-					t.Errorf("Lookup(%v) = %q, nil; want error", tc.ip, gotValue)
-				}
-			} else {
-				if gotErr != nil {
-					t.Errorf("Lookup(%v) unexpected error: %v", tc.ip, gotErr)
-				}
-				if gotValue != tc.wantValue {
-					t.Errorf("Lookup(%v) = %q, want %q", tc.ip, gotValue, tc.wantValue)
-				}
+			if gotOk != tc.expectFound {
+				t.Errorf("Lookup(%v) ok = %v; want %v", tc.ip, gotOk, tc.expectFound)
+			}
+			if tc.expectFound && gotValue != tc.wantValue {
+				t.Errorf("Lookup(%v) = %q, want %q", tc.ip, gotValue, tc.wantValue)
 			}
 		})
 	}
@@ -263,42 +243,39 @@ func TestIPRoutingTable_MixedIPv4IPv6(t *testing.T) {
 func TestIPRoutingTable_SameLengthPrefixes(t *testing.T) {
 	table := NewIPTable[string]()
 
-	pLen := 24
-	pV4 := mustParsePrefix(fmt.Sprintf("198.51.100.0/%d", pLen))
-	pV6 := mustParsePrefix(fmt.Sprintf("2001:db8:cafe::/%d", pLen))
+	// Use different lengths to ensure buckets are distinct internally
+	pLenV4 := 24
+	pLenV6 := 48
+	pV4 := mustParsePrefix(fmt.Sprintf("198.51.100.0/%d", pLenV4))
+	pV6 := mustParsePrefix(fmt.Sprintf("2001:db8:cafe::/%d", pLenV6))
 
-	valV4 := "value_v4_len24"
-	valV6 := "value_v6_len24"
+	valV4 := "value_v4"
+	valV6 := "value_v6"
 
 	table.AddPrefix(pV4, valV4)
 	table.AddPrefix(pV6, valV6)
 
 	tests := []struct {
-		name      string
-		ip        netip.Addr
-		wantValue string
-		wantErr   bool
+		name        string
+		ip          netip.Addr
+		wantValue   string
+		expectFound bool
 	}{
-		{"IPv4 within its /24", mustParseAddr("198.51.100.50"), valV4, false},
-		{"IPv6 within its /24", mustParseAddr("2001:db8:ca00::1"), valV6, false},
+		{"IPv4 within its prefix", mustParseAddr("198.51.100.50"), valV4, true},
+		{"IPv6 within its prefix", mustParseAddr("2001:db8:cafe:1::1"), valV6, true},
+		{"IPv4 outside its prefix", mustParseAddr("198.51.101.1"), "", false},     // Expect not found if no default
+		{"IPv6 outside its prefix", mustParseAddr("2001:db8:caff::1"), "", false}, // Expect not found if no default
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			gotValue, gotErr := table.Lookup(tc.ip)
+			gotValue, gotOk := table.Lookup(tc.ip)
 
-			if tc.wantErr {
-				if gotErr == nil {
-					t.Errorf("Lookup(%v) = %q, nil; want error", tc.ip, gotValue)
-				}
-				// Can add specific error checking here if needed
-			} else {
-				if gotErr != nil {
-					t.Errorf("Lookup(%v) unexpected error: %v", tc.ip, gotErr)
-				}
-				if gotValue != tc.wantValue {
-					t.Errorf("Lookup(%v) = %q, want %q", tc.ip, gotValue, tc.wantValue)
-				}
+			if gotOk != tc.expectFound {
+				t.Errorf("Lookup(%v) ok = %v; want %v", tc.ip, gotOk, tc.expectFound)
+			}
+			if tc.expectFound && gotValue != tc.wantValue {
+				t.Errorf("Lookup(%v) = %q, want %q", tc.ip, gotValue, tc.wantValue)
 			}
 		})
 	}
@@ -319,10 +296,10 @@ func TestIPRoutingTable_OverwriteRule(t *testing.T) {
 	}
 
 	ip := mustParseAddr("10.1.2.3")
-	gotValue, gotErr := table.Lookup(ip)
+	gotValue, gotOk := table.Lookup(ip)
 
-	if gotErr != nil {
-		t.Errorf("Lookup(%v) unexpected error: %v", ip, gotErr)
+	if !gotOk {
+		t.Errorf("Lookup(%v) failed unexpectedly, want found", ip)
 	}
 	if gotValue != "second_value" {
 		t.Errorf("Lookup(%v) = %q, want %q (expected overwrite)", ip, gotValue, "second_value")
