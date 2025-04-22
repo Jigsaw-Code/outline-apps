@@ -15,13 +15,12 @@
 package iptable
 
 import (
-	"fmt"
 	"net/netip"
 )
 
 type IPTable[V any] interface {
 	AddPrefix(prefix netip.Prefix, value V) error
-	Lookup(ip netip.Addr) (V, error)
+	Lookup(ip netip.Addr) (V, bool)
 }
 
 // Compile-time check
