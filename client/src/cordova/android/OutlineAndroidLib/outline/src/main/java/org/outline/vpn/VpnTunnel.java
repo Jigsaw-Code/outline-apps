@@ -123,16 +123,15 @@ public class VpnTunnel {
   /**
    * Connects a tunnel between a Outline proxy server and the VPN TUN interface.
    *
-   * @param client provides access to the Outline client.
-   * @param isUdpEnabled conveys the result of UDP probing.  TODO: Roll this into `client`.
+   * @param remoteDevice provides access to the Outline RemoteDevice.
    * @throws IllegalArgumentException if |socksServerAddress| is null.
    * @throws IllegalStateException if the VPN has not been established, or the tunnel is already
    *     connected.
    */
-  public synchronized PlatformError connectTunnel(final outline.Client client, boolean isUdpEnabled) {
+  public synchronized PlatformError connectTunnel(final outline.RemoteDevice remoteDevice) {
     LOG.info("Connecting the tunnel.");
-    if (client == null) {
-      throw new IllegalArgumentException("Must provide an Outline client.");
+    if (remoteDevice == null) {
+      throw new IllegalArgumentException("Must provide an Outline RemoteDevice.");
     }
     if (tunFd == null) {
       throw new IllegalStateException("Must establish the VPN before connecting the tunnel.");
@@ -143,7 +142,7 @@ public class VpnTunnel {
 
     LOG.fine("Starting tun2socks...");
     final ConnectOutlineTunnelResult result =
-        Tun2socks.connectOutlineTunnel(tunFd.getFd(), client, isUdpEnabled);
+        Tun2socks.connectOutlineTunnel(tunFd.getFd(), remoteDevice);
     if (result.getError() != null) {
       return result.getError();
     }
@@ -166,11 +165,11 @@ public class VpnTunnel {
    *
    * @return boolean indicating whether UDP is supported.
    */
-  public synchronized boolean updateUDPSupport() {
+  public synchronized boolean notifyNetworkChange() {
     if (!isTunnelConnected()) {
       return false;
     }
-    return tunnel.updateUDPSupport();
+    return this.remoteDevice.notifyNetworkChange();
   }
 
   private boolean isTunnelConnected() {
