@@ -11,6 +11,7 @@ Additional requirements for Android:
 - [Java Development Kit (JDK) 11](https://jdk.java.net/archive/)
   - Set `JAVA_HOME` environment variable if you have multiple JDK versions installed. On macOS: `export JAVA_HOME=$(/usr/libexec/java_home -v 11.0)`.
 - Latest [Android Sdk Commandline Tools](https://developer.android.com/studio/command-line) ([download](https://developer.android.com/studio#command-line-tools-only))
+  - Fetch and unzip `https://dl.google.com/android/repository/commandlinetools-mac-6609375_latest.zip` (change `mac` to `linux` on Linux)
   - Place it at `$HOME/Android/sdk/cmdline-tools/latest`
   - Set `ANDROID_HOME` (e.g., `$HOME/Android/sdk`) and `ANDROID_NDK` (e.g., `$ANDROID_HOME/ndk`) environment variables
 - Android SDK 34 (with build-tools) via commandline `$HOME/Android/sdk/cmdline-tools/latest/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0"`
