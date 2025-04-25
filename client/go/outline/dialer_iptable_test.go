@@ -124,10 +124,8 @@ func TestIPTableStreamDialer_DialStream(t *testing.T) {
 	routeV6Dialer := NewMockStreamDialer("routeV6") // 2001:db8:cafe::/48
 
 	table := iptable.NewIPTable[transport.StreamDialer]()
-	prefixV4, _ := netip.ParsePrefix("192.0.2.0/24")
-	prefixV6, _ := netip.ParsePrefix("2001:db8:cafe::/48")
-	table.AddPrefix(prefixV4, routeV4Dialer)
-	table.AddPrefix(prefixV6, routeV6Dialer)
+	table.AddPrefix(netip.MustParsePrefix("192.0.2.0/24"), routeV4Dialer)
+	table.AddPrefix(netip.MustParsePrefix("2001:db8:cafe::/48"), routeV6Dialer)
 
 	iptDialer, err := NewIPTableStreamDialer(table, defaultDialer)
 	require.NoError(t, err)
