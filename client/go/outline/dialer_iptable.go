@@ -24,21 +24,19 @@ import (
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
-func lookupTableDialer[D any](table iptable.IPTable[D], defaultDialer D, address string) D {
+func lookupInTable[D any](table iptable.IPTable[D], address string) (foundDialer D, ok bool) {
 	host := address
-
 	if _host, _, err := net.SplitHostPort(address); err == nil {
 		host = _host
 	}
 
 	ip, err := netip.ParseAddr(host)
 	if err == nil {
-		if foundDialer, ok := table.Lookup(ip); ok {
-			return foundDialer
-		}
+		return table.Lookup(ip)
 	}
 
-	return defaultDialer
+	var zeroD D
+	return zeroD, false
 }
 
 type IPTableStreamDialer struct {
@@ -46,21 +44,35 @@ type IPTableStreamDialer struct {
 	defaultDialer transport.StreamDialer
 }
 
-func NewIPTableStreamDialer(table iptable.IPTable[transport.StreamDialer], defaultDialer transport.StreamDialer) (*IPTableStreamDialer, error) {
-	if defaultDialer == nil {
-		return nil, fmt.Errorf("defaultDialer cannot be nil")
-	}
+func NewIPTableStreamDialer(table iptable.IPTable[transport.StreamDialer]) (*IPTableStreamDialer, error) {
 	if table == nil {
 		table = iptable.NewIPTable[transport.StreamDialer]()
 	}
 	return &IPTableStreamDialer{
-		table:         table,
-		defaultDialer: defaultDialer,
+		table: table,
 	}, nil
 }
 
+func (dialer *IPTableStreamDialer) AddDefault(defaultDialer transport.StreamDialer) error {
+	if defaultDialer == nil {
+		return fmt.Errorf("defaultRoute cannot be nil")
+	}
+
+	dialer.defaultDialer = defaultDialer
+	return nil
+}
+
 func (dialer *IPTableStreamDialer) DialStream(ctx context.Context, address string) (transport.StreamConn, error) {
-	return lookupTableDialer(dialer.table, dialer.defaultDialer, address).DialStream(ctx, address)
+	selectedDialer, ok := lookupInTable(dialer.table, address)
+
+	if !ok {
+		selectedDialer = dialer.defaultDialer
+		if selectedDialer == nil {
+			return nil, fmt.Errorf("no dialer available for address %s", address)
+		}
+	}
+
+	return selectedDialer.DialStream(ctx, address)
 }
 
 type IPTablePacketDialer struct {
@@ -68,19 +80,33 @@ type IPTablePacketDialer struct {
 	defaultDialer transport.PacketDialer
 }
 
-func NewIPTablePacketDialer(table iptable.IPTable[transport.PacketDialer], defaultDialer transport.PacketDialer) (*IPTablePacketDialer, error) {
-	if defaultDialer == nil {
-		return nil, fmt.Errorf("defaultRoute cannot be nil")
-	}
+func NewIPTablePacketDialer(table iptable.IPTable[transport.PacketDialer]) (*IPTablePacketDialer, error) {
 	if table == nil {
 		table = iptable.NewIPTable[transport.PacketDialer]()
 	}
 	return &IPTablePacketDialer{
-		table:         table,
-		defaultDialer: defaultDialer,
+		table: table,
 	}, nil
 }
 
+func (dialer *IPTablePacketDialer) AddDefault(defaultDialer transport.PacketDialer) error {
+	if defaultDialer == nil {
+		return fmt.Errorf("defaultRoute cannot be nil")
+	}
+
+	dialer.defaultDialer = defaultDialer
+	return nil
+}
+
 func (dialer *IPTablePacketDialer) DialPacket(ctx context.Context, address string) (net.Conn, error) {
-	return lookupTableDialer(dialer.table, dialer.defaultDialer, address).DialPacket(ctx, address)
+	selectedDialer, ok := lookupInTable(dialer.table, address)
+
+	if !ok {
+		selectedDialer = dialer.defaultDialer
+		if selectedDialer == nil {
+			return nil, fmt.Errorf("no dialer available for address %s", address)
+		}
+	}
+
+	return selectedDialer.DialPacket(ctx, address)
 }

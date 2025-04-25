@@ -20,6 +20,7 @@ import (
 	"net"
 	"net/netip"
 	"testing"
+	"time"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/iptable"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
@@ -27,7 +28,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// MockStreamConn satisfies transport.StreamConn but does minimal work.
+// --- Mocks ---
+
 type MockStreamConn struct {
 	net.Conn
 	closed bool
@@ -54,7 +56,6 @@ func (m *MockStreamConn) RemoteAddr() net.Addr {
 	return m.remote
 }
 
-// MockStreamDialer records calls to DialStream.
 type MockStreamDialer struct {
 	Name        string
 	WasCalled   bool
@@ -62,6 +63,7 @@ type MockStreamDialer struct {
 	DialedCtx   context.Context
 	ReturnConn  transport.StreamConn
 	ReturnError error
+	DialDelay   time.Duration
 }
 
 func NewMockStreamDialer(name string) *MockStreamDialer {
@@ -76,9 +78,18 @@ func (m *MockStreamDialer) DialStream(ctx context.Context, addr string) (transpo
 	m.DialedCtx = ctx
 	m.DialedAddr = addr
 
+	if m.DialDelay > 0 {
+		select {
+		case <-time.After(m.DialDelay):
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		}
+	}
+
 	if m.ReturnError != nil {
 		return nil, m.ReturnError
 	}
+	// Check context after potential delay but before returning success
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
@@ -91,180 +102,6 @@ func (m *MockStreamDialer) Reset() {
 	m.DialedCtx = nil
 }
 
-func TestNewIPTableStreamDialer(t *testing.T) {
-	defaultDialer := NewMockStreamDialer("default")
-	table := iptable.NewIPTable[transport.StreamDialer]()
-
-	t.Run("Valid", func(t *testing.T) {
-		d, err := NewIPTableStreamDialer(table, defaultDialer)
-		require.NoError(t, err)
-		require.NotNil(t, d)
-		assert.Equal(t, defaultDialer, d.defaultDialer)
-		assert.Equal(t, table, d.table)
-	})
-
-	t.Run("Nil Table", func(t *testing.T) {
-		d, err := NewIPTableStreamDialer(nil, defaultDialer)
-		require.NoError(t, err)
-		require.NotNil(t, d)
-		assert.Equal(t, defaultDialer, d.defaultDialer)
-		assert.NotNil(t, d.table, "Table should be initialized even if nil is passed")
-	})
-
-	t.Run("Nil Default Dialer", func(t *testing.T) {
-		d, err := NewIPTableStreamDialer(table, nil)
-		require.Error(t, err)
-		assert.Nil(t, d)
-	})
-}
-
-func TestIPTableStreamDialer_DialStream(t *testing.T) {
-	defaultDialer := NewMockStreamDialer("default")
-	routeV4Dialer := NewMockStreamDialer("routeV4") // 192.0.2.0/24
-	routeV6Dialer := NewMockStreamDialer("routeV6") // 2001:db8:cafe::/48
-
-	table := iptable.NewIPTable[transport.StreamDialer]()
-	table.AddPrefix(netip.MustParsePrefix("192.0.2.0/24"), routeV4Dialer)
-	table.AddPrefix(netip.MustParsePrefix("2001:db8:cafe::/48"), routeV6Dialer)
-
-	iptDialer, err := NewIPTableStreamDialer(table, defaultDialer)
-	require.NoError(t, err)
-	require.NotNil(t, iptDialer)
-
-	testCases := []struct {
-		name         string
-		address      string
-		expectDialer *MockStreamDialer
-		expectConn   bool
-		expectErr    bool
-		setupMocks   func()
-	}{
-		{
-			name:         "IPv4 in table with port",
-			address:      "192.0.2.100:443",
-			expectDialer: routeV4Dialer,
-			expectConn:   true,
-		},
-		{
-			name:         "IPv4 in table no port",
-			address:      "192.0.2.55",
-			expectDialer: routeV4Dialer,
-			expectConn:   true,
-		},
-		{
-			name:         "IPv6 in table with port",
-			address:      "[2001:db8:cafe::1]:8080",
-			expectDialer: routeV6Dialer,
-			expectConn:   true,
-		},
-		{
-			name:         "IPv6 in table no port",
-			address:      "2001:db8:cafe::bad:1",
-			expectDialer: routeV6Dialer,
-			expectConn:   true,
-		},
-		{
-			name:         "IPv4 not in table with port",
-			address:      "10.0.0.1:1234",
-			expectDialer: defaultDialer,
-			expectConn:   true,
-		},
-		{
-			name:         "IPv4 not in table no port",
-			address:      "8.8.8.8",
-			expectDialer: defaultDialer,
-			expectConn:   true,
-		},
-		{
-			name:         "IPv6 not in table with port",
-			address:      "[::1]:9000",
-			expectDialer: defaultDialer,
-			expectConn:   true,
-		},
-		{
-			name:         "Hostname with port",
-			address:      "example.com:443",
-			expectDialer: defaultDialer,
-			expectConn:   true,
-		},
-		{
-			name:         "Hostname no port",
-			address:      "localhost",
-			expectDialer: defaultDialer,
-			expectConn:   true,
-		},
-		{
-			name:         "Invalid IP address format",
-			address:      "not-an-ip-or-host:123",
-			expectDialer: defaultDialer,
-			expectConn:   true,
-		},
-		{
-			name:         "Empty address",
-			address:      "",
-			expectDialer: defaultDialer,
-			expectConn:   true,
-		},
-		{
-			name:         "Dialer returns error",
-			address:      "192.0.2.20:80",
-			expectDialer: routeV4Dialer,
-			expectErr:    true,
-			setupMocks: func() {
-				routeV4Dialer.ReturnError = errors.New("mock dial failed")
-			},
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			defaultDialer.Reset()
-			routeV4Dialer.Reset()
-			routeV6Dialer.Reset()
-			defaultDialer.ReturnError = nil
-			routeV4Dialer.ReturnError = nil
-			routeV6Dialer.ReturnError = nil
-
-			if tc.setupMocks != nil {
-				tc.setupMocks()
-			}
-
-			ctx := context.Background()
-			conn, err := iptDialer.DialStream(ctx, tc.address)
-
-			if tc.expectErr {
-				require.Error(t, err)
-				assert.Nil(t, conn)
-				if tc.expectDialer.ReturnError != nil {
-					assert.ErrorIs(t, err, tc.expectDialer.ReturnError)
-				}
-			} else {
-				require.NoError(t, err)
-				if tc.expectConn {
-					require.NotNil(t, conn)
-					assert.Same(t, tc.expectDialer.ReturnConn, conn)
-					conn.Close()
-				} else {
-					assert.Nil(t, conn)
-				}
-			}
-
-			assert.True(t, tc.expectDialer.WasCalled, "Expected dialer %s to be called", tc.expectDialer.Name)
-			if tc.expectDialer.WasCalled {
-				assert.Equal(t, tc.address, tc.expectDialer.DialedAddr, "Dialed address mismatch")
-				assert.Equal(t, ctx, tc.expectDialer.DialedCtx, "Dialed context mismatch")
-			}
-
-			allMocks := []*MockStreamDialer{defaultDialer, routeV4Dialer, routeV6Dialer}
-			for _, mock := range allMocks {
-				if mock != tc.expectDialer {
-					assert.False(t, mock.WasCalled, "Dialer %s should NOT have been called", mock.Name)
-				}
-			}
-		})
-	}
-}
-
 type MockPacketDialer struct {
 	Name        string
 	WasCalled   bool
@@ -272,6 +109,7 @@ type MockPacketDialer struct {
 	DialedCtx   context.Context
 	ReturnConn  net.Conn
 	ReturnError error
+	DialDelay   time.Duration
 }
 
 func NewMockPacketDialer(name string) *MockPacketDialer {
@@ -286,9 +124,18 @@ func (m *MockPacketDialer) DialPacket(ctx context.Context, addr string) (net.Con
 	m.DialedCtx = ctx
 	m.DialedAddr = addr
 
+	if m.DialDelay > 0 {
+		select {
+		case <-time.After(m.DialDelay):
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		}
+	}
+
 	if m.ReturnError != nil {
 		return nil, m.ReturnError
 	}
+	// Check context after potential delay but before returning success
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
@@ -301,135 +148,131 @@ func (m *MockPacketDialer) Reset() {
 	m.DialedCtx = nil
 }
 
-func TestNewIPTablePacketDialer(t *testing.T) {
-	defaultDialer := NewMockPacketDialer("default")
-	table := iptable.NewIPTable[transport.PacketDialer]()
+// --- Stream Dialer Tests ---
 
-	t.Run("Valid", func(t *testing.T) {
-		d, err := NewIPTablePacketDialer(table, defaultDialer)
+func TestNewIPTableStreamDialer(t *testing.T) {
+	table := iptable.NewIPTable[transport.StreamDialer]()
+
+	t.Run("Valid Table", func(t *testing.T) {
+		d, err := NewIPTableStreamDialer(table)
 		require.NoError(t, err)
 		require.NotNil(t, d)
-		assert.Equal(t, defaultDialer, d.defaultDialer)
+		assert.Nil(t, d.defaultDialer)
 		assert.Equal(t, table, d.table)
 	})
 
 	t.Run("Nil Table", func(t *testing.T) {
-		d, err := NewIPTablePacketDialer(nil, defaultDialer)
+		d, err := NewIPTableStreamDialer(nil)
 		require.NoError(t, err)
 		require.NotNil(t, d)
-		assert.Equal(t, defaultDialer, d.defaultDialer)
-		assert.NotNil(t, d.table, "Table should be initialized even if nil is passed")
-	})
-
-	t.Run("Nil Default Dialer", func(t *testing.T) {
-		d, err := NewIPTablePacketDialer(table, nil)
-		require.Error(t, err)
-		assert.Nil(t, d)
-		assert.Contains(t, err.Error(), "defaultRoute cannot be nil")
+		assert.Nil(t, d.defaultDialer)
+		assert.NotNil(t, d.table)
 	})
 }
 
-func TestIPTablePacketDialer_DialPacket(t *testing.T) {
-	defaultDialer := NewMockPacketDialer("default")
-	routeV4Dialer := NewMockPacketDialer("routeV4") // 192.0.2.0/24
-	routeV6Dialer := NewMockPacketDialer("routeV6") // 2001:db8:cafe::/48
-
-	table := iptable.NewIPTable[transport.PacketDialer]()
-	prefixV4, _ := netip.ParsePrefix("192.0.2.0/24")
-	prefixV6, _ := netip.ParsePrefix("2001:db8:cafe::/48")
-	table.AddPrefix(prefixV4, routeV4Dialer)
-	table.AddPrefix(prefixV6, routeV6Dialer)
-
-	iptDialer, err := NewIPTablePacketDialer(table, defaultDialer)
+func TestIPTableStreamDialer_AddDefault(t *testing.T) {
+	d, err := NewIPTableStreamDialer(nil)
 	require.NoError(t, err)
-	require.NotNil(t, iptDialer)
+	require.NotNil(t, d)
+	assert.Nil(t, d.defaultDialer)
+
+	mockDefault := NewMockStreamDialer("default")
+
+	err = d.AddDefault(mockDefault)
+	require.NoError(t, err)
+	assert.Equal(t, mockDefault, d.defaultDialer)
+
+	err = d.AddDefault(nil)
+	require.Error(t, err)
+}
+
+func TestIPTableStreamDialer_DialStream(t *testing.T) {
+	defaultDialer := NewMockStreamDialer("default")
+	routeV4Dialer := NewMockStreamDialer("routeV4")
+	routeV6Dialer := NewMockStreamDialer("routeV6")
+
+	table := iptable.NewIPTable[transport.StreamDialer]()
+	table.AddPrefix(netip.MustParsePrefix("192.0.2.0/24"), routeV4Dialer)
+	table.AddPrefix(netip.MustParsePrefix("2001:db8:cafe::/48"), routeV6Dialer)
+
+	iptDialerWithDefault, err := NewIPTableStreamDialer(table)
+	require.NoError(t, err)
+	require.NotNil(t, iptDialerWithDefault)
+	err = iptDialerWithDefault.AddDefault(defaultDialer)
+	require.NoError(t, err)
+
+	iptDialerNoDefault, err := NewIPTableStreamDialer(table)
+	require.NoError(t, err)
+	require.NotNil(t, iptDialerNoDefault)
 
 	testCases := []struct {
 		name         string
+		dialerToUse  *IPTableStreamDialer
 		address      string
-		expectDialer *MockPacketDialer
+		expectDialer *MockStreamDialer
 		expectConn   bool
 		expectErr    bool
+		expectErrMsg string
 		setupMocks   func()
 	}{
+		// --- Tests using iptDialerWithDefault ---
 		{
-			name:         "IPv4 in table with port",
-			address:      "192.0.2.100:53", // UDP port
+			name:         "WithDefault_IPv4 in table",
+			dialerToUse:  iptDialerWithDefault,
+			address:      "192.0.2.100:443",
 			expectDialer: routeV4Dialer,
 			expectConn:   true,
 		},
 		{
-			name:         "IPv4 in table no port",
-			address:      "192.0.2.55",
-			expectDialer: routeV4Dialer,
-			expectConn:   true,
-		},
-		{
-			name:         "IPv6 in table with port",
-			address:      "[2001:db8:cafe::1]:5353", // UDP port
-			expectDialer: routeV6Dialer,
-			expectConn:   true,
-		},
-		{
-			name:         "IPv6 in table no port",
-			address:      "2001:db8:cafe::bad:1",
-			expectDialer: routeV6Dialer,
-			expectConn:   true,
-		},
-		{
-			name:         "IPv4 not in table with port",
-			address:      "10.0.0.1:123", // UDP port
+			name:         "WithDefault_IPv4 not in table",
+			dialerToUse:  iptDialerWithDefault,
+			address:      "10.0.0.1:1234",
 			expectDialer: defaultDialer,
 			expectConn:   true,
 		},
 		{
-			name:         "IPv4 not in table no port",
-			address:      "8.8.8.8",
+			name:         "WithDefault_Hostname",
+			dialerToUse:  iptDialerWithDefault,
+			address:      "example.com:443",
 			expectDialer: defaultDialer,
 			expectConn:   true,
 		},
 		{
-			name:         "IPv6 not in table with port",
-			address:      "[::1]:9001", // UDP port
-			expectDialer: defaultDialer,
-			expectConn:   true,
-		},
-		{
-			name:         "Hostname with port",
-			address:      "dns.google:53",
-			expectDialer: defaultDialer,
-			expectConn:   true,
-		},
-		{
-			name:         "Hostname no port",
-			address:      "localhost",
-			expectDialer: defaultDialer,
-			expectConn:   true,
-		},
-		{
-			name:         "Invalid IP address format",
-			address:      "not-an-ip-or-host:123",
-			expectDialer: defaultDialer,
-			expectConn:   true,
-		},
-		{
-			name:         "Empty address",
-			address:      "",
-			expectDialer: defaultDialer,
-			expectConn:   true,
-		},
-		{
-			name:         "Dialer returns error",
-			address:      "192.0.2.20:53", // Matches routeV4Dialer
+			name:         "WithDefault_Dialer returns error",
+			dialerToUse:  iptDialerWithDefault,
+			address:      "192.0.2.20:80",
 			expectDialer: routeV4Dialer,
 			expectErr:    true,
 			setupMocks: func() {
-				routeV4Dialer.ReturnError = errors.New("mock packet dial failed")
+				routeV4Dialer.ReturnError = errors.New("mock dial failed")
 			},
+		},
+		// --- Tests using iptDialerNoDefault ---
+		{
+			name:         "NoDefault_IPv4 in table",
+			dialerToUse:  iptDialerNoDefault,
+			address:      "192.0.2.100:443",
+			expectDialer: routeV4Dialer, // Specific route still found
+			expectConn:   true,
+		},
+		{
+			name:         "NoDefault_IPv4 not in table",
+			dialerToUse:  iptDialerNoDefault,
+			address:      "10.0.0.1:1234",
+			expectDialer: nil, // No specific route, no default -> error
+			expectErr:    true,
+			expectErrMsg: "no dialer available for address 10.0.0.1:1234",
+		},
+		{
+			name:         "NoDefault_Hostname",
+			dialerToUse:  iptDialerNoDefault,
+			address:      "example.com:443",
+			expectDialer: nil, // No specific route, no default -> error
+			expectErr:    true,
+			expectErrMsg: "no dialer available for address example.com:443",
 		},
 	}
 
-	// Run Test Cases
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			defaultDialer.Reset()
@@ -444,18 +287,22 @@ func TestIPTablePacketDialer_DialPacket(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			conn, err := iptDialer.DialPacket(ctx, tc.address)
+			conn, err := tc.dialerToUse.DialStream(ctx, tc.address)
 
 			if tc.expectErr {
 				require.Error(t, err)
 				assert.Nil(t, conn)
-				if tc.expectDialer.ReturnError != nil {
+				if tc.expectErrMsg != "" {
+					assert.EqualError(t, err, tc.expectErrMsg)
+				}
+				if tc.expectDialer != nil && tc.expectDialer.ReturnError != nil {
 					assert.ErrorIs(t, err, tc.expectDialer.ReturnError)
 				}
 			} else {
 				require.NoError(t, err)
 				if tc.expectConn {
 					require.NotNil(t, conn)
+					require.NotNil(t, tc.expectDialer)
 					assert.Same(t, tc.expectDialer.ReturnConn, conn)
 					conn.Close()
 				} else {
@@ -463,16 +310,213 @@ func TestIPTablePacketDialer_DialPacket(t *testing.T) {
 				}
 			}
 
-			assert.True(t, tc.expectDialer.WasCalled, "Expected dialer %s to be called", tc.expectDialer.Name)
-			if tc.expectDialer.WasCalled {
-				assert.Equal(t, tc.address, tc.expectDialer.DialedAddr, "Dialed address mismatch")
-				assert.Equal(t, ctx, tc.expectDialer.DialedCtx, "Dialed context mismatch")
+			allMocks := []*MockStreamDialer{defaultDialer, routeV4Dialer, routeV6Dialer}
+			foundExpected := false
+			for _, mock := range allMocks {
+				if mock == tc.expectDialer {
+					foundExpected = true
+					assert.True(t, mock.WasCalled, "Expected dialer %s to be called", mock.Name)
+					if mock.WasCalled {
+						assert.Equal(t, tc.address, mock.DialedAddr)
+						assert.Equal(t, ctx, mock.DialedCtx)
+					}
+				} else {
+					assert.False(t, mock.WasCalled, "Dialer %s should NOT have been called", mock.Name)
+				}
+			}
+			if tc.expectDialer != nil && !foundExpected {
+				t.Errorf("Test setup error: expectDialer %s is not in the list of mocks", tc.expectDialer.Name)
+			}
+			// Verify no mock was called if an error was expected before dialing occurred
+			if tc.expectDialer == nil && tc.expectErr {
+				for _, mock := range allMocks {
+					assert.False(t, mock.WasCalled)
+				}
+			}
+		})
+	}
+}
+
+// --- Packet Dialer Tests ---
+
+func TestNewIPTablePacketDialer(t *testing.T) {
+	table := iptable.NewIPTable[transport.PacketDialer]()
+
+	t.Run("Valid Table", func(t *testing.T) {
+		d, err := NewIPTablePacketDialer(table)
+		require.NoError(t, err)
+		require.NotNil(t, d)
+		assert.Nil(t, d.defaultDialer)
+		assert.Equal(t, table, d.table)
+	})
+
+	t.Run("Nil Table", func(t *testing.T) {
+		d, err := NewIPTablePacketDialer(nil)
+		require.NoError(t, err)
+		require.NotNil(t, d)
+		assert.Nil(t, d.defaultDialer)
+		assert.NotNil(t, d.table)
+	})
+}
+
+func TestIPTablePacketDialer_AddDefault(t *testing.T) {
+	d, err := NewIPTablePacketDialer(nil)
+	require.NoError(t, err)
+	require.NotNil(t, d)
+	assert.Nil(t, d.defaultDialer)
+
+	mockDefault := NewMockPacketDialer("default")
+
+	err = d.AddDefault(mockDefault)
+	require.NoError(t, err)
+	assert.Equal(t, mockDefault, d.defaultDialer)
+
+	err = d.AddDefault(nil)
+	require.Error(t, err)
+}
+
+func TestIPTablePacketDialer_DialPacket(t *testing.T) {
+	defaultDialer := NewMockPacketDialer("default")
+	routeV4Dialer := NewMockPacketDialer("routeV4")
+	routeV6Dialer := NewMockPacketDialer("routeV6")
+
+	table := iptable.NewIPTable[transport.PacketDialer]()
+	table.AddPrefix(netip.MustParsePrefix("192.0.2.0/24"), routeV4Dialer)
+	table.AddPrefix(netip.MustParsePrefix("2001:db8:cafe::/48"), routeV6Dialer)
+
+	iptDialerWithDefault, err := NewIPTablePacketDialer(table)
+	require.NoError(t, err)
+	require.NotNil(t, iptDialerWithDefault)
+	err = iptDialerWithDefault.AddDefault(defaultDialer)
+	require.NoError(t, err)
+
+	iptDialerNoDefault, err := NewIPTablePacketDialer(table)
+	require.NoError(t, err)
+	require.NotNil(t, iptDialerNoDefault)
+
+	testCases := []struct {
+		name         string
+		dialerToUse  *IPTablePacketDialer
+		address      string
+		expectDialer *MockPacketDialer
+		expectConn   bool
+		expectErr    bool
+		expectErrMsg string
+		setupMocks   func()
+	}{
+		{
+			name:         "WithDefault_IPv4 in table",
+			dialerToUse:  iptDialerWithDefault,
+			address:      "192.0.2.100:53",
+			expectDialer: routeV4Dialer,
+			expectConn:   true,
+		},
+		{
+			name:         "WithDefault_IPv4 not in table",
+			dialerToUse:  iptDialerWithDefault,
+			address:      "10.0.0.1:123",
+			expectDialer: defaultDialer,
+			expectConn:   true,
+		},
+		{
+			name:         "WithDefault_Hostname",
+			dialerToUse:  iptDialerWithDefault,
+			address:      "dns.google:53",
+			expectDialer: defaultDialer,
+			expectConn:   true,
+		},
+		{
+			name:         "WithDefault_Dialer returns error",
+			dialerToUse:  iptDialerWithDefault,
+			address:      "192.0.2.20:53",
+			expectDialer: routeV4Dialer,
+			expectErr:    true,
+			setupMocks: func() {
+				routeV4Dialer.ReturnError = errors.New("mock packet dial failed")
+			},
+		},
+		{
+			name:         "NoDefault_IPv4 in table",
+			dialerToUse:  iptDialerNoDefault,
+			address:      "192.0.2.100:53",
+			expectDialer: routeV4Dialer,
+			expectConn:   true,
+		},
+		{
+			name:         "NoDefault_IPv4 not in table",
+			dialerToUse:  iptDialerNoDefault,
+			address:      "10.0.0.1:123",
+			expectDialer: nil, // No specific, no default -> error
+			expectErr:    true,
+			expectErrMsg: "no dialer available for address 10.0.0.1:123",
+		},
+		{
+			name:         "NoDefault_Hostname",
+			dialerToUse:  iptDialerNoDefault,
+			address:      "dns.google:53",
+			expectDialer: nil, // No specific, no default -> error
+			expectErr:    true,
+			expectErrMsg: "no dialer available for address dns.google:53",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			defaultDialer.Reset()
+			routeV4Dialer.Reset()
+			routeV6Dialer.Reset()
+			defaultDialer.ReturnError = nil
+			routeV4Dialer.ReturnError = nil
+			routeV6Dialer.ReturnError = nil
+
+			if tc.setupMocks != nil {
+				tc.setupMocks()
+			}
+
+			ctx := context.Background()
+			conn, err := tc.dialerToUse.DialPacket(ctx, tc.address)
+
+			if tc.expectErr {
+				require.Error(t, err)
+				assert.Nil(t, conn)
+				if tc.expectErrMsg != "" {
+					assert.EqualError(t, err, tc.expectErrMsg)
+				}
+				if tc.expectDialer != nil && tc.expectDialer.ReturnError != nil {
+					assert.ErrorIs(t, err, tc.expectDialer.ReturnError)
+				}
+			} else {
+				require.NoError(t, err)
+				if tc.expectConn {
+					require.NotNil(t, conn)
+					require.NotNil(t, tc.expectDialer)
+					assert.Same(t, tc.expectDialer.ReturnConn, conn)
+					conn.Close()
+				} else {
+					assert.Nil(t, conn)
+				}
 			}
 
 			allMocks := []*MockPacketDialer{defaultDialer, routeV4Dialer, routeV6Dialer}
+			foundExpected := false
 			for _, mock := range allMocks {
-				if mock != tc.expectDialer {
+				if mock == tc.expectDialer {
+					foundExpected = true
+					assert.True(t, mock.WasCalled, "Expected dialer %s to be called", mock.Name)
+					if mock.WasCalled {
+						assert.Equal(t, tc.address, mock.DialedAddr)
+						assert.Equal(t, ctx, mock.DialedCtx)
+					}
+				} else {
 					assert.False(t, mock.WasCalled, "Dialer %s should NOT have been called", mock.Name)
+				}
+			}
+			if tc.expectDialer != nil && !foundExpected {
+				t.Errorf("Test setup error: expectDialer %s is not in the list of mocks", tc.expectDialer.Name)
+			}
+			if tc.expectDialer == nil && tc.expectErr {
+				for _, mock := range allMocks {
+					assert.False(t, mock.WasCalled)
 				}
 			}
 		})
