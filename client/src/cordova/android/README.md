@@ -6,18 +6,43 @@ The main entrypoint to Android's Java code is `client/src/cordova/plugin/android
 
 ## Set up your environment
 
-Additional requirements for Android:
+Install these pre-requisites:
 
-- [Java Development Kit (JDK) 11](https://jdk.java.net/archive/)
-  - Set `JAVA_HOME` environment variable if you have multiple JDK versions installed. On macOS: `export JAVA_HOME=$(/usr/libexec/java_home -v 11.0)`.
-- Latest [Android Sdk Commandline Tools](https://developer.android.com/studio/command-line) ([download](https://developer.android.com/studio#command-line-tools-only))
-  - Fetch and unzip `https://dl.google.com/android/repository/commandlinetools-mac-6609375_latest.zip` (change `mac` to `linux` on Linux)
-  - Place it at `$HOME/Android/sdk/cmdline-tools/latest`
-  - Set `ANDROID_HOME` (e.g., `$HOME/Android/sdk`) and `ANDROID_NDK` (e.g., `$ANDROID_HOME/ndk`) environment variables
-- Android SDK 34 (with build-tools) via commandline `$HOME/Android/sdk/cmdline-tools/latest/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0"`
-- [Gradle 7.3+](https://gradle.org/install/). On macOS: `brew install gradle`.
+- [Java Development Kit (JDK) 17+](https://jdk.java.net/archive/). On macOS:
 
-[Android Studio 2020.3.1+](https://developer.android.com/studio) is not required, but it's helpful if you are developing Android code.
+  ```shell
+  brew install openjdk@17
+
+  sudo ln -sfn $HOMEBREW_PREFIX/opt/openjdk@17/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-17.jdk
+
+  export CORDOVA_JAVA_HOME=$(/usr/libexec/java_home -v 17.0)
+  ```
+
+- [Gradle 8.7+](https://gradle.org/install/). On macOS: `brew install gradle`.
+
+Then we need to install and configure the Android components. You can follow the [Cordova Android Platform Guide](https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html), which uses Android Studio to configure the environment. You need an Android Studio compatible with the Android Gradle Plugin 8.3.0 (see [build.gradle](client/src/cordova/android/OutlineAndroidLib/build.gradle)) we use ([compatibility table](https://developer.android.com/studio/releases#android_gradle_plugin_and_android_studio_compatibility)).
+
+Alternatively, you can do it on the command-line:
+
+1. Set environmental variables:
+
+    ```shell
+    export ANDROID_HOME=$HOME/Android/sdk
+    export ANDROID_NDK=$ANDROID_HOME/ndk
+    ```
+
+1. Install the Android command-line tools:
+
+    1. [Download](https://developer.android.com/studio#command-line-tools-only)
+    2. Place it at `$ANDROID_HOME/cmdline-tools/latest`
+
+1. Install platform and build tools:
+
+    ```shell
+    $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0"`
+    ```
+
+[Android Studio 2020.3.1+](https://developer.android.com/studio) is not required, but it's helpful if you are developing Android code. It needs to support the Android Gradle Plugin 8.3.0 (as per [Android API Level Support](https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html#android-api-level-support)).we use ([compatibility table](https://developer.android.com/studio/releases#android_gradle_plugin_and_android_studio_compatibility)).
 
 You can check your environment with:
 
@@ -25,6 +50,18 @@ You can check your environment with:
 cd client
 npx cordova requirements android
 ```
+
+### Important Versions
+
+| Component  | version  | constrained by | set in  |
+|---|---|---|---|
+| Android API Level | 34+ | [Play Store](https://developer.android.com/google/play/requirements/target-sdk) | [config.xml](../../../config.xml), [build.gradle](./OutlineAndroidLib/outline/build.gradle) |
+| cordova-android | 13 | Android API Level | [package.json](../../../package.json) |
+| JDK | 17 | [cordova-android](https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html#android-api-level-support) | install instruction |
+| Gradle | 8.7+ | [cordova-android](https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html#android-api-level-support) | [gradle-wrapper.properties](./OutlineAndroidLib/gradle/wrapper/gradle-wrapper.properties) |
+| Android Gradle Plugin (AGP) | 8.3.0 | [cordova-android](https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html#android-api-level-support) | [build.gradle](../android/OutlineAndroidLib/build.gradle) |
+| Android Build Tools | 34.0.0+ | [cordova-android](https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html#android-api-level-support) | install instructions |
+| Android Studio | 2023.2.1  (Iguana) | [AGP](https://developer.android.com/studio/releases#android_gradle_plugin_and_android_studio_compatibility) | |
 
 ## Build the app
 
