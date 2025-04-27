@@ -29,7 +29,6 @@ export class CordovaVpnApi implements VpnApi {
       request.id,
       request.name,
       request.config.transport,
-      request.config.usage_report
     );
   }
 
