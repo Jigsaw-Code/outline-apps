@@ -18,5 +18,4 @@ parcelable TunnelConfig {
   String id;
   String name;
   String transportConfig;
-  String usageReportConfig;
 }
