@@ -48,7 +48,6 @@ export class ServerMetricsRowSubcard extends LitElement {
       border-radius: var(--server-metrics-row-subcard-border-radius);
       box-sizing: border-box;
       display: flex;
-      align-items: center;
       padding: var(--server-metrics-row-subcard-padding);
       width: 100%;
     }
