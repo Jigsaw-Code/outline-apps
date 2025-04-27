@@ -39,6 +39,7 @@
   "error-connection-configuration-fetch": "Kunne ikke laste ned tjenerkonfigurasjonen. Ta et skjermbilde av feildetaljene og send den til leverandøren av tilgangsnøkkelen.",
   "error-connection-proxy": "Kunne ikke koble til. Sjekk internettilkoblingen, og ta et skjermbilde av feildetaljene og send den til leverandøren av tilgangsnøkkelen.",
   "error-details": "Detaljer",
+  "send-error": "Send feil",
   "error-details-dialog-copied": "Kopiert",
   "error-details-dialog-copy": "Kopiér",
   "error-details-dialog-dismiss": "Lukk",

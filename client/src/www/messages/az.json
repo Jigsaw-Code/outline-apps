@@ -39,6 +39,7 @@
   "error-connection-configuration-fetch": "Server konfiqurasiyasını endirmək alınmadı. Xəta təfərrüatlarının skrinşotunu çəkib giriş açarı provayderinizə göndərin.",
   "error-connection-proxy": "Qoşulmaq olmadı. İnternet bağlantınızı yoxladıqdan sonra xətanın təfərrüatlarını skrinşotunu çəkib onları giriş açarı provayderinizə göndərin.",
   "error-details": "Ətraflı",
+  "send-error": "Xətanı göndər",
   "error-details-dialog-copied": "Kopyalandı",
   "error-details-dialog-copy": "Kopyalayın",
   "error-details-dialog-dismiss": "Bağlayın",

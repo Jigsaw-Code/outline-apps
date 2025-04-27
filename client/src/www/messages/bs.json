@@ -39,6 +39,7 @@
   "error-connection-configuration-fetch": "Preuzimanje serverske konfiguracije nije uspjelo. Napravite snimak ekrana s detaljima o grešci i pošaljite ga pružaocu usluga pristupnog ključa.",
   "error-connection-proxy": "Povezivanje nije uspjelo. Provjerite internetsku vezu, a zatim napravite snimak ekrana s detaljima o grešci i pošaljite ga pružaocu usluga pristupnog ključa.",
   "error-details": "Detalji",
+  "send-error": "Pošalji grešku",
   "error-details-dialog-copied": "Kopirano",
   "error-details-dialog-copy": "Kopiraj",
   "error-details-dialog-dismiss": "Odbaci",

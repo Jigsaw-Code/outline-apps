@@ -39,6 +39,7 @@
   "error-connection-configuration-fetch": "Failed to download the server configuration. Screenshot the error details and send them to your access key provider.",
   "error-connection-proxy": "Failed to connect. Please check your internet connectivity, then screenshot the error details and send them to your access key provider.",
   "error-details": "Details",
+  "send-error": "Send error",
   "error-details-dialog-copied": "Copied",
   "error-details-dialog-copy": "Copy",
   "error-details-dialog-dismiss": "Dismiss",

@@ -39,6 +39,7 @@
   "error-connection-configuration-fetch": "Eroare la descărcarea configurației serverului. Faceți o captură de ecran cu detaliile erorii și trimiteți-le furnizorului cheii de acces.",
   "error-connection-proxy": "Conectare eșuată. Verificați conexiunea la internet, apoi faceți o captură de ecran cu detaliile erorii și trimiteți-le furnizorului cheii de acces.",
   "error-details": "Detalii",
+  "send-error": "Eroare de trimitere",
   "error-details-dialog-copied": "Copiat",
   "error-details-dialog-copy": "Copiați",
   "error-details-dialog-dismiss": "Închideți",

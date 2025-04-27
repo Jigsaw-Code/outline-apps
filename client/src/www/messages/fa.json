@@ -39,6 +39,7 @@
   "error-connection-configuration-fetch": "پیکربندی سرور بارگیری نشد. از جزئیات خطا نماگرفت بگیرید و آن را برای ارائه‌دهنده کلید دسترسی ارسال کنید.",
   "error-connection-proxy": "اتصال برقرار نشد. لطفاً اتصال اینترنتتان را بررسی کنید، سپس از جزئیات خطا نماگرفت بگیرید و آن را به ارائه‌دهنده کلید دسترسی ارسال کنید.",
   "error-details": "جزئیات",
+  "send-error": "ارسال خطا",
   "error-details-dialog-copied": "کپی شد",
   "error-details-dialog-copy": "کپی کردن",
   "error-details-dialog-dismiss": "بستن",

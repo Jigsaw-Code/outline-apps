@@ -39,6 +39,7 @@
   "error-connection-configuration-fetch": "Sunucu yapılandırması indirilemedi. Hata ayrıntılarının ekran görüntüsünü alın ve erişim anahtarı sağlayıcınıza gönderin.",
   "error-connection-proxy": "Bağlanılamadı. Lütfen internet bağlantınızı kontrol edin, ardından hata ayrıntılarının ekran görüntüsünü alıp erişim anahtarı sağlayıcınıza gönderin.",
   "error-details": "Ayrıntılar",
+  "send-error": "Gönderme hatası",
   "error-details-dialog-copied": "Kopyalandı",
   "error-details-dialog-copy": "Kopyala",
   "error-details-dialog-dismiss": "Kapat",

@@ -39,6 +39,7 @@
   "error-connection-configuration-fetch": "No se pudo descargar la configuración del servidor. Toma una captura de pantalla de los detalles del error y envíalos a tu proveedor de claves de acceso.",
   "error-connection-proxy": "Falló la conexión. Verifica tu conectividad a Internet, toma una captura de pantalla de los detalles del error y envíalos a tu proveedor de claves de acceso.",
   "error-details": "Detalles",
+  "send-error": "Error de envío",
   "error-details-dialog-copied": "Copiado",
   "error-details-dialog-copy": "Copiar",
   "error-details-dialog-dismiss": "Descartar",

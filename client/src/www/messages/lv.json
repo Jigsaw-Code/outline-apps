@@ -39,6 +39,7 @@
   "error-connection-configuration-fetch": "Neizdevās lejupielādēt servera konfigurāciju. Izveidojiet ekrānuzņēmumu ar detalizētu informāciju par kļūdu un nosūtiet to savam piekļuves atslēgas nodrošinātājam.",
   "error-connection-proxy": "Neizdevās izveidot savienojumu. Lūdzu, pārbaudiet interneta savienojamību, pēc tam izveidojiet ekrānuzņēmumu ar detalizētu informāciju par kļūdu un nosūtiet to savam piekļuves atslēgas nodrošinātājam.",
   "error-details": "Detalizēta informācija",
+  "send-error": "Sūtīšanas kļūda",
   "error-details-dialog-copied": "Nokopēta",
   "error-details-dialog-copy": "Kopēt",
   "error-details-dialog-dismiss": "Nerādīt",

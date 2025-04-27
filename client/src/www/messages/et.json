@@ -39,6 +39,7 @@
   "error-connection-configuration-fetch": "Serveri seadistuse allalaadimine ebaõnnestus. Tehke vea üksikasjadest ekraanipilt ja saatke see pääsuvõtme teenusepakkujale.",
   "error-connection-proxy": "Ühenduse loomine ebaõnnestus. Kontrollige internetiühendust, tehke vea üksikasjadest ekraanipilt ja saatke see pääsuvõtme teenusepakkujale.",
   "error-details": "Üksikasjad",
+  "send-error": "Saada tõrge",
   "error-details-dialog-copied": "Kopeeritud",
   "error-details-dialog-copy": "Kopeeri",
   "error-details-dialog-dismiss": "Loobu",

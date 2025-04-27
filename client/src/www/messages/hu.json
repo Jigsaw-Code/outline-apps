@@ -39,6 +39,7 @@
   "error-connection-configuration-fetch": "Nem sikerült letölteni a szerver konfigurációját. Készítsen képernyőképet a hiba részleteiről, és küldje el a hozzáférési kulcs szolgáltatójának.",
   "error-connection-proxy": "Sikertelen csatlakozás. Ellenőrizze az internetkapcsolatot, majd készítsen képernyőképet a hiba részleteiről, és küldje el a hozzáférési kulcs szolgáltatójának.",
   "error-details": "Részletek",
+  "send-error": "Küldési hiba",
   "error-details-dialog-copied": "Kimásolva",
   "error-details-dialog-copy": "Másolás",
   "error-details-dialog-dismiss": "Elvetés",

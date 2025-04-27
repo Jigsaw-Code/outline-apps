@@ -39,6 +39,7 @@
   "error-connection-configuration-fetch": "No s'ha pogut baixar la configuració del servidor. Fes una captura de pantalla de la informació de l'error i envia-la al proveïdor de la clau d'accés.",
   "error-connection-proxy": "Hi ha hagut un error en la connexió. Comprova la connexió a Internet i, a continuació, fes una captura de pantalla de la informació de l'error i envia-la al proveïdor de la clau d'accés.",
   "error-details": "Detalls",
+  "send-error": "Error d'enviament",
   "error-details-dialog-copied": "S'ha copiat",
   "error-details-dialog-copy": "Copia",
   "error-details-dialog-dismiss": "Ignora",
