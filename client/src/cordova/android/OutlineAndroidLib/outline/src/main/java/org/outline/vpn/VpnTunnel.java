@@ -71,14 +71,13 @@ public class VpnTunnel {
   public synchronized boolean establishVpn() {
     LOG.info("Establishing the VPN.");
     try {
-      String dnsResolverAddress = selectDnsResolverAddress();
       VpnService.Builder builder =
           vpnService.newBuilder()
               .setSession(vpnService.getApplicationName())
               .setMtu(VPN_INTERFACE_MTU)
               .addAddress(String.format(Locale.ROOT, VPN_INTERFACE_PRIVATE_LAN, "1"),
                   VPN_INTERFACE_PREFIX_LENGTH)
-              .addDnsServer(dnsResolverAddress)
+              .addDnsServer(selectDnsResolverAddress())
               .setBlocking(true)
               .addDisallowedApplication(vpnService.getPackageName());
 
