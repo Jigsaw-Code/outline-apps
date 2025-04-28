@@ -83,11 +83,6 @@ public class VpnTunnel {
               .setBlocking(true)
               .addDisallowedApplication(vpnService.getPackageName());
 
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        final Network activeNetwork =
-            vpnService.getSystemService(ConnectivityManager.class).getActiveNetwork();
-        builder.setUnderlyingNetworks(new Network[] {activeNetwork});
-      }
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         builder.setMetered(false);
       }
