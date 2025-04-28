@@ -13,6 +13,7 @@ Install these pre-requisites:
   ```shell
   brew install openjdk@17
 
+  # Make it visible to `java_home`
   sudo ln -sfn $HOMEBREW_PREFIX/opt/openjdk@17/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-17.jdk
 
   export CORDOVA_JAVA_HOME=$(/usr/libexec/java_home -v 17.0)
@@ -42,7 +43,7 @@ Alternatively, you can do it on the command-line:
     $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0"`
     ```
 
-[Android Studio 2020.3.1+](https://developer.android.com/studio) is not required, but it's helpful if you are developing Android code. It needs to support the Android Gradle Plugin 8.3.0 (as per [Android API Level Support](https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html#android-api-level-support)).we use ([compatibility table](https://developer.android.com/studio/releases#android_gradle_plugin_and_android_studio_compatibility)).
+[Android Studio 2020.2.1+](https://developer.android.com/studio) is not required, but it's helpful if you are developing Android code. It needs to support the Android Gradle Plugin 8.3.0 (as per [Android API Level Support](https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html#android-api-level-support)).we use ([compatibility table](https://developer.android.com/studio/releases#android_gradle_plugin_and_android_studio_compatibility)).
 
 You can check your environment with:
 
