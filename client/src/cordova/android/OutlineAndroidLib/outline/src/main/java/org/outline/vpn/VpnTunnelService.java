@@ -74,7 +74,7 @@ public class VpnTunnelService extends VpnService {
   }
 
   // IPC message and intent parameters.
-  public enum MessageData {
+  private enum MessageData {
     TUNNEL_ID("tunnelId"),
     PAYLOAD("payload"),
     ERROR_REPORTING_API_KEY("errorReportingApiKey");

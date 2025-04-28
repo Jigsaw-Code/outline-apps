@@ -46,7 +46,6 @@ public class VpnTunnel {
   private static final String PRIVATE_LAN_BYPASS_SUBNETS_ID = "reserved_bypass_subnets";
 
   private final VpnTunnelService vpnService;
-  private String dnsResolverAddress;
   private ParcelFileDescriptor tunFd;
   private Tunnel tunnel;
 
@@ -72,7 +71,7 @@ public class VpnTunnel {
   public synchronized boolean establishVpn() {
     LOG.info("Establishing the VPN.");
     try {
-      dnsResolverAddress = selectDnsResolverAddress();
+      String dnsResolverAddress = selectDnsResolverAddress();
       VpnService.Builder builder =
           vpnService.newBuilder()
               .setSession(vpnService.getApplicationName())
