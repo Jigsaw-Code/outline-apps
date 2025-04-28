@@ -210,7 +210,9 @@ public class VpnTunnelService extends VpnService {
       try {
         // Do not perform connectivity checks when connecting on startup. We should avoid failing
         // the connection due to a network error, as network may not be ready.
-        final TCPAndUDPConnectivityResult connResult = checkServerConnectivity(client);
+        final TCPAndUDPConnectivityResult connResult = Outline.checkTCPAndUDPConnectivity(client);
+        LOG.info(String.format(Locale.ROOT, "Go connectivity check result: %s", connResult));
+
         if (connResult.getTCPError() != null) {
           tearDownActiveTunnel();
           return connResult.getTCPError();
@@ -286,12 +288,6 @@ public class VpnTunnelService extends VpnService {
   }
 
   // Connectivity
-
-  private TCPAndUDPConnectivityResult checkServerConnectivity(final outline.Client client) {
-    final TCPAndUDPConnectivityResult result = Outline.checkTCPAndUDPConnectivity(client);
-    LOG.info(String.format(Locale.ROOT, "Go connectivity check result: %s", result));
-    return result;
-  }
 
   private class NetworkConnectivityMonitor extends ConnectivityManager.NetworkCallback {
     private final ConnectivityManager connectivityManager;
