@@ -210,7 +210,9 @@ public class VpnTunnelService extends VpnService {
       try {
         // Do not perform connectivity checks when connecting on startup. We should avoid failing
         // the connection due to a network error, as network may not be ready.
-        final TCPAndUDPConnectivityResult connResult = checkServerConnectivity(client);
+        final TCPAndUDPConnectivityResult connResult = Outline.checkTCPAndUDPConnectivity(client);
+        LOG.info(String.format(Locale.ROOT, "Go connectivity check result: %s", connResult));
+
         if (connResult.getTCPError() != null) {
           tearDownActiveTunnel();
           return connResult.getTCPError();
@@ -287,12 +289,6 @@ public class VpnTunnelService extends VpnService {
 
   // Connectivity
 
-  private TCPAndUDPConnectivityResult checkServerConnectivity(final outline.Client client) {
-    final TCPAndUDPConnectivityResult result = Outline.checkTCPAndUDPConnectivity(client);
-    LOG.info(String.format(Locale.ROOT, "Go connectivity check result: %s", result));
-    return result;
-  }
-
   private class NetworkConnectivityMonitor extends ConnectivityManager.NetworkCallback {
     private final ConnectivityManager connectivityManager;
 
@@ -311,15 +307,6 @@ public class VpnTunnelService extends VpnService {
       broadcastVpnConnectivityChange(TunnelStatus.CONNECTED);
       updateNotification(TunnelStatus.CONNECTED);
 
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        // Indicate that traffic will be sent over the current active network.
-        // Although setting the underlying network to an available network may not seem like the
-        // correct behavior, this method has been observed only to fire only when a preferred
-        // network becomes available. It will not fire, for example, when the mobile network becomes
-        // available if WiFi is the active network. Additionally, `getActiveNetwork` and
-        // `getActiveNetworkInfo` have been observed to return the underlying network set by us.
-        setUnderlyingNetworks(new Network[] {network});
-      }
       boolean isUdpSupported = vpnTunnel.updateUDPSupport();
       LOG.info(
           String.format("UDP support: %s -> %s", tunnelStore.isUdpSupported(), isUdpSupported));
@@ -337,10 +324,6 @@ public class VpnTunnelService extends VpnService {
       }
       broadcastVpnConnectivityChange(TunnelStatus.RECONNECTING);
       updateNotification(TunnelStatus.RECONNECTING);
-
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        setUnderlyingNetworks(null);
-      }
     }
   }
 
