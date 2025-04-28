@@ -44,8 +44,16 @@ Alternatively, you can do it on the command-line:
 1. Install platform and build tools:
 
     ```shell
-    $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0" "ndk;25.1.8937393"
+    $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0" "ndk;25.1.8937393" 
     ```
+
+1. Install optional components that help development (source code, emulator and image):
+
+    ```shell
+    $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "sources;android-34" "system-images;android-34;default;arm64-v8a"
+    ```
+
+  Note: you will need the `system-images;android-35;default;x86_64` image on an Intel computer.
 
 [Android Studio 2020.2.1+](https://developer.android.com/studio) is not required, but it's helpful if you are developing Android code. It needs to support the Android Gradle Plugin 8.3.0 (as per [Android API Level Support](https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html#android-api-level-support)).we use ([compatibility table](https://developer.android.com/studio/releases#android_gradle_plugin_and_android_studio_compatibility)).
 
@@ -91,7 +99,11 @@ Make sure to rebuild after modifying platform dependent files!
 ## Run the app
 
 1. Start the simulator or connect an Android device and enable [USB debugging](https://developer.android.com/studio/debug/dev-options.html#enable).
-1. From the project root, run: `adb install -r -d client/platforms/android/app/build/outputs/apk/debug/app-debug.apk`
+1. From the project root, run:
+
+   ```shell
+   adb install -r -d client/platforms/android/app/build/outputs/apk/debug/app-debug.apk
+   ```
 
 ## Develop code
 
