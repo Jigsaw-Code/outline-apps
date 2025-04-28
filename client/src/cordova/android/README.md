@@ -55,7 +55,7 @@ Alternatively, you can do it on the command-line:
 
   Note: you will need the `system-images;android-35;default;x86_64` image on an Intel computer.
 
-[Android Studio 2020.2.1+](https://developer.android.com/studio) is not required, but it's helpful if you are developing Android code. It needs to support the Android Gradle Plugin 8.3.0 (as per [Android API Level Support](https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html#android-api-level-support)).we use ([compatibility table](https://developer.android.com/studio/releases#android_gradle_plugin_and_android_studio_compatibility)).
+[Android Studio 2023.2.1+](https://developer.android.com/studio) is not required, but it's helpful if you are developing Android code. It needs to support the Android Gradle Plugin 8.3.0 (as per [Android API Level Support](https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html#android-api-level-support)).we use ([compatibility table](https://developer.android.com/studio/releases#android_gradle_plugin_and_android_studio_compatibility)).
 
 You can check your environment with:
 
