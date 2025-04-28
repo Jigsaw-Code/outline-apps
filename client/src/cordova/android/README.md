@@ -28,19 +28,23 @@ Alternatively, you can do it on the command-line:
 1. Set environmental variables:
 
     ```shell
-    export ANDROID_HOME=$HOME/Android/sdk
+    export ANDROID_HOME=$HOME/Library/Android/sdk
     export ANDROID_NDK=$ANDROID_HOME/ndk
     ```
 
-1. Install the Android command-line tools:
+1. Install the [Android command-line tools](https://developer.android.com/studio#command-line-tools-only):
 
-    1. [Download](https://developer.android.com/studio#command-line-tools-only)
-    2. Place it at `$ANDROID_HOME/cmdline-tools/latest`
-
+    ```shell
+    curl -o /tmp/commandlinetools.zip https://dl.google.com/android/repository/commandlinetools-mac-13114758_latest.zip
+    unzip /tmp/commandlinetools.zip -d /tmp
+    mkdir -p "$ANDROID_HOME/cmdline-tools/latest"
+    mv /tmp/cmdline-tools/* "$ANDROID_HOME/cmdline-tools/latest/"
+    ```
+  
 1. Install platform and build tools:
 
     ```shell
-    $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0"`
+    $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0" "ndk;25.1.8937393"
     ```
 
 [Android Studio 2020.2.1+](https://developer.android.com/studio) is not required, but it's helpful if you are developing Android code. It needs to support the Android Gradle Plugin 8.3.0 (as per [Android API Level Support](https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html#android-api-level-support)).we use ([compatibility table](https://developer.android.com/studio/releases#android_gradle_plugin_and_android_studio_compatibility)).
