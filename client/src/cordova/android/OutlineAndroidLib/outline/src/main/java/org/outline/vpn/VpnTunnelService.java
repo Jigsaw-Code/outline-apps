@@ -189,7 +189,7 @@ public class VpnTunnelService extends VpnService {
 
   // Tunnel API
 
-  /**  This is the entry point when called from the Outline plugin. Called via service IPC. */
+  /**  This is the entry point when called from the Outline plugin, via the service IPC. */
   private DetailedJsonError startTunnel(@NonNull final TunnelConfig config) {
     return Errors.toDetailedJsonError(startTunnel(config, false));
   }
