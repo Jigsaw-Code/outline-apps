@@ -222,6 +222,10 @@ public class VpnTunnelService extends VpnService {
       } catch (Exception e) {
         LOG.log(Level.SEVERE, "Failed to disconnect tunnel", e);
       }
+    } else {
+      // Make sure we have a fully clean state.
+      this.tunnelConfig = null;
+      this.tunFd = null;
     }
 
     final NewClientResult clientResult = Outline.newClient(config.transportConfig);
@@ -300,6 +304,7 @@ public class VpnTunnelService extends VpnService {
     final ConnectOutlineTunnelResult result =
             Tun2socks.connectOutlineTunnel(this.tunFd.getFd(), client, remoteUdpForwardingEnabled);
     if (result.getError() != null) {
+      tearDownActiveTunnel();
       return result.getError();
     }
     this.remoteDevice = result.getTunnel();
@@ -329,17 +334,19 @@ public class VpnTunnelService extends VpnService {
 
   /** Helper method to tear down an active tunnel. */
   private void tearDownActiveTunnel() {
-    stopVpnTunnel();
-    stopForeground();
-    this.tunnelConfig = null;
-    stopNetworkConnectivityMonitor();
-    this.tunnelStore.setTunnelStatus(TunnelStatus.DISCONNECTED);
-  }
+    // Stop monitoring network changes.
+    try {
+      final ConnectivityManager connectivityManager =
+              (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+      connectivityManager.unregisterNetworkCallback(networkConnectivityMonitor);
+    } catch (Exception e) {
+      // Ignore, monitor not installed if the connectivity checks failed.
+    }
 
-  /** Helper method that stops the Outline client, tun2socks, and tears down the VPN. */
-  private void stopVpnTunnel() {
+    // Stop traffic exchange with remote.
     this.stopRemoteDevice();
 
+    // Restore routing.
     if (this.tunFd != null) {
       try {
         // On close, the OS restores the routing and destroys the TUN device.
@@ -350,6 +357,15 @@ public class VpnTunnelService extends VpnService {
         this.tunFd = null;
       }
     }
+
+    // Clear VPN notification.
+    stopForeground();
+
+    // Save state indicating it's disconnected.
+    this.tunnelStore.setTunnelStatus(TunnelStatus.DISCONNECTED);
+
+    // Clear config that is no longer needed.
+    this.tunnelConfig = null;
   }
 
   /** Stops the traffic exchange with the remote device. */
@@ -420,16 +436,6 @@ public class VpnTunnelService extends VpnService {
       connectivityManager.registerNetworkCallback(request, networkConnectivityMonitor);
     } else {
       connectivityManager.requestNetwork(request, networkConnectivityMonitor);
-    }
-  }
-
-  private void stopNetworkConnectivityMonitor() {
-    final ConnectivityManager connectivityManager =
-        (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-    try {
-      connectivityManager.unregisterNetworkCallback(networkConnectivityMonitor);
-    } catch (Exception e) {
-      // Ignore, monitor not installed if the connectivity checks failed.
     }
   }
 
