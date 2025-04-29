@@ -42,6 +42,7 @@ import java.util.Locale;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.outline.IVpnTunnelService;
@@ -195,6 +196,7 @@ public class VpnTunnelService extends VpnService {
   }
 
   /** Shared logic between the manual and automated entry points. */
+  @Nullable
   private synchronized PlatformError startTunnel(
           @NonNull final TunnelConfig config, boolean isAutoStart) {
     LOG.info(String.format(Locale.ROOT, "Starting tunnel %s for server %s", config.id, config.name));
@@ -299,7 +301,8 @@ public class VpnTunnelService extends VpnService {
     return null;
   }
 
-  private synchronized DetailedJsonError stopTunnel(final String tunnelId) {
+  @Nullable
+  private synchronized DetailedJsonError stopTunnel(@NonNull final String tunnelId) {
     if (!isTunnelActive(tunnelId)) {
       return Errors.toDetailedJsonError(new PlatformError(
           Platerrors.InternalError,
@@ -468,7 +471,7 @@ public class VpnTunnelService extends VpnService {
     }
   }
 
-  private void storeActiveTunnel(final TunnelConfig config, boolean isUdpSupported) {
+  private void storeActiveTunnel(@NonNull final TunnelConfig config, boolean isUdpSupported) {
     LOG.info("Storing active tunnel.");
     JSONObject tunnel = new JSONObject();
     try {
@@ -532,6 +535,7 @@ public class VpnTunnelService extends VpnService {
   }
 
   /** Returns a notification builder with the provided server name. */
+  @NonNull
   private Notification.Builder getNotificationBuilder(final String serverName) throws Exception {
     Intent launchIntent = new Intent(this, getPackageMainActivityClass());
     PendingIntent mainActivityIntent =
@@ -568,6 +572,7 @@ public class VpnTunnelService extends VpnService {
   }
 
   /** Retrieves the MainActivity class from the application package. */
+  @NonNull
   private Class<?> getPackageMainActivityClass() throws Exception {
     try {
       return Class.forName(getPackageName() + ".MainActivity");
@@ -583,6 +588,7 @@ public class VpnTunnelService extends VpnService {
   }
 
   /** Returns the application name. */
+  @NonNull
   public final String getApplicationName() throws PackageManager.NameNotFoundException {
     PackageManager packageManager = getApplicationContext().getPackageManager();
     ApplicationInfo appInfo = packageManager.getApplicationInfo(getPackageName(), 0);
@@ -601,6 +607,7 @@ public class VpnTunnelService extends VpnService {
   }
 
   /** Returns a subnet list that excludes reserved subnets. */
+  @NonNull
   private ArrayList<Subnet> getReservedBypassSubnets() {
     final String[] subnetStrings = this.getResources().getStringArray(
             this.getResourceId("reserved_bypass_subnets", "array"));
@@ -626,10 +633,8 @@ public class VpnTunnelService extends VpnService {
     }
 
     /** Parses a subnet in CIDR format. */
-    public static Subnet parse(final String subnet) throws IllegalArgumentException {
-      if (subnet == null) {
-        throw new IllegalArgumentException("Must provide a subnet string");
-      }
+    @NonNull
+    public static Subnet parse(@NonNull final String subnet) throws IllegalArgumentException {
       final String[] components = subnet.split("/", 2);
       if (components.length != 2) {
         throw new IllegalArgumentException("Malformed subnet string");
