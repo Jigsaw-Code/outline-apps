@@ -46,7 +46,6 @@ public class VpnTunnel {
   private static final String PRIVATE_LAN_BYPASS_SUBNETS_ID = "reserved_bypass_subnets";
 
   private final VpnTunnelService vpnService;
-  private String dnsResolverAddress;
   private ParcelFileDescriptor tunFd;
   private Tunnel tunnel;
 
@@ -72,22 +71,16 @@ public class VpnTunnel {
   public synchronized boolean establishVpn() {
     LOG.info("Establishing the VPN.");
     try {
-      dnsResolverAddress = selectDnsResolverAddress();
       VpnService.Builder builder =
           vpnService.newBuilder()
               .setSession(vpnService.getApplicationName())
               .setMtu(VPN_INTERFACE_MTU)
               .addAddress(String.format(Locale.ROOT, VPN_INTERFACE_PRIVATE_LAN, "1"),
                   VPN_INTERFACE_PREFIX_LENGTH)
-              .addDnsServer(dnsResolverAddress)
+              .addDnsServer(selectDnsResolverAddress())
               .setBlocking(true)
               .addDisallowedApplication(vpnService.getPackageName());
 
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        final Network activeNetwork =
-            vpnService.getSystemService(ConnectivityManager.class).getActiveNetwork();
-        builder.setUnderlyingNetworks(new Network[] {activeNetwork});
-      }
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         builder.setMetered(false);
       }

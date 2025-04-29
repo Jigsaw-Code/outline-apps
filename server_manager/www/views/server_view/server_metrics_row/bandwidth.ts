@@ -288,12 +288,21 @@ export class ServerMetricsBandwidthRow extends LitElement {
   render() {
     return html`
       <server-metrics-row
-        .subcards=${this.locations.map(asn => ({
-          title: asn.asOrg,
-          subtitle: asn.asn,
-          highlight: formatBytes(asn.bytes, this.language),
-          icon: asn.countryFlag,
-        }))}
+        .subcards=${this.locations.map(asn => {
+          if (!asn.asOrg) {
+            return {
+              title: 'Unknown',
+              highlight: formatBytes(asn.bytes, this.language),
+            };
+          }
+
+          return {
+            title: asn.asOrg,
+            subtitle: asn.asn,
+            highlight: formatBytes(asn.bytes, this.language),
+            icon: asn.countryFlag,
+          };
+        })}
         .subtitle=${this.localize(
           'server-view-server-metrics-bandwidth-as-breakdown',
           'openItalics',
