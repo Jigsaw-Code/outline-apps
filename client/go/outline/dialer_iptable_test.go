@@ -170,7 +170,7 @@ func TestNewIPTableStreamDialer(t *testing.T) {
 	})
 }
 
-func TestIPTableStreamDialer_AddDefault(t *testing.T) {
+func TestIPTableStreamDialer_SetDefault(t *testing.T) {
 	d, err := NewIPTableStreamDialer(nil)
 	require.NoError(t, err)
 	require.NotNil(t, d)
@@ -178,12 +178,8 @@ func TestIPTableStreamDialer_AddDefault(t *testing.T) {
 
 	mockDefault := NewMockStreamDialer("default")
 
-	err = d.AddDefault(mockDefault)
-	require.NoError(t, err)
+	d.SetDefault(mockDefault)
 	assert.Equal(t, mockDefault, d.defaultDialer)
-
-	err = d.AddDefault(nil)
-	require.Error(t, err)
 }
 
 func TestIPTableStreamDialer_DialStream(t *testing.T) {
@@ -198,8 +194,7 @@ func TestIPTableStreamDialer_DialStream(t *testing.T) {
 	iptDialerWithDefault, err := NewIPTableStreamDialer(table)
 	require.NoError(t, err)
 	require.NotNil(t, iptDialerWithDefault)
-	err = iptDialerWithDefault.AddDefault(defaultDialer)
-	require.NoError(t, err)
+	iptDialerWithDefault.SetDefault(defaultDialer)
 
 	iptDialerNoDefault, err := NewIPTableStreamDialer(table)
 	require.NoError(t, err)
@@ -359,7 +354,7 @@ func TestNewIPTablePacketDialer(t *testing.T) {
 	})
 }
 
-func TestIPTablePacketDialer_AddDefault(t *testing.T) {
+func TestIPTablePacketDialer_SetDefault(t *testing.T) {
 	d, err := NewIPTablePacketDialer(nil)
 	require.NoError(t, err)
 	require.NotNil(t, d)
@@ -367,12 +362,8 @@ func TestIPTablePacketDialer_AddDefault(t *testing.T) {
 
 	mockDefault := NewMockPacketDialer("default")
 
-	err = d.AddDefault(mockDefault)
-	require.NoError(t, err)
+	d.SetDefault(mockDefault)
 	assert.Equal(t, mockDefault, d.defaultDialer)
-
-	err = d.AddDefault(nil)
-	require.Error(t, err)
 }
 
 func TestIPTablePacketDialer_DialPacket(t *testing.T) {
@@ -387,8 +378,7 @@ func TestIPTablePacketDialer_DialPacket(t *testing.T) {
 	iptDialerWithDefault, err := NewIPTablePacketDialer(table)
 	require.NoError(t, err)
 	require.NotNil(t, iptDialerWithDefault)
-	err = iptDialerWithDefault.AddDefault(defaultDialer)
-	require.NoError(t, err)
+	iptDialerWithDefault.SetDefault(defaultDialer)
 
 	iptDialerNoDefault, err := NewIPTablePacketDialer(table)
 	require.NoError(t, err)
