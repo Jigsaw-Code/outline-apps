@@ -70,16 +70,14 @@ public class VpnTunnelService extends VpnService {
   private static final String TUNNEL_ID_KEY = "id";
   private static final String TUNNEL_CONFIG_KEY = "config";
   private static final String TUNNEL_SERVER_NAME = "serverName";
-  // OpenDNS, Cloudflare and Quad9.
   private static final String[] DNS_RESOLVER_IP_ADDRESSES = {
-          // OpenDNS
-          "208.67.222.222", "208.67.220.220",
-          // Cloudflare
-          "1.1.1.1",
-          // Quad9
-          "9.9.9.9"
-};
-
+    // OpenDNS
+    "208.67.222.222", "208.67.220.220",
+    // Cloudflare
+    "1.1.1.1",
+    // Quad9
+    "9.9.9.9"
+  };
 
   public static final String STATUS_BROADCAST_KEY = "onStatusChange";
 
