@@ -31,7 +31,15 @@ import android.net.NetworkRequest;
 import android.net.VpnService;
 import android.os.Build;
 import android.os.IBinder;
+import android.os.ParcelFileDescriptor;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Locale;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONException;
@@ -45,6 +53,9 @@ import outline.Outline;
 import outline.TCPAndUDPConnectivityResult;
 import platerrors.Platerrors;
 import platerrors.PlatformError;
+import tun2socks.ConnectOutlineTunnelResult;
+import tun2socks.Tun2socks;
+import tun2socks.Tunnel;
 
 /**
  * Android service responsible for managing a VPN tunnel. Clients must bind to this
@@ -58,6 +69,10 @@ public class VpnTunnelService extends VpnService {
   private static final String TUNNEL_ID_KEY = "id";
   private static final String TUNNEL_CONFIG_KEY = "config";
   private static final String TUNNEL_SERVER_NAME = "serverName";
+  // OpenDNS, Cloudflare and Quad9.
+  private static final String[] DNS_RESOLVER_IP_ADDRESSES = {
+          "208.67.222.222", "208.67.220.220", "1.1.1.1", "9.9.9.9"};
+
 
   public static final String STATUS_BROADCAST_KEY = "onStatusChange";
 
@@ -85,7 +100,11 @@ public class VpnTunnelService extends VpnService {
     }
   }
 
-  private VpnTunnel vpnTunnel;
+  /** File descriptor for the local TUN device, provided by VpnService.Builder.establish(). */
+  private ParcelFileDescriptor tunFd;
+  /** The Go "remote device" implementation. */
+  private Tunnel remoteDevice;
+
   private TunnelConfig tunnelConfig;
   private NetworkConnectivityMonitor networkConnectivityMonitor;
   private VpnTunnelStore tunnelStore;
@@ -93,7 +112,7 @@ public class VpnTunnelService extends VpnService {
 
   private final IVpnTunnelService.Stub binder = new IVpnTunnelService.Stub() {
     @Override
-    public DetailedJsonError startTunnel(TunnelConfig config) {
+    public DetailedJsonError startTunnel(@NonNull TunnelConfig config) {
       return VpnTunnelService.this.startTunnel(config);
     }
 
@@ -116,7 +135,6 @@ public class VpnTunnelService extends VpnService {
   @Override
   public void onCreate() {
     LOG.info("Creating VPN service.");
-    vpnTunnel = new VpnTunnel(this);
     networkConnectivityMonitor = new NetworkConnectivityMonitor();
     tunnelStore = new VpnTunnelStore(VpnTunnelService.this);
   }
@@ -139,8 +157,9 @@ public class VpnTunnelService extends VpnService {
     return binder;
   }
 
+  /** This is the entrypoint when started by the OS. */
   @Override
-  public int onStartCommand(Intent intent, int flags, int startId) {
+  public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
     LOG.info(String.format(Locale.ROOT, "Starting VPN service: %s", intent));
     int superOnStartReturnValue = super.onStartCommand(intent, flags, startId);
     if (intent != null) {
@@ -168,30 +187,31 @@ public class VpnTunnelService extends VpnService {
     tearDownActiveTunnel();
   }
 
-  public VpnService.Builder newBuilder() {
-    return new VpnService.Builder();
-  }
-
   // Tunnel API
 
-  private DetailedJsonError startTunnel(final TunnelConfig config) {
+  /**  This is the entry point when called from the Outline plugin. Called via service IPC. */
+  private DetailedJsonError startTunnel(@NonNull final TunnelConfig config) {
     return Errors.toDetailedJsonError(startTunnel(config, false));
   }
 
+  /** Shared logic between the manual and automated entry points. */
   private synchronized PlatformError startTunnel(
-      final TunnelConfig config, boolean isAutoStart) {
+          @NonNull final TunnelConfig config, boolean isAutoStart) {
     LOG.info(String.format(Locale.ROOT, "Starting tunnel %s for server %s", config.id, config.name));
     if (config.id == null || config.transportConfig == null) {
       return new PlatformError(Platerrors.InvalidConfig, "id and transportConfig are required");
     }
-    final boolean isRestart = tunnelConfig != null;
+    // A restart is when the user connects to a server while already connected to another one.
+    // Instead of tearing down the VPN and starting from scratch, we just replace the remote device
+    // and restart the traffic exchange.
+    final boolean isRestart = this.tunnelConfig != null && this.tunFd != null;
     if (isRestart) {
       // Broadcast the previous instance disconnect event before reassigning the tunnel config.
       broadcastVpnConnectivityChange(TunnelStatus.DISCONNECTED);
       stopForeground();
       try {
-        // Disconnect the tunnel; do not tear down the VPN to avoid leaking traffic.
-        vpnTunnel.disconnectTunnel();
+        // Stops the remote device; does not tear down the VPN to avoid leaking traffic.
+        this.stopRemoteDevice();
       } catch (Exception e) {
         LOG.log(Level.SEVERE, "Failed to disconnect tunnel", e);
       }
@@ -205,8 +225,11 @@ public class VpnTunnelService extends VpnService {
     }
     final outline.Client client = clientResult.getClient();
 
-    PlatformError udpConnError = null;
-    if (!isAutoStart) {
+    boolean remoteUdpForwardingEnabled;
+    if (isAutoStart) {
+      // TODO(fortuna): retest connectivity instead of restoring it. Needs a UDP test.
+      remoteUdpForwardingEnabled = tunnelStore.isUdpSupported();
+    } else {
       try {
         // Do not perform connectivity checks when connecting on startup. We should avoid failing
         // the connection due to a network error, as network may not be ready.
@@ -217,17 +240,43 @@ public class VpnTunnelService extends VpnService {
           tearDownActiveTunnel();
           return connResult.getTCPError();
         }
-        udpConnError = connResult.getUDPError();
+        remoteUdpForwardingEnabled = connResult.getUDPError() == null;
       } catch (Exception e) {
         tearDownActiveTunnel();
         return new PlatformError(Platerrors.InternalError, "failed to check connectivity");
       }
     }
-    tunnelConfig = config;
+    this.tunnelConfig = config;
 
+    // If this is not a restart, we need to set up the VPN routing.
     if (!isRestart) {
       // Only establish the VPN if this is not a tunnel restart.
-      if (!vpnTunnel.establishVpn()) {
+      try {
+        String dnsResolver = DNS_RESOLVER_IP_ADDRESSES[new Random().nextInt(DNS_RESOLVER_IP_ADDRESSES.length)];
+        VpnService.Builder builder =
+                new VpnService.Builder()
+                        .setSession(this.getApplicationName())
+                        .setMtu(1500)
+                        .addAddress("10.111.222.1", 24)
+                        .addDnsServer(dnsResolver)
+                        .setBlocking(true)
+                        .addDisallowedApplication(this.getPackageName());
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+          builder.setMetered(false);
+        }
+        // In absence of an API to remove routes, instead of adding the default route (0.0.0.0/0),
+        // retrieve the list of subnets that excludes those reserved for special use.
+        final ArrayList<Subnet> reservedBypassSubnets = getReservedBypassSubnets();
+        for (Subnet subnet : reservedBypassSubnets) {
+          builder.addRoute(subnet.address, subnet.prefix);
+        }
+        this.tunFd = builder.establish();
+      } catch (Exception e) {
+        LOG.log(Level.SEVERE, "Failed to establish the VPN", e);
+      }
+
+      if (this.tunFd == null) {
         LOG.severe("Failed to establish the VPN");
         tearDownActiveTunnel();
         return new PlatformError(Platerrors.SetupSystemVPNFailed, "failed to establish the VPN");
@@ -235,21 +284,14 @@ public class VpnTunnelService extends VpnService {
       startNetworkConnectivityMonitor();
     }
 
-    final boolean remoteUdpForwardingEnabled =
-        isAutoStart ? tunnelStore.isUdpSupported() : udpConnError == null;
-    try {
-      final PlatformError tunError = vpnTunnel.connectTunnel(client, remoteUdpForwardingEnabled);
-      if (tunError != null) {
-        LOG.log(Level.SEVERE, "Failed to connect the tunnel", tunError);
-        tearDownActiveTunnel();
-        return tunError;
-      }
-    } catch (Exception e) {
-      LOG.log(Level.SEVERE, "Failed to connect the tunnel", e);
-      tearDownActiveTunnel();
-      return new PlatformError(Platerrors.SetupTrafficHandlerFailed,
-          "failed to connect the tunnel");
+    // Start exchanging traffic between the local TUN device and the remote device.
+    final ConnectOutlineTunnelResult result =
+            Tun2socks.connectOutlineTunnel(this.tunFd.getFd(), client, remoteUdpForwardingEnabled);
+    if (result.getError() != null) {
+      return result.getError();
     }
+    this.remoteDevice = result.getTunnel();
+    
     startForegroundWithNotification(config.name);
     storeActiveTunnel(config, remoteUdpForwardingEnabled);
     return null;
@@ -272,19 +314,40 @@ public class VpnTunnelService extends VpnService {
     return tunnelConfig.id.equals(tunnelId);
   }
 
-  /* Helper method to tear down an active tunnel. */
+  /** Helper method to tear down an active tunnel. */
   private void tearDownActiveTunnel() {
     stopVpnTunnel();
     stopForeground();
-    tunnelConfig = null;
+    this.tunnelConfig = null;
     stopNetworkConnectivityMonitor();
-    tunnelStore.setTunnelStatus(TunnelStatus.DISCONNECTED);
+    this.tunnelStore.setTunnelStatus(TunnelStatus.DISCONNECTED);
   }
 
-  /* Helper method that stops the Outline client, tun2socks, and tears down the VPN. */
+  /** Helper method that stops the Outline client, tun2socks, and tears down the VPN. */
   private void stopVpnTunnel() {
-    vpnTunnel.disconnectTunnel();
-    vpnTunnel.tearDownVpn();
+    this.stopRemoteDevice();
+
+    if (this.tunFd != null) {
+      try {
+        // On close, the OS restores the routing and destroys the TUN device.
+        this.tunFd.close();
+      } catch (IOException e) {
+        LOG.severe("Failed to close the VPN interface file descriptor.");
+      } finally {
+        this.tunFd = null;
+      }
+    }
+  }
+
+  /** Stops the traffic exchange with the remote device. */
+  private synchronized void stopRemoteDevice() {
+    if (this.remoteDevice == null) {
+      return;
+    }
+    if (this.remoteDevice.isConnected()) {
+      this.remoteDevice.disconnect();
+    }
+    this.remoteDevice = null;
   }
 
   // Connectivity
@@ -298,7 +361,7 @@ public class VpnTunnelService extends VpnService {
     }
 
     @Override
-    public void onAvailable(Network network) {
+    public void onAvailable(@NonNull Network network) {
       NetworkInfo networkInfo = connectivityManager.getNetworkInfo(network);
       LOG.fine(String.format(Locale.ROOT, "Network available: %s", networkInfo));
       if (networkInfo == null || networkInfo.getState() != NetworkInfo.State.CONNECTED) {
@@ -307,14 +370,18 @@ public class VpnTunnelService extends VpnService {
       broadcastVpnConnectivityChange(TunnelStatus.CONNECTED);
       updateNotification(TunnelStatus.CONNECTED);
 
-      boolean isUdpSupported = vpnTunnel.updateUDPSupport();
+      boolean isUdpSupported = false;
+      if (VpnTunnelService.this.remoteDevice != null) {
+        isUdpSupported = VpnTunnelService.this.remoteDevice.updateUDPSupport();
+      }
       LOG.info(
           String.format("UDP support: %s -> %s", tunnelStore.isUdpSupported(), isUdpSupported));
+      // Why do we need to persist this? TODO(fortuna): remove.
       tunnelStore.setIsUdpSupported(isUdpSupported);
     }
 
     @Override
-    public void onLost(Network network) {
+    public void onLost(@NonNull Network network) {
       LOG.fine(String.format(
           Locale.ROOT, "Network lost: %s", connectivityManager.getNetworkInfo(network)));
       NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
@@ -425,7 +492,7 @@ public class VpnTunnelService extends VpnService {
 
   // Foreground service & notifications
 
-  /* Starts the service in the foreground and displays a persistent notification. */
+  /** Starts the service in the foreground and displays a persistent notification. */
   private void startForegroundWithNotification(final String serverName) {
     try {
       if (notificationBuilder == null) {
@@ -436,13 +503,15 @@ public class VpnTunnelService extends VpnService {
       notificationBuilder.setContentText(getStringResource("connected_server_state"));
 
       // We must specify the service type for security reasons: https://developer.android.com/about/versions/14/changes/fgs-types-required
-      startForeground(NOTIFICATION_SERVICE_ID, notificationBuilder.build(), ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE);
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        startForeground(NOTIFICATION_SERVICE_ID, notificationBuilder.build(), ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE);
+      }
     } catch (Exception e) {
       LOG.warning("Unable to display persistent notification");
     }
   }
 
-  /* Updates the persistent notification to reflect the tunnel status. */
+  /** Updates the persistent notification to reflect the tunnel status. */
   private void updateNotification(TunnelStatus status) {
     try {
       if (notificationBuilder == null) {
@@ -460,7 +529,7 @@ public class VpnTunnelService extends VpnService {
     }
   }
 
-  /* Returns a notification builder with the provided server name.  */
+  /** Returns a notification builder with the provided server name. */
   private Notification.Builder getNotificationBuilder(final String serverName) throws Exception {
     Intent launchIntent = new Intent(this, getPackageMainActivityClass());
     PendingIntent mainActivityIntent =
@@ -477,6 +546,7 @@ public class VpnTunnelService extends VpnService {
       builder = new Notification.Builder(this);
     }
     try {
+      // TODO(fortuna): use R.drawable.small_icon instead. Needs moving resource from plugin to OutlineAndroidLib.
       builder.setSmallIcon(getResourceId("small_icon", "drawable"));
     } catch (Exception e) {
       LOG.warning("Failed to retrieve the resource ID for the notification icon.");
@@ -489,13 +559,13 @@ public class VpnTunnelService extends VpnService {
         .setUsesChronometer(true);
   }
 
-  /* Stops the foreground service and removes the persistent notification. */
+  /** Stops the foreground service and removes the persistent notification. */
   private void stopForeground() {
     stopForeground(true /* remove notification */);
     notificationBuilder = null;
   }
 
-  /* Retrieves the MainActivity class from the application package. */
+  /** Retrieves the MainActivity class from the application package. */
   private Class<?> getPackageMainActivityClass() throws Exception {
     try {
       return Class.forName(getPackageName() + ".MainActivity");
@@ -505,19 +575,19 @@ public class VpnTunnelService extends VpnService {
     }
   }
 
-  /* Retrieves the ID for a resource. This is equivalent to using the generated R class. */
+  /** Retrieves the ID for a resource. This is equivalent to using the generated R class. */
   public int getResourceId(final String name, final String type) {
     return getResources().getIdentifier(name, type, getPackageName());
   }
 
-  /* Returns the application name. */
+  /** Returns the application name. */
   public final String getApplicationName() throws PackageManager.NameNotFoundException {
     PackageManager packageManager = getApplicationContext().getPackageManager();
     ApplicationInfo appInfo = packageManager.getApplicationInfo(getPackageName(), 0);
     return (String) packageManager.getApplicationLabel(appInfo);
   }
 
-  /* Retrieves a localized string by id from the application's resources. */
+  /** Retrieves a localized string by id from the application's resources. */
   private String getStringResource(final String name) {
     String resource = "";
     try {
@@ -526,5 +596,43 @@ public class VpnTunnelService extends VpnService {
       LOG.warning(String.format(Locale.ROOT, "Failed to retrieve string resource: %s", name));
     }
     return resource;
+  }
+
+  /** Returns a subnet list that excludes reserved subnets. */
+  private ArrayList<Subnet> getReservedBypassSubnets() {
+    final String[] subnetStrings = this.getResources().getStringArray(
+            this.getResourceId("reserved_bypass_subnets", "array"));
+    ArrayList<Subnet> subnets = new ArrayList<>(subnetStrings.length);
+    for (final String subnetString : subnetStrings) {
+      try {
+        subnets.add(Subnet.parse(subnetString));
+      } catch (Exception e) {
+        LOG.warning(String.format(Locale.ROOT, "Failed to parse subnet: %s", subnetString));
+      }
+    }
+    return subnets;
+  }
+
+  /** Represents an IP subnet. */
+  private static class Subnet {
+    public String address;
+    public int prefix;
+
+    public Subnet(String address, int prefix) {
+      this.address = address;
+      this.prefix = prefix;
+    }
+
+    /** Parses a subnet in CIDR format. */
+    public static Subnet parse(final String subnet) throws IllegalArgumentException {
+      if (subnet == null) {
+        throw new IllegalArgumentException("Must provide a subnet string");
+      }
+      final String[] components = subnet.split("/", 2);
+      if (components.length != 2) {
+        throw new IllegalArgumentException("Malformed subnet string");
+      }
+      return new Subnet(components[0], Integer.parseInt(components[1]));
+    }
   }
 }
