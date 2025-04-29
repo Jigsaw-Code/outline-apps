@@ -264,7 +264,11 @@ public class VpnTunnelService extends VpnService {
         VpnService.Builder builder =
                 new VpnService.Builder()
                         .setSession(this.getApplicationName())
+                        // Standard MTU.
+                        // TODO(fortuna): consider deriving it from the underlying MTU and selected transport.
                         .setMtu(1500)
+                        // Some random local IP we believe won't conflict.
+                        // TODO(fortuna): dynamically select it.
                         .addAddress("10.111.222.1", 24)
                         .addDnsServer(dnsResolver)
                         .setBlocking(true)
