@@ -201,11 +201,12 @@ public class VpnTunnelService extends VpnService {
     if (config.id == null || config.transportConfig == null) {
       return new PlatformError(Platerrors.InvalidConfig, "id and transportConfig are required");
     }
-    // A restart is when the user connects to a server while already connected to another one.
+    // We check if the VPN is already running. This happens when a user connects to a server while
+    // already connected to another one.
     // Instead of tearing down the VPN and starting from scratch, we just replace the remote device
     // and restart the traffic exchange.
-    final boolean isRestart = this.tunnelConfig != null && this.tunFd != null;
-    if (isRestart) {
+    final boolean alreadyRunning = this.tunnelConfig != null && this.tunFd != null;
+    if (alreadyRunning) {
       // Broadcast the previous instance disconnect event before reassigning the tunnel config.
       broadcastVpnConnectivityChange(TunnelStatus.DISCONNECTED);
       stopForeground();
@@ -248,8 +249,9 @@ public class VpnTunnelService extends VpnService {
     }
     this.tunnelConfig = config;
 
-    // If this is not a restart, we need to set up the VPN routing.
-    if (!isRestart) {
+    // If the VPN is already running, we skip the set up of the VPN routing.
+    // TODO(fortuna): we should probably shutdown and restart, in case the config changed.
+    if (!alreadyRunning) {
       // Only establish the VPN if this is not a tunnel restart.
       try {
         String dnsResolver = DNS_RESOLVER_IP_ADDRESSES[new Random().nextInt(DNS_RESOLVER_IP_ADDRESSES.length)];
