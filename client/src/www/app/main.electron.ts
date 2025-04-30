@@ -14,9 +14,6 @@
 
 /// <reference types="../../../electron/preload.d.ts" />
 
-import 'web-animations-js/web-animations-next-lite.min.js';
-import '@webcomponents/webcomponentsjs/webcomponents-bundle.js';
-
 import * as Sentry from '@sentry/electron/renderer';
 
 import {AbstractClipboard} from './clipboard';

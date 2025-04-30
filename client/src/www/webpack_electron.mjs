@@ -14,7 +14,6 @@
 import path from 'path';
 
 import HtmlWebpackPlugin from 'html-webpack-plugin';
-import webpack from 'webpack';
 import {merge} from 'webpack-merge';
 
 import {
@@ -22,7 +21,6 @@ import {
   browserConfig,
   __dirname,
   TS_LOADER,
-  GENERATE_CSS_RTL_LOADER,
 } from './webpack_base.mjs';
 
 export default merge(baseConfig, browserConfig, {
@@ -33,17 +31,12 @@ export default merge(baseConfig, browserConfig, {
       {
         test: /\.m?ts$/,
         exclude: /node_modules/,
-        use: [TS_LOADER, GENERATE_CSS_RTL_LOADER],
+        use: [TS_LOADER],
       },
       {
         test: /\.m?ts$/,
         include: /node_modules/,
         use: [TS_LOADER],
-      },
-      {
-        test: /\.m?js$/,
-        exclude: /node_modules/,
-        use: [GENERATE_CSS_RTL_LOADER],
       },
       {
         test: /\.txt$/i,
@@ -52,10 +45,6 @@ export default merge(baseConfig, browserConfig, {
     ],
   },
   plugins: [
-    new webpack.DefinePlugin({
-      // Statically link the Roboto font, rather than link to fonts.googleapis.com
-      'window.polymerSkipLoadingFontRoboto': JSON.stringify(true),
-    }),
     new HtmlWebpackPlugin({
       filename: 'index_electron.html',
       template: path.resolve(__dirname, 'index_electron.html'),
