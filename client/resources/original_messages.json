@@ -644,20 +644,20 @@
     "description": "Affirmative answer to a form question.",
     "message": "Yes"
   },
-  "theme_dark": {
-    "description": "The text for a main menu item that takes the user to a page to set the application theme to dark mode.",
+  "appearance_dark": {
+    "description": "The text for a main menu item that takes the user to a page to set the application appearance to dark mode.",
     "message": "Dark"
   },
-  "theme_light": {
-    "description": "The text for a main menu item that takes the user to a page to set the application theme to light mode.",
+  "appearance_light": {
+    "description": "The text for a main menu item that takes the user to a page to set the application appearance to light mode.",
     "message": "Light"
   },
-  "theme_system": {
-    "description": "The text for a main menu item that takes the user to a page to set the application theme to system mode.",
+  "appearance_system": {
+    "description": "The text for a main menu item that takes the user to a page to set the application appearance to system mode.",
     "message": "System"
   },
-  "theme_page_title": {
-    "description": "The title of a page for a user to set the app theme.",
+  "appearance_page_title": {
+    "description": "The title of a page for a user to set the app appearance.",
     "message": "Appearance"
   }
 }

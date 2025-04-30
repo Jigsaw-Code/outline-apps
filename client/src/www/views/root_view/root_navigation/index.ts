@@ -26,7 +26,7 @@ export class RootNavigation extends LitElement {
   @property({type: Boolean}) showQuit: boolean;
   @property({type: String}) align: 'left' | 'right';
   @property({type: String}) dataCollectionPageUrl: string;
-  @property({type: Boolean}) darkModeEnabled: boolean = false;
+  @property({type: Boolean}) appearanceSelectionAvailable: boolean = false;
 
   static styles = css`
     :host {
@@ -232,7 +232,7 @@ export class RootNavigation extends LitElement {
             <md-icon slot="start">language</md-icon>
             ${this.localize('change-language-page-title')}
           </md-list-item>
-          ${this.darkModeEnabled
+          ${this.appearanceSelectionAvailable
             ? html`
                 <md-list-item @click=${() => this.changePage('theme')}>
                   <md-ripple></md-ripple>

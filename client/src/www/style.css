@@ -104,43 +104,27 @@ body {
   --mdc-text-field-ink-color: var(--outline-input-text);
   --mdc-text-field-label-ink-color: var(--outline-label-color);
   --mdc-text-field-outlined-idle-border-color: var(--outline-input-border);
-}
 
-/* Style paper and iron inputs from Polymer */
-paper-input,
-iron-input {
-  --paper-input-container-color: var(--outline-input-text);
-  --paper-input-container-input-color: var(--outline-input-text);
-  --paper-input-container-focus-color: var(--outline-primary);
-  --iron-input-container-color: var(--outline-input-text);
-  --paper-input-container-shared-input-style_-_color: var(--outline-input-text);
-}
+  /* default light theme */
+  --outline-background: var(--outline-white);
+  --outline-card-background: var(--outline-white);
+  --outline-card-footer: var(--outline-light-gray);
+  --outline-text-color: var(--outline-black);
+  --outline-label-color: var(--outline-medium-gray);
+  --outline-hairline: 1px solid hsl(0, 0%, 85%);
+  --outline-elevation: rgb(0 0 0 / 30%) 0px 2px 3px 2px;
+  --outline-app-dialog-primary-background-color: var(--outline-white);
 
-/* Dark mode support - automatically applies when system preference is dark */
-@media (prefers-color-scheme: dark) {
-  :root.system-theme {
-    --outline-background: var(--outline-dark-bg);
-    --outline-card-background: var(--outline-dark-card);
-    --outline-card-footer: var(--outline-dark-footer);
-    --outline-text-color: var(--outline-white);
-    --outline-label-color: hsl(0, 0%, 70%);
-    --outline-hairline: 1px solid var(--outline-dark-border);
-    --outline-elevation: rgb(0 0 0 / 30%) 0px 2px 3px 2px;
-    --outline-comms-dialog-primary-background-color: var(--outline-dark-primary);
-    --outline-app-dialog-primary-background-color: var(--outline-dark-card);
+  /* Input field colors for light mode */
+  --outline-input-bg: var(--outline-white);
+  --outline-input-text: var(--outline-black);
+  --outline-input-border: var(--outline-medium-gray);
 
-    /* Input field colors for dark mode */
-    --outline-input-bg: var(--outline-dark-bg);
-    --outline-input-text: var(--outline-white);
-    --outline-input-border: var(--outline-dark-border);
-    --outline-icon-color: var(--outline-label-color);
-
-    color-scheme: dark;
-  }
+  color-scheme: light;
 }
 
 /* Class-based dark mode - applied when user selects dark theme */
-:root.dark-theme {
+html.dark {
   --outline-background: var(--outline-dark-bg);
   --outline-card-background: var(--outline-dark-card);
   --outline-card-footer: var(--outline-dark-footer);
@@ -160,23 +144,14 @@ iron-input {
   color-scheme: dark;
 }
 
-/* Class-based light mode - applied when user selects light theme */
-:root.light-theme {
-  --outline-background: var(--outline-white);
-  --outline-card-background: var(--outline-white);
-  --outline-card-footer: var(--outline-light-gray);
-  --outline-text-color: var(--outline-black);
-  --outline-label-color: var(--outline-medium-gray);
-  --outline-hairline: 1px solid hsl(0, 0%, 85%);
-  --outline-elevation: rgb(0 0 0 / 30%) 0px 2px 3px 2px;
-  --outline-app-dialog-primary-background-color: var(--outline-white);
-
-  /* Input field colors for light mode */
-  --outline-input-bg: var(--outline-white);
-  --outline-input-text: var(--outline-black);
-  --outline-input-border: var(--outline-medium-gray);
-
-  color-scheme: light;
+/* Style paper and iron inputs from Polymer */
+paper-input,
+iron-input {
+  --paper-input-container-color: var(--outline-input-text);
+  --paper-input-container-input-color: var(--outline-input-text);
+  --paper-input-container-focus-color: var(--outline-primary);
+  --iron-input-container-color: var(--outline-input-text);
+  --paper-input-container-shared-input-style_-_color: var(--outline-input-text);
 }
 
 /* Add general input styling to ensure proper contrast */

@@ -18,8 +18,7 @@ import {OperationTimedOut} from '@outline/infrastructure/timeout_promise';
 import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import * as config from './outline_server_repository/config';
-import {Settings, SettingsKey, ThemePreference} from './settings';
-import {ThemeManager} from './theme_manager';
+import {Settings, SettingsKey, Appearance} from './settings';
 import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
@@ -86,7 +85,6 @@ export class App {
   private localize: Localizer;
   private ignoredAccessKeys: {[accessKey: string]: boolean} = {};
   private serverConnectionChangeTimeouts: {[serverId: string]: boolean} = {};
-  private themeManager: ThemeManager;
 
   constructor(
     private eventQueue: events.EventQueue,
@@ -104,21 +102,6 @@ export class App {
     document = window.document
   ) {
     this.localize = this.rootEl.localize.bind(this.rootEl);
-
-    // Get dark mode feature flag from rootEl (app-root)
-    // Access it safely as a property of rootEl
-    let darkModeEnabled = false;
-    if (this.rootEl && 'darkModeEnabled' in this.rootEl) {
-      darkModeEnabled = Boolean(this.rootEl['darkModeEnabled']);
-    }
-
-    // Initialize ThemeManager with the feature flag
-    this.themeManager = new ThemeManager(settings, document, darkModeEnabled);
-
-    // Store ThemeManager reference on rootEl for access from the app-root component
-    if (this.rootEl && typeof this.rootEl === 'object') {
-      this.rootEl.__themeManager = this.themeManager;
-    }
 
     this.syncServersToUI();
     this.syncConnectivityStateToServerCards();
@@ -201,9 +184,14 @@ export class App {
       'SetLanguageRequested',
       this.setAppLanguage.bind(this)
     );
+
+    this.setAppearance(this.settings.get(SettingsKey.APPEARANCE) as Appearance);
     this.rootEl.addEventListener(
-      'SetThemeRequested',
-      this.setAppTheme.bind(this)
+      'SetAppearanceRequested',
+      (event: CustomEvent) => {
+        this.settings.set(SettingsKey.APPEARANCE, event.detail.appearance);
+        this.setAppearance(event.detail.appearance);
+      }
     );
 
     // Register handlers for events published to our event queue.
@@ -880,8 +868,25 @@ export class App {
     return !('cordova' in window);
   }
 
-  private setAppTheme(event: CustomEvent) {
-    const theme = event.detail.themePreference;
-    this.themeManager.setThemePreference(theme as ThemePreference);
+  private setAppearance(appearance: Appearance) {
+    const documentClassList = this.rootEl.documentElement.classList;
+    const isSystemDark = matchMedia('(prefers-color-scheme: dark)').matches;
+
+    let applyDarkTheme;
+
+    if (appearance === Appearance.DARK) {
+      applyDarkTheme = true;
+    } else if (appearance === Appearance.LIGHT) {
+      applyDarkTheme = false;
+    } else {
+      // Theme.SYSTEM or any other default
+      applyDarkTheme = isSystemDark;
+    }
+
+    if (applyDarkTheme) {
+      documentClassList.add('dark');
+    } else {
+      documentClassList.remove('dark');
+    }
   }
 }
