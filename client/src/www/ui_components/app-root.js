@@ -595,7 +595,7 @@ export class AppRoot extends mixinBehaviors(
       // and the app will respect system theme or user theme selection
       appearanceSelectionAvailable: {
         type: Boolean,
-        value: true,
+        value: false,
       },
       darkMode: {
         type: Boolean,
