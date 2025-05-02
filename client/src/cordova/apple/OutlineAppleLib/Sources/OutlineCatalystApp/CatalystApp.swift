@@ -33,8 +33,8 @@
                 let windowScene = (scene as! UIWindowScene)
                 windowScene.titlebar?.titleVisibility = .hidden
                 windowScene.titlebar?.toolbar = nil
-                windowScene.sizeRestrictions?.minimumSize = CGSizeMake(400, 600)
-                windowScene.sizeRestrictions?.maximumSize = CGSizeMake(400, 600)
+                windowScene.sizeRestrictions?.minimumSize = CGSizeMake(400, 680)
+                windowScene.sizeRestrictions?.maximumSize = CGSizeMake(400, 680)
             }
 
             // Initiate the connection status menu in unknown state by default.
