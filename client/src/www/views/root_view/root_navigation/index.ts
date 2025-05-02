@@ -234,10 +234,10 @@ export class RootNavigation extends LitElement {
           </md-list-item>
           ${this.appearanceSelectionAvailable
             ? html`
-                <md-list-item @click=${() => this.changePage('theme')}>
+                <md-list-item @click=${() => this.changePage('appearance')}>
                   <md-ripple></md-ripple>
                   <md-icon slot="start">brightness_medium</md-icon>
-                  ${this.localize('theme-page-title')}
+                  ${this.localize('appearance-page-title')}
                 </md-list-item>
               `
             : nothing}

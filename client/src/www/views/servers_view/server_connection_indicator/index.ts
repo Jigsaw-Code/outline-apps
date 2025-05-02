@@ -35,6 +35,9 @@ export class ServerConnectionIndicator extends LitElement {
   @property({attribute: 'connection-state'})
   connectionState: ServerConnectionState;
 
+  @property({type: Boolean, reflect: true})
+  darkMode: boolean;
+
   @state() private animationState: ServerConnectionState =
     ServerConnectionState.DISCONNECTED;
   private animationStartMS: number;
@@ -60,11 +63,15 @@ export class ServerConnectionIndicator extends LitElement {
         --circle-small-scale: scale(0.33);
         --circle-small-delay: 0ms;
 
-        /* TODO: modify brightness only in dark mode */
         --circle-connected-opacity: 1;
-        --circle-connected-color: grayscale(0) brightness(1);
+        --circle-connected-color: grayscale(0);
 
         --circle-disconnected-opacity: 1;
+        --circle-disconnected-color: grayscale(1);
+      }
+
+      :host([darkMode]) {
+        --circle-connected-color: grayscale(0) brightness(1);
         --circle-disconnected-color: grayscale(1) brightness(0.5);
       }
 

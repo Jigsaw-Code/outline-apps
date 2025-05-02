@@ -320,6 +320,7 @@ export class AppRoot extends mixinBehaviors(
           <servers-view
             name="home"
             id="serversView"
+            dark-mode="[[darkMode]]"
             servers="[[servers]]"
             localize="[[localize]]"
             should-show-access-key-wiki-link="[[useAltAccessMessage]]"
@@ -337,6 +338,7 @@ export class AppRoot extends mixinBehaviors(
           <about-view
             name="about"
             id="aboutView"
+            dark-mode="[[darkMode]]"
             localize="[[localize]]"
             root-path="[[rootPath]]"
             version="[[appVersion]]"
@@ -592,6 +594,10 @@ export class AppRoot extends mixinBehaviors(
       // When set to true, the theme option will appear in the navigation menu
       // and the app will respect system theme or user theme selection
       appearanceSelectionAvailable: {
+        type: Boolean,
+        value: true,
+      },
+      darkMode: {
         type: Boolean,
         value: false,
       },

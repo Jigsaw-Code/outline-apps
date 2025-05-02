@@ -14,11 +14,14 @@
 import {LitElement, html, css} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 
+import outlineDarkLogo from '../../assets/brand-logo-dark.png';
 import outlineLogo from '../../assets/brand-logo.png';
+import jigsawDarkLogo from '../../assets/jigsaw-logo-dark.png';
 import jigsawLogo from '../../assets/jigsaw-logo.png';
 
 @customElement('about-view')
 export class AboutView extends LitElement {
+  @property({type: Boolean}) darkMode = false;
   @property({type: Object}) localize!: (
     key: string,
     ...args: string[]
@@ -83,7 +86,10 @@ export class AboutView extends LitElement {
     return html`
       <article>
         <header>
-          <img src="${outlineLogo}" alt="outline logo" />
+          <img
+            src="${this.darkMode ? outlineDarkLogo : outlineLogo}"
+            alt="outline logo"
+          />
           <h2>
             ${this.localize('version', 'appVersion', this.version)}
             (${this.build})
@@ -107,7 +113,10 @@ export class AboutView extends LitElement {
         ></section>
         <footer>
           <a href="https://jigsaw.google.com">
-            <img src="${jigsawLogo}" alt="jigsaw logo" />
+            <img
+              src="${this.darkMode ? jigsawDarkLogo : jigsawLogo}"
+              alt="jigsaw logo"
+            />
           </a>
         </footer>
       </article>

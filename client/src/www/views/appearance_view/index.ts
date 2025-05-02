@@ -145,7 +145,7 @@ export class AppearanceView extends LitElement {
             <md-list-item
               class=${classMap({selected: this.selectedAppearance === id})}
               data-value="${id}"
-              @click=${() => this.handleThemeSelection(id)}
+              @click=${() => this.handleAppearanceSelection(id)}
             >
               <md-icon
                 slot="start"
@@ -168,7 +168,7 @@ export class AppearanceView extends LitElement {
     `;
   }
 
-  private handleThemeSelection(appearance: Appearance) {
+  private handleAppearanceSelection(appearance: Appearance) {
     this.selectedAppearance = appearance;
     this.dispatchEvent(
       new CustomEvent('SetAppearanceRequested', {

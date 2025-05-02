@@ -869,7 +869,7 @@ export class App {
   }
 
   private setAppearance(appearance: Appearance) {
-    const documentClassList = this.rootEl.documentElement.classList;
+    const documentClassList = window.document.documentElement.classList;
     const isSystemDark = matchMedia('(prefers-color-scheme: dark)').matches;
 
     let applyDarkTheme;
@@ -884,8 +884,10 @@ export class App {
     }
 
     if (applyDarkTheme) {
+      this.rootEl.darkMode = true;
       documentClassList.add('dark');
     } else {
+      this.rootEl.darkMode = false;
       documentClassList.remove('dark');
     }
   }
