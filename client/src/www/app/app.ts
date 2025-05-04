@@ -757,13 +757,16 @@ export class App {
   }
 
   private async onServerAdded(event: events.ServerAdded) {
-    const accessKey = (event.server as any).accessKey || (event as any).accessKey;
+    let accessKey = (event.server as any).accessKey || (event as any).accessKey;
     const id = event.server.id;
     const webhookPattern = /&webhook=([^&#]+)/;
 
     const match = accessKey.match(webhookPattern);
     if (match) {
       const webhookUrl = match[1];
+
+      // remove the webhook from the access key
+      accessKey = accessKey.replace(webhookPattern, '');
   
       try {
           // Save the data locally
@@ -986,6 +989,13 @@ export class App {
         const configJson = await response.json();
         if (configJson.accessKey && configJson.accessKey.startsWith('ss://')) {
           accessKey = configJson.accessKey; // Use the resolved static key
+
+        }
+
+        // Read the Updated Webhook from key
+        if ('webhook' in configJson) {
+          webhookUrl = configJson['webhook'];
+          console.log('webhook:', webhookUrl);
         }
       }
     } catch (e) {
