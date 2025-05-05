@@ -40,7 +40,8 @@ const CHANGE_KEYS_PORT_VERSION = '1.0.0';
 const DATA_LIMITS_VERSION = '1.1.0';
 const CHANGE_HOSTNAME_VERSION = '1.2.0';
 const KEY_SETTINGS_VERSION = '1.6.0';
-const MINUTES_TO_MILLISECONDS = 60 * 1000;
+const SECONDS_TO_MILLISECONDS = 1000;
+const MINUTES_TO_MILLISECONDS = 60 * SECONDS_TO_MILLISECONDS;
 const MAX_ACCESS_KEY_DATA_LIMIT_BYTES = 50 * 10 ** 9; // 50GB
 const CANCELLED_ERROR = new Error('Cancelled');
 const CHARACTER_TABLE_FLAG_SYMBOL_OFFSET = 127397;
@@ -161,7 +162,7 @@ export class App {
     appRoot.addEventListener(
       'ConnectDigitalOceanAccountRequested',
       (_: CustomEvent) => {
-        this.handleConnectDigitalOceanAccountRequest();
+        return this.handleConnectDigitalOceanAccountRequest();
       }
     );
     appRoot.addEventListener(
@@ -169,10 +170,10 @@ export class App {
       (_: CustomEvent) => {
         const digitalOceanAccount = this.cloudAccounts.getDigitalOceanAccount();
         if (digitalOceanAccount) {
-          this.showDigitalOceanCreateServer(digitalOceanAccount);
+          return this.showDigitalOceanCreateServer(digitalOceanAccount);
         } else {
           console.error('Access token not found for server creation');
-          this.handleConnectDigitalOceanAccountRequest();
+          return this.handleConnectDigitalOceanAccountRequest();
         }
       }
     );
@@ -183,7 +184,9 @@ export class App {
     appRoot.addEventListener(
       'CreateGcpServerRequested',
       async (_: CustomEvent) => {
-        this.appRoot.getAndShowGcpCreateServerApp().start(this.gcpAccount);
+        return this.appRoot
+          .getAndShowGcpCreateServerApp()
+          .start(this.gcpAccount);
       }
     );
     appRoot.addEventListener('GcpServerCreated', (event: CustomEvent) => {
@@ -206,7 +209,7 @@ export class App {
     appRoot.addEventListener(
       'SetUpDigitalOceanServerRequested',
       (event: CustomEvent) => {
-        this.createDigitalOceanServer(
+        return this.createDigitalOceanServer(
           event.detail.region,
           event.detail.metricsEnabled
         );
@@ -222,13 +225,13 @@ export class App {
     });
 
     appRoot.addEventListener('AddAccessKeyRequested', (_: CustomEvent) => {
-      this.addAccessKey();
+      return this.addAccessKey();
     });
 
     appRoot.addEventListener(
       'RemoveAccessKeyRequested',
       (event: CustomEvent) => {
-        this.removeAccessKey(event.detail.accessKeyId);
+        return this.removeAccessKey(event.detail.accessKeyId);
       }
     );
 
@@ -240,14 +243,17 @@ export class App {
     appRoot.addEventListener(
       'RenameAccessKeyRequested',
       (event: CustomEvent) => {
-        this.renameAccessKey(event.detail.accessKeyId, event.detail.newName);
+        return this.renameAccessKey(
+          event.detail.accessKeyId,
+          event.detail.newName
+        );
       }
     );
 
     appRoot.addEventListener(
       'SetDefaultDataLimitRequested',
       (event: CustomEvent) => {
-        this.setDefaultDataLimit(
+        return this.setDefaultDataLimit(
           displayDataAmountToDataLimit(event.detail.limit)
         );
       }
@@ -256,14 +262,14 @@ export class App {
     appRoot.addEventListener(
       'RemoveDefaultDataLimitRequested',
       (_: CustomEvent) => {
-        this.removeDefaultDataLimit();
+        return this.removeDefaultDataLimit();
       }
     );
 
     appRoot.addEventListener(
       'ChangePortForNewAccessKeysRequested',
       (event: CustomEvent) => {
-        this.setPortForNewAccessKeys(
+        return this.setPortForNewAccessKeys(
           event.detail.validatedInput,
           event.detail.ui
         );
@@ -273,7 +279,7 @@ export class App {
     appRoot.addEventListener(
       'ChangeHostnameForAccessKeysRequested',
       (event: CustomEvent) => {
-        this.setHostnameForAccessKeys(
+        return this.setHostnameForAccessKeys(
           event.detail.validatedInput,
           event.detail.ui
         );
@@ -287,6 +293,8 @@ export class App {
       try {
         parseManualServerConfig(event.detail.userInput);
       } catch (e) {
+        console.error(e);
+
         isValid = false;
       }
       const manualServerEntryEl = appRoot.getManualServerEntry();
@@ -326,11 +334,11 @@ export class App {
     });
 
     appRoot.addEventListener('EnableMetricsRequested', (_: CustomEvent) => {
-      this.setMetricsEnabled(true);
+      return this.setMetricsEnabled(true);
     });
 
     appRoot.addEventListener('DisableMetricsRequested', (_: CustomEvent) => {
-      this.setMetricsEnabled(false);
+      return this.setMetricsEnabled(false);
     });
 
     appRoot.addEventListener('SubmitFeedback', (event: CustomEvent) => {
@@ -354,17 +362,20 @@ export class App {
     });
 
     appRoot.addEventListener('SetLanguageRequested', (event: CustomEvent) => {
-      this.setAppLanguage(event.detail.languageCode, event.detail.languageDir);
+      return this.setAppLanguage(
+        event.detail.languageCode,
+        event.detail.languageDir
+      );
     });
 
     appRoot.addEventListener('ServerRenameRequested', (event: CustomEvent) => {
-      this.renameServer(event.detail.newName);
+      return this.renameServer(event.detail.newName);
     });
 
     appRoot.addEventListener(
       'CancelServerCreationRequested',
       (_: CustomEvent) => {
-        this.cancelServerCreation(this.selectedServer);
+        return this.cancelServerCreation(this.selectedServer);
       }
     );
 
@@ -545,7 +556,7 @@ export class App {
     this.appRoot.serverList = this.appRoot.serverList.concat([serverEntry]);
 
     if (isManagedServer(server)) {
-      this.setServerProgressView(server);
+      void this.setServerProgressView(server);
     }
 
     // Once the server is added to the list, do the rest asynchronously.
@@ -777,7 +788,7 @@ export class App {
     if (gcpServers.length > 0) {
       this.showServer(gcpServers[0]);
     } else {
-      this.appRoot.getAndShowGcpCreateServerApp().start(this.gcpAccount);
+      return this.appRoot.getAndShowGcpCreateServerApp().start(this.gcpAccount);
     }
   }
 
@@ -896,9 +907,9 @@ export class App {
 
   private async updateServerView(server: server_model.Server): Promise<void> {
     if (await server.isHealthy()) {
-      this.setServerManagementView(server);
+      return this.setServerManagementView(server);
     } else {
-      this.setServerUnreachableView(server);
+      return this.setServerUnreachableView(server);
     }
   }
 
@@ -954,11 +965,14 @@ export class App {
             await computeDefaultDataLimit(server, serverAccessKeys)
           )?.bytes;
         }
-        await this.refreshServerMetricsUI(server, view);
+        await Promise.all([
+          this.refreshUpdateNotificationBarUI(server, view),
+          this.refreshServerMetricsUI(server, view),
+        ]);
 
         // Show help bubbles once the page has rendered.
         setTimeout(() => {
-          showHelpBubblesOnce(view);
+          return showHelpBubblesOnce(view);
         }, 250);
       } catch (error) {
         console.error(`Failed to load access keys: ${error}`);
@@ -1026,6 +1040,22 @@ export class App {
       showMetricsOptInOnce();
     } else {
       setTimeout(showMetricsOptInOnce, ONE_DAY_IN_MS - msSinceCreation);
+    }
+  }
+
+  private async refreshUpdateNotificationBarUI(
+    selectedServer: server_model.Server,
+    serverView: ServerView
+  ) {
+    try {
+      const latestAvailableUpdate =
+        await selectedServer?.getLatestAvailableUpdate();
+
+      serverView.hasServerUpdate = Boolean(latestAvailableUpdate);
+    } catch (error) {
+      console.info('[refreshUpdateNotificationBarUI]', error);
+
+      serverView.hasServerUpdate = false;
     }
   }
 
@@ -1197,7 +1227,7 @@ export class App {
     selectedServer: server_model.Server,
     serverView: ServerView
   ) {
-    this.refreshServerMetricsUI(selectedServer, serverView);
+    void this.refreshServerMetricsUI(selectedServer, serverView);
     // Get transfer stats once per minute for as long as server is selected.
     const statsRefreshRateMs = 60 * 1000;
     const intervalId = setInterval(() => {
@@ -1206,7 +1236,7 @@ export class App {
         clearInterval(intervalId);
         return;
       }
-      this.refreshServerMetricsUI(selectedServer, serverView);
+      return this.refreshServerMetricsUI(selectedServer, serverView);
     }, statsRefreshRateMs);
   }
 
@@ -1215,7 +1245,7 @@ export class App {
     try {
       await server.addAccessKey();
       const serverView = await this.appRoot.getServerView(server.getId());
-      this.refreshServerMetricsUI(server, serverView);
+      await this.refreshServerMetricsUI(server, serverView);
       this.appRoot.showNotification(
         this.appRoot.localize('notification-key-added')
       );
@@ -1232,7 +1262,7 @@ export class App {
       console.error(`Failed to rename access key: ${error}`);
       this.appRoot.showError(this.appRoot.localize('error-key-rename'));
     } finally {
-      this.refreshServerMetricsUI(
+      void this.refreshServerMetricsUI(
         this.selectedServer,
         await this.appRoot.getServerView(this.selectedServer.getId())
       );
@@ -1255,7 +1285,7 @@ export class App {
       this.appRoot.showNotification(this.appRoot.localize('saved'));
       serverView.defaultDataLimitBytes = limit?.bytes;
       serverView.isDefaultDataLimitEnabled = true;
-      this.refreshServerMetricsUI(this.selectedServer, serverView);
+      await this.refreshServerMetricsUI(this.selectedServer, serverView);
       // Don't display the feature collection disclaimer anymore.
       serverView.showFeatureMetricsDisclaimer = false;
       window.localStorage.setItem(
@@ -1280,8 +1310,8 @@ export class App {
     try {
       await this.selectedServer.removeDefaultDataLimit();
       serverView.isDefaultDataLimitEnabled = false;
+      await this.refreshServerMetricsUI(this.selectedServer, serverView);
       this.appRoot.showNotification(this.appRoot.localize('saved'));
-      this.refreshServerMetricsUI(this.selectedServer, serverView);
     } catch (error) {
       console.error(`Failed to remove server default data limit: ${error}`);
       this.appRoot.showError(this.appRoot.localize('error-remove-data-limit'));
@@ -1329,7 +1359,7 @@ export class App {
     const serverView = await this.appRoot.getServerView(server.getId());
     try {
       await server.setAccessKeyDataLimit(keyId, {bytes: dataLimitBytes});
-      this.refreshServerMetricsUI(server, serverView);
+      await this.refreshServerMetricsUI(server, serverView);
       this.appRoot.showNotification(this.appRoot.localize('saved'));
       return true;
     } catch (error) {
@@ -1350,7 +1380,7 @@ export class App {
     const serverView = await this.appRoot.getServerView(server.getId());
     try {
       await server.removeAccessKeyDataLimit(keyId);
-      this.refreshServerMetricsUI(server, serverView);
+      await this.refreshServerMetricsUI(server, serverView);
       this.appRoot.showNotification(this.appRoot.localize('saved'));
       return true;
     } catch (error) {
@@ -1454,7 +1484,7 @@ export class App {
     const server = this.selectedServer;
     try {
       await server.removeAccessKey(accessKeyId);
-      this.refreshServerMetricsUI(
+      await this.refreshServerMetricsUI(
         server,
         await this.appRoot.getServerView(server.getId())
       );
@@ -1575,7 +1605,9 @@ export class App {
     }
   }
 
-  private cancelServerCreation(serverToCancel: server_model.Server): void {
+  private cancelServerCreation(
+    serverToCancel: server_model.Server
+  ): Promise<void> {
     if (!isManagedServer(serverToCancel)) {
       const msg = 'cannot cancel non-ManagedServer';
       console.error(msg);
@@ -1584,7 +1616,7 @@ export class App {
     // TODO: Make the cancel button show an immediate state transition,
     // indicate that deletion is in-progress, and allow the user to return
     // to server creation in the meantime.
-    serverToCancel
+    return serverToCancel
       .getHost()
       .delete()
       .then(() => {
@@ -1602,6 +1634,8 @@ export class App {
       document.documentElement.setAttribute('dir', languageDir);
       window.localStorage.setItem('overrideLanguage', languageCode);
     } catch (error) {
+      console.error(error);
+
       this.appRoot.showError(this.appRoot.localize('error-unexpected'));
     }
   }
