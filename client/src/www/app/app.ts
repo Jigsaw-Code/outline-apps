@@ -85,6 +85,7 @@ export class App {
   private localize: Localizer;
   private ignoredAccessKeys: {[accessKey: string]: boolean} = {};
   private serverConnectionChangeTimeouts: {[serverId: string]: boolean} = {};
+  private appearanceSelectionAvailable = false;
 
   constructor(
     private eventQueue: events.EventQueue,
@@ -185,14 +186,19 @@ export class App {
       this.setAppLanguage.bind(this)
     );
 
-    this.setAppearance(this.settings.get(SettingsKey.APPEARANCE) as Appearance);
-    this.rootEl.addEventListener(
-      'SetAppearanceRequested',
-      (event: CustomEvent) => {
-        this.settings.set(SettingsKey.APPEARANCE, event.detail.appearance);
-        this.setAppearance(event.detail.appearance);
-      }
-    );
+    if (this.appearanceSelectionAvailable) {
+      this.rootEl.appearanceSelectionAvailable = true;
+      this.setAppearance(
+        this.settings.get(SettingsKey.APPEARANCE) as Appearance
+      );
+      this.rootEl.addEventListener(
+        'SetAppearanceRequested',
+        (event: CustomEvent) => {
+          this.settings.set(SettingsKey.APPEARANCE, event.detail.appearance);
+          this.setAppearance(event.detail.appearance);
+        }
+      );
+    }
 
     // Register handlers for events published to our event queue.
     this.eventQueue.subscribe(
