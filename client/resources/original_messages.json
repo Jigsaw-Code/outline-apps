@@ -653,7 +653,7 @@
     "message": "Light"
   },
   "appearance_system": {
-    "description": "The text for a main menu item that takes the user to a page to set the application appearance to system mode.",
+    "description": "The text for a main menu item that takes the user to a page to set the application appearance to their system's default preference.",
     "message": "System"
   },
   "appearance_page_title": {

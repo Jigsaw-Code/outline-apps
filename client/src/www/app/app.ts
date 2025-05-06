@@ -89,7 +89,8 @@ export class App {
   // Feature flag to control whether dark mode is enabled
   // When set to true, the theme option will appear in the navigation menu
   // and the app will respect system theme or user theme selection
-  private appearanceSelectionAvailable = false;
+  // TODO: remove once appearance translations are ready
+  private appearanceFeatureEnabled = false;
 
   constructor(
     private eventQueue: events.EventQueue,
@@ -190,8 +191,8 @@ export class App {
       this.setAppLanguage.bind(this)
     );
 
-    if (this.appearanceSelectionAvailable) {
-      this.rootEl.appearanceSelectionAvailable = true;
+    if (this.appearanceFeatureEnabled) {
+      this.rootEl.showAppearanceView = true;
       this.setAppearance(
         this.settings.get(SettingsKey.APPEARANCE) as Appearance
       );
@@ -900,5 +901,7 @@ export class App {
       this.rootEl.darkMode = false;
       documentClassList.remove('dark');
     }
+
+    this.rootEl.selectedAppearance = appearance;
   }
 }

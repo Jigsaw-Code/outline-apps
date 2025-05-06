@@ -361,6 +361,7 @@ export class AppRoot extends mixinBehaviors(
           <appearance-view
             name="appearance"
             id="appearanceView"
+            selected-appearance="[[selectedAppearance]]"
             localize="[[localize]]"
           ></appearance-view>
         </iron-pages>
@@ -371,7 +372,7 @@ export class AppRoot extends mixinBehaviors(
         id="drawer"
         show-quit="[[shouldShowQuitButton]]"
         data-collection-page-url="[[_computeSupportSiteUrl(language, 'https://support.google.com/outline/answer/15331222')]]"
-        appearance-selection-available="[[appearanceSelectionAvailable]]"
+        show-appearance-view="[[showAppearanceView]]"
       ></root-navigation>
 
       <add-access-key-dialog
@@ -590,9 +591,12 @@ export class AppRoot extends mixinBehaviors(
         type: Boolean,
         computed: '_computeUseAltAccessMessage(language)',
       },
-      appearanceSelectionAvailable: {
+      showAppearanceView: {
         type: Boolean,
         value: false,
+      },
+      selectedAppearance: {
+        type: String,
       },
       darkMode: {
         type: Boolean,
