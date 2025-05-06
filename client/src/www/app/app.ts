@@ -90,7 +90,7 @@ export class App {
   // When set to true, the theme option will appear in the navigation menu
   // and the app will respect system theme or user theme selection
   // TODO: remove once appearance translations are ready
-  private appearanceFeatureEnabled = true;
+  private appearanceFeatureEnabled = false;
 
   constructor(
     private eventQueue: events.EventQueue,
