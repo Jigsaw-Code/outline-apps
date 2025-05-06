@@ -32,25 +32,26 @@ Alternatively, you can do it on the command-line:
     export ANDROID_NDK=$ANDROID_HOME/ndk
     ```
 
-1. Install the [Android command-line tools](https://developer.android.com/studio#command-line-tools-only):
+1. Install the [Android command-line tools](https://developer.android.com/studio#command-line-tools-only) and make them available on the command line:
 
     ```shell
     curl -o /tmp/commandlinetools.zip https://dl.google.com/android/repository/commandlinetools-mac-13114758_latest.zip
     unzip /tmp/commandlinetools.zip -d /tmp
     mkdir -p "$ANDROID_HOME/cmdline-tools/latest"
     mv /tmp/cmdline-tools/* "$ANDROID_HOME/cmdline-tools/latest/"
+    export PATH="$PATH:$ANDROID_HOME/cmdline-tools/latest/bin/"
     ```
   
 1. Install platform and build tools:
 
     ```shell
-    $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0" "ndk;25.1.8937393" 
+    sdkmanager "platforms;android-34" "build-tools;34.0.0" "ndk;25.1.8937393" 
     ```
 
 1. Install optional components that help development (source code, emulator and image):
 
     ```shell
-    $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "sources;android-34" "system-images;android-34;default;arm64-v8a"
+    sdkmanager "sources;android-34" "system-images;android-34;default;arm64-v8a"
     ```
 
   Note: you will need the `system-images;android-35;default;x86_64` image on an Intel computer.
