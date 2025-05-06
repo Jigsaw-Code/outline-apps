@@ -90,7 +90,7 @@ export class App {
   // When set to true, the theme option will appear in the navigation menu
   // and the app will respect system theme or user theme selection
   // TODO: remove once appearance translations are ready
-  private appearanceFeatureEnabled = false;
+  private appearanceFeatureEnabled = true;
 
   constructor(
     private eventQueue: events.EventQueue,
@@ -890,7 +890,8 @@ export class App {
     } else if (appearance === Appearance.LIGHT) {
       applyDarkTheme = false;
     } else {
-      // Theme.SYSTEM or any other default
+      // guard against potentially corrupt value
+      appearance = Appearance.SYSTEM;
       applyDarkTheme = isSystemDark;
     }
 
