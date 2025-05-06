@@ -14,7 +14,7 @@ Install these pre-requisites:
   brew install openjdk@17
 
   # Make it visible to `java_home`
-  sudo ln -sfn $HOMEBREW_PREFIX/opt/openjdk@17/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-17.jdk
+  sudo ln -sfn ${HOMEBREW_PREFIX?}/opt/openjdk@17/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-17.jdk
 
   export CORDOVA_JAVA_HOME=$(/usr/libexec/java_home -v 17.0)
   ```
