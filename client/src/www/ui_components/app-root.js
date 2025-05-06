@@ -590,9 +590,6 @@ export class AppRoot extends mixinBehaviors(
         type: Boolean,
         computed: '_computeUseAltAccessMessage(language)',
       },
-      // Feature flag to control whether dark mode is enabled
-      // When set to true, the theme option will appear in the navigation menu
-      // and the app will respect system theme or user theme selection
       appearanceSelectionAvailable: {
         type: Boolean,
         value: false,

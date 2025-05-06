@@ -85,6 +85,10 @@ export class App {
   private localize: Localizer;
   private ignoredAccessKeys: {[accessKey: string]: boolean} = {};
   private serverConnectionChangeTimeouts: {[serverId: string]: boolean} = {};
+
+  // Feature flag to control whether dark mode is enabled
+  // When set to true, the theme option will appear in the navigation menu
+  // and the app will respect system theme or user theme selection
   private appearanceSelectionAvailable = false;
 
   constructor(
