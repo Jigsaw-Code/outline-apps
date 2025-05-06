@@ -141,6 +141,10 @@ func NewDefaultTransportProvider(tcpDialer transport.StreamDialer, udpDialer tra
 
 		return &Dialer[transport.StreamConn]{
 			Dial: streamDialer.DialStream,
+			ConnectionProviderInfo: ConnectionProviderInfo{
+				ConnType: ConnTypeTunneled,
+				FirstHop: "",
+			},
 		}, err
 	})
 
