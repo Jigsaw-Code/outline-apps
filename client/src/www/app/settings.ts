@@ -21,11 +21,11 @@ export enum SettingsKey {
   VPN_WARNING_DISMISSED = 'vpn-warning-dismissed',
   AUTO_CONNECT_DIALOG_DISMISSED = 'auto-connect-dialog-dismissed',
   PRIVACY_ACK = 'privacy-ack',
-  THEME_PREFERENCE = 'theme-preference',
+  APPEARANCE = 'appearance',
 }
 
 // Theme options
-export enum ThemePreference {
+export enum Appearance {
   LIGHT = 'light',
   DARK = 'dark',
   SYSTEM = 'system',

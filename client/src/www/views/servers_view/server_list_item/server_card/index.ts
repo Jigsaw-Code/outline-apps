@@ -274,6 +274,7 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
  */
 @customElement('server-row-card')
 export class ServerRowCard extends LitElement implements ServerListItemElement {
+  @property({type: Boolean}) darkMode = false;
   @property({type: Object}) server: ServerListItem;
   @property({type: Object}) localize: Localizer;
 
@@ -317,6 +318,7 @@ export class ServerRowCard extends LitElement implements ServerListItemElement {
       <div class="card">
         <div class="card-metadata" aria-labelledby="server-name">
           <server-connection-indicator
+            ?darkMode=${this.darkMode}
             connection-state="${this.server.connectionState}"
           ></server-connection-indicator>
           ${elements.metadataText}
@@ -338,6 +340,7 @@ export class ServerHeroCard
 {
   @property({type: Object}) server: ServerListItem;
   @property({type: Object}) localize: Localizer;
+  @property({type: Boolean}) darkMode = false;
 
   @state() isRenameDialogOpen = false;
 
@@ -416,6 +419,7 @@ export class ServerHeroCard
             @click="${!this.server.errorMessageId && dispatchers.connectToggle}"
             @keydown="${connectToggleKeyboardDispatcher}"
             connection-state="${this.server.connectionState}"
+            ?darkMode="${this.darkMode}"
             id="${messages.connectButton}"
             role="button"
             tabindex="0"
