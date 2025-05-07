@@ -1544,6 +1544,10 @@
     "message": "Try the new automatic Outline server creation process for Google Cloud",
     "description": "Link text that takes users to an easier setup procedure"
   },
+  "gcp-oauth-connect-title": {
+    "message": "Sign in or create an account with Google Cloud Platform.",
+    "description": "This string appears in the server setup view as a header. Displayed when the user is prompted to connect to their Google Cloud account."
+  },
   "setup_firewall_instructions": {
     "message": "Firewall instructions",
     "description": "This string appears in the server setup view as the header of a section that provides instructions to configure the server's firewall."
