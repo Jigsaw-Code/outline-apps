@@ -15,6 +15,7 @@
 package iptable
 
 import (
+	"container/list"
 	"context"
 	"errors"
 	"fmt"
@@ -87,65 +88,58 @@ type incomingPacket struct {
 }
 
 type ipTableConnection struct {
+	defaultListener transport.PacketListener
+	defaultConnection     net.PacketConn
+
 	listenerTable   IPTable[transport.PacketListener]
-	defaultListener transport.PacketListener // Fallback for specific conns
-	defaultConn     net.PacketConn
-
-	connsByAddr map[net.Addr]net.PacketConn
-
-	packetQueue chan incomingPacket
-	waitCounter sync.WaitGroup // To wait for readLoops to finish
-	closeOnce   sync.Once
-	ctx             context.Context
-	cancelCtx       context.CancelFunc
+	connectionsByAddr map[net.Addr]net.PacketConn
+	
+	forwardedPackets chan incomingPacket
+	forwardCounter sync.WaitGroup
+	forwardingContext             context.Context
+	closeForwardingContext       context.CancelFunc
 }
 
 var _ net.PacketConn = (*ipTableConnection)(nil)
 
 func newIPTableConnection(
-	parentCtx context.Context,
+	parentContext context.Context,
 	listenerTable IPTable[transport.PacketListener],
 	defaultListener transport.PacketListener,
 ) (*ipTableConnection, error) {
-	ctx, cancel := context.WithCancel(parentCtx)
+	forwardingContext, closeForwardingContext := context.WithCancel(parentContext)
 
-	var defaultConn net.PacketConn
+	var defaultConnection net.PacketConn
 	if defaultListener != nil {
-		defaultConnAttempt, err := defaultListener.ListenPacket(ctx)
+		connectionAttempt, err := defaultListener.ListenPacket(forwardingContext)
 
 		if err != nil {
-			defaultConn = nil
+			defaultConnection = nil
 		} else {
-			defaultConn = defaultConnAttempt
+			defaultConnection = connectionAttempt
 		}
 	}
 
-	specificConnsByListener := make(map[transport.PacketListener]net.PacketConn)
-
-	if defaultConn != nil {
-		specificConnsByListener[defaultListener] = defaultConn
-	}
-
 	connection := &ipTableConnection{
-		ctx:                     ctx,
-		cancelCtx:               cancel,
+		forwardingContext:                     forwardingContext,
+		closeForwardingContext:               closeForwardingContext,
 		listenerTable:           listenerTable,
 		defaultListener:         defaultListener,
-		defaultConn:             defaultConn,
-		specificConnsByListener: specificConnsByListener,
-		packetQueue:             make(chan incomingPacket, packetQueueSize),
+		defaultConnection:       defaultConnection,
+		connectionsByAddr: 			 make(map[net.Addr]net.PacketConn),
+		forwardedPackets:        make(chan incomingPacket, packetQueueSize),
 	}
 
-	if connection.defaultConn != nil {
-		connection.waitCounter.Add(1)
-		go connection.forwardToQueue(connection.defaultConn)
+	if connection.defaultConnection != nil {
+		connection.forwardCounter.Add(1)
+		go connection.forwardPackets(connection.defaultConnection)
 	}
 
 	return connection, nil
 }
 
-func (connection *ipTableConnection) forwardToQueue(subconnection net.PacketConn) {
-	defer connection.waitCounter.Done()
+func (connection *ipTableConnection) forwardPackets(subconnection net.PacketConn) {
+	defer connection.forwardCounter.Done()
 	readBuffer := make([]byte, 65536) // Max UDP packet size
 	for {
 		numBytes, remoteAddr, err := subconnection.ReadFrom(readBuffer)
@@ -156,122 +150,99 @@ func (connection *ipTableConnection) forwardToQueue(subconnection net.PacketConn
 		packet := make([]byte, numBytes)
 		copy(packet, readBuffer[:numBytes])
 
-		connection.packetQueue <- incomingPacket{data: packet, addr: remoteAddr}:
+		connection.forwardedPackets <- incomingPacket{data: packet, addr: remoteAddr}:
 	}
 }
 
 func (connection *ipTableConnection) ReadFrom(result []byte) (n int, addr net.Addr, err error) {
-	// packet, ok := <- connection.packetQueue;
-	// if !ok {
-	// 	return 0, nil, net.ErrClosed
-	// }
+	packet, ok := <- connection.forwardedPackets;
+	if !ok {
+		return 0, nil, net.ErrClosed
+	}
+
 	// can we lengthen the buffer if it's too short?
-	// numBytes = copy(result, packet.data)
-	// return numBytes, packet.addr, nil;
+	numBytes = copy(result, packet.data)
+	return numBytes, packet.addr, nil;
 }
 
-// func (c *ipTableConnection) getOrCreateSpecificConn(remoteAddr net.Addr) (net.PacketConn, error) {
-// 	host, _, err := net.SplitHostPort(remoteAddr.String())
-// 	if err != nil {
-// 		// If remoteAddr is not "host:port", it might be an IP already or unparseable.
-// 		// Try to parse it as a plain IP. If not, fallback.
-// 		host = remoteAddr.String()
-// 	}
+func (connection *ipTableConnection) WriteTo(packet []byte, addr net.Addr) (numBytes int, err error) {
+	subconnection := connection.connectionsByAddr[addr]
 
-// 	remoteIP, err := netip.ParseAddr(host)
-// 	if err != nil {
-// 		// Cannot parse IP from remoteAddr, use primary connection.
-// 		return c.defaultConn, nil
-// 	}
+	if (subconnection == nil) {
+		listener, ok := connection.listenerTable.Lookup(addr)
 
-// 	listener, listenerFound := c.listenerTable.Lookup(remoteIP)
-// 	if !listenerFound {
-// 		// No specific listener for this IP, use the primary connection.
-// 		return c.defaultConn, nil
-// 	}
+		if !ok {
+			listener = connection.defaultListener
+		}
 
-// 	// A specific listener was found. Check cache.
-// 	c.specificConnsMutex.RLock()
-// 	cachedConn, exists := c.specificConnsByListener[listener]
-// 	c.specificConnsMutex.RUnlock()
+		if listener == nil {
+			return 0, fmt.Errorf("No listener found for %s", addr.string)
+		}
 
-// 	if exists {
-// 		return cachedConn, nil
-// 	}
+		subconnection, err = listener.ListenPacket(connection.forwardingContext)
 
-// 	// Not in cache, need to create and add it.
-// 	c.specificConnsMutex.Lock()
-// 	defer c.specificConnsMutex.Unlock()
+		if err != nil {
+			return 0, err
+		}
 
-// 	// Double-check if another goroutine created it while waiting for the lock.
-// 	if cachedConn, exists = c.specificConnsByListener[listener]; exists {
-// 		return cachedConn, nil
-// 	}
-
-// 	newSpecificConn, err := listener.ListenPacket(c.ctx) // Use the connection's context
-// 	if err != nil {
-// 		return nil, fmt.Errorf("failed to listen on specific listener for %s (resolved to %s): %w", remoteAddr.String(), remoteIP.String(), err)
-// 	}
-
-// 	c.specificConnsByListener[listener] = newSpecificConn
-// 	c.waitCounter.Add(1)
-// 	go c.readLoop(newSpecificConn)
-
-// 	return newSpecificConn, nil
-// }
-
-func (c *ipTableConnection) WriteTo(packet []byte, addr net.Addr) (n int, err error) {
-	connToUse, err := c.getOrCreateSpecificConn(addr)
-	if err != nil {
-		return 0, fmt.Errorf("could not get/create connection for %s: %w", addr.String(), err)
+		connection.connectionsByAddr[addr] = subconnection
 	}
 
-	return connToUse.WriteTo(p, addr)
+	return subconnection.WriteTo(packet, addr)
 }
 
-func (c *ipTableConnection) Close() error {
-	c.closeOnce.Do(func() {
-		c.cancelCtx()
+func (connection *ipTableConnection) Close() error {
+	connection.closeForwardingContext()
 
-		c.specificConnsMutex.Lock()
-		for listener, sc := range c.specificConnsByListener {
-			sc.Close()
-			delete(c.specificConnsByListener, listener)
-		}
-		c.specificConnsMutex.Unlock()
+	for address, subconnection := range connection.connectionsByAddr {
+		subconnection.Close()
+		delete(connection.connectionsByAddr, address)
+	}
 
-		if c.defaultConn != nil {
-			c.defaultConn.Close()
-		}
+	if connection.defaultConnection != nil {
+		connection.defaultConnection.Close()
+	}
 
-		c.waitCounter.Wait() // Wait for all readLoops to finish.
-		close(c.packetQueue)
-	})
+	connection.forwardCounter.Wait()
+	close(connection.forwardedPackets)
+
 	return nil
 }
 
-func (c *ipTableConnection) LocalAddr() net.Addr {
-	if c.defaultConn != nil {
-		return c.defaultConn.LocalAddr()
+func (connection *ipTableConnection) LocalAddr() net.Addr {
+	if connection.defaultConnection != nil {
+		return connection.defaultConnection.LocalAddr()
 	}
 
 	return nil
 }
 
-func (c *ipTableConnection) SetDeadline(t time.Time) error {
-	return c.applyToAllConns(func(pc net.PacketConn) error {
-		return pc.SetDeadline(t)
-	})
+func (connection *ipTableConnection) SetDeadline(t time.Time) error {
+	if connection.defaultConnection != nil {
+		return connection.defaultConnection.SetDeadline(t)
+	}
+
+	for _, subconnection := range connection.connectionsByAddr {
+		subconnection.SetDeadline(t)
+	}
 }
 
 func (c *ipTableConnection) SetReadDeadline(t time.Time) error {
-	return c.applyToAllConns(func(pc net.PacketConn) error {
-		return pc.SetReadDeadline(t)
-	})
+	if connection.defaultConnection != nil {
+		return connection.defaultConnection.SetReadDeadline(t)
+	}
+
+	for _, subconnection := range connection.connectionsByAddr {
+		subconnection.SetReadDeadline(t)
+	}
 }
 
 func (c *ipTableConnection) SetWriteDeadline(t time.Time) error {
-	return c.applyToAllConns(func(pc net.PacketConn) error {
-		return pc.SetWriteDeadline(t)
-	})
+	if connection.defaultConnection != nil {
+		return connection.defaultConnection.SetWriteDeadline(t)
+	}
+
+	for _, subconnection := range connection.connectionsByAddr {
+		subconnection.SetWriteDeadline(t)
+	}
 }
