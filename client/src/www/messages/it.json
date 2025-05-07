@@ -39,6 +39,7 @@
   "error-connection-configuration-fetch": "Impossibile scaricare la configurazione del server. Fai uno screenshot dei dettagli dell'errore e invialo al provider della tua chiave di accesso.",
   "error-connection-proxy": "Errore di connessione. Controlla la connettività a internet, quindi fai uno screenshot dei dettagli dell'errore e invialo al provider della tua chiave di accesso.",
   "error-details": "Dettagli",
+  "send-error": "Errore di invio",
   "error-details-dialog-copied": "Elemento copiato",
   "error-details-dialog-copy": "Copia",
   "error-details-dialog-dismiss": "Ignora",

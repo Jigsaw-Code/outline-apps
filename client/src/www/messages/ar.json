@@ -39,6 +39,7 @@
   "error-connection-configuration-fetch": "تعذَّر تنزيل إعدادات الخادم. يُرجى أخذ لقطة شاشة لتفاصيل الخطأ وإرسالها إلى موفِّر مفتاح الوصول.",
   "error-connection-proxy": "تعذَّر الاتصال. يُرجى التأكّد من اتصالك بالإنترنت، ثم أخذ لقطة شاشة لتفاصيل الخطأ وإرسالها إلى موفِّر مفتاح الوصول.",
   "error-details": "التفاصيل",
+  "send-error": "إرسال خطأ",
   "error-details-dialog-copied": "تم النسخ",
   "error-details-dialog-copy": "نسخ",
   "error-details-dialog-dismiss": "إغلاق",

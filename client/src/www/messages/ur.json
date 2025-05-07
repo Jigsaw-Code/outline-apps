@@ -39,6 +39,7 @@
   "error-connection-configuration-fetch": "سرور کنفیگریشن ڈاؤن لوڈ کرنے میں ناکام۔ خرابی کی تفصیلات کا اسکرین شاٹ لیں اور اسے اپنے رسائی کلید فراہم کنندہ کو بھیجیں۔",
   "error-connection-proxy": "منسلک ہونے میں ناکام۔ براہ کرم اپنی انٹرنیٹ کنیکٹیویٹی چیک کریں، پھر خرابی کی تفصیلات کا اسکرین شاٹ لیں اور اپنے رسائی کلید فراہم کنندہ کو بھیجیں۔",
   "error-details": "تفصیلات",
+  "send-error": "بھیجنے کی غلطی",
   "error-details-dialog-copied": "کاپی کریں",
   "error-details-dialog-copy": "کاپی",
   "error-details-dialog-dismiss": "مسترد کریں",

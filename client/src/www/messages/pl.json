@@ -39,6 +39,7 @@
   "error-connection-configuration-fetch": "Nie udało się pobrać konfiguracji serwera. Zrób zrzut ekranu z informacjami o błędzie i wyślij go do dostawcy klucza dostępu.",
   "error-connection-proxy": "Nie udało się nawiązać połączenia. Sprawdź połączenie z internetem, a następnie zrób zrzut ekranu z informacjami o błędzie i wyślij go do dostawcy klucza dostępu.",
   "error-details": "Szczegóły",
+  "send-error": "Wyślij błąd",
   "error-details-dialog-copied": "Skopiowano",
   "error-details-dialog-copy": "Kopiuj",
   "error-details-dialog-dismiss": "Zamknij",

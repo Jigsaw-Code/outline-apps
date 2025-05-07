@@ -39,6 +39,7 @@
   "error-connection-configuration-fetch": "Die Serverkonfiguration konnte nicht heruntergeladen werden. Erstellen Sie einen Screenshot der Fehlerdetails und senden Sie Ihn an den Anbieter Ihres Zugriffsschlüssels.",
   "error-connection-proxy": "Verbindung fehlgeschlagen. Prüfen Sie Ihre Internetverbindung und erstellen Sie einen Screenshot der Fehlerdetails. Senden Sie diesen an den Anbieter Ihres Zugriffsschlüssels.",
   "error-details": "Details",
+  "send-error": "Fehler senden",
   "error-details-dialog-copied": "Kopieren",
   "error-details-dialog-copy": "Kopieren",
   "error-details-dialog-dismiss": "Schließen",

@@ -39,6 +39,7 @@
   "error-connection-configuration-fetch": "Không thể tải cấu hình máy chủ xuống. Hãy chụp ảnh chi tiết lỗi và gửi cho nhà cung cấp khoá truy cập.",
   "error-connection-proxy": "Không kết nối được. Vui lòng kiểm tra kết nối Internet của bạn, sau đó chụp ảnh chi tiết lỗi và gửi cho nhà cung cấp khoá truy cập.",
   "error-details": "Chi tiết",
+  "send-error": "Gửi lỗi",
   "error-details-dialog-copied": "Đã sao chép",
   "error-details-dialog-copy": "Sao chép",
   "error-details-dialog-dismiss": "Đóng",

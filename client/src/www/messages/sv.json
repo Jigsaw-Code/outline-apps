@@ -39,6 +39,7 @@
   "error-connection-configuration-fetch": "Det gick inte att ladda ned serverkonfigurationen. Ta en skärmbild på felinformationen och skicka den till leverantören av åtkomstnyckeln.",
   "error-connection-proxy": "Det gick inte att ansluta. Kontrollera internetanslutningen, ta sedan en skärmbild på felinformationen och skicka den till leverantören av åtkomstnyckeln.",
   "error-details": "Information",
+  "send-error": "Skicka fel",
   "error-details-dialog-copied": "Kopierad",
   "error-details-dialog-copy": "Kopiera",
   "error-details-dialog-dismiss": "Stäng",

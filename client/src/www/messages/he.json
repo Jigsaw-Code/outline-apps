@@ -39,6 +39,7 @@
   "error-connection-configuration-fetch": "ההורדה של הגדרות השרת נכשלה. צריך לצלם את המסך של פרטי השגיאה ולשלוח לספק של מפתח הגישה.",
   "error-connection-proxy": "ההתחברות נכשלה. צריך לבדוק את החיבור לאינטרנט, ואז לצלם את המסך של פרטי השגיאה ולשלוח לספק של מפתח הגישה.",
   "error-details": "פרטים",
+  "send-error": "שגיאת שליחה",
   "error-details-dialog-copied": "הועתק",
   "error-details-dialog-copy": "העתקה",
   "error-details-dialog-dismiss": "סגירה",
