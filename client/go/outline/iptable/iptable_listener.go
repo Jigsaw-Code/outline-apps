@@ -84,24 +84,20 @@ const packetQueueSize = 128 // Arbitrary size for the packet queue
 type incomingPacket struct {
 	data []byte
 	addr net.Addr
-	err  error
 }
 
 type ipTableConnection struct {
-	ctx             context.Context
-	cancelCtx       context.CancelFunc
 	listenerTable   IPTable[transport.PacketListener]
 	defaultListener transport.PacketListener // Fallback for specific conns
 	defaultConn     net.PacketConn
 
-	// Caches net.PacketConn instances created by specific transport.PacketListener from the listenerTable.
-	// Keyed by the transport.PacketListener instance itself.
-	specificConnsByListener map[transport.PacketListener]net.PacketConn
-	specificConnsMutex      sync.RWMutex
+	connsByAddr map[net.Addr]net.PacketConn
 
 	packetQueue chan incomingPacket
 	waitCounter sync.WaitGroup // To wait for readLoops to finish
 	closeOnce   sync.Once
+	ctx             context.Context
+	cancelCtx       context.CancelFunc
 }
 
 var _ net.PacketConn = (*ipTableConnection)(nil)
