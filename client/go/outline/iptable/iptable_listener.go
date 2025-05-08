@@ -71,10 +71,8 @@ type ipTableConnection struct {
 	defaultListener   transport.PacketListener
 	defaultConnection net.PacketConn
 
-	listenerTable IPTable[transport.PacketListener]
-	connectionMap map[netip.Addr]net.PacketConn
-
-	// Do I really need this? It's a map
+	listenerTable       IPTable[transport.PacketListener]
+	connectionMap       map[netip.Addr]net.PacketConn
 	connectionMapThread sync.Mutex
 
 	forwardingContext      context.Context
@@ -141,6 +139,9 @@ func (connection *ipTableConnection) WriteTo(packet []byte, addr net.Addr) (numB
 	// TODO: make this safer
 	ip := netip.MustParseAddr(addr.String())
 
+	connection.connectionMapThread.Lock()
+	defer connection.connectionMapThread.Unlock()
+
 	subconnection := connection.connectionMap[ip]
 
 	if subconnection == nil {
@@ -160,8 +161,6 @@ func (connection *ipTableConnection) WriteTo(packet []byte, addr net.Addr) (numB
 			return 0, err
 		}
 
-		connection.connectionMapThread.Lock()
-		defer connection.connectionMapThread.Unlock()
 		connection.connectionMap[ip] = subconnection
 
 		connection.forwardCounter.Add(1)
