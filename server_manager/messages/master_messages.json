@@ -741,6 +741,10 @@
     "message": "Name your project in the 'Project name' field.",
     "description": "This string appears as instructions for naming a new Google Cloud Project.  'Project Name' should be translated and include untranslated in parentheses"
   },
+  "gcp_oauth_connect_title": {
+    "message": "Sign in or create an account with Google Cloud Platform.",
+    "description": "This string appears in the server setup view as a header. Displayed when the user is prompted to connect to their Google Cloud account."
+  },
   "gcp_project_setup_error": {
     "message": "An error occurred while setting up your Google Cloud project",
     "description": "Error message, shown in a popup when server creation fails"
@@ -1113,7 +1117,7 @@
     "message": "Data transferred in the last 30 days",
     "description": "This string indicates to the user that the metric displayed counts how much data was sent through the server over the last 30 days"
   },
-  "server_metrics_user_hours":  {
+  "server_metrics_user_hours": {
     "message": "User hours spent on the VPN in the last 30 days",
     "description": "This string indicates to the user that the metric displayed counts how many hours users used the VPN over the last 30 days."
   },
@@ -1543,10 +1547,6 @@
   "setup_gcp_promo": {
     "message": "Try the new automatic Outline server creation process for Google Cloud",
     "description": "Link text that takes users to an easier setup procedure"
-  },
-  "gcp_oauth_connect_title": {
-    "message": "Sign in or create an account with Google Cloud Platform.",
-    "description": "This string appears in the server setup view as a header. Displayed when the user is prompted to connect to their Google Cloud account."
   },
   "setup_firewall_instructions": {
     "message": "Firewall instructions",
