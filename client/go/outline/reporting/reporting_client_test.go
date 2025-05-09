@@ -37,12 +37,12 @@ var server *http.Server
 var clientCookie string
 
 func TestReport(t *testing.T) {
-	err := Report(&fakeSSClient{})
+	err := Report(&fakeSSClient{}, "https://example.com")
 	if err != nil {
 		t.Fatalf("Report failed: %v", err)
 	}
 	// Report again to get the original cookie.
-	err = Report(&fakeSSClient{})
+	err = Report(&fakeSSClient{}, "https://example.com")
 	if err != nil {
 		t.Fatalf("Report failed: %v", err)
 	}

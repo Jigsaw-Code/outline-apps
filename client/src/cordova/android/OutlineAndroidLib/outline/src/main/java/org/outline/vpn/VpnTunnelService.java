@@ -228,18 +228,13 @@ public class VpnTunnelService extends VpnService {
       this.tunFd = null;
     }
 
-    final NewClientResult clientResult = Outline.newClient(config.transportConfig);
+    final NewClientResult clientResult = Outline.newClient(config.transportConfig, config.sessionConfig);
     if (clientResult.getError() != null) {
       LOG.log(Level.WARNING, "Failed to create Outline Client", clientResult.getError());
       tearDownActiveTunnel();
       return clientResult.getError();
     }
     final outline.Client client = clientResult.getClient();
-    final outline.NewSessionClientResult sessionClientResult = Outline.newSessionClient(config.transportConfig, client);
-    if (sessionClientResult.getError() != null) {
-      LOG.log(Level.WARNING, "Failed to create Outline SessionClient", sessionClientResult.getError());
-    }
-    final outline.SessionClient sessionClient = sessionClientResult.getSessionClient();
 
     boolean remoteUdpForwardingEnabled;
     if (isAutoStart) {
@@ -312,7 +307,7 @@ public class VpnTunnelService extends VpnService {
       tearDownActiveTunnel();
       return result.getError();
     }
-    sessionClient.start();
+    client.startReporting();
     this.remoteDevice = result.getTunnel();
     
     startForegroundWithNotification(config.name);

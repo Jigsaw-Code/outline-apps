@@ -150,7 +150,7 @@ func NewDefaultTransportProvider(tcpDialer transport.StreamDialer, udpDialer tra
 	return transports
 }
 
-func NewUsageReportProvide(tcpDialer transport.StreamDialer) *TypeParser[*UsageReporter] {
+func NewUsageReportProvider(tcpDialer transport.StreamDialer) *TypeParser[*UsageReporter] {
 	usageReporting := NewTypeParser(func(ctx context.Context, input ConfigNode) (*UsageReporter, error) {
 		switch input.(type) {
 		// An absent config is acceptable.

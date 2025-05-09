@@ -69,7 +69,7 @@ transport:
     cipher: chacha20-ietf-poly1305
     secret: SECRET
   udp: *shared
-usage_report:
+session_report:
   $type: sessionreport
   url: https://your-callback-server.com/outline_callback
   interval: 24h

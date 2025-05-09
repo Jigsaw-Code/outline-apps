@@ -25,9 +25,9 @@ import (
 )
 
 type parseTunnelConfigRequest struct {
-	Transport    ast.Node
-	Usage_Report ast.Node
-	Error        *struct {
+	Transport      ast.Node
+	Session_Report ast.Node
+	Error          *struct {
 		Message string
 		Details string
 	}
@@ -35,9 +35,9 @@ type parseTunnelConfigRequest struct {
 
 // tunnelConfigJson must match the definition in config.ts.
 type tunnelConfigJson struct {
-	FirstHop    string `json:"firstHop"`
-	Transport   string `json:"transport"`
-	UsageReport string `json:"usage_report"`
+	FirstHop      string `json:"firstHop"`
+	Transport     string `json:"transport"`
+	SessionReport string `json:"session_report"`
 }
 
 func hasKey[K comparable, V any](m map[K]V, key K) bool {
@@ -47,7 +47,7 @@ func hasKey[K comparable, V any](m map[K]V, key K) bool {
 
 func doParseTunnelConfig(input string) *InvokeMethodResult {
 	var transportConfigText string
-	var usageReportConfigText string
+	var sessionReportConfigText string
 
 	input = strings.TrimSpace(input)
 	// Input may be one of:
@@ -105,24 +105,26 @@ func doParseTunnelConfig(input string) *InvokeMethodResult {
 				}
 			}
 			transportConfigText = string(transportConfigBytes)
-			// Extract usage report config as an opaque string.
-			usageReportConfigBytes, err := yaml.Marshal(tunnelConfig.Usage_Report)
-			if err != nil {
-				return &InvokeMethodResult{
-					Error: &platerrors.PlatformError{
-						Code:    platerrors.InvalidConfig,
-						Message: fmt.Sprintf("failed to normalize config: %s", err),
-					},
+			if hasKey(yamlValue, "session_report") {
+				// Extract usage report config as an opaque string.
+				usageReportConfigBytes, err := yaml.Marshal(tunnelConfig.Session_Report)
+				if err != nil {
+					return &InvokeMethodResult{
+						Error: &platerrors.PlatformError{
+							Code:    platerrors.InvalidConfig,
+							Message: fmt.Sprintf("failed to normalize config: %s", err),
+						},
+					}
 				}
+				sessionReportConfigText = string(usageReportConfigBytes)
 			}
-			usageReportConfigText = string(usageReportConfigBytes)
 		} else {
 			// Legacy JSON format. Input is the transport config.
 			transportConfigText = input
 		}
 	}
 
-	result := NewClient(transportConfigText)
+	result := NewClient(transportConfigText, sessionReportConfigText)
 	if result.Error != nil {
 		return &InvokeMethodResult{
 			Error: result.Error,
@@ -130,7 +132,7 @@ func doParseTunnelConfig(input string) *InvokeMethodResult {
 	}
 	streamFirstHop := result.Client.sd.ConnectionProviderInfo.FirstHop
 	packetFirstHop := result.Client.pl.ConnectionProviderInfo.FirstHop
-	response := tunnelConfigJson{Transport: transportConfigText, UsageReport: usageReportConfigText}
+	response := tunnelConfigJson{Transport: transportConfigText, SessionReport: sessionReportConfigText}
 	if streamFirstHop == packetFirstHop {
 		response.FirstHop = streamFirstHop
 	}

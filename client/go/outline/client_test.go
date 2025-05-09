@@ -25,7 +25,7 @@ func Test_NewTransport_SS_URL(t *testing.T) {
 	config := "ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@example.com:4321/"
 	firstHop := "example.com:4321"
 
-	result := NewClient(config)
+	result := NewClient(config, "")
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
 	require.Equal(t, firstHop, result.Client.pl.FirstHop)
@@ -40,7 +40,7 @@ func Test_NewTransport_Legacy_JSON(t *testing.T) {
 }`
 	firstHop := "example.com:4321"
 
-	result := NewClient(config)
+	result := NewClient(config, "")
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
 	require.Equal(t, firstHop, result.Client.pl.FirstHop)
@@ -56,7 +56,7 @@ func Test_NewTransport_Flexible_JSON(t *testing.T) {
 }`
 	firstHop := "example.com:4321"
 
-	result := NewClient(config)
+	result := NewClient(config, "")
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
 	require.Equal(t, firstHop, result.Client.pl.FirstHop)
@@ -70,7 +70,7 @@ method: chacha20-ietf-poly1305
 password: SECRET`
 	firstHop := "example.com:4321"
 
-	result := NewClient(config)
+	result := NewClient(config, "")
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
 	require.Equal(t, firstHop, result.Client.pl.FirstHop)
@@ -85,7 +85,7 @@ cipher: chacha20-ietf-poly1305
 secret: SECRET`
 	firstHop := "example.com:4321"
 
-	result := NewClient(config)
+	result := NewClient(config, "")
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
 	require.Equal(t, firstHop, result.Client.pl.FirstHop)
@@ -101,7 +101,7 @@ cipher: chacha20-ietf-poly1305
 secret: SECRET`
 	firstHop := "entry.example.com:4321"
 
-	result := NewClient(config)
+	result := NewClient(config, "")
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
 	require.Equal(t, firstHop, result.Client.pl.FirstHop)
@@ -121,7 +121,7 @@ cipher: chacha20-ietf-poly1305
 secret: EXIT_SECRET`
 	firstHop := "entry.example.com:4321"
 
-	result := NewClient(config)
+	result := NewClient(config, "")
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
 	require.Equal(t, firstHop, result.Client.pl.FirstHop)
@@ -142,14 +142,14 @@ udp:
     cipher: chacha20-ietf-poly1305
     secret: SECRET`
 
-	result := NewClient(config)
+	result := NewClient(config, "")
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, "example.com:80", result.Client.sd.FirstHop)
 	require.Equal(t, "example.com:53", result.Client.pl.FirstHop)
 }
 
 func Test_SessionReport(t *testing.T) {
-	config := `
+	transportConfig := `
 $type: tcpudp
 tcp:
     $type: shadowsocks
@@ -168,13 +168,10 @@ url: https://your-callback-server.com/outline_callback
 interval: 24h
 enable_cookies: true`
 
-	transportClient := NewClient(config)
-	require.Nil(t, transportClient.Error, "Got %v", transportClient.Error)
-	sessionClient := NewSessionClient(sessionConfig, transportClient.Client)
-	require.Nil(t, sessionClient.Error, "Got %v", sessionClient.Error)
-	require.NotNil(t, sessionClient.SessionClient, "SessionClient is nil")
-	require.NotNil(t, sessionClient.SessionClient.ur, "UsageReporter is nil")
-	require.Equal(t, "https://your-callback-server.com/outline_callback", sessionClient.SessionClient.ur.Url)
+	client := NewClient(transportConfig, sessionConfig)
+	require.Nil(t, client.Error, "Got %v", client.Error)
+	require.NotNil(t, client.Client.ur, "UsageReporter is nil")
+	require.Equal(t, "https://your-callback-server.com/outline_callback", client.Client.ur.Url)
 }
 
 func Test_NewTransport_YAML_Reuse(t *testing.T) {
@@ -190,7 +187,7 @@ tcp:
     prefix: "POST "`
 	firstHop := "example.com:4321"
 
-	result := NewClient(config)
+	result := NewClient(config, "")
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
 	require.Equal(t, firstHop, result.Client.pl.FirstHop)
@@ -211,7 +208,7 @@ udp:
     endpoint: example.com:53
     <<: *cipher`
 
-	result := NewClient(config)
+	result := NewClient(config, "")
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, "example.com:80", result.Client.sd.FirstHop)
 	require.Equal(t, "example.com:53", result.Client.pl.FirstHop)
@@ -219,7 +216,7 @@ udp:
 
 func Test_NewTransport_Unsupported(t *testing.T) {
 	config := `$type: unsupported`
-	result := NewClient(config)
+	result := NewClient(config, "")
 	require.Error(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, "unsupported config", result.Error.Message)
 }
@@ -241,7 +238,7 @@ udp:
         url: https://entrypoint.cdn.example.com/udp`
 	firstHop := "entrypoint.cdn.example.com:443"
 
-	result := NewClient(config)
+	result := NewClient(config, "")
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
 	require.Equal(t, firstHop, result.Client.pl.FirstHop)
@@ -252,7 +249,7 @@ func Test_NewTransport_DisallowProxyless(t *testing.T) {
 $type: tcpudp
 tcp:
 udp:`
-	result := NewClient(config)
+	result := NewClient(config, "")
 	require.Error(t, result.Error, "Got %v", result.Error)
 	perr := &platerrors.PlatformError{}
 	require.ErrorAs(t, result.Error, &perr)
@@ -312,7 +309,7 @@ func Test_NewClientFromJSON_Errors(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewClient(tt.input)
+			got := NewClient(tt.input, "")
 			if got.Error == nil || got.Client != nil {
 				t.Errorf("NewClientFromJSON() expects an error, got = %v", got.Client)
 				return
