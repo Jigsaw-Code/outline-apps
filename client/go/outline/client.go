@@ -17,10 +17,12 @@ package outline
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/config"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/reporting"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
@@ -31,6 +33,7 @@ import (
 type Client struct {
 	sd *config.Dialer[transport.StreamConn]
 	pl *config.PacketListener
+	ur *config.UsageReporter
 }
 
 func (c *Client) DialStream(ctx context.Context, address string) (transport.StreamConn, error) {
@@ -41,6 +44,10 @@ func (c *Client) ListenPacket(ctx context.Context) (net.PacketConn, error) {
 	return c.pl.ListenPacket(ctx)
 }
 
+func (c *Client) GetUsageReporter() *config.UsageReporter {
+	return c.ur
+}
+
 // NewClientResult represents the result of [NewClientAndReturnError].
 //
 // We use a struct instead of a tuple to preserve a strongly typed error that gobind recognizes.
@@ -49,18 +56,22 @@ type NewClientResult struct {
 	Error  *platerrors.PlatformError
 }
 
+func (c *Client) StartReporting() {
+	reporting.StartReporting(c, c.ur)
+}
+
 // NewClient creates a new Outline client from a configuration string.
-func NewClient(transportConfig string) *NewClientResult {
+func NewClient(transportConfig string, sessionConfig string) *NewClientResult {
 	tcpDialer := transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
 	udpDialer := transport.UDPDialer{}
-	client, err := NewClientWithBaseDialers(transportConfig, &tcpDialer, &udpDialer)
+	client, err := NewClientWithBaseDialers(transportConfig, sessionConfig, &tcpDialer, &udpDialer)
 	if err != nil {
 		return &NewClientResult{Error: platerrors.ToPlatformError(err)}
 	}
 	return &NewClientResult{Client: client}
 }
 
-func NewClientWithBaseDialers(transportConfig string, tcpDialer transport.StreamDialer, udpDialer transport.PacketDialer) (*Client, error) {
+func NewClientWithBaseDialers(transportConfig string, sessionConfig string, tcpDialer transport.StreamDialer, udpDialer transport.PacketDialer) (*Client, error) {
 	transportYAML, err := config.ParseConfigYAML(transportConfig)
 	if err != nil {
 		return nil, &platerrors.PlatformError{
@@ -101,5 +112,31 @@ func NewClientWithBaseDialers(transportConfig string, tcpDialer transport.Stream
 		}
 	}
 
-	return &Client{sd: transportPair.StreamDialer, pl: transportPair.PacketListener}, nil
+	usageReportYAML, err := config.ParseConfigYAML(sessionConfig)
+	if err != nil {
+		return nil, &platerrors.PlatformError{
+			Code:    platerrors.InvalidConfig,
+			Message: "config is not valid YAML",
+			Cause:   platerrors.ToPlatformError(err),
+		}
+	}
+	usageReporter, err := config.NewUsageReportProvider(tcpDialer).Parse(context.Background(), usageReportYAML)
+	if err != nil {
+		if errors.Is(err, errors.ErrUnsupported) {
+			return nil, &platerrors.PlatformError{
+				Code:    platerrors.InvalidConfig,
+				Message: "unsupported config",
+				Cause:   platerrors.ToPlatformError(err),
+			}
+		} else {
+			return nil, &platerrors.PlatformError{
+				Code:    platerrors.InvalidConfig,
+				Message: "failed to create usage report",
+				Cause:   platerrors.ToPlatformError(err),
+			}
+		}
+	}
+	fmt.Println("usageReporter", usageReporter)
+
+	return &Client{sd: transportPair.StreamDialer, pl: transportPair.PacketListener, ur: usageReporter}, nil
 }
