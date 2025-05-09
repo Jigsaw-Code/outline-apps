@@ -107,7 +107,7 @@ func doParseTunnelConfig(input string) *InvokeMethodResult {
 			transportConfigText = string(transportConfigBytes)
 			if hasKey(yamlValue, "session_report") {
 				// Extract usage report config as an opaque string.
-				usageReportConfigBytes, err := yaml.Marshal(tunnelConfig.Session_Report)
+				sessionReportConfigBytes, err := yaml.Marshal(tunnelConfig.Session_Report)
 				if err != nil {
 					return &InvokeMethodResult{
 						Error: &platerrors.PlatformError{
@@ -116,7 +116,7 @@ func doParseTunnelConfig(input string) *InvokeMethodResult {
 						},
 					}
 				}
-				sessionReportConfigText = string(usageReportConfigBytes)
+				sessionReportConfigText = string(sessionReportConfigBytes)
 			}
 		} else {
 			// Legacy JSON format. Input is the transport config.
