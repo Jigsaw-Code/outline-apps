@@ -39,7 +39,6 @@
   "error-connection-configuration-fetch": "Échec du téléchargement de la configuration du serveur. Faites une capture d'écran des détails de l'erreur et envoyez-les au fournisseur de votre clé d'accès.",
   "error-connection-proxy": "Échec de la connexion. Veuillez vérifier votre connexion Internet, puis faites une capture d'écran des détails de l'erreur et envoyez-les au fournisseur de votre clé d'accès.",
   "error-details": "Détails",
-  "send-error": "Envoyer une erreur",
   "error-details-dialog-copied": "Copié",
   "error-details-dialog-copy": "Copier",
   "error-details-dialog-dismiss": "Fermer",

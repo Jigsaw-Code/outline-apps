@@ -39,7 +39,6 @@
   "error-connection-configuration-fetch": "서버 구성을 다운로드할 수 없습니다. 오류 세부정보의 스크린샷을 캡처하여 액세스 키 제공업체에 전송하세요.",
   "error-connection-proxy": "연결할 수 없습니다. 인터넷 연결을 확인한 다음 오류 세부정보의 스크린샷을 캡처하여 액세스 키 제공업체로 전송하세요.",
   "error-details": "세부정보",
-  "send-error": "보내기 오류",
   "error-details-dialog-copied": "복사됨",
   "error-details-dialog-copy": "복사",
   "error-details-dialog-dismiss": "닫기",

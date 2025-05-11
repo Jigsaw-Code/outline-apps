@@ -39,7 +39,6 @@
   "error-connection-configuration-fetch": "የአገልጋይ ውቅረቱን ማውረድ አልተሳካም። የስህተት ዝርዝሮቹን ቅጽበታዊ ገጽ ዕይታ ያንሱ እና ወደ የመዳረሻ ቁልፍ አቅራቢዎ ይላኳቸው።",
   "error-connection-proxy": "ማገናኘት አልተሳካም። እባክዎ የበይነመረብ ግንኙነትን ይፈትሹ ከዚያም የስህተት ዝርዝሮቹን ቅጽበታዊ ገጽ ዕይታ ያነሱ እና ወደ የመዳረሻ ቁልፍ አቅራቢዎ ይላኳቸው።",
   "error-details": "ዝርዝሮች",
-  "send-error": "ስህተት መላክ",
   "error-details-dialog-copied": "ተቀድቷል",
   "error-details-dialog-copy": "ቅዳ",
   "error-details-dialog-dismiss": "አሰናብት",

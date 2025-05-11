@@ -508,6 +508,10 @@
     "description": "The text of a button to close the error details dialog.",
     "message": "Dismiss"
   },
+  "send_error": {
+  "description": "Button for reporting an error to the provider via webhook.",
+  "message": "Send Error"
+  },
   "server_default_name": {
     "description": "This is the default name for an added server when the type or name is not specified by the access key.",
     "message": "Proxy Server"

@@ -39,7 +39,6 @@
   "error-connection-configuration-fetch": "Palvelinmäärityksen lataaminen epäonnistui. Ota kuvakaappaus virheen tiedoista ja lähetä se pääsyavaimen tarjoajalle.",
   "error-connection-proxy": "Yhteyden muodostaminen epäonnistui. Tarkista internetyhteys, ota kuvakaappaus virheen tiedoista ja lähetä se pääsyavaimen tarjoajalle.",
   "error-details": "Tiedot",
-  "send-error": "Lähetä virhe",
   "error-details-dialog-copied": "Kopioitu",
   "error-details-dialog-copy": "Kopioi",
   "error-details-dialog-dismiss": "Hylkää",

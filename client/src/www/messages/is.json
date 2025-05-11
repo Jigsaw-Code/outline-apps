@@ -39,7 +39,6 @@
   "error-connection-configuration-fetch": "Ekki tókst að sækja stillingu þjóns. Taktu skjámynd af villuupplýsingunum og sendu þær til aðgangslyklaveitunnar.",
   "error-connection-proxy": "Ekki tókst að tengjast. Athugaðu nettenginguna þína og taktu síðan skjámynd af villuupplýsingunum og sendu þær til aðgangslyklaveitunnar.",
   "error-details": "Nánar",
-  "send-error": "Senda villu",
   "error-details-dialog-copied": "Afritað",
   "error-details-dialog-copy": "Afrita",
   "error-details-dialog-dismiss": "Hunsa",

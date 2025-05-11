@@ -39,7 +39,6 @@
   "error-connection-configuration-fetch": "Gagal mendownload konfigurasi server. Ambil screenshot detail error dan kirimkan ke penyedia kunci akses Anda.",
   "error-connection-proxy": "Gagal terhubung. Periksa konektivitas internet, lalu ambil screenshot detail error dan kirimkan ke penyedia kunci akses Anda.",
   "error-details": "Detail",
-  "send-error": "Mengirim kesalahan",
   "error-details-dialog-copied": "Salin",
   "error-details-dialog-copy": "Salin",
   "error-details-dialog-dismiss": "Tutup",

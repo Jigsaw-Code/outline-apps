@@ -39,7 +39,6 @@
   "error-connection-configuration-fetch": "Преузимање конфигурације сервера није успело. Направите снимак екрана са грешком и пошаљите га добављачу приступног кључа.",
   "error-connection-proxy": "Повезивање није успело. Проверите интернет везу, па направите снимак екрана са грешком и пошаљите га добављачу приступног кључа.",
   "error-details": "Детаљи",
-  "send-error": "Пошаљи грешку",
   "error-details-dialog-copied": "Копирај",
   "error-details-dialog-copy": "Копирај",
   "error-details-dialog-dismiss": "Одбаци",

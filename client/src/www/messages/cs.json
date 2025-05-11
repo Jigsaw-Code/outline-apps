@@ -39,7 +39,6 @@
   "error-connection-configuration-fetch": "Nepodařilo se stáhnout konfiguraci serveru. Pořiďte snímek obrazovky s podrobnostmi o chybě a pošlete ho poskytovateli přístupového klíče.",
   "error-connection-proxy": "Připojení se nezdařilo. Zkontrolujte, zda jste připojeni k internetu, a potom pořiďte snímek obrazovky s podrobnostmi o chybě a pošlete ho poskytovateli přístupového klíče.",
   "error-details": "Podrobnosti",
-  "send-error": "Chyba odeslání",
   "error-details-dialog-copied": "Zkopírováno",
   "error-details-dialog-copy": "Kopírovat",
   "error-details-dialog-dismiss": "Zavřít",

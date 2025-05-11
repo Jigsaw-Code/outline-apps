@@ -39,7 +39,6 @@
   "error-connection-configuration-fetch": "Konfiguráciu servera sa nepodarilo stiahnuť. Vytvorte snímku obrazovky s podrobnosťami o chybe a pošlite ju poskytovateľovi prístupového kľúča.",
   "error-connection-proxy": "Pripojenie zlyhalo. Skontrolujte internetové pripojenie, potom vytvorte snímku obrazovky a pošlite ju poskytovateľovi prístupového kľúča.",
   "error-details": "Podrobnosti",
-  "send-error": "Chyba odoslania",
   "error-details-dialog-copied": "Skopírované",
   "error-details-dialog-copy": "Kopírovať",
   "error-details-dialog-dismiss": "Zavrieť",

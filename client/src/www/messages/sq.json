@@ -39,7 +39,6 @@
   "error-connection-configuration-fetch": "Shkarkimi i konfigurimit të serverit dështoi. Nxirr pamjet e ekranit për detajet e gabimeve dhe dërgoja ofruesit të çelësit të qasjes.",
   "error-connection-proxy": "Lidhja dështoi. Kontrollo lidhjen e internetit dhe më pas nxirr pamjet e ekranit për detajet e gabimeve dhe dërgoja ofruesit të çelësit të qasjes.",
   "error-details": "Detajet",
-  "send-error": "Gabim i dërgimit",
   "error-details-dialog-copied": "Kopjuar",
   "error-details-dialog-copy": "Kopjo",
   "error-details-dialog-dismiss": "Hiq",

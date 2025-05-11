@@ -39,7 +39,6 @@
   "error-connection-configuration-fetch": "Kon nie die bedieneropstelling aflaai nie. Neem ’n skermskoot van die foutbesonderhede en stuur dit na jou toegangsleutelverskaffer.",
   "error-connection-proxy": "Kon nie koppel nie. Gaan asseblief jou internetverbinding na, neem ’n skermskoot van die foutbesonderhede, en stuur dit na jou toegangsleutelverskaffer.",
   "error-details": "Besonderhede",
-  "send-error": "Stuur fout",
   "error-details-dialog-copied": "Gekopieer",
   "error-details-dialog-copy": "Kopieer",
   "error-details-dialog-dismiss": "Maak toe",

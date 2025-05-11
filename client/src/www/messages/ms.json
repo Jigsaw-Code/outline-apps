@@ -39,7 +39,6 @@
   "error-connection-configuration-fetch": "Gagal memuat turun konfigurasi pelayan. Tangkap skrin butiran ralat dan hantar tangkapan skrin tersebut kepada penyedia kunci akses anda.",
   "error-connection-proxy": "Gagal membuat sambungan. Sila semak sambungan Internet anda, kemudian tangkap skrin butiran ralat dan hantar tangkapan skrin tersebut kepada penyedia kunci akses anda.",
   "error-details": "Butiran",
-  "send-error": "Ralat hantar",
   "error-details-dialog-copied": "Disalin",
   "error-details-dialog-copy": "Salin",
   "error-details-dialog-dismiss": "Ketepikan",

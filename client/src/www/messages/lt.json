@@ -39,7 +39,6 @@
   "error-connection-configuration-fetch": "Nepavyko atsisiųsti serverio konfigūracijos. Sukurkite išsamios klaidos informacijos ekrano kopiją ir siųskite ją prieigos rakto teikėjui.",
   "error-connection-proxy": "Nepavyko prisijungti. Patikrinkite interneto ryšį, tada sukurkite išsamios klaidos informacijos ekrano kopiją ir siųskite ją prieigos rakto teikėjui.",
   "error-details": "Išsami informacija",
-  "send-error": "Siųsti klaidą",
   "error-details-dialog-copied": "Nukopijuota",
   "error-details-dialog-copy": "Kopijuoti",
   "error-details-dialog-dismiss": "Uždaryti",

@@ -39,7 +39,6 @@
   "error-connection-configuration-fetch": "Falha ao transferir a configuração do servidor. Faça uma captura de ecrã dos detalhes do erro e envie-a ao fornecedor da chave de acesso.",
   "error-connection-proxy": "Falha na ligação. Verifique a sua ligação à Internet e, em seguida, faça uma captura de ecrã dos detalhes do erro e envie-a ao fornecedor da chave de acesso.",
   "error-details": "Detalhes",
-  "send-error": "Send error",
   "error-details-dialog-copied": "Copiar",
   "error-details-dialog-copy": "Copiar",
   "error-details-dialog-dismiss": "Ignorar",

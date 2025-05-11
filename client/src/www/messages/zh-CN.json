@@ -39,7 +39,6 @@
   "error-connection-configuration-fetch": "未能下载服务器配置。请截取错误详情的屏幕截图，并将其发送给您的访问密钥提供者。",
   "error-connection-proxy": "连接失败。请检查互联网连接，然后截取错误详情的屏幕截图，并将其发送给您的访问密钥提供者。",
   "error-details": "详细信息",
-  "send-error": "发送错误",
   "error-details-dialog-copied": "复制",
   "error-details-dialog-copy": "复制",
   "error-details-dialog-dismiss": "关闭",

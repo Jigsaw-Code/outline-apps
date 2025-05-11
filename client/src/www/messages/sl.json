@@ -39,7 +39,6 @@
   "error-connection-configuration-fetch": "Konfiguracije strežnika ni bilo mogoče prenesti. Naredite posnetek zaslona s podrobnostmi napake in ga pošljite ponudniku ključa za dostop.",
   "error-connection-proxy": "Povezovanje ni uspelo. Preverite internetno povezavo in naredite posnetek zaslona s podrobnostmi napake ter ga pošljite ponudniku ključa za dostop.",
   "error-details": "Podrobnosti",
-  "send-error": "Napaka pri pošiljanju",
   "error-details-dialog-copied": "Kopirano",
   "error-details-dialog-copy": "Kopiraj",
   "error-details-dialog-dismiss": "Opusti",

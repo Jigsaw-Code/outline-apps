@@ -39,7 +39,6 @@
   "error-connection-configuration-fetch": "Hindi na-load ang configuration ng server. I-screenshot ang mga detalye ng error at ipadala ang mga ito sa iyong provider ng access key.",
   "error-connection-proxy": "Hindi nakakonekta. Tingnan ang koneksyon mo sa internet, pagkatapos ay i-screenshot ang mga detalye ng error at ipadala ang mga ito sa iyong provider ng access key.",
   "error-details": "Mga Detalye",
-  "send-error": "Magpadala error",
   "error-details-dialog-copied": "Nakopya",
   "error-details-dialog-copy": "Kopyahin",
   "error-details-dialog-dismiss": "I-dismiss",

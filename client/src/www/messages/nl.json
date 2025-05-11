@@ -39,7 +39,6 @@
   "error-connection-configuration-fetch": "De serverconfiguratie kan niet worden gedownload. Maak een screenshot van de foutgegevens en stuur deze naar de provider van je toegangssleutel.",
   "error-connection-proxy": "Kan geen verbinding maken. Check je internetverbinding, maak een screenshot van de foutgegevens en stuur ze naar de provider van je toegangssleutel.",
   "error-details": "Details",
-  "send-error": "Verzendfout",
   "error-details-dialog-copied": "Kopiëren",
   "error-details-dialog-copy": "Kopiëren",
   "error-details-dialog-dismiss": "Sluiten",

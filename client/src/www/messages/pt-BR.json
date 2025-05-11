@@ -39,7 +39,6 @@
   "error-connection-configuration-fetch": "Algo deu errado ao fazer o download da configuração do servidor. Envie uma captura de tela com os detalhes do erro para o provedor de chaves de acesso.",
   "error-connection-proxy": "Falha na conexão. Verifique sua conexão de Internet, faça uma captura de tela dos detalhes do erro e envie para o provedor de chaves de acesso.",
   "error-details": "Detalhes",
-  "send-error": "Erro de envio",
   "error-details-dialog-copied": "Copiar",
   "error-details-dialog-copy": "Copiar",
   "error-details-dialog-dismiss": "Dispensar",
