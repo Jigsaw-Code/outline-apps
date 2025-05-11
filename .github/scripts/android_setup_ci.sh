@@ -16,8 +16,6 @@
 
 set -eu
 
-source "$(dirname "$0")/android_tools_versions.sh" || exit
-
 # Since the command-line Android development tools are poorly
 # documented, these steps are cobbled together from lots of
 # trial and error, old pinball machine parts, and various
@@ -45,4 +43,7 @@ rm android-commandline-tools.zip
 
 PATH="${PATH}:${ANDROID_HOME}/platform-tools:${ANDROID_HOME}/cmdline-tools/tools/bin"
 
-yes | sdkmanager "build-tools;${OUTLINE_ANDROID_BUILD_TOOLS_VERSION}" "ndk;${OUTLINE_ANDROID_NDK_VERSION}"
+# To find the latest version's label:
+#   sdkmanager --list|grep build-tools
+# NDK (side by side) version must be kept in sync with the default build tools NDK version.
+yes | sdkmanager "build-tools;34.0.0" "ndk;25.1.8937393"

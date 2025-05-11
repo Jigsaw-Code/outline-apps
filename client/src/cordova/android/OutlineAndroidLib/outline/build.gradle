@@ -7,11 +7,15 @@ group = 'org.outline'
 
 android {
     namespace 'org.outline'
-    compileSdk 32
+    compileSdk 34
+
+    buildFeatures {
+        aidl true
+    }
 
     defaultConfig {
         minSdk 22
-        targetSdk 32
+        targetSdk 34
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -43,7 +47,8 @@ dependencies {
 
     implementation 'io.sentry:sentry-android:2.0.2'
     implementation 'org.apache.commons:commons-collections4:4.4'
+    implementation 'androidx.annotation:annotation:1.9.1'
     testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
 }

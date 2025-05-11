@@ -6,17 +6,56 @@ The main entrypoint to Android's Java code is `client/src/cordova/plugin/android
 
 ## Set up your environment
 
-Additional requirements for Android:
+Install these pre-requisites:
 
-- [Java Development Kit (JDK) 11](https://jdk.java.net/archive/)
-  - Set `JAVA_HOME` environment variable if you have multiple JDK versions installed. On macOS: `export JAVA_HOME=$(/usr/libexec/java_home -v 11.0)`.
-- Latest [Android Sdk Commandline Tools](https://developer.android.com/studio/command-line) ([download](https://developer.android.com/studio#command-line-tools-only))
-  - Place it at `$HOME/Android/sdk/cmdline-tools/latest`
-  - Set `ANDROID_HOME` (e.g., `$HOME/Android/sdk`) and `ANDROID_NDK` (e.g., `$ANDROID_HOME/ndk`) environment variables
-- Android SDK 34 (with build-tools) via commandline `$HOME/Android/sdk/cmdline-tools/latest/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0"`
-- [Gradle 7.3+](https://gradle.org/install/). On macOS: `brew install gradle`.
+- [Java Development Kit (JDK) 17+](https://jdk.java.net/archive/). On macOS:
 
-[Android Studio 2020.3.1+](https://developer.android.com/studio) is not required, but it's helpful if you are developing Android code.
+  ```shell
+  brew install openjdk@17
+
+  # Make it visible to `java_home`
+  sudo ln -sfn $HOMEBREW_PREFIX/opt/openjdk@17/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-17.jdk
+
+  export CORDOVA_JAVA_HOME=$(/usr/libexec/java_home -v 17.0)
+  ```
+
+- [Gradle 8.7+](https://gradle.org/install/). On macOS: `brew install gradle`.
+
+Then we need to install and configure the Android components. You can follow the [Cordova Android Platform Guide](https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html), which uses Android Studio to configure the environment. You need an Android Studio compatible with the Android Gradle Plugin 8.3.0 (see [build.gradle](client/src/cordova/android/OutlineAndroidLib/build.gradle)) we use ([compatibility table](https://developer.android.com/studio/releases#android_gradle_plugin_and_android_studio_compatibility)).
+
+Alternatively, you can do it on the command-line:
+
+1. Set environmental variables:
+
+    ```shell
+    export ANDROID_HOME=$HOME/Library/Android/sdk
+    export ANDROID_NDK=$ANDROID_HOME/ndk
+    ```
+
+1. Install the [Android command-line tools](https://developer.android.com/studio#command-line-tools-only):
+
+    ```shell
+    curl -o /tmp/commandlinetools.zip https://dl.google.com/android/repository/commandlinetools-mac-13114758_latest.zip
+    unzip /tmp/commandlinetools.zip -d /tmp
+    mkdir -p "$ANDROID_HOME/cmdline-tools/latest"
+    mv /tmp/cmdline-tools/* "$ANDROID_HOME/cmdline-tools/latest/"
+    ```
+  
+1. Install platform and build tools:
+
+    ```shell
+    $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0" "ndk;25.1.8937393" 
+    ```
+
+1. Install optional components that help development (source code, emulator and image):
+
+    ```shell
+    $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "sources;android-34" "system-images;android-34;default;arm64-v8a"
+    ```
+
+  Note: you will need the `system-images;android-35;default;x86_64` image on an Intel computer.
+
+For development of the OutlineAndroidLib, we recommend installing Android Studio. That also make it easier to create virtual devices and run the emulator.
 
 You can check your environment with:
 
@@ -24,6 +63,18 @@ You can check your environment with:
 cd client
 npx cordova requirements android
 ```
+
+### Important Versions
+
+| Component  | version  | constrained by | set in  |
+|---|---|---|---|
+| Android API Level | 34+ | [Play Store](https://developer.android.com/google/play/requirements/target-sdk) | [config.xml](../../../config.xml), [build.gradle](./OutlineAndroidLib/outline/build.gradle) |
+| cordova-android | 13 | Android API Level | [package.json](../../../package.json) |
+| JDK | 17 | [cordova-android](https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html#android-api-level-support) | install instruction |
+| Gradle | 8.7+ | [cordova-android](https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html#android-api-level-support) | [gradle-wrapper.properties](./OutlineAndroidLib/gradle/wrapper/gradle-wrapper.properties) |
+| Android Gradle Plugin (AGP) | 8.3.0 | [cordova-android](https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html#android-api-level-support) | [build.gradle](../android/OutlineAndroidLib/build.gradle) |
+| Android Build Tools | 34.0.0+ | [cordova-android](https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html#android-api-level-support) | install instructions |
+| Android Studio | 2023.2.1  (Iguana) | [AGP](https://developer.android.com/studio/releases#android_gradle_plugin_and_android_studio_compatibility) | |
 
 ## Build the app
 
@@ -48,7 +99,11 @@ Make sure to rebuild after modifying platform dependent files!
 ## Run the app
 
 1. Start the simulator or connect an Android device and enable [USB debugging](https://developer.android.com/studio/debug/dev-options.html#enable).
-1. From the project root, run: `adb install -r -d client/platforms/android/app/build/outputs/apk/debug/app-debug.apk`
+1. From the project root, run:
+
+   ```shell
+   adb install -r -d client/platforms/android/app/build/outputs/apk/debug/app-debug.apk
+   ```
 
 ## Develop code
 
