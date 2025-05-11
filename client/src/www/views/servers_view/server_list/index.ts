@@ -20,6 +20,8 @@ import {ServerListItem} from '../server_list_item';
 
 @customElement('server-list')
 export class ServerList extends LitElement {
+  @property({type: Boolean}) darkMode = false;
+
   static styles = [
     css`
       :host {
@@ -49,6 +51,7 @@ export class ServerList extends LitElement {
   render() {
     if (this.hasSingleServer) {
       return html`<server-hero-card
+        ?darkMode=${this.darkMode}
         .localize=${this.localize}
         .server=${this.servers[0]}
       ></server-hero-card>`;
@@ -57,6 +60,7 @@ export class ServerList extends LitElement {
         ${this.servers.map(
           server =>
             html`<server-row-card
+              ?darkMode=${this.darkMode}
               .localize=${this.localize}
               .server=${server}
             ></server-row-card>`

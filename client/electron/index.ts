@@ -141,7 +141,7 @@ function setupWindow(): void {
   // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 360,
-    height: 640,
+    height: 680,
     resizable: false,
     webPreferences: {
       nodeIntegration: false,

@@ -18,42 +18,38 @@ import {LitElement, html, css, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
 
-import {ThemePreference} from '../../app/settings';
+import {Appearance} from '../../app/settings';
 
-export type ThemeDef = {
-  id: ThemePreference;
+export type AppearanceDefinition = {
+  id: Appearance;
   name: string;
   icon: string;
 };
 
 @customElement('appearance-view')
 export class AppearanceView extends LitElement {
-  @property({type: Array}) themes: ThemeDef[] = [
-    {id: ThemePreference.SYSTEM, name: 'System', icon: 'brightness_auto'},
-    {id: ThemePreference.LIGHT, name: 'Light', icon: 'light_mode'},
-    {id: ThemePreference.DARK, name: 'Dark', icon: 'dark_mode'},
-  ];
-  @property({type: String}) selectedThemeId: string = ThemePreference.SYSTEM;
+  @property({type: Array}) appearances: AppearanceDefinition[];
+  @property({type: String}) selectedAppearance: Appearance = Appearance.SYSTEM;
   @property({type: Object}) localize: (key: string) => string = msg => msg;
 
-  // Set the theme names using localization
+  // Set the appearance names using localization
   connectedCallback() {
     super.connectedCallback();
-    // Update theme names with localized strings
-    this.themes = [
+    // Update appearance names with localized strings
+    this.appearances = [
       {
-        id: ThemePreference.SYSTEM,
-        name: this.localize('theme-system') || 'System',
+        id: Appearance.SYSTEM,
+        name: this.localize('appearance-system') || 'System',
         icon: 'brightness_auto',
       },
       {
-        id: ThemePreference.LIGHT,
-        name: this.localize('theme-light') || 'Light',
+        id: Appearance.LIGHT,
+        name: this.localize('appearance-light') || 'Light',
         icon: 'light_mode',
       },
       {
-        id: ThemePreference.DARK,
-        name: this.localize('theme-dark') || 'Dark',
+        id: Appearance.DARK,
+        name: this.localize('appearance-dark') || 'Dark',
         icon: 'dark_mode',
       },
     ];
@@ -63,13 +59,13 @@ export class AppearanceView extends LitElement {
     :host {
       height: 100%;
       width: 100%;
-      background-color: var(--outline-card-background);
+      background-color: var(--outline-background);
       color: var(--outline-text-color);
       display: block;
     }
 
     md-list {
-      background-color: var(--outline-card-background);
+      background-color: var(--outline-background);
       --md-list-container-color: var(--outline-card-background);
       color: var(--outline-text-color);
       padding: 8px 0;
@@ -85,7 +81,7 @@ export class AppearanceView extends LitElement {
       margin: 4px 0;
     }
 
-    /* Direct override for theme text - needed for dark mode */
+    /* Direct override for appearance text - needed for dark mode */
     md-list-item span,
     md-list-item div,
     md-list-item::before,
@@ -109,16 +105,16 @@ export class AppearanceView extends LitElement {
     }
 
     /* Text elements in list items */
-    .theme-item-text {
+    .appearance-item-text {
       color: var(--outline-text-color);
     }
 
     /* Icon colors */
-    .theme-icon {
+    .appearance-icon {
       color: var(--outline-text-color);
     }
 
-    .theme-icon-selected {
+    .appearance-icon-selected {
       color: var(--outline-primary);
     }
 
@@ -144,24 +140,24 @@ export class AppearanceView extends LitElement {
   render() {
     return html`
       <md-list>
-        ${this.themes.map(
+        ${this.appearances.map(
           ({id, name, icon}) => html`
             <md-list-item
-              class=${classMap({selected: this.selectedThemeId === id})}
+              class=${classMap({selected: this.selectedAppearance === id})}
               data-value="${id}"
-              @click=${() => this.handleThemeSelection(id)}
+              @click=${() => this.handleAppearanceSelection(id)}
             >
               <md-icon
                 slot="start"
-                class=${this.selectedThemeId === id
-                  ? 'theme-icon-selected'
-                  : 'theme-icon'}
+                class=${this.selectedAppearance === id
+                  ? 'appearance-icon-selected'
+                  : 'appearance-icon'}
                 >${icon}</md-icon
               >
               <md-ripple></md-ripple>
-              <span class="theme-item-text">${name}</span>
-              ${this.selectedThemeId === id
-                ? html`<md-icon slot="end" class="theme-icon-selected"
+              <span class="appearance-item-text">${name}</span>
+              ${this.selectedAppearance === id
+                ? html`<md-icon slot="end" class="appearance-icon-selected"
                     >check</md-icon
                   >`
                 : nothing}
@@ -172,14 +168,14 @@ export class AppearanceView extends LitElement {
     `;
   }
 
-  private handleThemeSelection(themeValue: ThemePreference) {
-    this.selectedThemeId = themeValue;
+  private handleAppearanceSelection(appearance: Appearance) {
+    this.selectedAppearance = appearance;
     this.dispatchEvent(
-      new CustomEvent('SetThemeRequested', {
+      new CustomEvent('SetAppearanceRequested', {
         bubbles: true,
         composed: true,
         detail: {
-          themePreference: themeValue,
+          appearance,
         },
       })
     );
