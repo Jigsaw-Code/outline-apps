@@ -148,6 +148,10 @@ func NewDefaultTransportProvider(tcpDialer transport.StreamDialer, udpDialer tra
 		}, err
 	})
 
+	packetListeners.RegisterSubParser("ip-table", func(ctx context.Context, input map[string]any) (*PacketListener, error) {
+		return parseIPTablePacketListener(ctx, input, packetListeners.Parse)
+	})
+
 	// Support distinct TCP and UDP configuration.
 	transports.RegisterSubParser("tcpudp", func(ctx context.Context, config map[string]any) (*TransportPair, error) {
 		return parseTCPUDPTransportPair(ctx, config, streamDialers.Parse, packetListeners.Parse)
