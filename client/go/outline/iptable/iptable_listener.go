@@ -75,10 +75,10 @@ type ipTableConnection struct {
 	connectionMap       map[netip.Addr]net.PacketConn
 	connectionMapThread sync.Mutex
 
-	forwardingContext      context.Context
-	closeForwardingContext context.CancelFunc
-	forwardedPackets       chan incomingPacket
-	forwardCounter         sync.WaitGroup
+	forwardingContext            context.Context
+	closePacketForwardingContext context.CancelFunc
+	forwardedPackets             chan incomingPacket
+	forwardCounter               sync.WaitGroup
 }
 
 var _ net.PacketConn = (*ipTableConnection)(nil)
@@ -102,14 +102,14 @@ func newIPTableConnection(
 	}
 
 	connection := &ipTableConnection{
-		closeForwardingContext: closeForwardingContext,
-		connectionMap:          make(map[netip.Addr]net.PacketConn),
-		connectionMapThread:    sync.Mutex{},
-		defaultConnection:      defaultConnection,
-		defaultListener:        defaultListener,
-		forwardedPackets:       make(chan incomingPacket, packetQueueSize),
-		forwardingContext:      forwardingContext,
-		listenerTable:          listenerTable,
+		closePacketForwardingContext: closeForwardingContext,
+		connectionMap:                make(map[netip.Addr]net.PacketConn),
+		connectionMapThread:          sync.Mutex{},
+		defaultConnection:            defaultConnection,
+		defaultListener:              defaultListener,
+		forwardedPackets:             make(chan incomingPacket, packetQueueSize),
+		forwardingContext:            forwardingContext,
+		listenerTable:                listenerTable,
 	}
 
 	if connection.defaultConnection != nil {
@@ -120,132 +120,128 @@ func newIPTableConnection(
 	return connection, nil
 }
 
-func (connection *ipTableConnection) ReadFrom(result []byte) (n int, addr net.Addr, err error) {
-	packet, ok := <-connection.forwardedPackets
+func (conn *ipTableConnection) ReadFrom(result []byte) (n int, addr net.Addr, err error) {
+	packet, ok := <-conn.forwardedPackets
 	if !ok {
 		return 0, nil, net.ErrClosed
 	}
 
-	var bufferError error
-	if len(result) < len(packet.data) {
-		bufferError = fmt.Errorf("buffer too small for packet data (%d vs %d)", len(result), len(packet.data))
-	}
-
 	numBytes := copy(result, packet.data)
-	return numBytes, packet.addr, bufferError
+	return numBytes, packet.addr, nil
 }
 
-func (connection *ipTableConnection) WriteTo(packet []byte, addr net.Addr) (numBytes int, err error) {
+func (conn *ipTableConnection) WriteTo(packet []byte, addr net.Addr) (numBytes int, err error) {
 	// TODO: make this safer
 	ip := netip.MustParseAddr(addr.String())
 
-	connection.connectionMapThread.Lock()
-	defer connection.connectionMapThread.Unlock()
+	conn.connectionMapThread.Lock()
+	subconn := conn.connectionMap[ip]
+	conn.connectionMapThread.Unlock()
 
-	subconnection := connection.connectionMap[ip]
-
-	if subconnection == nil {
-		listener, ok := connection.listenerTable.Lookup(ip)
+	if subconn == nil {
+		listener, ok := conn.listenerTable.Lookup(ip)
 
 		if !ok {
-			listener = connection.defaultListener
+			listener = conn.defaultListener
 		}
 
 		if listener == nil {
 			return 0, fmt.Errorf("no listener found for %s", ip.String())
 		}
 
-		subconnection, err = listener.ListenPacket(connection.forwardingContext)
+		subconn, err = listener.ListenPacket(conn.forwardingContext)
 
 		if err != nil {
 			return 0, err
 		}
 
-		connection.connectionMap[ip] = subconnection
+		conn.connectionMapThread.Lock()
+		conn.connectionMap[ip] = subconn
+		conn.connectionMapThread.Unlock()
 
-		connection.forwardCounter.Add(1)
-		go connection.forwardPackets(subconnection)
+		conn.forwardCounter.Add(1)
+		go conn.forwardPackets(subconn)
 	}
 
-	return subconnection.WriteTo(packet, addr)
+	return subconn.WriteTo(packet, addr)
 }
 
-func (connection *ipTableConnection) Close() error {
-	connection.closeForwardingContext()
+func (conn *ipTableConnection) Close() error {
+	conn.closePacketForwardingContext()
 
-	connection.connectionMapThread.Lock()
-	defer connection.connectionMapThread.Unlock()
+	conn.connectionMapThread.Lock()
+	defer conn.connectionMapThread.Unlock()
 
-	for address, subconnection := range connection.connectionMap {
-		subconnection.Close()
-		delete(connection.connectionMap, address)
+	for address, subconn := range conn.connectionMap {
+		subconn.Close()
+		delete(conn.connectionMap, address)
 	}
 
-	if connection.defaultConnection != nil {
-		connection.defaultConnection.Close()
+	if conn.defaultConnection != nil {
+		conn.defaultConnection.Close()
 	}
 
-	connection.forwardCounter.Wait()
-	close(connection.forwardedPackets)
+	conn.forwardCounter.Wait()
+	close(conn.forwardedPackets)
 
 	return nil
 }
 
-func (connection *ipTableConnection) LocalAddr() net.Addr {
-	if connection.defaultConnection != nil {
-		return connection.defaultConnection.LocalAddr()
+func (conn *ipTableConnection) LocalAddr() net.Addr {
+	if conn.defaultConnection != nil {
+		return conn.defaultConnection.LocalAddr()
 	}
 
 	return nil
 }
 
-func (connection *ipTableConnection) SetDeadline(t time.Time) error {
-	if connection.defaultConnection != nil {
-		connection.defaultConnection.SetDeadline(t)
+func (conn *ipTableConnection) SetDeadline(t time.Time) error {
+	if conn.defaultConnection != nil {
+		conn.defaultConnection.SetDeadline(t)
 	}
 
-	connection.connectionMapThread.Lock()
-	defer connection.connectionMapThread.Unlock()
+	conn.connectionMapThread.Lock()
+	defer conn.connectionMapThread.Unlock()
 
-	for _, subconnection := range connection.connectionMap {
+	for _, subconnection := range conn.connectionMap {
 		subconnection.SetDeadline(t)
 	}
 
 	return nil
 }
 
-func (connection *ipTableConnection) SetReadDeadline(t time.Time) error {
-	if connection.defaultConnection != nil {
-		connection.defaultConnection.SetReadDeadline(t)
+func (conn *ipTableConnection) SetReadDeadline(t time.Time) error {
+	if conn.defaultConnection != nil {
+		conn.defaultConnection.SetReadDeadline(t)
 	}
 
-	connection.connectionMapThread.Lock()
-	defer connection.connectionMapThread.Unlock()
+	conn.connectionMapThread.Lock()
+	defer conn.connectionMapThread.Unlock()
 
-	for _, subconnection := range connection.connectionMap {
+	for _, subconnection := range conn.connectionMap {
 		subconnection.SetReadDeadline(t)
 	}
 
 	return nil
 }
 
-func (connection *ipTableConnection) SetWriteDeadline(t time.Time) error {
-	if connection.defaultConnection != nil {
-		connection.defaultConnection.SetWriteDeadline(t)
+func (conn *ipTableConnection) SetWriteDeadline(t time.Time) error {
+	if conn.defaultConnection != nil {
+		conn.defaultConnection.SetWriteDeadline(t)
 	}
 
-	connection.connectionMapThread.Lock()
-	defer connection.connectionMapThread.Unlock()
+	conn.connectionMapThread.Lock()
+	defer conn.connectionMapThread.Unlock()
 
-	for _, subconnection := range connection.connectionMap {
+	for _, subconnection := range conn.connectionMap {
 		subconnection.SetWriteDeadline(t)
 	}
 
 	return nil
 }
 
-func (connection *ipTableConnection) forwardPackets(subconnection net.PacketConn) {
-	defer connection.forwardCounter.Done()
+func (conn *ipTableConnection) forwardPackets(subconnection net.PacketConn) {
+	defer conn.forwardCounter.Done()
 	readBuffer := make([]byte, 65536) // Max UDP packet size
 	for {
 		numBytes, remoteAddr, err := subconnection.ReadFrom(readBuffer)
@@ -256,6 +252,6 @@ func (connection *ipTableConnection) forwardPackets(subconnection net.PacketConn
 		packet := make([]byte, numBytes)
 		copy(packet, readBuffer[:numBytes])
 
-		connection.forwardedPackets <- incomingPacket{data: packet, addr: remoteAddr}
+		conn.forwardedPackets <- incomingPacket{data: packet, addr: remoteAddr}
 	}
 }
