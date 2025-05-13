@@ -59,13 +59,13 @@
     "description": "The text for a main menu item that takes the user to a page to set the application appearance to light mode.",
     "message": "Light"
   },
-  "appearance_system": {
-    "description": "The text for a main menu item that takes the user to a page to set the application appearance to their system's default preference.",
-    "message": "System"
-  },
   "appearance_page_title": {
     "description": "The title of a page for a user to set the app appearance.",
     "message": "Appearance"
+  },
+  "appearance_system": {
+    "description": "The text for a main menu item that takes the user to a page to set the application appearance to their system's default preference.",
+    "message": "System"
   },
   "auto_connect_dialog_detail": {
     "description": "An explanation of the connection behavior of the app. Outline is the product name and can be found in the translation glossary.",
