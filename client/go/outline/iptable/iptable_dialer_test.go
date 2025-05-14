@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package outline
+package iptable
 
 import (
 	"context"
@@ -22,7 +22,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Jigsaw-Code/outline-apps/client/go/outline/iptable"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -151,7 +150,7 @@ func (m *MockPacketDialer) Reset() {
 // --- Stream Dialer Tests ---
 
 func TestNewIPTableStreamDialer(t *testing.T) {
-	table := iptable.NewIPTable[transport.StreamDialer]()
+	table := NewIPTable[transport.StreamDialer]()
 
 	t.Run("Valid Table", func(t *testing.T) {
 		d, err := NewIPTableStreamDialer(table)
@@ -187,7 +186,7 @@ func TestIPTableStreamDialer_DialStream(t *testing.T) {
 	routeV4Dialer := NewMockStreamDialer("routeV4")
 	routeV6Dialer := NewMockStreamDialer("routeV6")
 
-	table := iptable.NewIPTable[transport.StreamDialer]()
+	table := NewIPTable[transport.StreamDialer]()
 	table.AddPrefix(netip.MustParsePrefix("192.0.2.0/24"), routeV4Dialer)
 	table.AddPrefix(netip.MustParsePrefix("2001:db8:cafe::/48"), routeV6Dialer)
 
@@ -335,7 +334,7 @@ func TestIPTableStreamDialer_DialStream(t *testing.T) {
 // --- Packet Dialer Tests ---
 
 func TestNewIPTablePacketDialer(t *testing.T) {
-	table := iptable.NewIPTable[transport.PacketDialer]()
+	table := NewIPTable[transport.PacketDialer]()
 
 	t.Run("Valid Table", func(t *testing.T) {
 		d, err := NewIPTablePacketDialer(table)
@@ -371,7 +370,7 @@ func TestIPTablePacketDialer_DialPacket(t *testing.T) {
 	routeV4Dialer := NewMockPacketDialer("routeV4")
 	routeV6Dialer := NewMockPacketDialer("routeV6")
 
-	table := iptable.NewIPTable[transport.PacketDialer]()
+	table := NewIPTable[transport.PacketDialer]()
 	table.AddPrefix(netip.MustParsePrefix("192.0.2.0/24"), routeV4Dialer)
 	table.AddPrefix(netip.MustParsePrefix("2001:db8:cafe::/48"), routeV6Dialer)
 
