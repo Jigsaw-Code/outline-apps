@@ -164,6 +164,8 @@ func (conn *ipTableConnection) WriteTo(packet []byte, addr net.Addr) (numBytes i
 		return 0, fmt.Errorf("could not parse valid IP from address %v (%T)", addr, addr)
 	}
 
+	ip = ip.Unmap()
+
 	conn.connectionMapThread.Lock()
 	subconn := conn.connectionMap[ip]
 	conn.connectionMapThread.Unlock()
