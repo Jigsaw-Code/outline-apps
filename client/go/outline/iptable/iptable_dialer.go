@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package outline
+package iptable
 
 import (
 	"context"
@@ -20,11 +20,10 @@ import (
 	"net"
 	"net/netip"
 
-	"github.com/Jigsaw-Code/outline-apps/client/go/outline/iptable"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
-func lookupInTable[D any](table iptable.IPTable[D], address string) (foundDialer D, ok bool) {
+func lookupInTable[D any](table IPTable[D], address string) (foundDialer D, ok bool) {
 	host := address
 	if _host, _, err := net.SplitHostPort(address); err == nil {
 		host = _host
@@ -40,20 +39,20 @@ func lookupInTable[D any](table iptable.IPTable[D], address string) (foundDialer
 }
 
 // IPTableStreamDialer is a [transport.StreamDialer] that routes connections
-// based on the destination IP address using an [iptable.IPTable].
+// based on the destination IP address using an [IPTable].
 // If a specific route is found in the table, the corresponding dialer is used.
 // Otherwise, the default dialer (if set) is used.
 type IPTableStreamDialer struct {
-	table         iptable.IPTable[transport.StreamDialer]
+	table         IPTable[transport.StreamDialer]
 	defaultDialer transport.StreamDialer
 }
 
 // NewIPTableStreamDialer creates a new [IPTableStreamDialer].
 // If the provided table is nil, a new empty table will be created internally.
 // It returns the new dialer and a nil error.
-func NewIPTableStreamDialer(table iptable.IPTable[transport.StreamDialer]) (*IPTableStreamDialer, error) {
+func NewIPTableStreamDialer(table IPTable[transport.StreamDialer]) (*IPTableStreamDialer, error) {
 	if table == nil {
-		table = iptable.NewIPTable[transport.StreamDialer]()
+		table = NewIPTable[transport.StreamDialer]()
 	}
 	return &IPTableStreamDialer{
 		table: table,
@@ -87,20 +86,20 @@ func (dialer *IPTableStreamDialer) DialStream(ctx context.Context, address strin
 }
 
 // IPTablePacketDialer is a [transport.PacketDialer] that routes connections
-// based on the destination IP address using an [iptable.IPTable].
+// based on the destination IP address using an [IPTable].
 // If a specific route is found in the table, the corresponding dialer is used.
 // Otherwise, the default dialer (if set) is used.
 type IPTablePacketDialer struct {
-	table         iptable.IPTable[transport.PacketDialer]
+	table         IPTable[transport.PacketDialer]
 	defaultDialer transport.PacketDialer
 }
 
 // NewIPTablePacketDialer creates a new [IPTablePacketDialer].
 // If the provided table is nil, a new empty table will be created internally.
 // It returns the new dialer and a nil error.
-func NewIPTablePacketDialer(table iptable.IPTable[transport.PacketDialer]) (*IPTablePacketDialer, error) {
+func NewIPTablePacketDialer(table IPTable[transport.PacketDialer]) (*IPTablePacketDialer, error) {
 	if table == nil {
-		table = iptable.NewIPTable[transport.PacketDialer]()
+		table = NewIPTable[transport.PacketDialer]()
 	}
 	return &IPTablePacketDialer{
 		table: table,
@@ -128,56 +127,6 @@ func (dialer *IPTablePacketDialer) DialPacket(ctx context.Context, address strin
 
 	if selectedDialer == nil {
 		return nil, fmt.Errorf("no dialer available for address %s", address)
-	}
-
-	return selectedDialer.DialPacket(ctx, address)
-}
-
-// IPTablePacketListenerDialer is a [transport.PacketDialer] that routes connections
-// based on the destination IP address using an [iptable.IPTable] containing
-// [transport.PacketListenerDialer] instances.
-//
-// It allows different underlying [transport.PacketListener] instances to be used
-// based on the destination IP.
-type IPTablePacketListenerDialer struct {
-	table         iptable.IPTable[transport.PacketListenerDialer]
-	defaultDialer transport.PacketListenerDialer
-}
-
-// NewIPTablePacketListenerDialer creates a new [IPTablePacketListenerDialer].
-// The provided table should map IP prefixes to [transport.PacketListenerDialer] instances.
-// If the table is nil, a new empty table will be created internally.
-// It returns the new dialer and a nil error.
-func NewIPTablePacketListener(table iptable.IPTable[transport.PacketListenerDialer]) (*IPTablePacketListenerDialer, error) {
-	if table == nil {
-		table = iptable.NewIPTable[transport.PacketListenerDialer]()
-	}
-	return &IPTablePacketListenerDialer{
-		table: table,
-	}, nil
-}
-
-// SetDefault sets the [transport.PacketListenerDialer] to be used when no specific
-// route is found for a destination address in the IP table.
-// Passing a zero-value PacketListenerDialer (e.g., `transport.PacketListenerDialer{}`)
-// effectively clears the default, as its internal Listener will be nil.
-func (dialer *IPTablePacketListenerDialer) SetDefault(defaultDialer transport.PacketListenerDialer) {
-	dialer.defaultDialer = defaultDialer
-}
-
-// DialPacket dials the given address using the appropriate [transport.PacketListenerDialer]
-// determined by looking up the destination IP in the IP table.
-// If no specific route is found, it uses the default dialer.
-// If no specific route is found and no default dialer is set (or the default dialer's
-// Listener is nil), or if the selected dialer fails, it returns an error.
-func (dialer *IPTablePacketListenerDialer) DialPacket(ctx context.Context, address string) (net.Conn, error) {
-	selectedDialer, ok := lookupInTable(dialer.table, address)
-	if !ok {
-		selectedDialer = dialer.defaultDialer
-	}
-
-	if selectedDialer.Listener == nil {
-		return nil, fmt.Errorf("no dialer available")
 	}
 
 	return selectedDialer.DialPacket(ctx, address)
