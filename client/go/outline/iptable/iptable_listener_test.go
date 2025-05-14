@@ -248,4 +248,54 @@ func TestIPTablePacketListener_ListenPacket(t *testing.T) {
 	}
 }
 
-// TODO: IPv6 Test
+func TestIPTablePacketListener_IPv4IPv6Routing(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	table := NewIPTable[transport.PacketListener]()
+
+	mockConnV4Specific := newMockPacketConn(t, "192.0.2.1", "127.0.0.1")
+	mockConnV6Specific := newMockPacketConn(t, "2001:db8:1::1", "::1")
+	mockConnDefault := newMockPacketConn(t, "10.0.0.1", "127.0.0.1")
+
+	require.NoError(t, table.AddPrefix(netip.MustParsePrefix("192.0.2.0/24"), &mockPacketListener{conn: mockConnV4Specific}))
+	require.NoError(t, table.AddPrefix(netip.MustParsePrefix("2001:db8:1::/48"), &mockPacketListener{conn: mockConnV6Specific}))
+
+	defaultListener := &mockPacketListener{conn: mockConnDefault}
+	iptableListener, err := NewIPTablePacketListener(table, defaultListener)
+	require.NoError(t, err, "NewIPTablePacketListener failed")
+
+	conn, err := iptableListener.ListenPacket(ctx)
+	require.NoError(t, err, "ListenPacket failed")
+	defer conn.Close()
+
+	testData := []byte("ipv4-ipv6-test")
+
+	// 1. IPv4
+	destV4PureAddrStr := "192.0.2.100:12345"
+	destV4Pure, err := net.ResolveUDPAddr("udp4", destV4PureAddrStr) // Force IPv4
+	require.NoError(t, err, "Failed to resolve destV4Pure")
+
+	_, err = conn.WriteTo(testData, destV4Pure)
+	require.NoError(t, err, "WriteTo to destV4Pure failed")
+	select {
+	case received := <-mockConnV4Specific.writeChan:
+		assert.Equal(t, testData, received, "mockConnV4Specific received unexpected data for pure IPv4")
+	case <-time.After(100 * time.Millisecond):
+		t.Fatal("mockConnV4Specific did not receive data for pure IPv4")
+	}
+
+	// 2. IPv6
+	destV6PureAddrStr := "[2001:db8:1::100]:12345"
+	destV6Pure, err := net.ResolveUDPAddr("udp6", destV6PureAddrStr) // Force IPv6
+	require.NoError(t, err, "Failed to resolve destV6Pure")
+
+	_, err = conn.WriteTo(testData, destV6Pure)
+	require.NoError(t, err, "WriteTo to destV6Pure failed")
+	select {
+	case received := <-mockConnV6Specific.writeChan:
+		assert.Equal(t, testData, received, "mockConnV6Specific received unexpected data for pure IPv6")
+	case <-time.After(100 * time.Millisecond):
+		t.Fatal("mockConnV6Specific did not receive data for pure IPv6")
+	}
+}
