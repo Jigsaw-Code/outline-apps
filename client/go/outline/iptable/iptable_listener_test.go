@@ -131,14 +131,12 @@ func TestIPTablePacketListener_ListenPacket(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second) // Overall test timeout
 	defer cancel()
 
-	// Setup: Create a listener with a table and default listener
 	table := NewIPTable[transport.PacketListener]()
 
 	mockConn1 := newMockPacketConn(t, "1.2.3.4", "127.0.0.1")
 	mockConn2 := newMockPacketConn(t, "5.6.7.8", "127.0.0.1")
 	mockConnDefault := newMockPacketConn(t, "10.0.0.1", "127.0.0.1")
 
-	// Use AddPrefix as defined in the IPTable interface
 	require.NoError(t, table.AddPrefix(netip.MustParsePrefix("1.2.3.0/24"), &mockPacketListener{conn: mockConn1}))
 	require.NoError(t, table.AddPrefix(netip.MustParsePrefix("5.6.7.0/24"), &mockPacketListener{conn: mockConn2}))
 
