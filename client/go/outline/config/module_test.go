@@ -30,6 +30,11 @@ func newTestTransportProvider() *TypeParser[*TransportPair] {
 	return NewDefaultTransportProvider(tcpDialer, udpDialer)
 }
 
+func newTestUsageReporProvider() *TypeParser[*UsageReporter] {
+	tcpDialer := &transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
+	return NewUsageReportProvider(tcpDialer)
+}
+
 func TestRegisterDefaultProviders(t *testing.T) {
 	provider := newTestTransportProvider()
 
@@ -89,18 +94,10 @@ func TestRegisterParseURLInQuotes(t *testing.T) {
 }
 
 func TestRegisterUsageReporting(t *testing.T) {
-	provider := newTestTransportProvider()
+	provider := newTestUsageReporProvider()
 
 	node, err := ParseConfigYAML(`
-$type: tcpudp
-tcp: &shared
-  $type: shadowsocks
-  endpoint: example.com:1234
-  cipher: chacha20-ietf-poly1305
-  secret: SECRET
-udp: *shared
-usagereporter:
-  $type: usage-reporter
+  $type: sessionreport
   interval: 1h
   url: https://example.com/report`)
 	require.NoError(t, err)
@@ -108,13 +105,7 @@ usagereporter:
 	d, err := provider.Parse(context.Background(), node)
 	require.NoError(t, err)
 
-	require.NotNil(t, d.StreamDialer)
-	require.NotNil(t, d.PacketListener)
-	require.Equal(t, "example.com:1234", d.StreamDialer.FirstHop)
-	require.Equal(t, ConnTypeTunneled, d.StreamDialer.ConnType)
-	require.Equal(t, "example.com:1234", d.PacketListener.FirstHop)
-	require.Equal(t, ConnTypeTunneled, d.PacketListener.ConnType)
-	require.NotNil(t, d.UsageReporter)
-	require.Equal(t, d.UsageReporter.interval, 1*time.Hour)
-	require.Equal(t, d.UsageReporter.url, "https://example.com/report")
+	require.NotNil(t, d)
+	require.Equal(t, d.Interval, 1*time.Hour)
+	require.Equal(t, d.Url, "https://example.com/report")
 }
