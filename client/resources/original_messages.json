@@ -42,7 +42,6 @@
         "content": "{openLink}"
       }
     }
-
   },
   "add_access_key_dialog_label": {
     "description": "The label for a text box where the user can paste an access key to add a new server.",
@@ -51,6 +50,22 @@
   "add_access_key_dialog_error_text": {
     "description": "An error message shown when the user tries to add a server with an invalid access key.",
     "message": "Invalid access key."
+  },
+  "appearance_dark": {
+    "description": "The text for a main menu item that takes the user to a page to set the application appearance to dark mode.",
+    "message": "Dark"
+  },
+  "appearance_light": {
+    "description": "The text for a main menu item that takes the user to a page to set the application appearance to light mode.",
+    "message": "Light"
+  },
+  "appearance_page_title": {
+    "description": "The title of a page for a user to set the app appearance.",
+    "message": "Appearance"
+  },
+  "appearance_system": {
+    "description": "The text for a main menu item that takes the user to a page to set the application appearance to their system's default preference.",
+    "message": "System"
   },
   "auto_connect_dialog_detail": {
     "description": "An explanation of the connection behavior of the app. Outline is the product name and can be found in the translation glossary.",
@@ -643,21 +658,5 @@
   "yes": {
     "description": "Affirmative answer to a form question.",
     "message": "Yes"
-  },
-  "theme_dark": {
-    "description": "The text for a main menu item that takes the user to a page to set the application theme to dark mode.",
-    "message": "Dark"
-  },
-  "theme_light": {
-    "description": "The text for a main menu item that takes the user to a page to set the application theme to light mode.",
-    "message": "Light"
-  },
-  "theme_system": {
-    "description": "The text for a main menu item that takes the user to a page to set the application theme to system mode.",
-    "message": "System"
-  },
-  "theme_page_title": {
-    "description": "The title of a page for a user to set the app theme.",
-    "message": "Appearance"
   }
 }

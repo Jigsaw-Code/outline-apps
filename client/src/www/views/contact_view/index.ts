@@ -64,7 +64,7 @@ export class ContactView extends LitElement {
   static styles = [
     css`
       :host {
-        background: var(--outline-card-background);
+        background: var(--outline-background);
         color: var(--outline-text-color);
         font-family: var(--outline-font-family);
         padding: var(--contact-view-gutter, var(--outline-gutter));
@@ -132,12 +132,12 @@ export class ContactView extends LitElement {
 
       /* Style the dropdown list */
       mwc-select mwc-menu {
-        --mdc-theme-surface: var(--outline-card-background);
+        --mdc-theme-surface: var(--outline-background);
       }
 
       /* Style the list items properly for dark mode */
       mwc-select mwc-list-item {
-        background-color: var(--outline-card-background);
+        background-color: var(--outline-background);
       }
 
       mwc-list-item {
@@ -155,7 +155,7 @@ export class ContactView extends LitElement {
         padding-top: var(--outline-mini-gutter);
         color: var(--outline-text-color);
         --mdc-theme-text-primary-on-background: var(--outline-text-color);
-        background-color: var(--outline-card-background);
+        background-color: var(--outline-background);
         padding: 8px 16px;
       }
 

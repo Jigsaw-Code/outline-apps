@@ -26,11 +26,11 @@ export class RootNavigation extends LitElement {
   @property({type: Boolean}) showQuit: boolean;
   @property({type: String}) align: 'left' | 'right';
   @property({type: String}) dataCollectionPageUrl: string;
-  @property({type: Boolean}) darkModeEnabled: boolean = false;
+  @property({type: Boolean}) showAppearanceView: boolean = false;
 
   static styles = css`
     :host {
-      --md-list-container-color: var(--outline-card-background);
+      --md-list-container-color: var(--outline-background);
     }
 
     .container {
@@ -47,25 +47,23 @@ export class RootNavigation extends LitElement {
     }
 
     nav {
-      background-color: var(--outline-card-background);
+      background-color: var(--outline-background);
       color: var(--outline-text-color);
       display: block;
       height: 100vh;
-      overflow-y: scroll;
       position: absolute;
       transition:
         transform 0.3s ease,
         visibility 0.3s ease;
-      width: 250px;
       will-change: transform;
       visibility: hidden;
       box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
     }
 
     md-list {
-      background-color: var(--outline-card-background);
+      background-color: var(--outline-background);
       color: var(--outline-text-color);
-      --md-list-container-color: var(--outline-card-background);
+      --md-list-container-color: var(--outline-background);
     }
 
     md-list-item {
@@ -234,12 +232,12 @@ export class RootNavigation extends LitElement {
             <md-icon slot="start">language</md-icon>
             ${this.localize('change-language-page-title')}
           </md-list-item>
-          ${this.darkModeEnabled
+          ${this.showAppearanceView
             ? html`
-                <md-list-item @click=${() => this.changePage('theme')}>
+                <md-list-item @click=${() => this.changePage('appearance')}>
                   <md-ripple></md-ripple>
                   <md-icon slot="start">brightness_medium</md-icon>
-                  ${this.localize('theme-page-title')}
+                  ${this.localize('appearance-page-title')}
                 </md-list-item>
               `
             : nothing}

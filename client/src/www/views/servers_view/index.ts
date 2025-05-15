@@ -35,6 +35,8 @@ export import ServerConnectionState = _ServerConnectionState;
 
 @customElement('servers-view')
 export class ServerList extends LitElement {
+  @property({type: Boolean}) darkMode = false;
+
   static styles = [
     css`
       :host {
@@ -171,6 +173,7 @@ export class ServerList extends LitElement {
             <button type="button" @click=${this.requestPromptAddServer}>
               <server-connection-indicator
                 connection-state="disconnected"
+                ?darkMode=${this.darkMode}
               ></server-connection-indicator>
               <h1>${this.localize('server-add')}</h1>
               <h2>${this.localize('server-add-zero-state-instructions')}</h2>
@@ -182,6 +185,7 @@ export class ServerList extends LitElement {
     } else {
       return html`
         <server-list
+          ?darkMode=${this.darkMode}
           .servers=${this.servers}
           .localize=${this.localize}
         ></server-list>
