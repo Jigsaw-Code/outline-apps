@@ -17,16 +17,14 @@ package config
 import (
 	"context"
 	"fmt"
-	"strconv"
-	"strings"
 	"time"
 )
 
 // UsageReporterConfig is the format for the Usage Reporter config.
 type UsageReporterConfig struct {
-	Interval       string
-	Url            string
-	Enable_Cookies bool
+	Interval      string
+	Url           string
+	EnableCookies bool `json:"enable_cookies"`
 }
 
 func parseUsageReporterConfig(ctx context.Context, configMap map[string]any) (*UsageReporter, error) {
@@ -35,7 +33,7 @@ func parseUsageReporterConfig(ctx context.Context, configMap map[string]any) (*U
 		return nil, fmt.Errorf("invalid config format: %w", err)
 	}
 
-	duration, err := ParseHumanDuration(config.Interval)
+	duration, err := time.ParseDuration(config.Interval)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse interval: %w", err)
 	}
@@ -43,40 +41,6 @@ func parseUsageReporterConfig(ctx context.Context, configMap map[string]any) (*U
 	return &UsageReporter{
 		Interval:      duration,
 		Url:           config.Url,
-		EnableCookies: config.Enable_Cookies,
+		EnableCookies: config.EnableCookies,
 	}, nil
-}
-
-func ParseHumanDuration(duration string) (time.Duration, error) {
-	// Strip any whitespace
-	duration = strings.TrimSpace(duration)
-	if len(duration) < 2 {
-		return 0, fmt.Errorf("invalid duration format: %s", duration)
-	}
-
-	// Extract the numeric value and unit
-	numStr := duration[:len(duration)-1]
-	unit := duration[len(duration)-1:]
-
-	// Parse the numeric value
-	num, err := strconv.ParseFloat(numStr, 64)
-	if err != nil {
-		return 0, fmt.Errorf("invalid number in duration: %s", numStr)
-	}
-
-	// Convert to time.Duration based on unit
-	switch strings.ToLower(unit) {
-	case "s":
-		return time.Duration(num * float64(time.Second)), nil
-	case "m":
-		return time.Duration(num * float64(time.Minute)), nil
-	case "h":
-		return time.Duration(num * float64(time.Hour)), nil
-	case "d":
-		return time.Duration(num * 24 * float64(time.Hour)), nil
-	case "w":
-		return time.Duration(num * 7 * 24 * float64(time.Hour)), nil
-	default:
-		return 0, fmt.Errorf("unsupported duration unit: %s", unit)
-	}
 }

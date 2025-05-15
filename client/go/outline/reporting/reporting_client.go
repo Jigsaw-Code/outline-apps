@@ -250,8 +250,8 @@ func loadCookies(jar http.CookieJar, filename string) ([]*url.URL, error) {
 	return urls, nil
 }
 
-// StartReporting calls the Report function every 10 seconds
-func StartReporting(tcp transport.StreamDialer, ur *config.UsageReporter) {
+// StartReporting calls the Report function at every internal.
+func StartReporting(ctx context.Context, tcp transport.StreamDialer, ur *config.UsageReporter) {
 	if !ur.EnableCookies {
 		return
 	}
@@ -263,9 +263,12 @@ func StartReporting(tcp transport.StreamDialer, ur *config.UsageReporter) {
 		case <-ticker.C:
 			err := Report(tcp, ur.Url)
 			if err != nil {
-				// Handle error (e.g., log it)
 				fmt.Printf("Report failed: %v\n", err)
 			}
+		case <-ctx.Done():
+			// Stop reporting when the context is canceled
+			fmt.Println("Stopping reporting...")
+			return
 		}
 	}
 }

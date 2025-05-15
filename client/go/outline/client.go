@@ -7,7 +7,7 @@
 //      http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
+// distributed under the License is distributed on an "AS IS BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
@@ -31,9 +31,10 @@ import (
 // It's used by the connectivity test and the tun2socks handlers.
 // TODO: Rename to Transport. Needs to update per-platform code.
 type Client struct {
-	sd *config.Dialer[transport.StreamConn]
-	pl *config.PacketListener
-	ur *config.UsageReporter
+	sd     *config.Dialer[transport.StreamConn]
+	pl     *config.PacketListener
+	ur     *config.UsageReporter
+	cancel context.CancelFunc // Used to stop reporting
 }
 
 func (c *Client) DialStream(ctx context.Context, address string) (transport.StreamConn, error) {
@@ -57,7 +58,20 @@ type NewClientResult struct {
 }
 
 func (c *Client) StartReporting() {
-	reporting.StartReporting(c, c.ur)
+	if c.ur == nil {
+		return
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	c.cancel = cancel // Store the cancel function to stop reporting later
+
+	go reporting.StartReporting(ctx, c, c.ur)
+}
+
+func (c *Client) StopReporting() {
+	if c.cancel != nil {
+		c.cancel() // Signal the context to stop reporting
+		c.cancel = nil
+	}
 }
 
 // NewClient creates a new Outline client from a configuration string.

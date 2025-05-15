@@ -115,6 +115,8 @@ public class VpnTunnelService extends VpnService {
   private VpnTunnelStore tunnelStore;
   private Notification.Builder notificationBuilder;
 
+  private outline.Client outlineClient; // Field to store the Client instance
+
   private final IVpnTunnelService.Stub binder = new IVpnTunnelService.Stub() {
     @Override
     public DetailedJsonError startTunnel(@NonNull TunnelConfig config) {
@@ -234,7 +236,7 @@ public class VpnTunnelService extends VpnService {
       tearDownActiveTunnel();
       return clientResult.getError();
     }
-    final outline.Client client = clientResult.getClient();
+    this.outlineClient = clientResult.getClient(); // Store the Client instance
 
     boolean remoteUdpForwardingEnabled;
     if (isAutoStart) {
@@ -244,7 +246,7 @@ public class VpnTunnelService extends VpnService {
       try {
         // Do not perform connectivity checks when connecting on startup. We should avoid failing
         // the connection due to a network error, as network may not be ready.
-        final TCPAndUDPConnectivityResult connResult = Outline.checkTCPAndUDPConnectivity(client);
+        final TCPAndUDPConnectivityResult connResult = Outline.checkTCPAndUDPConnectivity(clientResult.getClient());
         LOG.info(String.format(Locale.ROOT, "Go connectivity check result: %s", connResult));
 
         if (connResult.getTCPError() != null) {
@@ -302,12 +304,12 @@ public class VpnTunnelService extends VpnService {
 
     // Start exchanging traffic between the local TUN device and the remote device.
     final ConnectOutlineTunnelResult result =
-            Tun2socks.connectOutlineTunnel(this.tunFd.getFd(), client, remoteUdpForwardingEnabled);
+            Tun2socks.connectOutlineTunnel(this.tunFd.getFd(), clientResult.getClient(), remoteUdpForwardingEnabled);
     if (result.getError() != null) {
       tearDownActiveTunnel();
       return result.getError();
     }
-    client.startReporting();
+    clientResult.getClient().startReporting();
     this.remoteDevice = result.getTunnel();
     
     startForegroundWithNotification(config.name);
@@ -318,10 +320,17 @@ public class VpnTunnelService extends VpnService {
   @Nullable
   private synchronized DetailedJsonError stopTunnel(@NonNull final String tunnelId) {
     if (!isTunnelActive(tunnelId)) {
-      return Errors.toDetailedJsonError(new PlatformError(
-          Platerrors.InternalError,
-          "VPN profile is not active"));
+        return Errors.toDetailedJsonError(new PlatformError(
+            Platerrors.InternalError,
+            "VPN profile is not active"));
     }
+
+    // Stop reporting on the Client instance
+    if (this.outlineClient != null) {
+        this.outlineClient.stopReporting();
+        this.outlineClient = null; // Clear the reference
+    }
+
     tearDownActiveTunnel();
     return null;
   }
@@ -367,6 +376,9 @@ public class VpnTunnelService extends VpnService {
 
     // Clear config that is no longer needed.
     this.tunnelConfig = null;
+
+    // Clear the Client instance
+    this.outlineClient = null;
   }
 
   /** Stops the traffic exchange with the remote device. */

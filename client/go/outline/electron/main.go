@@ -66,6 +66,7 @@ var args struct {
 	adapterIndex *int
 
 	transportConfig *string
+	sessionConfig   *string
 
 	logLevel          *string
 	checkConnectivity *bool
@@ -100,6 +101,8 @@ func main() {
 
 	// Proxy transport config
 	args.transportConfig = flag.String("transport", "", "A JSON object containing the transport config, UTF8-encoded")
+	// Proxy session config
+	args.sessionConfig = flag.String("session", "", "A JSON object containing the session config, UTF8-encoded")
 
 	// Check connectivity of transportConfig and exit
 	args.checkConnectivity = flag.Bool("checkConnectivity", false, "Check the proxy TCP and UDP connectivity and exit.")
@@ -127,12 +130,12 @@ func main() {
 		if err != nil {
 			printErrorAndExit(err, exitCodeFailure)
 		}
-		client, err = outline.NewClientWithBaseDialers(*args.transportConfig, tcp, udp)
+		client, err = outline.NewClientWithBaseDialers(*args.transportConfig, *args.sessionConfig, tcp, udp)
 		if err != nil {
 			printErrorAndExit(err, exitCodeFailure)
 		}
 	} else {
-		result := outline.NewClient(*args.transportConfig)
+		result := outline.NewClient(*args.transportConfig, *args.sessionConfig)
 		if result.Error != nil {
 			printErrorAndExit(result.Error, exitCodeFailure)
 		}
