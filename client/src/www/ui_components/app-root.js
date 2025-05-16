@@ -503,6 +503,7 @@ export class AppRoot extends mixinBehaviors(
           th: {id: 'th', name: 'ไทย', dir: 'ltr', supportId: 'th'},
           tr: {id: 'tr', name: 'Türkçe', dir: 'ltr', supportId: 'tr'},
           uk: {id: 'uk', name: 'Українська', dir: 'ltr', supportId: 'uk'},
+          uz: {id: 'uz', name: 'O‘zbekcha', dir: 'ltr', supportId: 'uz'},
           ur: {id: 'ur', name: 'اردو', dir: 'rtl', supportId: 'ur'},
           vi: {id: 'vi', name: 'Tiếng Việt', dir: 'ltr', supportId: 'vi'},
           'zh-CN': {

@@ -85,6 +85,7 @@ const SUPPORTED_LANGUAGES: {[key: string]: LanguageDef} = {
   th: {id: 'th', name: 'ไทย', dir: 'ltr'},
   tr: {id: 'tr', name: 'Türkçe', dir: 'ltr'},
   uk: {id: 'uk', name: 'Українська', dir: 'ltr'},
+  uz: {id: 'uz', name: 'O‘zbekcha', dir: 'ltr'},
   ur: {id: 'ur', name: 'اردو', dir: 'rtl'},
   vi: {id: 'vi', name: 'Tiếng Việt', dir: 'ltr'},
   'zh-CN': {id: 'zh-CN', name: '简体中文', dir: 'ltr'},
