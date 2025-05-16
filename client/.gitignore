@@ -3,7 +3,7 @@
 /platforms
 /plugins
 /third_party/Potatso/Pods
-/www
+
 coverage
 info.txt
 keystore.p12
