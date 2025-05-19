@@ -26,6 +26,7 @@ import (
 
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/connectivity"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/Jigsaw-Code/outline-apps/client/go/tunnel"
@@ -58,13 +59,12 @@ type outlinetunnel struct {
 	udpHandler   *toggleUDPConnHandler
 }
 
-// newTunnel connects a tunnel to the given stream and packet dialers and returns an `outline.Tunnel`.
+// newTunnel connects a tunnel to the given client and returns an `outline.Tunnel`.
 //
-// `streamDialer` is the StreamDialer to proxy TCP traffic.
-// `packetListener` is the PacketListener tp proxy UDP traffic.
+// `client` is the StreamDialer to proxy TCP traffic and the PacketListener to proxy UDP traffic.
 // `isUDPEnabled` indicates if the Outline proxy and the network support proxying UDP traffic.
 // `tunWriter` is used to output packets back to the TUN device.  OutlineTunnel.Disconnect() will close `tunWriter`.
-func newTunnel(streamDialer transport.StreamDialer, packetListener transport.PacketListener, isUDPEnabled bool, tunWriter io.WriteCloser) (Tunnel, error) {
+func newTunnel(client *outline.Client, isUDPEnabled bool, tunWriter io.WriteCloser) (Tunnel, error) {
 	if tunWriter == nil {
 		return nil, errors.New("must provide a TUN writer")
 	}
@@ -74,12 +74,12 @@ func newTunnel(streamDialer transport.StreamDialer, packetListener transport.Pac
 	lwipStack := core.NewLWIPStack()
 	base := tunnel.NewTunnel(tunWriter, lwipStack)
 	udpHandler := &toggleUDPConnHandler{
-		Handler:         NewUDPHandler(packetListener, 30*time.Second),
+		Handler:         NewUDPHandler(client, 30*time.Second),
 		FallbackHandler: dnsfallback.NewUDPHandler(),
 	}
 	udpHandler.UseFallback.Store(!isUDPEnabled)
-	t := &outlinetunnel{base, packetListener, udpHandler}
-	core.RegisterTCPConnHandler(NewTCPHandler(streamDialer))
+	t := &outlinetunnel{base, client, udpHandler}
+	core.RegisterTCPConnHandler(NewTCPHandler(client))
 	core.RegisterUDPConnHandler(udpHandler)
 	return t, nil
 }
