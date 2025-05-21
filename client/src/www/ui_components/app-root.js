@@ -171,7 +171,6 @@ export class AppRoot extends mixinBehaviors(
           overflow-y: auto;
         }
 
-        /* rtl:begin:ignore */
         #drawer-nav paper-item {
           cursor: pointer;
           font-size: 16px;
@@ -188,7 +187,6 @@ export class AppRoot extends mixinBehaviors(
           color: var(--medium-green);
           background-color: var(--light-gray);
         }
-        /* rtl:end:ignore */
 
         /* Manually reverse icons that require mirroring in RTL languages. */
         :host(:dir(rtl)) #backBtn {
@@ -247,7 +245,7 @@ export class AppRoot extends mixinBehaviors(
         paper-item > img {
           height: 24px;
           width: 24px;
-          margin-right: 10px;
+          margin-inline-end: 10px;
         }
 
         paper-item > a {
@@ -272,7 +270,7 @@ export class AppRoot extends mixinBehaviors(
           color: var(--light-green);
           text-align: center;
           /* Prevent the button getting too close to the toast's text. */
-          margin-left: 12px;
+          margin-inline-start: 12px;
         }
 
         @media (max-height: 480px) {

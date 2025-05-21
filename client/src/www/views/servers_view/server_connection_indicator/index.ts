@@ -104,7 +104,7 @@ export class ServerConnectionIndicator extends LitElement {
       */
       .circle-medium,
       .circle-small {
-        left: 0;
+        inset-inline-start: 0;
         outline: 0;
         position: absolute;
         top: 0;

@@ -35,7 +35,7 @@ export class RootNavigation extends LitElement {
 
     .container {
       height: 100vh;
-      left: 0;
+      inset-inline-start: 0;
       pointer-events: none;
       position: fixed;
       top: 0;
@@ -74,12 +74,12 @@ export class RootNavigation extends LitElement {
     }
 
     nav.left {
-      left: 0;
+      inset-inline-start: 0;
       transform: translateX(-100%);
     }
 
     nav.right {
-      right: 0;
+      inset-inline-end: 0;
       transform: translateX(100%);
     }
 
@@ -145,7 +145,8 @@ export class RootNavigation extends LitElement {
       cursor: pointer;
       display: block;
       font-family: var(--outline-font-family);
-      padding: 8px 16px;
+      padding-block: 8px;
+      padding-inline: 16px;
       transition: visibility 0.3s ease;
     }
 

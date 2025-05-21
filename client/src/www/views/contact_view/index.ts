@@ -73,13 +73,13 @@ export class ContactView extends LitElement {
 
       main {
         display: block;
-        margin-left: auto;
-        margin-right: auto;
+        margin-inline-start: auto;
+        margin-inline-end: auto;
         max-width: var(--contact-view-max-width);
       }
 
       mwc-circular-progress {
-        left: 50%;
+        inset-inline-start: 50%;
         position: absolute;
         top: 50%;
         transform: translate(-50%, -50%);
@@ -122,7 +122,8 @@ export class ContactView extends LitElement {
         --mdc-theme-surface: var(--outline-card-background);
         border: 1px solid var(--outline-hairline);
         border-radius: 4px;
-        padding: 4px 0;
+        padding-block: 4px;
+        padding-inline: 0;
         margin-top: 16px;
       }
 
@@ -156,7 +157,8 @@ export class ContactView extends LitElement {
         color: var(--outline-text-color);
         --mdc-theme-text-primary-on-background: var(--outline-text-color);
         background-color: var(--outline-background);
-        padding: 8px 16px;
+        padding-block: 8px;
+        padding-inline: 16px;
       }
 
       mwc-list-item span {

@@ -46,7 +46,7 @@ export class AboutView extends LitElement {
 
     article {
       height: 100%;
-      padding: 32px 24px 0 24px;
+      padding-block-start: 32px; padding-inline-end: 24px; padding-block-end: 0; padding-inline-start: 24px;
     }
 
     header img {
@@ -64,7 +64,7 @@ export class AboutView extends LitElement {
       font-size: 16px;
       line-height: 22px;
       margin: 32px auto;
-      text-align: left;
+      text-align: start;
     }
 
     a {
