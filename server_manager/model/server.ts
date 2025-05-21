@@ -33,6 +33,9 @@ export interface Server {
   // Return access key
   getAccessKey(accessKeyId: AccessKeyId): Promise<AccessKey>;
 
+  // Return version tag of latest available update
+  getLatestAvailableUpdate?: () => Promise<VersionTag>;
+
   // Lists the access keys for this server, including the admin.
   listAccessKeys(): Promise<AccessKey[]>;
 
@@ -102,6 +105,12 @@ export interface Server {
 
   // Changes the port number for new access keys.
   setPortForNewAccessKeys(port: number): Promise<void>;
+}
+
+// A tag indicating a version of the server code
+export interface VersionTag {
+  name: string;
+  releaseTimestamp: number;
 }
 
 // Manual servers are servers which the user has independently setup to run
@@ -176,6 +185,12 @@ export interface ManualServerRepository {
   addServer(config: ManualServerConfig): Promise<ManualServer>;
   // Retrieves a server with `config`.
   findServer(config: ManualServerConfig): ManualServer | undefined;
+}
+
+// A tag indicating a version of the server code
+export interface VersionTag {
+  name: string;
+  releaseTimestamp: number;
 }
 
 export type AccessKeyId = string;
