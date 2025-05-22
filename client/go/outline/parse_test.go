@@ -25,7 +25,7 @@ func Test_doParseTunnel_SSURL(t *testing.T) {
 	result := doParseTunnelConfig("ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@example.com:4321/")
 	require.Nil(t, result.Error)
 	require.Equal(t,
-		"{\"firstHop\":\"example.com:4321\",\"transport\":\"ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@example.com:4321/\"}",
+		"{\"clientConfig\":\"ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@example.com:4321/\",\"firstHop\":\"example.com:4321\"}",
 		result.Value)
 }
 
@@ -38,7 +38,7 @@ func Test_doParseTunnel_LegacyJSON(t *testing.T) {
 }`)
 	require.Nil(t, result.Error)
 	require.Equal(t,
-		"{\"firstHop\":\"example.com:4321\",\"transport\":\"{\\n    \\\"server\\\": \\\"example.com\\\",\\n    \\\"server_port\\\": 4321,\\n    \\\"method\\\": \\\"chacha20-ietf-poly1305\\\",\\n    \\\"password\\\": \\\"SECRET\\\"\\n}\"}",
+		"{\"clientConfig\":\"{\\n    \\\"server\\\": \\\"example.com\\\",\\n    \\\"server_port\\\": 4321,\\n    \\\"method\\\": \\\"chacha20-ietf-poly1305\\\",\\n    \\\"password\\\": \\\"SECRET\\\"\\n}\",\"firstHop\":\"example.com:4321\"}",
 		result.Value)
 }
 
@@ -55,7 +55,7 @@ transport:
 
 	require.Nil(t, result.Error)
 	require.Equal(t,
-		"{\"firstHop\":\"example.com:80\",\"transport\":\"  $type: tcpudp\\n  tcp: \\u0026shared\\n    $type: shadowsocks\\n    endpoint: example.com:80\\n    cipher: chacha20-ietf-poly1305\\n    secret: SECRET\\n  udp: *shared\\n\"}",
+		"{\"clientConfig\":\"transport:\\n    $type: tcpudp\\n    tcp: \\u0026shared\\n      $type: shadowsocks\\n      endpoint: example.com:80\\n      cipher: chacha20-ietf-poly1305\\n      secret: SECRET\\n    udp: *shared\\n\",\"firstHop\":\"example.com:80\"}",
 		result.Value)
 }
 

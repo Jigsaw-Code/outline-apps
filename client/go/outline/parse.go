@@ -24,18 +24,36 @@ import (
 	"github.com/goccy/go-yaml/ast"
 )
 
-type parseTunnelConfigRequest struct {
-	Transport ast.Node
-	Error     *struct {
+// providerConfig is the config fetched from the provider. It may be either an error, or a tunnel config.
+type providerConfig struct {
+	ProviderErrorConfig  `yaml:",inline"`
+	ProviderTunnelConfig `yaml:",inline"`
+}
+
+// ProviderErrorConfig is config returned by the provider with a custom error to
+// show to the user.
+type ProviderErrorConfig struct {
+	Error *struct {
 		Message string
 		Details string
 	}
 }
 
-// tunnelConfigJson must match the definition in config.ts.
-type tunnelConfigJson struct {
-	FirstHop  string `json:"firstHop"`
-	Transport string `json:"transport"`
+// ProviderTunnelConfig is the config to fully configure the VPN.
+type ProviderTunnelConfig struct {
+	ProviderClientConfig `yaml:",inline"`
+}
+
+// ProviderClientConfig is the config to create the client that connects to the service.
+type ProviderClientConfig struct {
+	// The transport to use to connect to the service.
+	Transport ast.Node
+}
+
+// firstHopAndTunnelConfigJSON must match FirstHopAndTunnelConfigJson in config.ts.
+type firstHopAndTunnelConfigJSON struct {
+	Client   string `json:"client"`
+	FirstHop string `json:"firstHop"`
 }
 
 func hasKey[K comparable, V any](m map[K]V, key K) bool {
@@ -44,16 +62,16 @@ func hasKey[K comparable, V any](m map[K]V, key K) bool {
 }
 
 func doParseTunnelConfig(input string) *InvokeMethodResult {
-	var transportConfigText string
+	var clientConfig ClientConfig
 
 	input = strings.TrimSpace(input)
 	// Input may be one of:
 	// - ss:// link
 	// - Legacy Shadowsocks JSON (parsed as YAML)
-	// - New advanced YAML format
+	// - Advanced YAML format
 	if strings.HasPrefix(input, "ss://") {
 		// Legacy URL format. Input is the transport config.
-		transportConfigText = input
+		clientConfig.Transport = input
 	} else {
 		var yamlValue map[string]any
 		if err := yaml.Unmarshal([]byte(input), &yamlValue); err != nil {
@@ -67,8 +85,8 @@ func doParseTunnelConfig(input string) *InvokeMethodResult {
 
 		if hasKey(yamlValue, "transport") || hasKey(yamlValue, "error") {
 			// New format. Parse as tunnel config
-			tunnelConfig := parseTunnelConfigRequest{}
-			if err := yaml.Unmarshal([]byte(input), &tunnelConfig); err != nil {
+			providerConfig := providerConfig{}
+			if err := yaml.Unmarshal([]byte(input), &providerConfig); err != nil {
 				return &InvokeMethodResult{
 					Error: &platerrors.PlatformError{
 						Code:    platerrors.InvalidConfig,
@@ -78,21 +96,21 @@ func doParseTunnelConfig(input string) *InvokeMethodResult {
 			}
 
 			// Process provider error, if present.
-			if tunnelConfig.Error != nil {
+			if providerConfig.Error != nil {
 				platErr := &platerrors.PlatformError{
 					Code:    platerrors.ProviderError,
-					Message: tunnelConfig.Error.Message,
+					Message: providerConfig.Error.Message,
 				}
-				if tunnelConfig.Error.Details != "" {
+				if providerConfig.Error.Details != "" {
 					platErr.Details = map[string]any{
-						"details": tunnelConfig.Error.Details,
+						"details": providerConfig.Error.Details,
 					}
 				}
 				return &InvokeMethodResult{Error: platErr}
 			}
 
-			// Extract transport config as an opaque string.
-			transportConfigBytes, err := yaml.Marshal(tunnelConfig.Transport)
+			// Extract client config as an opaque string.
+			clientConfigBytes, err := yaml.MarshalWithOptions(providerConfig.ProviderClientConfig, yaml.Flow(true))
 			if err != nil {
 				return &InvokeMethodResult{
 					Error: &platerrors.PlatformError{
@@ -101,22 +119,34 @@ func doParseTunnelConfig(input string) *InvokeMethodResult {
 					},
 				}
 			}
-			transportConfigText = string(transportConfigBytes)
+			clientConfig.Transport = string(clientConfigBytes)
 		} else {
 			// Legacy JSON format. Input is the transport config.
-			transportConfigText = input
+			clientConfig.Transport = input
 		}
 	}
 
-	result := NewClient(transportConfigText)
+	result := NewClient(clientConfig)
 	if result.Error != nil {
 		return &InvokeMethodResult{
 			Error: result.Error,
 		}
 	}
+	clientConfigBytes, err := json.Marshal(clientConfig)
+	if err != nil {
+		return &InvokeMethodResult{
+			Error: &platerrors.PlatformError{
+				Code:    platerrors.InternalError,
+				Message: fmt.Sprintf("failed to serialize JSON response: %v", err),
+			},
+		}
+	}
+	response := firstHopAndTunnelConfigJSON{
+		Client: string(clientConfigBytes),
+	}
+
 	streamFirstHop := result.Client.sd.ConnectionProviderInfo.FirstHop
 	packetFirstHop := result.Client.pl.ConnectionProviderInfo.FirstHop
-	response := tunnelConfigJson{Transport: transportConfigText}
 	if streamFirstHop == packetFirstHop {
 		response.FirstHop = streamFirstHop
 	}

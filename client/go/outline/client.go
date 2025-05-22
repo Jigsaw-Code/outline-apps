@@ -41,6 +41,11 @@ func (c *Client) ListenPacket(ctx context.Context) (net.PacketConn, error) {
 	return c.pl.ListenPacket(ctx)
 }
 
+// ClientConfig is used to create the Client.
+type ClientConfig struct {
+	Transport string
+}
+
 // NewClientResult represents the result of [NewClientAndReturnError].
 //
 // We use a struct instead of a tuple to preserve a strongly typed error that gobind recognizes.
@@ -50,18 +55,18 @@ type NewClientResult struct {
 }
 
 // NewClient creates a new Outline client from a configuration string.
-func NewClient(transportConfig string) *NewClientResult {
+func NewClient(clientConfig ClientConfig) *NewClientResult {
 	tcpDialer := transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
 	udpDialer := transport.UDPDialer{}
-	client, err := NewClientWithBaseDialers(transportConfig, &tcpDialer, &udpDialer)
+	client, err := NewClientWithBaseDialers(clientConfig, &tcpDialer, &udpDialer)
 	if err != nil {
 		return &NewClientResult{Error: platerrors.ToPlatformError(err)}
 	}
 	return &NewClientResult{Client: client}
 }
 
-func NewClientWithBaseDialers(transportConfig string, tcpDialer transport.StreamDialer, udpDialer transport.PacketDialer) (*Client, error) {
-	transportYAML, err := config.ParseConfigYAML(transportConfig)
+func NewClientWithBaseDialers(clientConfig ClientConfig, tcpDialer transport.StreamDialer, udpDialer transport.PacketDialer) (*Client, error) {
+	transportYAML, err := config.ParseConfigYAML(clientConfig.Transport)
 	if err != nil {
 		return nil, &platerrors.PlatformError{
 			Code:    platerrors.InvalidConfig,

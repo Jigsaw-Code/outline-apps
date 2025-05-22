@@ -17,7 +17,7 @@ import * as net from '@outline/infrastructure/net';
 
 import {
   parseTunnelConfig,
-  TunnelConfigJson,
+  FirstHopAndTunnelConfigJson,
   DynamicServiceConfig,
   StaticServiceConfig,
   parseAccessKey,
@@ -68,7 +68,7 @@ export async function newOutlineServer(
 
 class OutlineServer implements Server {
   errorMessageId?: string;
-  private tunnelConfig?: TunnelConfigJson;
+  private tunnelConfig?: FirstHopAndTunnelConfigJson;
 
   constructor(
     private vpnApi: VpnApi,
@@ -140,7 +140,7 @@ class OutlineServer implements Server {
 // TODO(daniellacosse): unit tests
 async function fetchTunnelConfig(
   configLocation: URL
-): Promise<TunnelConfigJson> {
+): Promise<FirstHopAndTunnelConfigJson> {
   const responseBody = (
     await getDefaultMethodChannel().invokeMethod(
       'FetchResource',
