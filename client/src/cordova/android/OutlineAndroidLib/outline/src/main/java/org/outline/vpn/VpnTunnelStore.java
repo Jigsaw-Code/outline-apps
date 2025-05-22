@@ -26,7 +26,6 @@ class VpnTunnelStore {
   // TODO(alalama): s/connection/tunnel when update the schema.
   private static final String TUNNEL_KEY = "connection";
   private static final String TUNNEL_STATUS_KEY = "connectionStatus";
-  private static final String TUNNEL_SUPPORTS_UDP = "connectionSupportsUdp";
 
   private final SharedPreferences preferences;
 
@@ -76,14 +75,5 @@ class VpnTunnelStore {
     }
     SharedPreferences.Editor editor = preferences.edit();
     editor.putString(TUNNEL_STATUS_KEY, status.toString()).commit();
-  }
-
-  public void setIsUdpSupported(boolean isUdpSupported) {
-    SharedPreferences.Editor editor = preferences.edit();
-    editor.putBoolean(TUNNEL_SUPPORTS_UDP, isUdpSupported).commit();
-  }
-
-  public boolean isUdpSupported() {
-    return preferences.getBoolean(TUNNEL_SUPPORTS_UDP, false);
   }
 }

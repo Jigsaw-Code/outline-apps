@@ -105,12 +105,55 @@ public class VpnTunnelService extends VpnService {
     }
   }
 
-  /** File descriptor for the local TUN device, provided by VpnService.Builder.establish(). */
-  private ParcelFileDescriptor tunFd;
-  /** The Go "remote device" implementation. */
-  private Tunnel remoteDevice;
+  private static class SessionState {
+    public SessionState(String id) {
+      this.id = id;
+    }
 
-  private TunnelConfig tunnelConfig;
+    public String id() {
+      return this.id;
+    }
+
+    public void notifyNetworkChange() {
+      boolean isUdpSupported = false;
+      isUdpSupported = this.remoteDevice.updateUDPSupport();
+      LOG.info(String.format("UDP support: %s", isUdpSupported));
+    }
+
+    public void clear() {
+      // Stop traffic exchange with remote.
+      if (this.remoteDevice != null) {
+        this.remoteDevice.disconnect();
+        this.remoteDevice = null;
+      }
+
+      // Restore routing.
+      if (this.tunFd != null) {
+        try {
+          // On close, the OS restores the routing and destroys the TUN device.
+          this.tunFd.close();
+        } catch (IOException e) {
+          LOG.severe("Failed to close the VPN interface file descriptor.");
+        } finally {
+          this.tunFd = null;
+        }
+      }
+    }
+
+    private final String id;
+    /**
+     * File descriptor for the local TUN device, provided by VpnService.Builder.establish().
+     */
+    public ParcelFileDescriptor tunFd;
+    /**
+     * The Go "remote device" implementation.
+     */
+    public Tunnel remoteDevice;
+
+    public NetworkConnectivityMonitor networkConnectivityMonitor;
+  }
+
+  private SessionState session;
   private NetworkConnectivityMonitor networkConnectivityMonitor;
   private VpnTunnelStore tunnelStore;
   private Notification.Builder notificationBuilder;
@@ -183,13 +226,13 @@ public class VpnTunnelService extends VpnService {
   public void onRevoke() {
     LOG.info("VPN revoked.");
     broadcastVpnConnectivityChange(TunnelStatus.DISCONNECTED);
-    tearDownActiveTunnel();
+    this.clearSession();
   }
 
   @Override
   public void onDestroy() {
     LOG.info("Destroying VPN service.");
-    tearDownActiveTunnel();
+    this.clearSession();
   }
 
   // Tunnel API
@@ -211,27 +254,30 @@ public class VpnTunnelService extends VpnService {
     // already connected to another one.
     // Instead of tearing down the VPN and starting from scratch, we just replace the remote device
     // and restart the traffic exchange.
-    final boolean alreadyRunning = this.tunnelConfig != null && this.tunFd != null;
-    if (alreadyRunning) {
+    SessionState oldSession = this.session;
+    SessionState newSession = new SessionState(config.id);
+    if (oldSession != null) {
+      // Take over TUN device.
+      newSession.tunFd = oldSession.tunFd;
+      oldSession.tunFd = null;
+
+      this.clearSession();
       // Broadcast the previous instance disconnect event before reassigning the tunnel config.
       broadcastVpnConnectivityChange(TunnelStatus.DISCONNECTED);
       stopForeground();
+
       try {
         // Stops the remote device; does not tear down the VPN to avoid leaking traffic.
-        this.stopRemoteDevice();
+        oldSession.clear();
       } catch (Exception e) {
         LOG.log(Level.SEVERE, "Failed to disconnect tunnel", e);
       }
-    } else {
-      // Make sure we have a fully clean state.
-      this.tunnelConfig = null;
-      this.tunFd = null;
     }
 
     final NewClientResult clientResult = Outline.newClient(config.transportConfig);
     if (clientResult.getError() != null) {
       LOG.log(Level.WARNING, "Failed to create Outline Client", clientResult.getError());
-      tearDownActiveTunnel();
+      this.clearSession();
       return clientResult.getError();
     }
     final outline.Client client = clientResult.getClient();
@@ -248,20 +294,19 @@ public class VpnTunnelService extends VpnService {
         LOG.info(String.format(Locale.ROOT, "Go connectivity check result: %s", connResult));
 
         if (connResult.getTCPError() != null) {
-          tearDownActiveTunnel();
+          this.clearSession();
           return connResult.getTCPError();
         }
         remoteUdpForwardingEnabled = connResult.getUDPError() == null;
       } catch (Exception e) {
-        tearDownActiveTunnel();
+        this.clearSession();
         return new PlatformError(Platerrors.InternalError, "failed to check connectivity");
       }
     }
-    this.tunnelConfig = config;
 
     // If the VPN is already running, we skip the set up of the VPN routing.
     // TODO(fortuna): we should probably shutdown and restart, in case the config changed.
-    if (!alreadyRunning) {
+    if (newSession.tunFd == null) {
       // Only establish the VPN if this is not a tunnel restart.
       try {
         String dnsResolver = DNS_RESOLVER_IP_ADDRESSES[new Random().nextInt(DNS_RESOLVER_IP_ADDRESSES.length)];
@@ -287,14 +332,14 @@ public class VpnTunnelService extends VpnService {
         for (Subnet subnet : reservedBypassSubnets) {
           builder.addRoute(subnet.address, subnet.prefix);
         }
-        this.tunFd = builder.establish();
+        newSession.tunFd = builder.establish();
       } catch (Exception e) {
         LOG.log(Level.SEVERE, "Failed to establish the VPN", e);
       }
 
-      if (this.tunFd == null) {
+      if (newSession.tunFd == null) {
         LOG.severe("Failed to establish the VPN");
-        tearDownActiveTunnel();
+        this.clearSession();
         return new PlatformError(Platerrors.SetupSystemVPNFailed, "failed to establish the VPN");
       }
       startNetworkConnectivityMonitor();
@@ -302,12 +347,12 @@ public class VpnTunnelService extends VpnService {
 
     // Start exchanging traffic between the local TUN device and the remote device.
     final ConnectOutlineTunnelResult result =
-            Tun2socks.connectOutlineTunnel(this.tunFd.getFd(), client, remoteUdpForwardingEnabled);
+            Tun2socks.connectOutlineTunnel(newSession.tunFd.getFd(), client, remoteUdpForwardingEnabled);
     if (result.getError() != null) {
-      tearDownActiveTunnel();
+      this.clearSession();
       return result.getError();
     }
-    this.remoteDevice = result.getTunnel();
+    this.session.remoteDevice = result.getTunnel();
     
     startForegroundWithNotification(config.name);
     storeActiveTunnel(config, remoteUdpForwardingEnabled);
@@ -316,67 +361,41 @@ public class VpnTunnelService extends VpnService {
 
   @Nullable
   private synchronized DetailedJsonError stopTunnel(@NonNull final String tunnelId) {
-    if (!isTunnelActive(tunnelId)) {
-      return Errors.toDetailedJsonError(new PlatformError(
-          Platerrors.InternalError,
-          "VPN profile is not active"));
+    if (this.isTunnelActive(tunnelId)) {
+      this.clearSession();
+      return null;
     }
-    tearDownActiveTunnel();
-    return null;
+    return Errors.toDetailedJsonError(new PlatformError(
+            Platerrors.InternalError,
+            "VPN profile is not active"));
   }
 
   private synchronized boolean isTunnelActive(final String tunnelId) {
-    if (tunnelConfig == null || tunnelConfig.id == null) {
-      return false;
-    }
-    return tunnelConfig.id.equals(tunnelId);
+    return this.session != null && this.session.id().equals(tunnelId);
   }
 
   /** Helper method to tear down an active tunnel. */
-  private void tearDownActiveTunnel() {
-    // Stop monitoring network changes.
-    try {
-      final ConnectivityManager connectivityManager =
-              (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-      connectivityManager.unregisterNetworkCallback(networkConnectivityMonitor);
-    } catch (Exception e) {
-      // Ignore, monitor not installed if the connectivity checks failed.
-    }
-
-    // Stop traffic exchange with remote.
-    this.stopRemoteDevice();
-
-    // Restore routing.
-    if (this.tunFd != null) {
+  private void clearSession() {
+    if (this.session != null) {
+      // Stop monitoring network changes.
       try {
-        // On close, the OS restores the routing and destroys the TUN device.
-        this.tunFd.close();
-      } catch (IOException e) {
-        LOG.severe("Failed to close the VPN interface file descriptor.");
-      } finally {
-        this.tunFd = null;
+        final ConnectivityManager connectivityManager =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        connectivityManager.unregisterNetworkCallback(networkConnectivityMonitor);
+      } catch (Exception e) {
+        // Ignore, monitor not installed if the connectivity checks failed.
       }
+
+      this.session.clear();
+      this.session = null;
+
+      // Removes notification
+      this.stopForeground();
+      // Save state indicating it's disconnected.
+      this.tunnelStore.setTunnelStatus(TunnelStatus.DISCONNECTED);
+      // Notifies UI.
+      this.broadcastVpnConnectivityChange(TunnelStatus.DISCONNECTED);
     }
-
-    // Clear VPN notification.
-    stopForeground();
-
-    // Save state indicating it's disconnected.
-    this.tunnelStore.setTunnelStatus(TunnelStatus.DISCONNECTED);
-
-    // Clear config that is no longer needed.
-    this.tunnelConfig = null;
-  }
-
-  /** Stops the traffic exchange with the remote device. */
-  private synchronized void stopRemoteDevice() {
-    if (this.remoteDevice == null) {
-      return;
-    }
-    if (this.remoteDevice.isConnected()) {
-      this.remoteDevice.disconnect();
-    }
-    this.remoteDevice = null;
   }
 
   // Connectivity
@@ -398,15 +417,7 @@ public class VpnTunnelService extends VpnService {
       }
       broadcastVpnConnectivityChange(TunnelStatus.CONNECTED);
       updateNotification(TunnelStatus.CONNECTED);
-
-      boolean isUdpSupported = false;
-      if (VpnTunnelService.this.remoteDevice != null) {
-        isUdpSupported = VpnTunnelService.this.remoteDevice.updateUDPSupport();
-      }
-      LOG.info(
-          String.format("UDP support: %s -> %s", tunnelStore.isUdpSupported(), isUdpSupported));
-      // Why do we need to persist this? TODO(fortuna): remove.
-      tunnelStore.setIsUdpSupported(isUdpSupported);
+      VpnTunnelService.this.session.notifyNetworkChange();
     }
 
     @Override
@@ -443,7 +454,7 @@ public class VpnTunnelService extends VpnService {
 
   /* Broadcast change in the VPN connectivity. */
   private void broadcastVpnConnectivityChange(TunnelStatus status) {
-    if (tunnelConfig == null) {
+    if (this.session == null) {
       LOG.warning("Tunnel disconnected, not sending VPN connectivity broadcast");
       return;
     }
@@ -452,7 +463,7 @@ public class VpnTunnelService extends VpnService {
     // We must explicitly set the package for security reasons: https://developer.android.com/about/versions/14/behavior-changes-14#security
     statusChange.setPackage(this.getPackageName());
     statusChange.putExtra(MessageData.PAYLOAD.value, status.value);
-    statusChange.putExtra(MessageData.TUNNEL_ID.value, tunnelConfig.id);
+    statusChange.putExtra(MessageData.TUNNEL_ID.value, this.session.id());
     sendBroadcast(statusChange);
   }
 
