@@ -21,7 +21,6 @@ import (
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/goccy/go-yaml"
-	"github.com/goccy/go-yaml/ast"
 )
 
 // providerConfig is the config fetched from the provider. It may be either an error, or a tunnel config.
@@ -41,13 +40,7 @@ type ProviderErrorConfig struct {
 
 // ProviderTunnelConfig is the config to fully configure the VPN.
 type ProviderTunnelConfig struct {
-	ProviderClientConfig `yaml:",inline"`
-}
-
-// ProviderClientConfig is the config to create the client that connects to the service.
-type ProviderClientConfig struct {
-	// The transport to use to connect to the service.
-	Transport ast.Node
+	ClientConfig `yaml:",inline"`
 }
 
 // firstHopAndTunnelConfigJSON must match FirstHopAndTunnelConfigJson in config.ts.
@@ -109,36 +102,28 @@ func doParseTunnelConfig(input string) *InvokeMethodResult {
 				return &InvokeMethodResult{Error: platErr}
 			}
 
-			// Extract client config as an opaque string.
-			clientConfigBytes, err := yaml.MarshalWithOptions(providerConfig.ProviderClientConfig, yaml.Flow(true))
-			if err != nil {
-				return &InvokeMethodResult{
-					Error: &platerrors.PlatformError{
-						Code:    platerrors.InvalidConfig,
-						Message: fmt.Sprintf("failed to normalize config: %s", err),
-					},
-				}
-			}
-			clientConfig.Transport = string(clientConfigBytes)
+			// Extract client config.
+			clientConfig = providerConfig.ClientConfig
 		} else {
 			// Legacy JSON format. Input is the transport config.
-			clientConfig.Transport = input
+			clientConfig.Transport = yamlValue
 		}
 	}
 
-	result := NewClient(clientConfig)
-	if result.Error != nil {
-		return &InvokeMethodResult{
-			Error: result.Error,
-		}
-	}
-	clientConfigBytes, err := json.Marshal(clientConfig)
+	clientConfigBytes, err := yaml.MarshalWithOptions(clientConfig, yaml.Flow(true))
 	if err != nil {
 		return &InvokeMethodResult{
 			Error: &platerrors.PlatformError{
-				Code:    platerrors.InternalError,
-				Message: fmt.Sprintf("failed to serialize JSON response: %v", err),
+				Code:    platerrors.InvalidConfig,
+				Message: fmt.Sprintf("failed to normalize config: %s", err),
 			},
+		}
+	}
+
+	result := NewClient(string(clientConfigBytes))
+	if result.Error != nil {
+		return &InvokeMethodResult{
+			Error: result.Error,
 		}
 	}
 	response := firstHopAndTunnelConfigJSON{
