@@ -13,11 +13,11 @@
 // limitations under the License.
 
 import {invokeGoMethod, registerCallback} from './go_plugin';
+import {FirstHopAndTunnelConfigJson} from '../src/www/app/outline_server_repository/config';
 import {
   StartRequestJson,
   TunnelStatus,
 } from '../src/www/app/outline_server_repository/vpn';
-import {FirstHopAndTunnelConfigJson} from '../src/www/app/outline_server_repository/config';
 
 // TODO: Separate this config into LinuxVpnConfig and WindowsVpnConfig. Some fields may share.
 interface VpnConfig {

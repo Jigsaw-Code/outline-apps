@@ -277,11 +277,7 @@ class GoTun2socks {
    * @param isUdpEnabled Indicates whether the remote Outline server supports UDP.
    */
   start(clientConfig: string, isUdpEnabled: boolean): Promise<void> {
-    return this.startWithPlatformSpecificArgs(
-      clientConfig,
-      isUdpEnabled,
-      []
-    );
+    return this.startWithPlatformSpecificArgs(clientConfig, isUdpEnabled, []);
   }
 
   /**
@@ -296,11 +292,7 @@ class GoTun2socks {
     if (adapterIndex) {
       args.push('-adapterIndex', adapterIndex);
     }
-    return this.startWithPlatformSpecificArgs(
-      clientConfig,
-      isUdpEnabled,
-      args
-    );
+    return this.startWithPlatformSpecificArgs(clientConfig, isUdpEnabled, args);
   }
 
   private startWithPlatformSpecificArgs(

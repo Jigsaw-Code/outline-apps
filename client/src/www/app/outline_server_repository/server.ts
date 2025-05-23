@@ -125,7 +125,7 @@ class OutlineServer implements Server {
       if (this.serviceConfig instanceof DynamicServiceConfig) {
         this.tunnelConfig = undefined;
       }
-    } catch (e) {
+    } catch {
       // All the plugins treat disconnection errors as ErrorCode.UNEXPECTED.
       throw new errors.RegularNativeError();
     }
