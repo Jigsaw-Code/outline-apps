@@ -33,7 +33,6 @@ import (
 	"github.com/eycorsican/go-tun2socks/core"
 	"github.com/eycorsican/go-tun2socks/proxy/dnsfallback"
 	"github.com/eycorsican/go-tun2socks/tun"
-	"github.com/goccy/go-yaml"
 )
 
 // tun2socks exit codes. Must be kept in sync with definitions in "go_vpn_tunnel.ts"
@@ -121,13 +120,6 @@ func main() {
 	if len(*args.clientConfig) == 0 {
 		printErrorAndExit(platerrors.PlatformError{Code: platerrors.InvalidConfig, Message: "client config missing"}, exitCodeFailure)
 	}
-	clientConfig := outline.ClientConfig{}
-	err := yaml.Unmarshal([]byte(*args.clientConfig), &clientConfig)
-	if err != nil {
-		printErrorAndExit(
-			platerrors.PlatformError{Code: platerrors.InvalidConfig, Message: "failed to parse config", Cause: platerrors.ToPlatformError(err)},
-			exitCodeFailure)
-	}
 
 	var client *outline.Client
 	if *args.adapterIndex >= 0 {
@@ -135,12 +127,12 @@ func main() {
 		if err != nil {
 			printErrorAndExit(err, exitCodeFailure)
 		}
-		client, err = outline.NewClientWithBaseDialers(clientConfig, tcp, udp)
+		client, err = outline.NewClientWithBaseDialers(*args.clientConfig, tcp, udp)
 		if err != nil {
 			printErrorAndExit(err, exitCodeFailure)
 		}
 	} else {
-		result := outline.NewClient(clientConfig)
+		result := outline.NewClient(*args.clientConfig)
 		if result.Error != nil {
 			printErrorAndExit(result.Error, exitCodeFailure)
 		}
