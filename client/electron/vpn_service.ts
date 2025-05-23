@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import {invokeGoMethod, registerCallback} from './go_plugin';
+import {FirstHopAndTunnelConfigJson} from '../src/www/app/outline_server_repository/config';
 import {
   StartRequestJson,
   TunnelStatus,
@@ -30,9 +31,8 @@ interface VpnConfig {
   protectionMark: number;
 }
 
-interface EstablishVpnRequest {
+interface EstablishVpnRequest extends FirstHopAndTunnelConfigJson {
   vpn: VpnConfig;
-  transport: string;
 }
 
 export async function establishVpn(request: StartRequestJson) {
@@ -63,8 +63,8 @@ export async function establishVpn(request: StartRequestJson) {
       protectionMark: 0x711e,
     },
 
-    // The actual transport config
-    transport: request.config.transport,
+    // The actual tunnel config
+    ...request.config,
   };
 
   await invokeGoMethod('EstablishVPN', JSON.stringify(config));
