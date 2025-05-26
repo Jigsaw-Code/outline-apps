@@ -61,6 +61,7 @@ For development of the OutlineAndroidLib, we recommend installing Android Studio
 You can check your environment with:
 
 ```sh
+npm run action client/src/cordova/setup android
 cd client
 npx cordova requirements android
 ```
