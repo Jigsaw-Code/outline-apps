@@ -45,10 +45,6 @@ func (c *Client) ListenPacket(ctx context.Context) (net.PacketConn, error) {
 	return c.pl.ListenPacket(ctx)
 }
 
-func (c *Client) GetUsageReporter() *config.UsageReporter {
-	return c.ur
-}
-
 // NewClientResult represents the result of [NewClientAndReturnError].
 //
 // We use a struct instead of a tuple to preserve a strongly typed error that gobind recognizes.
