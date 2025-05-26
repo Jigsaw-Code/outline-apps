@@ -130,16 +130,16 @@ func NewClientWithBaseDialers(transportConfig string, sessionConfig string, tcpD
 	if err != nil {
 		return nil, &platerrors.PlatformError{
 			Code:    platerrors.InvalidConfig,
-			Message: "config is not valid YAML",
+			Message: "client config is not valid YAML",
 			Cause:   platerrors.ToPlatformError(err),
 		}
 	}
-	usageReporter, err := config.NewUsageReportProvider(tcpDialer).Parse(context.Background(), usageReportYAML)
+	usageReporter, err := config.NewUsageReportProvider().Parse(context.Background(), usageReportYAML)
 	if err != nil {
 		if errors.Is(err, errors.ErrUnsupported) {
 			return nil, &platerrors.PlatformError{
 				Code:    platerrors.InvalidConfig,
-				Message: "unsupported config",
+				Message: "unsupported client config",
 				Cause:   platerrors.ToPlatformError(err),
 			}
 		} else {

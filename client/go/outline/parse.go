@@ -25,9 +25,9 @@ import (
 )
 
 type parseTunnelConfigRequest struct {
-	Transport      ast.Node
-	Session_Report ast.Node
-	Error          *struct {
+	Transport     ast.Node
+	SessionReport ast.Node
+	Error         *struct {
 		Message string
 		Details string
 	}
@@ -107,12 +107,12 @@ func doParseTunnelConfig(input string) *InvokeMethodResult {
 			transportConfigText = string(transportConfigBytes)
 			if hasKey(yamlValue, "session_report") {
 				// Extract usage report config as an opaque string.
-				sessionReportConfigBytes, err := yaml.Marshal(tunnelConfig.Session_Report)
+				sessionReportConfigBytes, err := yaml.Marshal(tunnelConfig.SessionReport)
 				if err != nil {
 					return &InvokeMethodResult{
 						Error: &platerrors.PlatformError{
 							Code:    platerrors.InvalidConfig,
-							Message: fmt.Sprintf("failed to normalize config: %s", err),
+							Message: fmt.Sprintf("failed to normalize session config: %s", err),
 						},
 					}
 				}

@@ -30,9 +30,8 @@ func newTestTransportProvider() *TypeParser[*TransportPair] {
 	return NewDefaultTransportProvider(tcpDialer, udpDialer)
 }
 
-func newTestUsageReporProvider() *TypeParser[*UsageReporter] {
-	tcpDialer := &transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
-	return NewUsageReportProvider(tcpDialer)
+func newTestUsageReportProvider() *TypeParser[*UsageReporter] {
+	return NewUsageReportProvider()
 }
 
 func TestRegisterDefaultProviders(t *testing.T) {

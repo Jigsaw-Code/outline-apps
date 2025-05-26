@@ -246,7 +246,7 @@ public class VpnTunnelService extends VpnService {
       try {
         // Do not perform connectivity checks when connecting on startup. We should avoid failing
         // the connection due to a network error, as network may not be ready.
-        final TCPAndUDPConnectivityResult connResult = Outline.checkTCPAndUDPConnectivity(clientResult.getClient());
+        final TCPAndUDPConnectivityResult connResult = Outline.checkTCPAndUDPConnectivity(this.outlineClient);
         LOG.info(String.format(Locale.ROOT, "Go connectivity check result: %s", connResult));
 
         if (connResult.getTCPError() != null) {
@@ -304,12 +304,12 @@ public class VpnTunnelService extends VpnService {
 
     // Start exchanging traffic between the local TUN device and the remote device.
     final ConnectOutlineTunnelResult result =
-            Tun2socks.connectOutlineTunnel(this.tunFd.getFd(), clientResult.getClient(), remoteUdpForwardingEnabled);
+            Tun2socks.connectOutlineTunnel(this.tunFd.getFd(), this.outlineClient, remoteUdpForwardingEnabled);
     if (result.getError() != null) {
       tearDownActiveTunnel();
       return result.getError();
     }
-    clientResult.getClient().startReporting();
+    this.outlineClient.startReporting();
     this.remoteDevice = result.getTunnel();
     
     startForegroundWithNotification(config.name);
@@ -323,12 +323,6 @@ public class VpnTunnelService extends VpnService {
         return Errors.toDetailedJsonError(new PlatformError(
             Platerrors.InternalError,
             "VPN profile is not active"));
-    }
-
-    // Stop reporting on the Client instance
-    if (this.outlineClient != null) {
-        this.outlineClient.stopReporting();
-        this.outlineClient = null; // Clear the reference
     }
 
     tearDownActiveTunnel();
@@ -366,6 +360,12 @@ public class VpnTunnelService extends VpnService {
       } finally {
         this.tunFd = null;
       }
+    }
+
+    // Stop reporting on the Client instance
+    if (this.outlineClient != null) {
+        this.outlineClient.stopReporting();
+        this.outlineClient = null; // Clear the reference
     }
 
     // Clear VPN notification.

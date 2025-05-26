@@ -19,8 +19,11 @@ package reporting
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
+	"io/fs"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -35,19 +38,15 @@ import (
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
-func CheckTCPConnectivity(tcp transport.StreamDialer, reportingUrl string) error {
-	tcpErr := connectivity.CheckTCPConnectivityWithHTTP(tcp, reportingUrl)
-	if tcpErr != nil {
-		return tcpErr
-	}
-	return nil
+func checkTCPConnectivity(tcp transport.StreamDialer, reportingUrl string) error {
+	return connectivity.CheckTCPConnectivityWithHTTP(tcp, reportingUrl)
 }
 
 const cookiesFile = "cookies.json"
 
 func Report(tcp transport.StreamDialer, reportingUrl string) (err error) {
 	// Perform a TCP connectivity check.
-	if err := CheckTCPConnectivity(tcp, reportingUrl); err != nil {
+	if err := checkTCPConnectivity(tcp, reportingUrl); err != nil {
 		return fmt.Errorf("TCP connectivity check failed: %w", err)
 	}
 
@@ -118,8 +117,6 @@ func Report(tcp transport.StreamDialer, reportingUrl string) (err error) {
 	}
 
 	headers := string(response[:headersEnd])
-	fmt.Println("HTTP Headers:")
-	fmt.Println(headers)
 
 	// Extract cookies from the headers.
 	var newCookies []*http.Cookie
@@ -210,7 +207,7 @@ func saveCookies(urls []*url.URL, jar http.CookieJar, filename string) error {
 func loadCookies(jar http.CookieJar, filename string) ([]*url.URL, error) {
 	// Read cookies from the file
 	file, err := os.Open(filename)
-	if os.IsNotExist(err) {
+	if errors.Is(err, fs.ErrNotExist) {
 		return []*url.URL{}, nil
 	}
 	if err != nil {
@@ -263,11 +260,11 @@ func StartReporting(ctx context.Context, tcp transport.StreamDialer, ur *config.
 		case <-ticker.C:
 			err := Report(tcp, ur.Url)
 			if err != nil {
-				fmt.Printf("Report failed: %v\n", err)
+				slog.Error("Report failed", "error", err)
 			}
 		case <-ctx.Done():
 			// Stop reporting when the context is canceled
-			fmt.Println("Stopping reporting...")
+			slog.Info("Stopping reporting...")
 			return
 		}
 	}

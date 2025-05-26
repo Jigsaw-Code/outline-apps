@@ -20,6 +20,12 @@ import (
 	"time"
 )
 
+type UsageReporter struct {
+	Interval      time.Duration
+	Url           string
+	EnableCookies bool
+}
+
 // UsageReporterConfig is the format for the Usage Reporter config.
 type UsageReporterConfig struct {
 	Interval      string
