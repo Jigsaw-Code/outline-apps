@@ -16,7 +16,6 @@ package iptable
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net"
 	"net/netip"
@@ -45,9 +44,6 @@ type PacketListener struct {
 var _ transport.PacketListener = (*PacketListener)(nil)
 
 func NewPacketListener(table IPTable[transport.PacketListener], defaultListener transport.PacketListener) (*PacketListener, error) {
-	if defaultListener == nil {
-		return nil, errors.New("IPTablePacketListener requires a non-nil defaultListener")
-	}
 	if table == nil {
 		table = NewIPTable[transport.PacketListener]()
 	}
