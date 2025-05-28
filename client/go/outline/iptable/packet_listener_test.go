@@ -269,31 +269,33 @@ func TestIPTablePacketListener_IPv4IPv6Routing(t *testing.T) {
 
 	testData := []byte("ipv4-ipv6-test")
 
-	// 1. IPv4
-	destV4PureAddrStr := "192.0.2.100:12345"
-	destV4Pure, err := net.ResolveUDPAddr("udp4", destV4PureAddrStr) // Force IPv4
-	require.NoError(t, err, "Failed to resolve destV4Pure")
+	t.Run("IPv4", func(t *testing.T) {
+		destV4PureAddrStr := "192.0.2.100:12345"
+		destV4Pure, err := net.ResolveUDPAddr("udp4", destV4PureAddrStr) // Force IPv4
+		require.NoError(t, err, "Failed to resolve destV4Pure")
 
-	_, err = conn.WriteTo(testData, destV4Pure)
-	require.NoError(t, err, "WriteTo to destV4Pure failed")
-	select {
-	case received := <-mockConnV4Specific.writeChan:
-		assert.Equal(t, testData, received, "mockConnV4Specific received unexpected data for pure IPv4")
-	case <-time.After(100 * time.Millisecond):
-		t.Fatal("mockConnV4Specific did not receive data for pure IPv4")
-	}
+		_, err = conn.WriteTo(testData, destV4Pure)
+		require.NoError(t, err, "WriteTo to destV4Pure failed")
+		select {
+		case received := <-mockConnV4Specific.writeChan:
+			assert.Equal(t, testData, received, "mockConnV4Specific received unexpected data for pure IPv4")
+		case <-time.After(100 * time.Millisecond):
+			t.Fatal("mockConnV4Specific did not receive data for pure IPv4")
+		}
+	})
 
-	// 2. IPv6
-	destV6PureAddrStr := "[2001:db8:1::100]:12345"
-	destV6Pure, err := net.ResolveUDPAddr("udp6", destV6PureAddrStr) // Force IPv6
-	require.NoError(t, err, "Failed to resolve destV6Pure")
+	t.Run("IPv6", func(t *testing.T) {
+		destV6PureAddrStr := "[2001:db8:1::100]:12345"
+		destV6Pure, err := net.ResolveUDPAddr("udp6", destV6PureAddrStr) // Force IPv6
+		require.NoError(t, err, "Failed to resolve destV6Pure")
 
-	_, err = conn.WriteTo(testData, destV6Pure)
-	require.NoError(t, err, "WriteTo to destV6Pure failed")
-	select {
-	case received := <-mockConnV6Specific.writeChan:
-		assert.Equal(t, testData, received, "mockConnV6Specific received unexpected data for pure IPv6")
-	case <-time.After(100 * time.Millisecond):
-		t.Fatal("mockConnV6Specific did not receive data for pure IPv6")
-	}
+		_, err = conn.WriteTo(testData, destV6Pure)
+		require.NoError(t, err, "WriteTo to destV6Pure failed")
+		select {
+		case received := <-mockConnV6Specific.writeChan:
+			assert.Equal(t, testData, received, "mockConnV6Specific received unexpected data for pure IPv6")
+		case <-time.After(100 * time.Millisecond):
+			t.Fatal("mockConnV6Specific did not receive data for pure IPv6")
+		}
+	})
 }

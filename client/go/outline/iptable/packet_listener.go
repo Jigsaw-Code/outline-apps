@@ -86,8 +86,8 @@ type incomingPacket struct {
 // For incoming packets (ReadFrom), it aggregates packets received from all
 // active underlying connections (both specific and default) into a single channel.
 type packetConn struct {
-	defaultListener   transport.PacketListener
-	defaultConnection net.PacketConn
+	defaultListener transport.PacketListener
+	defaultConn     net.PacketConn
 
 	listenerTable IPTable[transport.PacketListener]
 	connMap       map[netip.Addr]net.PacketConn
@@ -108,34 +108,33 @@ func newPacketConn(
 ) (*packetConn, error) {
 	forwardingContext, closeForwardingContext := context.WithCancel(parentContext)
 
-	var defaultConnection net.PacketConn
+	var defaultConn net.PacketConn
 	if defaultListener != nil {
-		connectionAttempt, err := defaultListener.ListenPacket(forwardingContext)
+		connAttempt, err := defaultListener.ListenPacket(forwardingContext)
 
 		if err != nil {
-			defaultConnection = nil
+			defaultConn = nil
 		} else {
-			defaultConnection = connectionAttempt
+			defaultConn = connAttempt
 		}
 	}
 
-	connection := &packetConn{
+	conn := &packetConn{
 		closePacketForwardingContext: closeForwardingContext,
 		connMap:                      make(map[netip.Addr]net.PacketConn),
 		connMapLock:                  sync.Mutex{},
-		defaultConnection:            defaultConnection,
+		defaultConn:                  defaultConn,
 		defaultListener:              defaultListener,
 		forwardedPackets:             make(chan incomingPacket, packetQueueSize),
 		forwardingContext:            forwardingContext,
 		listenerTable:                listenerTable,
 	}
 
-	if connection.defaultConnection != nil {
-		connection.forwardCounter.Add(1)
-		go connection.forwardPackets(connection.defaultConnection)
+	if conn.defaultConn != nil {
+		conn.forwardPackets(conn.defaultConn)
 	}
 
-	return connection, nil
+	return conn, nil
 }
 
 func (conn *packetConn) ReadFrom(result []byte) (n int, addr net.Addr, err error) {
@@ -186,8 +185,7 @@ func (conn *packetConn) WriteTo(packet []byte, addr net.Addr) (numBytes int, err
 		conn.connMap[ip] = subconn
 		conn.connMapLock.Unlock()
 
-		conn.forwardCounter.Add(1)
-		go conn.forwardPackets(subconn)
+		conn.forwardPackets(subconn)
 	}
 
 	return subconn.WriteTo(packet, addr)
@@ -204,8 +202,8 @@ func (conn *packetConn) Close() error {
 		delete(conn.connMap, address)
 	}
 
-	if conn.defaultConnection != nil {
-		conn.defaultConnection.Close()
+	if conn.defaultConn != nil {
+		conn.defaultConn.Close()
 	}
 
 	conn.forwardCounter.Wait()
@@ -215,16 +213,16 @@ func (conn *packetConn) Close() error {
 }
 
 func (conn *packetConn) LocalAddr() net.Addr {
-	if conn.defaultConnection != nil {
-		return conn.defaultConnection.LocalAddr()
+	if conn.defaultConn != nil {
+		return conn.defaultConn.LocalAddr()
 	}
 
 	return nil
 }
 
 func (conn *packetConn) SetDeadline(t time.Time) error {
-	if conn.defaultConnection != nil {
-		conn.defaultConnection.SetDeadline(t)
+	if conn.defaultConn != nil {
+		conn.defaultConn.SetDeadline(t)
 	}
 
 	conn.connMapLock.Lock()
@@ -238,8 +236,8 @@ func (conn *packetConn) SetDeadline(t time.Time) error {
 }
 
 func (conn *packetConn) SetReadDeadline(t time.Time) error {
-	if conn.defaultConnection != nil {
-		conn.defaultConnection.SetReadDeadline(t)
+	if conn.defaultConn != nil {
+		conn.defaultConn.SetReadDeadline(t)
 	}
 
 	conn.connMapLock.Lock()
@@ -253,8 +251,8 @@ func (conn *packetConn) SetReadDeadline(t time.Time) error {
 }
 
 func (conn *packetConn) SetWriteDeadline(t time.Time) error {
-	if conn.defaultConnection != nil {
-		conn.defaultConnection.SetWriteDeadline(t)
+	if conn.defaultConn != nil {
+		conn.defaultConn.SetWriteDeadline(t)
 	}
 
 	conn.connMapLock.Lock()
@@ -268,17 +266,20 @@ func (conn *packetConn) SetWriteDeadline(t time.Time) error {
 }
 
 func (conn *packetConn) forwardPackets(subconnection net.PacketConn) {
-	defer conn.forwardCounter.Done()
-	readBuffer := make([]byte, 65536) // Max UDP packet size
-	for {
-		numBytes, remoteAddr, err := subconnection.ReadFrom(readBuffer)
-		if err != nil {
-			return
+	conn.forwardCounter.Add(1)
+	go func() {
+		defer conn.forwardCounter.Done()
+		readBuffer := make([]byte, 65536) // Max UDP packet size
+		for {
+			numBytes, remoteAddr, err := subconnection.ReadFrom(readBuffer)
+			if err != nil {
+				return
+			}
+
+			packet := make([]byte, numBytes)
+			copy(packet, readBuffer[:numBytes])
+
+			conn.forwardedPackets <- incomingPacket{data: packet, addr: remoteAddr}
 		}
-
-		packet := make([]byte, numBytes)
-		copy(packet, readBuffer[:numBytes])
-
-		conn.forwardedPackets <- incomingPacket{data: packet, addr: remoteAddr}
-	}
+	}()
 }
