@@ -421,9 +421,10 @@ async function stopVpn() {
     return;
   }
 
+  const onceDisconnected = currentTunnel.onceDisconnected;
   void currentTunnel.disconnect();
   await tearDownAutoLaunch();
-  await currentTunnel.onceDisconnected;
+  await onceDisconnected;
 }
 
 function setUiTunnelStatus(status: TunnelStatus, tunnelId: string) {
