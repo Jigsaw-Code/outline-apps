@@ -99,7 +99,7 @@ func main() {
 	args.adapterIndex = flag.Int("adapterIndex", -1, "Windows network adapter index for proxy connection")
 
 	// Proxy client config
-	args.clientConfig = flag.String("client", "", "A JSON object containing the transport config, UTF8-encoded")
+	args.clientConfig = flag.String("client", "", "A JSON object containing the client config, UTF8-encoded")
 
 	// Check connectivity of clientConfig and exit
 	args.checkConnectivity = flag.Bool("checkConnectivity", false, "Check the proxy TCP and UDP connectivity and exit.")
