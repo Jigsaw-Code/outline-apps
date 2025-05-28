@@ -26,26 +26,25 @@ import (
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
-// IPTablePacketListener is a [transport.PacketListener] that multiplexes packet handling
+// PacketListener is a [transport.PacketListener] that multiplexes packet handling
 // based on the remote IP address using an [IPTable].
 //
-// When [IPTablePacketListener.ListenPacket] is called, it returns a [net.PacketConn]
-// (specifically, an internal `ipTableConnection`) that manages multiple underlying
-// packet connections.
-// For outgoing packets (via [net.PacketConn.WriteTo]), the destination IP address is
+// When [PacketListener.ListenPacket] is called, it returns a [net.PacketConn]
+// that manages multiple underlying packet connections.
+// For outgoing packets (via net.PacketConn.WriteTo), the destination IP address is
 // looked up in the table. If a specific listener is found, a connection is established
 // using that listener (if not already done) and the packet is sent. Otherwise, the
 // default listener is used.
-// For incoming packets (via [net.PacketConn.ReadFrom]), packets from all managed
+// For incoming packets (via net.PacketConn.ReadFrom), packets from all managed
 // underlying connections (both specific and default) are aggregated and returned.
-type IPTablePacketListener struct {
+type PacketListener struct {
 	table           IPTable[transport.PacketListener]
 	defaultListener transport.PacketListener
 }
 
-var _ transport.PacketListener = (*IPTablePacketListener)(nil)
+var _ transport.PacketListener = (*PacketListener)(nil)
 
-func NewIPTablePacketListener(table IPTable[transport.PacketListener], defaultListener transport.PacketListener) (*IPTablePacketListener, error) {
+func NewPacketListener(table IPTable[transport.PacketListener], defaultListener transport.PacketListener) (*PacketListener, error) {
 	if defaultListener == nil {
 		return nil, errors.New("IPTablePacketListener requires a non-nil defaultListener")
 	}
@@ -53,7 +52,7 @@ func NewIPTablePacketListener(table IPTable[transport.PacketListener], defaultLi
 		table = NewIPTable[transport.PacketListener]()
 	}
 
-	return &IPTablePacketListener{
+	return &PacketListener{
 		table:           table,
 		defaultListener: defaultListener,
 	}, nil
@@ -63,15 +62,15 @@ func NewIPTablePacketListener(table IPTable[transport.PacketListener], defaultLi
 // do not match any specific rule in the IP table.
 // Unlike the constructor, this method allows `defaultListener` to be nil, which
 // would mean no packets can be sent or received for addresses not in the table.
-func (listener *IPTablePacketListener) SetDefault(defaultListener transport.PacketListener) {
+func (listener *PacketListener) SetDefault(defaultListener transport.PacketListener) {
 	listener.defaultListener = defaultListener
 }
 
 // ListenPacket returns a [net.PacketConn] that routes packets based on IP addresses.
 // The returned connection aggregates packets from and dispatches packets to various
 // underlying listeners as defined by the IP table and the default listener.
-func (listener *IPTablePacketListener) ListenPacket(ctx context.Context) (net.PacketConn, error) {
-	return newIPTableConnection(ctx, listener.table, listener.defaultListener)
+func (listener *PacketListener) ListenPacket(ctx context.Context) (net.PacketConn, error) {
+	return newPacketConn(ctx, listener.table, listener.defaultListener)
 }
 
 const packetQueueSize = 128
@@ -81,22 +80,22 @@ type incomingPacket struct {
 	addr net.Addr
 }
 
-// ipTableConnection is a [net.PacketConn] implementation that multiplexes
+// packetConn is a [net.PacketConn] implementation that multiplexes
 // packets over various underlying [net.PacketConn]s based on IP addresses.
-// It is returned by [IPTablePacketListener.ListenPacket].
+// It is returned by [PacketListener.ListenPacket].
 //
 // For outgoing packets (WriteTo), it determines the appropriate underlying
 // connection using an [IPTable] and a default listener. New underlying
 // connections are established on-demand.
 // For incoming packets (ReadFrom), it aggregates packets received from all
 // active underlying connections (both specific and default) into a single channel.
-type ipTableConnection struct {
+type packetConn struct {
 	defaultListener   transport.PacketListener
 	defaultConnection net.PacketConn
 
-	listenerTable       IPTable[transport.PacketListener]
-	connectionMap       map[netip.Addr]net.PacketConn
-	connectionMapThread sync.Mutex
+	listenerTable IPTable[transport.PacketListener]
+	connMap       map[netip.Addr]net.PacketConn
+	connMapLock   sync.Mutex
 
 	forwardingContext            context.Context
 	closePacketForwardingContext context.CancelFunc
@@ -104,13 +103,13 @@ type ipTableConnection struct {
 	forwardCounter               sync.WaitGroup
 }
 
-var _ net.PacketConn = (*ipTableConnection)(nil)
+var _ net.PacketConn = (*packetConn)(nil)
 
-func newIPTableConnection(
+func newPacketConn(
 	parentContext context.Context,
 	listenerTable IPTable[transport.PacketListener],
 	defaultListener transport.PacketListener,
-) (*ipTableConnection, error) {
+) (*packetConn, error) {
 	forwardingContext, closeForwardingContext := context.WithCancel(parentContext)
 
 	var defaultConnection net.PacketConn
@@ -124,10 +123,10 @@ func newIPTableConnection(
 		}
 	}
 
-	connection := &ipTableConnection{
+	connection := &packetConn{
 		closePacketForwardingContext: closeForwardingContext,
-		connectionMap:                make(map[netip.Addr]net.PacketConn),
-		connectionMapThread:          sync.Mutex{},
+		connMap:                      make(map[netip.Addr]net.PacketConn),
+		connMapLock:                  sync.Mutex{},
 		defaultConnection:            defaultConnection,
 		defaultListener:              defaultListener,
 		forwardedPackets:             make(chan incomingPacket, packetQueueSize),
@@ -143,7 +142,7 @@ func newIPTableConnection(
 	return connection, nil
 }
 
-func (conn *ipTableConnection) ReadFrom(result []byte) (n int, addr net.Addr, err error) {
+func (conn *packetConn) ReadFrom(result []byte) (n int, addr net.Addr, err error) {
 	packet, ok := <-conn.forwardedPackets
 	if !ok {
 		return 0, nil, net.ErrClosed
@@ -153,7 +152,7 @@ func (conn *ipTableConnection) ReadFrom(result []byte) (n int, addr net.Addr, er
 	return numBytes, packet.addr, nil
 }
 
-func (conn *ipTableConnection) WriteTo(packet []byte, addr net.Addr) (numBytes int, err error) {
+func (conn *packetConn) WriteTo(packet []byte, addr net.Addr) (numBytes int, err error) {
 	var ip netip.Addr
 	if udpAddr, ok := addr.(*net.UDPAddr); ok {
 		if parsedIP, ok := netip.AddrFromSlice(udpAddr.IP); ok {
@@ -166,9 +165,9 @@ func (conn *ipTableConnection) WriteTo(packet []byte, addr net.Addr) (numBytes i
 
 	ip = ip.Unmap()
 
-	conn.connectionMapThread.Lock()
-	subconn := conn.connectionMap[ip]
-	conn.connectionMapThread.Unlock()
+	conn.connMapLock.Lock()
+	subconn := conn.connMap[ip]
+	conn.connMapLock.Unlock()
 
 	if subconn == nil {
 		listener, ok := conn.listenerTable.Lookup(ip)
@@ -187,9 +186,9 @@ func (conn *ipTableConnection) WriteTo(packet []byte, addr net.Addr) (numBytes i
 			return 0, err
 		}
 
-		conn.connectionMapThread.Lock()
-		conn.connectionMap[ip] = subconn
-		conn.connectionMapThread.Unlock()
+		conn.connMapLock.Lock()
+		conn.connMap[ip] = subconn
+		conn.connMapLock.Unlock()
 
 		conn.forwardCounter.Add(1)
 		go conn.forwardPackets(subconn)
@@ -198,15 +197,15 @@ func (conn *ipTableConnection) WriteTo(packet []byte, addr net.Addr) (numBytes i
 	return subconn.WriteTo(packet, addr)
 }
 
-func (conn *ipTableConnection) Close() error {
+func (conn *packetConn) Close() error {
 	conn.closePacketForwardingContext()
 
-	conn.connectionMapThread.Lock()
-	defer conn.connectionMapThread.Unlock()
+	conn.connMapLock.Lock()
+	defer conn.connMapLock.Unlock()
 
-	for address, subconn := range conn.connectionMap {
+	for address, subconn := range conn.connMap {
 		subconn.Close()
-		delete(conn.connectionMap, address)
+		delete(conn.connMap, address)
 	}
 
 	if conn.defaultConnection != nil {
@@ -219,7 +218,7 @@ func (conn *ipTableConnection) Close() error {
 	return nil
 }
 
-func (conn *ipTableConnection) LocalAddr() net.Addr {
+func (conn *packetConn) LocalAddr() net.Addr {
 	if conn.defaultConnection != nil {
 		return conn.defaultConnection.LocalAddr()
 	}
@@ -227,52 +226,52 @@ func (conn *ipTableConnection) LocalAddr() net.Addr {
 	return nil
 }
 
-func (conn *ipTableConnection) SetDeadline(t time.Time) error {
+func (conn *packetConn) SetDeadline(t time.Time) error {
 	if conn.defaultConnection != nil {
 		conn.defaultConnection.SetDeadline(t)
 	}
 
-	conn.connectionMapThread.Lock()
-	defer conn.connectionMapThread.Unlock()
+	conn.connMapLock.Lock()
+	defer conn.connMapLock.Unlock()
 
-	for _, subconnection := range conn.connectionMap {
+	for _, subconnection := range conn.connMap {
 		subconnection.SetDeadline(t)
 	}
 
 	return nil
 }
 
-func (conn *ipTableConnection) SetReadDeadline(t time.Time) error {
+func (conn *packetConn) SetReadDeadline(t time.Time) error {
 	if conn.defaultConnection != nil {
 		conn.defaultConnection.SetReadDeadline(t)
 	}
 
-	conn.connectionMapThread.Lock()
-	defer conn.connectionMapThread.Unlock()
+	conn.connMapLock.Lock()
+	defer conn.connMapLock.Unlock()
 
-	for _, subconnection := range conn.connectionMap {
+	for _, subconnection := range conn.connMap {
 		subconnection.SetReadDeadline(t)
 	}
 
 	return nil
 }
 
-func (conn *ipTableConnection) SetWriteDeadline(t time.Time) error {
+func (conn *packetConn) SetWriteDeadline(t time.Time) error {
 	if conn.defaultConnection != nil {
 		conn.defaultConnection.SetWriteDeadline(t)
 	}
 
-	conn.connectionMapThread.Lock()
-	defer conn.connectionMapThread.Unlock()
+	conn.connMapLock.Lock()
+	defer conn.connMapLock.Unlock()
 
-	for _, subconnection := range conn.connectionMap {
+	for _, subconnection := range conn.connMap {
 		subconnection.SetWriteDeadline(t)
 	}
 
 	return nil
 }
 
-func (conn *ipTableConnection) forwardPackets(subconnection net.PacketConn) {
+func (conn *packetConn) forwardPackets(subconnection net.PacketConn) {
 	defer conn.forwardCounter.Done()
 	readBuffer := make([]byte, 65536) // Max UDP packet size
 	for {

@@ -29,11 +29,11 @@ import (
 )
 
 func TestIPTablePacketListener_New(t *testing.T) {
-	_, err := NewIPTablePacketListener(nil, nil)
+	_, err := NewPacketListener(nil, nil)
 	require.Error(t, err, "NewIPTablePacketListener should have returned an error for nil default listener")
 
 	mockListener := &mockPacketListener{conn: newMockPacketConn(t, "0.0.0.0", "0.0.0.0")}
-	_, err = NewIPTablePacketListener(nil, mockListener)
+	_, err = NewPacketListener(nil, mockListener)
 	require.NoError(t, err, "NewIPTablePacketListener returned an unexpected error with a valid mock default listener")
 }
 
@@ -142,7 +142,7 @@ func TestIPTablePacketListener_ListenPacket(t *testing.T) {
 
 	defaultListener := &mockPacketListener{conn: mockConnDefault}
 
-	iptableListener, err := NewIPTablePacketListener(table, defaultListener)
+	iptableListener, err := NewPacketListener(table, defaultListener)
 	require.NoError(t, err, "NewIPTablePacketListener failed")
 
 	// Test: Get a PacketConn from the IPTablePacketListener
@@ -260,7 +260,7 @@ func TestIPTablePacketListener_IPv4IPv6Routing(t *testing.T) {
 	require.NoError(t, table.AddPrefix(netip.MustParsePrefix("2001:db8:1::/48"), &mockPacketListener{conn: mockConnV6Specific}))
 
 	defaultListener := &mockPacketListener{conn: mockConnDefault}
-	iptableListener, err := NewIPTablePacketListener(table, defaultListener)
+	iptableListener, err := NewPacketListener(table, defaultListener)
 	require.NoError(t, err, "NewIPTablePacketListener failed")
 
 	conn, err := iptableListener.ListenPacket(ctx)
