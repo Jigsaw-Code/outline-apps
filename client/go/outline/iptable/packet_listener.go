@@ -217,9 +217,18 @@ func (conn *packetConn) Close() error {
 	return errs
 }
 
+// Return the default connection local addr, then the first available subconnection if no default
 func (conn *packetConn) LocalAddr() net.Addr {
-	if conn.defaultConn != nil {
-		return conn.defaultConn.LocalAddr()
+	if localAddr := conn.defaultConn.LocalAddr(); localAddr != nil {
+		return localAddr
+	}
+
+	conn.connMapLock.Lock()
+	defer conn.connMapLock.Unlock()
+	for _, subconn := range conn.connMap {
+		if localAddr := subconn.LocalAddr(); localAddr != nil {
+			return localAddr
+		}
 	}
 
 	return nil
