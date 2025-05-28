@@ -16,6 +16,7 @@ package iptable
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"net/netip"
@@ -192,24 +193,28 @@ func (conn *packetConn) WriteTo(packet []byte, addr net.Addr) (numBytes int, err
 }
 
 func (conn *packetConn) Close() error {
+	var errs error
 	conn.closePacketForwardingContext()
 
 	conn.connMapLock.Lock()
-	defer conn.connMapLock.Unlock()
-
 	for address, subconn := range conn.connMap {
-		subconn.Close()
+		if err := subconn.Close(); err != nil {
+			errs = errors.Join(errs, fmt.Errorf("failed to close subconnection for %s: %w", address, err))
+		}
 		delete(conn.connMap, address)
 	}
+	conn.connMapLock.Unlock()
 
 	if conn.defaultConn != nil {
-		conn.defaultConn.Close()
+		if err := conn.defaultConn.Close(); err != nil {
+			errs = errors.Join(errs, fmt.Errorf("failed to close default connection: %w", err))
+		}
 	}
 
 	conn.forwardCounter.Wait()
 	close(conn.forwardedPackets)
 
-	return nil
+	return errs
 }
 
 func (conn *packetConn) LocalAddr() net.Addr {
