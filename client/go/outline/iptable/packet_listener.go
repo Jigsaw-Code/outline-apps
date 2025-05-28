@@ -168,25 +168,25 @@ func (conn *packetConn) WriteTo(packet []byte, addr net.Addr) (numBytes int, err
 	if subconn == nil {
 		listener, ok := conn.listenerTable.Lookup(ip)
 
-		if !ok {
-			listener = conn.defaultListener
+		if ok {
+			subconn, err = listener.ListenPacket(conn.forwardingContext)
+
+			if err != nil {
+				return 0, err
+			}
+
+			conn.connMapLock.Lock()
+			conn.connMap[ip] = subconn
+			conn.connMapLock.Unlock()
+
+			conn.forwardPackets(subconn)
 		}
+	}
 
-		if listener == nil {
-			return 0, fmt.Errorf("no listener found for %s", ip.String())
-		}
-
-		subconn, err = listener.ListenPacket(conn.forwardingContext)
-
-		if err != nil {
-			return 0, err
-		}
-
-		conn.connMapLock.Lock()
-		conn.connMap[ip] = subconn
-		conn.connMapLock.Unlock()
-
-		conn.forwardPackets(subconn)
+	if subconn == nil && conn.defaultListener != nil {
+		subconn = conn.defaultConn
+	} else if subconn == nil {
+		return 0, fmt.Errorf("no connection found for IP %s", ip.String())
 	}
 
 	return subconn.WriteTo(packet, addr)
