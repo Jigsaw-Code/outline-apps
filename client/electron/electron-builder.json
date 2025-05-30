@@ -2,7 +2,11 @@
   "productName": "Outline",
   "artifactName": "Outline-Client.${ext}",
   "asarUnpack": [
-    "client"
+    "client/electron/linux_proxy_controller/dist",
+    "output/client/linux-amd64/libbackend.so",
+    "output/client/linux-amd64/tun2socks",
+    "output/client/windows-386/backend.dll",
+    "output/client/windows-386/tun2socks.exe"
   ],
   "directories": {
     "buildResources": "output/client/electron",

@@ -48,21 +48,19 @@ export function getAppPath() {
 export function pathToEmbeddedTun2socksBinary() {
   return path.join(
     unpackedAppPath(),
-    'client',
     'output',
-    'build',
-    IS_WINDOWS ? 'windows' : 'linux',
-    'tun2socks' + (IS_WINDOWS ? '.exe' : '')
+    'client',
+    IS_WINDOWS ? 'windows-386' : 'linux-amd64',
+    IS_WINDOWS ? 'tun2socks.exe' : 'tun2socks'
   );
 }
 
 export function pathToBackendLibrary() {
   return path.join(
     unpackedAppPath(),
-    'client',
     'output',
-    'build',
-    IS_WINDOWS ? 'windows' : 'linux',
+    'client',
+    IS_WINDOWS ? 'windows-386' : 'linux-amd64',
     IS_WINDOWS ? 'backend.dll' : 'libbackend.so'
   );
 }
