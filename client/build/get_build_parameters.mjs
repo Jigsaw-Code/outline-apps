@@ -14,15 +14,7 @@
 
 import minimist from 'minimist';
 
-const VALID_PLATFORMS = [
-  'linux',
-  'windows',
-  'ios',
-  'macos',
-  'maccatalyst',
-  'android',
-  'browser',
-];
+const VALID_PLATFORMS = ['linux', 'windows', 'ios', 'macos', 'maccatalyst', 'android', 'browser'];
 const VALID_BUILD_MODES = ['debug', 'release'];
 
 const MS_PER_HOUR = 1000 * 60 * 60;
@@ -37,8 +29,6 @@ const MS_PER_HOUR = 1000 * 60 * 60;
 export function getBuildParameters(cliArguments) {
   const {
     _: [platform = 'browser'],
-    // TODO(fortuna): use process.arch as default once we are setting it in the caller.
-    arch = '',
     buildMode = 'debug',
     verbose = false,
     versionName = '0.0.0',
@@ -61,11 +51,9 @@ export function getBuildParameters(cliArguments) {
 
   return {
     platform,
-    arch,
     buildMode,
     verbose,
-    versionName:
-      buildMode === 'release' ? versionName : `${versionName}-${buildMode}`,
+    versionName: buildMode === 'release' ? versionName : `${versionName}-${buildMode}`,
     sentryDsn,
     buildNumber: Math.floor(Date.now() / MS_PER_HOUR),
   };

@@ -55,6 +55,9 @@ tasks:
         CC='zig cc -target {{.ZIG_TARGET}}' \
         go build -trimpath -buildmode=c-shared -ldflags="-s -w -X=main.version={{.TUN2SOCKS_VERSION}}" -o '{{.OUTPUT_LIB}}' '{{.TASKFILE_DIR}}/outline/electron'
 
+  windows:
+    deps: [windows:386]
+
   windows:*:
     desc: "Build the tun2socks binary and library for Windows"
     vars:
@@ -63,6 +66,9 @@ tasks:
     # 32bit Windows 10 still exists until October 14, 2025
     cmds:
       - {task: electron, vars: {TARGET_OS: "windows", TARGET_ARCH: "{{.TARGET_ARCH}}", ZIG_TARGET: "{{.CC_ARCH}}-windows"}}
+
+  linux:
+     deps: [linux:amd64]
 
   linux:*:
     desc: "Build the tun2socks binary and library for Linux"
