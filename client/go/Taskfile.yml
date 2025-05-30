@@ -18,7 +18,7 @@ vars:
   # This needs to be updated if the file moves.
   REPO_ROOT: '{{joinPath .TASKFILE_DIR "../.."}}'
   # TODO: Output to $REPO_ROOT/output/client/tun2socks instead.
-  OUT_DIR: '{{joinPath .REPO_ROOT "client/output/build"}}'
+  OUT_DIR: '{{joinPath .REPO_ROOT "output/client"}}'
   BIN_DIR: '{{joinPath .OUT_DIR "/bin"}}'
   MOBILE_PKG: "{{.TASKFILE_DIR}}/outline/tun2socks"
   GOMOBILE_BIND_CMD: "env PATH=\"{{.BIN_DIR}}:${PATH}\" CGO_CFLAGS='-fstack-protector-strong' '{{.BIN_DIR}}/gomobile' bind -ldflags='-s -w'"
@@ -27,19 +27,19 @@ tasks:
   electron:
     desc: "Build the tun2socks binary and library for Electron platforms"
     internal: true
-    requires: {vars: [TARGET_OS, TARGET_ARCH]}
+    requires: {vars: [TARGET_OS, TARGET_ARCH, ZIG_TARGET]}
     vars:
       # TODO(fortuna): remove this, it's not really needed since we don't release it separately anymore.
       TUN2SOCKS_VERSION: "v1.16.11"
-      OUTPUT: '{{.OUT_DIR}}/{{.TARGET_OS}}/tun2socks{{if eq .TARGET_OS "windows"}}.exe{{end}}'
+      OUTPUT: '{{.OUT_DIR}}/{{.TARGET_OS}}-{{.TARGET_ARCH}}/tun2socks{{if eq .TARGET_OS "windows"}}.exe{{end}}'
       # Linux=libbackend.so; Windows=backend.dll
-      OUTPUT_LIB: '{{.OUT_DIR}}/{{.TARGET_OS}}/{{if eq .TARGET_OS "linux"}}libbackend.so{{else}}backend.dll{{end}}'
+      OUTPUT_LIB: '{{.OUT_DIR}}/{{.TARGET_OS}}-{{.TARGET_ARCH}}/{{if eq .TARGET_OS "linux"}}libbackend.so{{else}}backend.dll{{end}}'
     cmds:
       - rm -rf "{{dir .OUTPUT}}" && mkdir -p "{{dir .OUTPUT}}"
       # C cross-compile (zig) targets:
       #   Linux (x64)   = x86_64-linux-gnu.2.27 (`x86_64-linux` defaults to `x86_64-linux-musl`, prefer `gnu` over `musl`)
       #   Windows (x86) = x86-windows
-      # Cross-compilation must always be enabled regardless of the native OS because:
+      # Cross-compilation must always be enabled regardless of the nat`ive OS because:
       #   Windows: requires 32-bit
       #   Linux: requires older glibc for wider compatibility
       # Linker flags: https://pkg.go.dev/cmd/link
@@ -48,21 +48,29 @@ tasks:
       #   -X Set the value of the string variable.
       - |
         GOOS={{.TARGET_OS}} GOARCH={{.TARGET_ARCH}} CGO_ENABLED=1 \
-        CC='zig cc -target {{if eq .TARGET_ARCH "386"}}x86{{else}}x86_64{{end}}-{{.TARGET_OS}}{{if eq .TARGET_OS "linux"}}-gnu.2.27{{end}}' \
+        CC='zig cc -target {{.ZIG_TARGET}}' \
         go build -trimpath -ldflags="-s -w -X=main.version={{.TUN2SOCKS_VERSION}}" -o '{{.OUTPUT}}' '{{.TASKFILE_DIR}}/outline/electron'
       - |
         GOOS={{.TARGET_OS}} GOARCH={{.TARGET_ARCH}} CGO_ENABLED=1 \
-        CC='zig cc -target {{if eq .TARGET_ARCH "386"}}x86{{else}}x86_64{{end}}-{{.TARGET_OS}}{{if eq .TARGET_OS "linux"}}-gnu.2.27{{end}}' \
+        CC='zig cc -target {{.ZIG_TARGET}}' \
         go build -trimpath -buildmode=c-shared -ldflags="-s -w -X=main.version={{.TUN2SOCKS_VERSION}}" -o '{{.OUTPUT_LIB}}' '{{.TASKFILE_DIR}}/outline/electron'
 
-  windows:
+  windows:*:
     desc: "Build the tun2socks binary and library for Windows"
+    vars:
+      TARGET_ARCH: '{{index .MATCH 0 | default "386"}}'
+      CC_ARCH: '{{get (dict "amd64" "x86_64" "arm64" "aarch64" "386" "x86" ) .TARGET_ARCH | default .TARGET_ARCH}}'
     # 32bit Windows 10 still exists until October 14, 2025
-    cmds: [{task: electron, vars: {TARGET_OS: "windows", TARGET_ARCH: "386"}}]
+    cmds:
+      - {task: electron, vars: {TARGET_OS: "windows", TARGET_ARCH: "{{.TARGET_ARCH}}", ZIG_TARGET: "{{.CC_ARCH}}-windows"}}
 
-  linux:
+  linux:*:
     desc: "Build the tun2socks binary and library for Linux"
-    cmds: [{task: electron, vars: {TARGET_OS: "linux", TARGET_ARCH: "amd64"}}]
+    vars:
+      TARGET_ARCH: '{{index .MATCH 0 | default "amd64"}}'
+      CC_ARCH: '{{get (dict "amd64" "x86_64" "arm64" "aarch64" "386" "x86" ) .TARGET_ARCH | default .TARGET_ARCH}}'
+    cmds:
+      - {task: electron, vars: {TARGET_OS: "linux", TARGET_ARCH: "{{.TARGET_ARCH}}", ZIG_TARGET: "{{.CC_ARCH}}-linux-gnu.2.27"}}
 
   android:
     desc: "Build the tun2socks.aar library for Android"
