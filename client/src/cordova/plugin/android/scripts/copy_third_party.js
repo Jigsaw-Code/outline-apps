@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 // Copyright 2018 The Outline Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,8 +16,18 @@ const fs = require('fs/promises');
 // const child_process = require('child_process');
 const path = require('node:path');
 
-const ANDROID_LIBS_FOLDER_PATH = path.join('plugins', 'cordova-plugin-outline', 'android', 'libs');
-const TUN2SOCKS_ANDROID_FOLDER_PATH = path.join('..', 'output', 'client', 'android');
+const ANDROID_LIBS_FOLDER_PATH = path.join(
+  'plugins',
+  'cordova-plugin-outline',
+  'android',
+  'libs'
+);
+const TUN2SOCKS_ANDROID_FOLDER_PATH = path.join(
+  '..',
+  'output',
+  'client',
+  'android'
+);
 
 module.exports = async function () {
   console.log('Copying Android third party libraries...');
