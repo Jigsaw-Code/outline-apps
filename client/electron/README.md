@@ -55,6 +55,8 @@ To build the _release_ version of Windows installer, you'll also need:
 The [Electron Builder config](./electron-builder.json) uses an `asarUnpack` entry. This entry
 lists files for resources that must be extracted from the ASAR archive. This is necessary for files that the operating system needs to access directly, such as executable binaries that your application runs or other native modules.
 
+To find where unpacked files are used, look for calls to `unpackedAppPath()` ([example](./app_paths.ts)).
+
 It's helpful to list the ASAR contents to understand what's in there and what patterns to use.
 
 For the Linux client:
