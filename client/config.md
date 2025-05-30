@@ -121,6 +121,27 @@ Note that Websockets is not yet supported on Windows. In order to have a single 
 
 ```yaml
 transport:
+  $type: first-supported
+  options: 
+    - $type: tcpudp
+      tcp: &shared
+      $type: shadowsocks
+      endpoint: example.com:80
+      cipher: chacha20-ietf-poly1305
+      secret: SECRET
+
+      udp: *shared
+
+      session_report:
+      $type: sessionreport
+      url: https://your-callback-server.com/outline_callback
+      interval: 24h
+      enable_cookies: true`)
+
+    tcpudp with session 
+    - $type: tcpudp without session
+      <<: &tcpudp
+
   $type: tcpudp
   tcp:
     $type: shadowsocks
