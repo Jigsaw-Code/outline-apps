@@ -64,7 +64,7 @@ export class GoVpnTunnel implements VpnTunnel {
 
   constructor(
     private readonly routing: RoutingDaemon,
-    readonly transportConfig: string
+    readonly clientConfig: string
   ) {
     this.tun2socks = new GoTun2socks();
 
@@ -108,13 +108,13 @@ export class GoVpnTunnel implements VpnTunnel {
     if (checkProxyConnectivity) {
       if (IS_WINDOWS) {
         this.isUdpEnabled = await checkUDPConnectivityWindows(
-          this.transportConfig,
+          this.clientConfig,
           this.gatewayAdapterIndex,
           this.isDebugMode
         );
       } else {
         this.isUdpEnabled = await checkUDPConnectivity(
-          this.transportConfig,
+          this.clientConfig,
           this.isDebugMode
         );
       }
@@ -171,12 +171,12 @@ export class GoVpnTunnel implements VpnTunnel {
   private startTun2socks(): Promise<void> {
     if (IS_WINDOWS) {
       return this.tun2socks.startWindows(
-        this.transportConfig,
+        this.clientConfig,
         this.isUdpEnabled,
         this.gatewayAdapterIndex
       );
     } else {
-      return this.tun2socks.start(this.transportConfig, this.isUdpEnabled);
+      return this.tun2socks.start(this.clientConfig, this.isUdpEnabled);
     }
   }
 
@@ -184,13 +184,13 @@ export class GoVpnTunnel implements VpnTunnel {
     try {
       if (IS_WINDOWS) {
         this.isUdpEnabled = await checkUDPConnectivityWindows(
-          this.transportConfig,
+          this.clientConfig,
           this.gatewayAdapterIndex,
           this.isDebugMode
         );
       } else {
         this.isUdpEnabled = await checkUDPConnectivity(
-          this.transportConfig,
+          this.clientConfig,
           this.isDebugMode
         );
       }
@@ -276,19 +276,15 @@ class GoTun2socks {
    * Otherwise, an error containing a JSON-formatted message will be thrown.
    * @param isUdpEnabled Indicates whether the remote Outline server supports UDP.
    */
-  start(transportConfig: string, isUdpEnabled: boolean): Promise<void> {
-    return this.startWithPlatformSpecificArgs(
-      transportConfig,
-      isUdpEnabled,
-      []
-    );
+  start(clientConfig: string, isUdpEnabled: boolean): Promise<void> {
+    return this.startWithPlatformSpecificArgs(clientConfig, isUdpEnabled, []);
   }
 
   /**
    * Starts tun2socks process with Windows specific CLI arguments.
    */
   startWindows(
-    transportConfig: string,
+    clientConfig: string,
     isUdpEnabled: boolean,
     adapterIndex?: string
   ): Promise<void> {
@@ -296,22 +292,18 @@ class GoTun2socks {
     if (adapterIndex) {
       args.push('-adapterIndex', adapterIndex);
     }
-    return this.startWithPlatformSpecificArgs(
-      transportConfig,
-      isUdpEnabled,
-      args
-    );
+    return this.startWithPlatformSpecificArgs(clientConfig, isUdpEnabled, args);
   }
 
   private startWithPlatformSpecificArgs(
-    transportConfig: string,
+    clientConfig: string,
     isUdpEnabled: boolean,
     args: string[]
   ): Promise<void> {
     // ./tun2socks.exe \
     //   -tunName outline-tap0 -tunDNS 1.1.1.1,9.9.9.9 \
     //   -tunAddr 10.0.85.2 -tunGw 10.0.85.1 -tunMask 255.255.255.0 \
-    //   -transport '{"host": "127.0.0.1", "port": 1080, "password": "mypassword", "cipher": "chacha20-ietf-poly1035"}' \
+    //   -client '{ "transport:" {"host": "127.0.0.1", "port": 1080, "password": "mypassword", "cipher": "chacha20-ietf-poly1035"} }' \
     //   [-dnsFallback] [-checkConnectivity] [-proxyPrefix]
 
     args.push('-tunName', TUN2SOCKS_TAP_DEVICE_NAME);
@@ -319,7 +311,7 @@ class GoTun2socks {
     args.push('-tunGw', TUN2SOCKS_VIRTUAL_ROUTER_IP);
     args.push('-tunMask', TUN2SOCKS_VIRTUAL_ROUTER_NETMASK);
     args.push('-tunDNS', DNS_RESOLVERS.join(','));
-    args.push('-transport', transportConfig);
+    args.push('-client', clientConfig);
     args.push('-logLevel', this.process.isDebugModeEnabled ? 'debug' : 'info');
     if (!isUdpEnabled) {
       args.push('-dnsFallback');
