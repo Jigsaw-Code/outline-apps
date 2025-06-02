@@ -110,7 +110,6 @@ export class App {
     this.localize = this.rootEl.localize.bind(this.rootEl);
 
     this.syncServersToUI();
-    this.syncConnectivityStateToServerCards();
     rootEl.appVersion = environmentVars.APP_VERSION;
     rootEl.appBuild = environmentVars.APP_BUILD_NUMBER;
     rootEl.errorReporter = this.errorReporter;
@@ -719,7 +718,6 @@ export class App {
     const server = event.server;
     console.debug('Server added');
     this.syncServersToUI();
-    this.syncConnectivityStateToServerCards();
     this.changeToDefaultPage();
     this.rootEl.showToast(
       this.localize('server-added', 'serverName', server.name)
@@ -730,7 +728,6 @@ export class App {
     const server = event.server;
     console.debug('Server forgotten');
     this.syncServersToUI();
-    this.syncConnectivityStateToServerCards();
     this.rootEl.showToast(
       this.localize('server-forgotten', 'serverName', server.name),
       10000,
@@ -743,7 +740,6 @@ export class App {
 
   private onServerForgetUndone(event: events.ServerForgetUndone) {
     this.syncServersToUI();
-    this.syncConnectivityStateToServerCards();
     const server = event.server;
     this.rootEl.showToast(
       this.localize('server-forgotten-undo', 'serverName', server.name)
@@ -809,6 +805,7 @@ export class App {
     this.rootEl.servers = this.serverRepo
       .getAll()
       .map(this.makeServerListItem.bind(this));
+    this.syncConnectivityStateToServerCards();
   }
 
   private syncConnectivityStateToServerCards() {
