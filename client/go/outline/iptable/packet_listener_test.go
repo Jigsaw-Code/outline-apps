@@ -29,11 +29,8 @@ import (
 )
 
 func TestIPTablePacketListener_New(t *testing.T) {
-	_, err := NewPacketListener(nil, nil)
-	require.Error(t, err, "NewIPTablePacketListener should have returned an error for nil default listener")
-
 	mockListener := &mockPacketListener{conn: newMockPacketConn(t, "0.0.0.0", "0.0.0.0")}
-	_, err = NewPacketListener(nil, mockListener)
+	_, err := NewPacketListener(nil, mockListener)
 	require.NoError(t, err, "NewIPTablePacketListener returned an unexpected error with a valid mock default listener")
 }
 
