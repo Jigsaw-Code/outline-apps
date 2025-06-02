@@ -98,6 +98,9 @@ type packetConn struct {
 	closePacketForwardingContext context.CancelFunc
 	forwardedPackets             chan incomingPacket
 	forwardCounter               sync.WaitGroup
+
+	lastRemainingPacket     incomingPacket
+	lastRemainingPacketLock sync.Mutex
 }
 
 var _ net.PacketConn = (*packetConn)(nil)
@@ -129,6 +132,8 @@ func newPacketConn(
 		forwardedPackets:             make(chan incomingPacket, packetQueueSize),
 		forwardingContext:            forwardingContext,
 		listenerTable:                listenerTable,
+		lastRemainingPacket:          incomingPacket{},
+		lastRemainingPacketLock:      sync.Mutex{},
 	}
 
 	if conn.defaultConn != nil {
@@ -139,12 +144,27 @@ func newPacketConn(
 }
 
 func (conn *packetConn) ReadFrom(result []byte) (n int, addr net.Addr, err error) {
+	if len(conn.lastRemainingPacket.data) > 0 {
+		conn.lastRemainingPacketLock.Lock()
+		numBytes := copy(result, conn.lastRemainingPacket.data)
+		conn.lastRemainingPacket.data = conn.lastRemainingPacket.data[numBytes:]
+		conn.lastRemainingPacketLock.Unlock()
+
+		return numBytes, conn.lastRemainingPacket.addr, nil
+	}
+
 	packet, ok := <-conn.forwardedPackets
 	if !ok {
 		return 0, nil, net.ErrClosed
 	}
 
 	numBytes := copy(result, packet.data)
+
+	conn.lastRemainingPacketLock.Lock()
+	conn.lastRemainingPacket.data = packet.data[numBytes:]
+	conn.lastRemainingPacket.addr = packet.addr
+	conn.lastRemainingPacketLock.Unlock()
+
 	return numBytes, packet.addr, nil
 }
 
