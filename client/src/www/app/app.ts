@@ -719,6 +719,7 @@ export class App {
     const server = event.server;
     console.debug('Server added');
     this.syncServersToUI();
+    this.syncConnectivityStateToServerCards();
     this.changeToDefaultPage();
     this.rootEl.showToast(
       this.localize('server-added', 'serverName', server.name)
@@ -729,6 +730,7 @@ export class App {
     const server = event.server;
     console.debug('Server forgotten');
     this.syncServersToUI();
+    this.syncConnectivityStateToServerCards();
     this.rootEl.showToast(
       this.localize('server-forgotten', 'serverName', server.name),
       10000,
@@ -741,13 +743,14 @@ export class App {
 
   private onServerForgetUndone(event: events.ServerForgetUndone) {
     this.syncServersToUI();
+    this.syncConnectivityStateToServerCards();
     const server = event.server;
     this.rootEl.showToast(
       this.localize('server-forgotten-undo', 'serverName', server.name)
     );
   }
 
-  private onServerRenamed(event: events.ServerForgotten) {
+  private onServerRenamed(event: events.ServerRenamed) {
     const server = event.server;
     console.debug('Server renamed');
     this.updateServerListItem(server.id, {name: server.name});
