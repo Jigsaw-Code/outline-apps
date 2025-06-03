@@ -62,9 +62,10 @@ func doParseTunnelConfig(input string) *InvokeMethodResult {
 	// - ss:// link
 	// - Legacy Shadowsocks JSON (parsed as YAML)
 	// - Advanced YAML format
-	if strings.HasPrefix(input, "ss://") {
+	var stringValue string
+	if err := yaml.Unmarshal([]byte(input), &stringValue); err == nil {
 		// Legacy URL format. Input is the transport config.
-		clientConfig.Transport = input
+		clientConfig.Transport = stringValue
 	} else {
 		var yamlValue map[string]any
 		if err := yaml.Unmarshal([]byte(input), &yamlValue); err != nil {

@@ -35,11 +35,11 @@ interface EstablishVpnRequest extends FirstHopAndTunnelConfigJson {
   vpn: VpnConfig;
 }
 
-export async function establishVpn(request: StartRequestJson) {
-  const config: EstablishVpnRequest = {
+export async function establishVpn(tsRequest: StartRequestJson) {
+  const goRequest: EstablishVpnRequest = {
     // The following VPN configuration ensures that the new routing can co-exist with any legacy Outline routings (e.g. AppImage).
     vpn: {
-      id: request.id,
+      id: tsRequest.id,
 
       // TUN device name, use 'outline-tun1' to avoid conflict with old 'outline-tun0':
       // https://github.com/Jigsaw-Code/outline-apps/blob/client/linux/v1.14.0/client/electron/linux_proxy_controller/outline_proxy_controller.h#L203
@@ -64,10 +64,12 @@ export async function establishVpn(request: StartRequestJson) {
     },
 
     // The actual tunnel config
-    ...request.config,
+    ...tsRequest.config,
   };
 
-  await invokeGoMethod('EstablishVPN', JSON.stringify(config));
+  // The request looks like:
+  // {"vpn": {...}, "firstHop": "...", "client": "..."}
+  await invokeGoMethod('EstablishVPN', JSON.stringify(goRequest));
 }
 
 export async function closeVpn(): Promise<void> {

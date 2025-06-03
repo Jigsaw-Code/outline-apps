@@ -44,6 +44,14 @@ func Test_doParseTunnel_SSURL(t *testing.T) {
 		result.Value)
 }
 
+func Test_doParseTunnel_SSURL_With_Comment(t *testing.T) {
+	result := doParseTunnelConfig("# Comment\nss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@example.com:4321/")
+	require.Nil(t, result.Error)
+	require.Equal(t,
+		"{\"client\":\"{transport: \\\"ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@example.com:4321/\\\"}\\n\",\"firstHop\":\"example.com:4321\"}",
+		result.Value)
+}
+
 func Test_doParseTunnel_LegacyJSON(t *testing.T) {
 	result := doParseTunnelConfig(`{
     "server": "example.com",
