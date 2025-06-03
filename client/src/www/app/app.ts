@@ -110,7 +110,6 @@ export class App {
     this.localize = this.rootEl.localize.bind(this.rootEl);
 
     this.syncServersToUI();
-    this.syncConnectivityStateToServerCards();
     rootEl.appVersion = environmentVars.APP_VERSION;
     rootEl.appBuild = environmentVars.APP_BUILD_NUMBER;
     rootEl.errorReporter = this.errorReporter;
@@ -747,7 +746,7 @@ export class App {
     );
   }
 
-  private onServerRenamed(event: events.ServerForgotten) {
+  private onServerRenamed(event: events.ServerRenamed) {
     const server = event.server;
     console.debug('Server renamed');
     this.updateServerListItem(server.id, {name: server.name});
@@ -806,6 +805,7 @@ export class App {
     this.rootEl.servers = this.serverRepo
       .getAll()
       .map(this.makeServerListItem.bind(this));
+    this.syncConnectivityStateToServerCards();
   }
 
   private syncConnectivityStateToServerCards() {
