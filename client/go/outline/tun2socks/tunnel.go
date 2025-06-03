@@ -54,9 +54,6 @@ type ConnectOutlineTunnelResult struct {
 	Error  *platerrors.PlatformError
 }
 
-// Deprecated: use Tunnel directly.
-type OutlineTunnel = Tunnel
-
 type outlinetunnel struct {
 	tunWriter    io.WriteCloser
 	lwipStack    core.LWIPStack
