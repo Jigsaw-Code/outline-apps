@@ -15,13 +15,19 @@
 package tun2socks
 
 import (
+	"errors"
+	"os"
 	"runtime/debug"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
-	"github.com/Jigsaw-Code/outline-apps/client/go/tunnel"
 	"github.com/eycorsican/go-tun2socks/common/log"
+	_ "github.com/eycorsican/go-tun2socks/common/log/simple" // Import simple log for the side effect of making logs printable.
+	"golang.org/x/sys/unix"
 )
+
+// vpnMtu defines the buffer size for the packet relay.
+const vpnMtu = 1500
 
 func init() {
 	// Conserve memory by increasing garbage collection frequency.
@@ -42,7 +48,7 @@ func init() {
 // Returns an error if the TUN file descriptor cannot be opened, or if the tunnel fails to
 // connect.
 func ConnectOutlineTunnel(fd int, client *outline.Client, isUDPEnabled bool) *ConnectOutlineTunnelResult {
-	tun, err := tunnel.MakeTunFile(fd)
+	tun, err := makeTunFile(fd)
 	if err != nil {
 		return &ConnectOutlineTunnelResult{Error: &platerrors.PlatformError{
 			Code:    platerrors.SetupSystemVPNFailed,
@@ -60,6 +66,43 @@ func ConnectOutlineTunnel(fd int, client *outline.Client, isUDPEnabled bool) *Co
 		}}
 	}
 
-	go tunnel.ProcessInputPackets(t, tun)
+	go processInputPackets(t, tun)
 	return &ConnectOutlineTunnelResult{Tunnel: t}
+}
+
+// makeTunFile returns an os.File object from a TUN file descriptor `fd`.
+// The returned os.File holds a separate reference to the underlying file,
+// so the file will not be closed until both `fd` and the os.File are
+// separately closed.  (UNIX only.)
+func makeTunFile(fd int) (*os.File, error) {
+	if fd < 0 {
+		return nil, errors.New("Must provide a valid TUN file descriptor")
+	}
+	// Make a copy of `fd` so that os.File's finalizer doesn't close `fd`.
+	newfd, err := unix.Dup(fd)
+	if err != nil {
+		return nil, err
+	}
+	file := os.NewFile(uintptr(newfd), "")
+	if file == nil {
+		return nil, errors.New("Failed to open TUN file descriptor")
+	}
+	return file, nil
+}
+
+// processInputPackets reads packets from a TUN device `tun` and writes them to `tunnel`.
+func processInputPackets(tunnel Tunnel, tun *os.File) {
+	buffer := make([]byte, vpnMtu)
+	for tunnel.IsConnected() {
+		len, err := tun.Read(buffer)
+		if err != nil {
+			log.Warnf("Failed to read packet from TUN: %v", err)
+			continue
+		}
+		if len == 0 {
+			log.Infof("Read EOF from TUN")
+			continue
+		}
+		tunnel.Write(buffer)
+	}
 }
