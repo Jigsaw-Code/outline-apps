@@ -264,6 +264,31 @@ function updateTray(status: TunnelStatus) {
       ...menuTemplate,
     ];
   }
+  // macOS: Add Connect/Disconnect menu item
+  if (process.platform === 'darwin') {
+    menuTemplate.splice(1, 0, {
+      label: isConnected ? 'Disconnect' : 'Connect',
+      click: async () => {
+        if (isConnected) {
+          await stopVpn();
+        } else {
+          // Try to reconnect to the last used tunnel
+          const request = await tunnelStore.load();
+          if (request) {
+            try {
+              await startVpn(request, false);
+              await setupAutoLaunch(request);
+            } catch (e) {
+              console.error('Could not connect from tray menu:', e);
+            }
+          } else {
+            // No previous tunnel, show window
+            mainWindow?.show();
+          }
+        }
+      },
+    });
+  }
   tray.setContextMenu(Menu.buildFromTemplate(menuTemplate));
 }
 
