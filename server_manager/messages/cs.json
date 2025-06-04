@@ -112,6 +112,7 @@
   "gcp-firewall-create-3": "Do pole Source IP ranges (Rozsahy IP zdrojů) zadejte „0.0.0.0/0“.",
   "gcp-firewall-create-4": "V sekci Protocols and ports (Protokoly a porty) vyberte možnost Allow all (Povolit vše).",
   "gcp-name-your-project": "Do pole Název projektu (Project name) zadejte název projektu.",
+  "gcp-oauth-connect-title": "Přihlaste se nebo si vytvořte účet ve službě Google Cloud Platform.",
   "gcp-project-setup-error": "Při nastavování vašeho projektu Google Cloud došlo k chybě",
   "gcp-select-machine-type": "V části Typ počítače (Machine type) vyberte „f1-micro“",
   "gcp-select-networking": "Klikněte na Správa, zabezpečení, disky, síť, jeden tenant (Management, security, disks, networking, sole tenancy) a potom na Síť (Networking)",

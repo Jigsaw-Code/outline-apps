@@ -112,6 +112,7 @@
   "gcp-firewall-create-3": "כותבים \"'0.0.0.0/0\" בשדה \"Source IP ranges\" [טווחי כתובות IP של המקור].",
   "gcp-firewall-create-4": "בקטע \"Protocols and ports\" [פרוטוקולים ויציאות] לוחצים על \"Allow all\" [אישור הכול].",
   "gcp-name-your-project": "נותנים לפרויקט שם בשדה \"Project name\" [שם הפרויקט].",
+  "gcp-oauth-connect-title": "אם יש חשבון ב-Google Cloud Platform, אפשר להיכנס אליו. אחרת, אפשר ליצור חשבון.",
   "gcp-project-setup-error": "אירעה שגיאה בהגדרת הפרויקט שלך ב-Google Cloud",
   "gcp-select-machine-type": "בהגדרה \"Machine Type\" [סוג המכונה] בוחרים את \"f1-micro\".",
   "gcp-select-networking": "לוחצים על \"Management, security, disks, networking, sole tenancy\" [ניהול, אבטחה, דיסקים, רשתות, דייר יחיד] ואז על \"Networking\" [רשתות].",

@@ -112,6 +112,7 @@
   "gcp-firewall-create-3": "Írja be a „0.0.0.0/0” értéket a „Source IP ranges” (Forrás IP-tartományok) mezőbe.",
   "gcp-firewall-create-4": "Válassza az „Allow all” (Az összes engedélyezése) lehetőséget a „Protocols and ports” (Protokollok és portok) szakaszban.",
   "gcp-name-your-project": "Nevezze el a projektet a „Projektnév” (Project name) mezőben.",
+  "gcp-oauth-connect-title": "Jelentkezzen be, vagy hozzon létre egy fiókot a Google Cloud Platform rendszerében.",
   "gcp-project-setup-error": "Hiba történt a Google Cloud-projekt létrehozásakor",
   "gcp-select-machine-type": "Válassza az „f1-micro” beállítást a „Gép típusa” (Machine type) területen.",
   "gcp-select-networking": "Kattintson a „Kezelés, biztonság, lemezek, hálózat, egyéni bérlő” (Management, security, disks, networking, sole tenancy), majd a „Hálózat (Networking) elemre",

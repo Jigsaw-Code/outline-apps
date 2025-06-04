@@ -112,6 +112,7 @@
   "gcp-firewall-create-3": "'0.0.0.0/0' የሚለውን 'የምንጪ አይፒ ዝርዝር' ('Source IP ranges) ላይ ይሙሉ።",
   "gcp-firewall-create-4": "'በፕሮቶኮልስ እና ፖርትስ' ('Protocols and ports') ሥር 'ሁሉንም ይፍቀዱ' ('Allow all') የሚለውን ይምረጡ።",
   "gcp-name-your-project": "'የፕሮጀክት ስም' (Project name) መስክ ውስጥ ለፕሮጀክትዎ ስም ይስጡ።",
+  "gcp-oauth-connect-title": "በGoogle ደመና መሠረተ ሥርዓት ይግቡ ወይም መለያ ይፍጠሩ።",
   "gcp-project-setup-error": "የእርስዎን የGoogle ደመና ፕሮጀክት በማዋቀር ጊዜ ስህተት ተፈጥሯል",
   "gcp-select-machine-type": "'የማሽን ዓይነት' (Machine type) ስር 'f1-micro'ን ይምረጡ",
   "gcp-select-networking": "'አስተዳደር፣ ደህንነት፣ ዲስኮች፣ አውታረመረብ፣ ብቸኛ ተከራይ' (Management, security, disks, networking, sole tenancy)ን፣ ከዚያ 'አውታረመረብ' (Networking)ን ጠቅ ያድርጉ",

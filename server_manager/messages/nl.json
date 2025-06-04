@@ -112,6 +112,7 @@
   "gcp-firewall-create-3": "Typ '0.0.0.0/0' in het veld 'Bron-IP-bereik' (Source IP ranges).",
   "gcp-firewall-create-4": "Selecteer 'Alles toestaan' (Allow all) onder 'Protocollen en poorten' (Protocols and ports).",
   "gcp-name-your-project": "Geef het project een naam in het veld 'Naam project' (Project name).",
+  "gcp-oauth-connect-title": "Log in of maak een account bij Google Cloud Platform.",
   "gcp-project-setup-error": "Er is een fout opgetreden bij het instellen van het Google Cloud-project",
   "gcp-select-machine-type": "Selecteer 'f1-micro' onder 'Machinetype' (Machine type)",
   "gcp-select-networking": "Klik op 'Beheer, beveiliging, schijven, netwerken, enkelvoudige tenancy' (Management, security, disks, networking, sole tenancy) en klik vervolgens op 'Netwerken' (Networking)",

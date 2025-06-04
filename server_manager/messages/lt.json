@@ -112,6 +112,7 @@
   "gcp-firewall-create-3": "Lauke „Šaltinio IP diapazonai“ (Source IP ranges) įveskite „0.0.0.0/0“.",
   "gcp-firewall-create-4": "Skiltyje „Protokolai ir prievadai“ (Protocols and ports) pasirinkite „Leisti viską“ (Allow all).",
   "gcp-name-your-project": "Suteikite projektui pavadinimą lauke „Projekto pavadinimas“ (Project name).",
+  "gcp-oauth-connect-title": "Prisijunkite arba sukurkite paskyrą naudodami „Google Cloud Platform“.",
   "gcp-project-setup-error": "Nustatant „Google Cloud“ projektą įvyko klaida",
   "gcp-select-machine-type": "Skiltyje „Įrenginio tipas“ (Machine type) pasirinkite „f1-micro“.",
   "gcp-select-networking": "Spustelėkite „Valdymas, sauga, diskai, tinklas, atskiras nuomotojas“ (Management, security, disks, networking, sole tenancy), tada – „Tinklas“ (Networking)",

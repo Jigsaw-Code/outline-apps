@@ -112,6 +112,7 @@
   "gcp-firewall-create-3": "Sisestage väljale „Allika IP-aadresside vahemik“ (Source IP ranges) väärtus „0.0.0.0/0“.",
   "gcp-firewall-create-4": "Tehke jaotises „Protokollid ja pordid“ (Protocols and ports) valik „Luba kõik“ (Allow all).",
   "gcp-name-your-project": "Määrake projektile nimi väljal „Projekti nimi“ (Project name).",
+  "gcp-oauth-connect-title": "Logige sisse või looge konto Google Cloud Platformiga.",
   "gcp-project-setup-error": "Teie Google Cloudi projekti seadistamisel ilmnes viga",
   "gcp-select-machine-type": "Tehke jaotises „Masina tüüp“ (Machine type) valik „f1-micro“.",
   "gcp-select-networking": "Klõpsake valikul „Haldus, turve, kettad, võrgundus, ainus asurlus“ (Management, security, disks, networking, sole tenancy) ja seejärel valikul „Võrgundus“ (Networking)",
