@@ -24,9 +24,10 @@ public enum ConnectionStatus: Int {
 var StatusItem = NSStatusItem()
 
 class StatusItemController: NSObject {
-    let connectionStatusMenuItem = NSMenuItem(title: MenuTitle.statusDisconnected,
-                                              action: nil,
-                                              keyEquivalent: "")
+    let connectionStatusMenuItem = NSMenuItem(
+        title: MenuTitle.statusDisconnected,
+        action: nil,
+        keyEquivalent: "")
 
     private enum AppIconImage {
         static let statusConnected = getImage(name: "status_bar_button_image_connected")
@@ -64,12 +65,14 @@ class StatusItemController: NSObject {
         setStatus(status: .disconnected)
 
         let menu = NSMenu()
-        let openMenuItem = NSMenuItem(title: MenuTitle.open, action: #selector(openApplication), keyEquivalent: "o")
+        let openMenuItem = NSMenuItem(
+            title: MenuTitle.open, action: #selector(openApplication), keyEquivalent: "o")
         openMenuItem.target = self
         menu.addItem(openMenuItem)
         menu.addItem(connectionStatusMenuItem)
         menu.addItem(NSMenuItem.separator())
-        let closeMenuItem = NSMenuItem(title: MenuTitle.quit, action: #selector(closeApplication), keyEquivalent: "q")
+        let closeMenuItem = NSMenuItem(
+            title: MenuTitle.quit, action: #selector(closeApplication), keyEquivalent: "q")
         closeMenuItem.target = self
         menu.addItem(closeMenuItem)
         StatusItem.menu = menu
@@ -78,11 +81,13 @@ class StatusItemController: NSObject {
     func setStatus(status: ConnectionStatus) {
         NSLog("[StatusItemController] Setting status: \(status)")
         let isConnected = status == .connected
-        let appIconImage = isConnected ? AppIconImage.statusConnected : AppIconImage.statusDisconnected
+        let appIconImage =
+            isConnected ? AppIconImage.statusConnected : AppIconImage.statusDisconnected
         appIconImage.isTemplate = true
         StatusItem.button?.image = appIconImage
 
-        let connectionStatusTitle = isConnected ? MenuTitle.statusConnected : MenuTitle.statusDisconnected
+        let connectionStatusTitle =
+            isConnected ? MenuTitle.statusConnected : MenuTitle.statusDisconnected
         connectionStatusMenuItem.title = connectionStatusTitle
     }
 
@@ -92,6 +97,7 @@ class StatusItemController: NSObject {
         guard let uiWindow = getUiWindow() else {
             return
         }
+        AppKitController.shared.observeWindowClose(for: uiWindow)
         uiWindow.makeKeyAndOrderFront(self)
     }
 
@@ -112,7 +118,8 @@ private func getUiWindow() -> NSWindow? {
 }
 
 private func getImage(name: String) -> NSImage {
-    guard let image = Bundle(for: StatusItemController.self).image(forResource: NSImage.Name(name)) else {
+    guard let image = Bundle(for: StatusItemController.self).image(forResource: NSImage.Name(name))
+    else {
         fatalError("Unable to load image asset named \(name).")
     }
     return image

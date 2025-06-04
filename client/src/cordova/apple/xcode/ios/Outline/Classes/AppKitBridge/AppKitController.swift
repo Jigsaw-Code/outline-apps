@@ -16,13 +16,72 @@ import AppKit
 import ServiceManagement
 
 class AppKitController: NSObject {
+    static let shared = AppKitController()
     private var statusItemController: StatusItemController?
+    private var windowCloseObservers: [NSWindow: NSObjectProtocol] = [:]
 
     override public required init() {
         super.init()
-
-        // Indicates that the application is an ordinary app that appears in the Dock and may have a user interface.
         NSApp.setActivationPolicy(.regular)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(windowDidBecomeMain(_:)),
+            name: NSWindow.didBecomeMainNotification,
+            object: nil
+        )
+        // After the app has fully launched, forcibly attach an observer to the initial UIWindow.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            for window in NSApp.windows {
+                if String(describing: window).contains("UINSWindow") {
+                    self.observeWindowClose(for: window)
+                }
+            }
+        }
+    }
+
+    @objc public func observeWindowClose(for window: NSWindow) {
+        // Remove previous observer for this window if any
+        if let observer = windowCloseObservers[window] {
+            NotificationCenter.default.removeObserver(observer)
+        }
+        let observer = NotificationCenter.default.addObserver(
+            forName: NSWindow.willCloseNotification, object: window, queue: .main
+        ) { [weak self] notification in
+            self?.handleWindowClosed(notification)
+        }
+        windowCloseObservers[window] = observer
+    }
+
+    private func handleWindowClosed(_ notification: Notification) {
+        guard let closedWindow = notification.object as? NSWindow,
+            String(describing: closedWindow).contains("UINSWindow")
+        else {
+            return
+        }
+        NSLog("[AppKitController] Main window closed, hiding Dock icon")
+        AppKitController.shared.setDockIconVisible(false)
+        // Remove observer for this window
+        if let observer = windowCloseObservers[closedWindow] {
+            NotificationCenter.default.removeObserver(observer)
+            windowCloseObservers.removeValue(forKey: closedWindow)
+        }
+    }
+
+    @objc private func windowDidBecomeMain(_ notification: Notification) {
+        guard let window = notification.object as? NSWindow,
+            String(describing: window).contains("UINSWindow")
+        else {
+            return
+        }
+        observeWindowClose(for: window)
+    }
+
+    @objc public func setDockIconVisible(_ visible: Bool) {
+        if visible {
+            NSApp.setActivationPolicy(.regular)
+        } else {
+            NSApp.setActivationPolicy(.accessory)
+        }
     }
 
     /// Set the connection status in the app's menu in the system-wide menu bar.
