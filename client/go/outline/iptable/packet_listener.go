@@ -99,8 +99,9 @@ type packetConn struct {
 	forwardedPackets             chan incomingPacket
 	forwardCounter               sync.WaitGroup
 
-	lastRemainingPacket     incomingPacket
-	lastRemainingPacketLock sync.Mutex
+	deadline      time.Time
+	readDeadline  time.Time
+	writeDeadline time.Time
 }
 
 var _ net.PacketConn = (*packetConn)(nil)
@@ -114,7 +115,7 @@ func newPacketConn(
 
 	var defaultConn net.PacketConn
 	if defaultListener != nil {
-		connAttempt, err := defaultListener.ListenPacket(forwardingContext)
+		connAttempt, err := defaultListener.ListenPacket(ctx)
 
 		if err == nil {
 			defaultConn = connAttempt
@@ -122,16 +123,17 @@ func newPacketConn(
 	}
 
 	conn := &packetConn{
-		closePacketForwardingContext: closeForwardingContext,
+		forwardedPackets:             make(chan incomingPacket, packetQueueSize),
+		forwardingContext:            ctx,
+		closePacketForwardingContext: cancel,
 		connMap:                      make(map[netip.Addr]net.PacketConn),
 		connMapLock:                  sync.Mutex{},
+		listenerTable:                listenerTable,
 		defaultConn:                  defaultConn,
 		defaultListener:              defaultListener,
-		forwardedPackets:             make(chan incomingPacket, packetQueueSize),
-		forwardingContext:            forwardingContext,
-		listenerTable:                listenerTable,
-		lastRemainingPacket:          incomingPacket{},
-		lastRemainingPacketLock:      sync.Mutex{},
+		deadline:                     time.Time{},
+		readDeadline:                 time.Time{},
+		writeDeadline:                time.Time{},
 	}
 
 	if conn.defaultConn != nil {
@@ -142,14 +144,14 @@ func newPacketConn(
 }
 
 func (conn *packetConn) ReadFrom(result []byte) (n int, addr net.Addr, err error) {
-    packet, ok := <-conn.forwardedPackets
-    if !ok {
-        return 0, nil, net.ErrClosed
-    }
+	packet, ok := <-conn.forwardedPackets
+	if !ok {
+		return 0, nil, net.ErrClosed
+	}
 
-    // Copy what fits and discard the rest according to UDP standard
-    n = copy(result, packet.data)
-    return n, packet.addr, nil
+	// Copy what fits and discard the rest according to UDP standard:
+	n = copy(result, packet.data)
+	return n, packet.addr, nil
 }
 
 func (conn *packetConn) WriteTo(packet []byte, addr net.Addr) (numBytes int, err error) {
@@ -179,8 +181,17 @@ func (conn *packetConn) WriteTo(packet []byte, addr net.Addr) (numBytes int, err
 				return 0, err
 			}
 
+			subconn.SetDeadline(conn.deadline)
+			subconn.SetReadDeadline(conn.readDeadline)
+			subconn.SetWriteDeadline(conn.writeDeadline)
+
 			conn.connMapLock.Lock()
-			conn.connMap[ip] = subconn
+			if conn.connMap[ip] != nil {
+				// Another connection was created while we were creating this connection:
+				subconn.Close()
+			} else {
+				conn.connMap[ip] = subconn
+			}
 			conn.connMapLock.Unlock()
 
 			conn.forwardPackets(subconn)
@@ -239,6 +250,8 @@ func (conn *packetConn) LocalAddr() net.Addr {
 }
 
 func (conn *packetConn) SetDeadline(t time.Time) error {
+	conn.deadline = t
+
 	if conn.defaultConn != nil {
 		conn.defaultConn.SetDeadline(t)
 	}
@@ -254,6 +267,8 @@ func (conn *packetConn) SetDeadline(t time.Time) error {
 }
 
 func (conn *packetConn) SetReadDeadline(t time.Time) error {
+	conn.readDeadline = t
+
 	if conn.defaultConn != nil {
 		conn.defaultConn.SetReadDeadline(t)
 	}
@@ -269,6 +284,8 @@ func (conn *packetConn) SetReadDeadline(t time.Time) error {
 }
 
 func (conn *packetConn) SetWriteDeadline(t time.Time) error {
+	conn.writeDeadline = t
+
 	if conn.defaultConn != nil {
 		conn.defaultConn.SetWriteDeadline(t)
 	}
