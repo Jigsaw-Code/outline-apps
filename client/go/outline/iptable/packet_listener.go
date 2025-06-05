@@ -110,7 +110,7 @@ func newPacketConn(
 	listenerTable IPTable[transport.PacketListener],
 	defaultListener transport.PacketListener,
 ) (*packetConn, error) {
-	forwardingContext, closeForwardingContext := context.WithCancel(parentContext)
+	ctx, cancel := context.WithCancel(parentContext)
 
 	var defaultConn net.PacketConn
 	if defaultListener != nil {
