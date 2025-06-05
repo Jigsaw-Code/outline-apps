@@ -87,6 +87,8 @@ type incomingPacket struct {
 // For incoming packets (ReadFrom), it aggregates packets received from all
 // active underlying connections (both specific and default) into a single channel.
 type packetConn struct {
+	isClosed bool
+
 	defaultListener transport.PacketListener
 	defaultConn     net.PacketConn
 
@@ -123,6 +125,7 @@ func newPacketConn(
 	}
 
 	conn := &packetConn{
+		isClosed:                     false,
 		forwardedPackets:             make(chan incomingPacket, packetQueueSize),
 		forwardingContext:            ctx,
 		closePacketForwardingContext: cancel,
@@ -144,6 +147,10 @@ func newPacketConn(
 }
 
 func (conn *packetConn) ReadFrom(result []byte) (n int, addr net.Addr, err error) {
+	if conn.isClosed {
+		return 0, nil, net.ErrClosed
+	}
+
 	packet, ok := <-conn.forwardedPackets
 	if !ok {
 		return 0, nil, net.ErrClosed
@@ -155,6 +162,10 @@ func (conn *packetConn) ReadFrom(result []byte) (n int, addr net.Addr, err error
 }
 
 func (conn *packetConn) WriteTo(packet []byte, addr net.Addr) (numBytes int, err error) {
+	if conn.isClosed {
+		return 0, net.ErrClosed
+	}
+
 	var ip netip.Addr
 	if udpAddr, ok := addr.(*net.UDPAddr); ok {
 		if parsedIP, ok := netip.AddrFromSlice(udpAddr.IP); ok {
@@ -210,6 +221,8 @@ func (conn *packetConn) WriteTo(packet []byte, addr net.Addr) (numBytes int, err
 func (conn *packetConn) Close() error {
 	var errs error
 	conn.closePacketForwardingContext()
+
+	conn.isClosed = true
 
 	conn.connMapLock.Lock()
 	for address, subconn := range conn.connMap {
