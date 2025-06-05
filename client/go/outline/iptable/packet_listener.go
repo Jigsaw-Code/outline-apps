@@ -116,9 +116,7 @@ func newPacketConn(
 	if defaultListener != nil {
 		connAttempt, err := defaultListener.ListenPacket(forwardingContext)
 
-		if err != nil {
-			defaultConn = nil
-		} else {
+		if err == nil {
 			defaultConn = connAttempt
 		}
 	}
