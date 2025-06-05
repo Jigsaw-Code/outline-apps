@@ -25,8 +25,8 @@ import (
 
 func lookupInTable[D any](table IPTable[D], address string) (foundDialer D, ok bool) {
 	host := address
-	if _host, _, err := net.SplitHostPort(address); err == nil {
-		host = _host
+	if h, _, err := net.SplitHostPort(address); err == nil {
+		host = h
 	}
 
 	ip, err := netip.ParseAddr(host)
