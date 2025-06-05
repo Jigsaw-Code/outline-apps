@@ -142,28 +142,14 @@ func newPacketConn(
 }
 
 func (conn *packetConn) ReadFrom(result []byte) (n int, addr net.Addr, err error) {
-	if len(conn.lastRemainingPacket.data) > 0 {
-		conn.lastRemainingPacketLock.Lock()
-		numBytes := copy(result, conn.lastRemainingPacket.data)
-		conn.lastRemainingPacket.data = conn.lastRemainingPacket.data[numBytes:]
-		conn.lastRemainingPacketLock.Unlock()
+    packet, ok := <-conn.forwardedPackets
+    if !ok {
+        return 0, nil, net.ErrClosed
+    }
 
-		return numBytes, conn.lastRemainingPacket.addr, nil
-	}
-
-	packet, ok := <-conn.forwardedPackets
-	if !ok {
-		return 0, nil, net.ErrClosed
-	}
-
-	numBytes := copy(result, packet.data)
-
-	conn.lastRemainingPacketLock.Lock()
-	conn.lastRemainingPacket.data = packet.data[numBytes:]
-	conn.lastRemainingPacket.addr = packet.addr
-	conn.lastRemainingPacketLock.Unlock()
-
-	return numBytes, packet.addr, nil
+    // Copy what fits and discard the rest according to UDP standard
+    n = copy(result, packet.data)
+    return n, packet.addr, nil
 }
 
 func (conn *packetConn) WriteTo(packet []byte, addr net.Addr) (numBytes int, err error) {
