@@ -57,7 +57,7 @@ func NewPacketListener(table IPTable[transport.PacketListener], defaultListener 
 
 // SetDefault sets the [transport.PacketListener] to be used for IP addresses that
 // do not match any specific rule in the IP table.
-// Unlike the constructor, this method allows `defaultListener` to be nil, which
+// If `defaultListener` is nil, which
 // would mean no packets can be sent or received for addresses not in the table.
 func (listener *PacketListener) SetDefault(defaultListener transport.PacketListener) {
 	listener.defaultListener = defaultListener
