@@ -89,6 +89,12 @@ class StatusItemController: NSObject {
         closeMenuItem.target = self
         menu.addItem(closeMenuItem)
         StatusItem.menu = menu
+
+        // Add observer for opening the app
+        NotificationCenter.default.addObserver(self,
+                                             selector: #selector(openApplication),
+                                             name: NSNotification.Name("openApplication"),
+                                             object: nil)
     }
 
     func setStatus(status: ConnectionStatus) {

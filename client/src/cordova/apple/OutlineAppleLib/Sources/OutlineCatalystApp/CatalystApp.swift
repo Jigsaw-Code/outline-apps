@@ -79,8 +79,14 @@
                                 } catch {
                                     DDLogError("Failed to start VPN: \(error.localizedDescription)")
                                 }
+                            } else {
+                                // No server available, open the app
+                                NotificationCenter.default.post(name: NSNotification.Name("openApplication"), object: nil)
                             }
                         }
+                    } else {
+                        // No tunnel manager available, open the app
+                        NotificationCenter.default.post(name: NSNotification.Name("openApplication"), object: nil)
                     }
                 }
             }
