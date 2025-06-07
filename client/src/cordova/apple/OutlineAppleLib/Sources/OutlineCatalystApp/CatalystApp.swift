@@ -1,4 +1,4 @@
-// Copyright 2023 The Outline Authors
+// Copyright 2025 The Outline Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,6 +19,9 @@
     import Foundation
     import OutlineNotification
     import ServiceManagement
+    import UIKit
+    import OutlineTunnel
+    import NetworkExtension
 
     @objcMembers
     public class OutlineCatalystApp: NSObject {
@@ -53,6 +56,40 @@
             { _ in
                 appKitController._AppKitBridge_setConnectionStatus(.disconnected)
             }
+            
+            // Handle connection toggle from tray menu
+            NotificationCenter.default.addObserver(forName: NSNotification.Name("toggleConnection"),
+                                                   object: nil,
+                                                   queue: nil)
+            { _ in
+                Task {
+                    if let manager = await getTunnelManager() {
+                        if isActiveSession(manager.connection) {
+                            // If connected, disconnect
+                            if let tunnelId = getTunnelId(forManager: manager) {
+                                await OutlineVpn.shared.stop(tunnelId)
+                            }
+                        } else {
+                            // If disconnected, try to connect to the last server
+                            if let tunnelConfig = manager.protocolConfiguration as? NETunnelProviderProtocol,
+                               let tunnelId = tunnelConfig.providerConfiguration?["id"] as? String,
+                               let transportConfig = tunnelConfig.providerConfiguration?["transport"] as? String {
+                                do {
+                                    try await OutlineVpn.shared.start(tunnelId, named: "Outline Server", withTransport: transportConfig)
+                                } catch {
+                                    DDLogError("Failed to start VPN: \(error.localizedDescription)")
+                                }
+                            } else {
+                                // No server available, open the app
+                                NotificationCenter.default.post(name: NSNotification.Name("openApplication"), object: nil)
+                            }
+                        }
+                    } else {
+                        // No tunnel manager available, open the app
+                        NotificationCenter.default.post(name: NSNotification.Name("openApplication"), object: nil)
+                    }
+                }
+            }
         }
     }
 
@@ -73,6 +110,27 @@
             }
         }
         preconditionFailure("[CatalystApp] Unable to load")
+    }
+
+    // Helper functions for VPN management
+    func getTunnelManager() async -> NETunnelProviderManager? {
+        do {
+            let managers: [NETunnelProviderManager] = try await NETunnelProviderManager.loadAllFromPreferences()
+            guard managers.count > 0 else { return nil }
+            return managers.first
+        } catch {
+            return nil
+        }
+    }
+
+    func getTunnelId(forManager manager: NETunnelProviderManager?) -> String? {
+        let protoConfig = manager?.protocolConfiguration as? NETunnelProviderProtocol
+        return protoConfig?.providerConfiguration?["id"] as? String
+    }
+
+    func isActiveSession(_ session: NEVPNConnection?) -> Bool {
+        let vpnStatus = session?.status
+        return vpnStatus == .connected || vpnStatus == .connecting || vpnStatus == .reasserting
     }
 
 #endif
