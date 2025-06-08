@@ -24,6 +24,7 @@ import (
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/reporting"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
+	"github.com/goccy/go-yaml"
 )
 
 // Client provides a transparent container for [transport.StreamDialer] and [transport.PacketListener]
@@ -43,6 +44,11 @@ func (c *Client) DialStream(ctx context.Context, address string) (transport.Stre
 
 func (c *Client) ListenPacket(ctx context.Context) (net.PacketConn, error) {
 	return c.pl.ListenPacket(ctx)
+}
+
+// ClientConfig is used to create the Client.
+type ClientConfig struct {
+	Transport config.ConfigNode
 }
 
 // NewClientResult represents the result of [NewClientAndReturnError].
@@ -71,18 +77,19 @@ func (c *Client) StopReporting() {
 }
 
 // NewClient creates a new Outline client from a configuration string.
-func NewClient(transportConfig string, sessionConfig string) *NewClientResult {
+func NewClient(clientConfig string, sessionConfig string) *NewClientResult {
 	tcpDialer := transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
 	udpDialer := transport.UDPDialer{}
-	client, err := NewClientWithBaseDialers(transportConfig, sessionConfig, &tcpDialer, &udpDialer)
+	client, err := NewClientWithBaseDialers(clientConfig, sessionConfig, &tcpDialer, &udpDialer)
 	if err != nil {
 		return &NewClientResult{Error: platerrors.ToPlatformError(err)}
 	}
 	return &NewClientResult{Client: client}
 }
 
-func NewClientWithBaseDialers(transportConfig string, sessionConfig string, tcpDialer transport.StreamDialer, udpDialer transport.PacketDialer) (*Client, error) {
-	transportYAML, err := config.ParseConfigYAML(transportConfig)
+func NewClientWithBaseDialers(clientConfigText string, sessionConfig string, tcpDialer transport.StreamDialer, udpDialer transport.PacketDialer) (*Client, error) {
+	var clientConfig ClientConfig
+	err := yaml.Unmarshal([]byte(clientConfigText), &clientConfig)
 	if err != nil {
 		return nil, &platerrors.PlatformError{
 			Code:    platerrors.InvalidConfig,
@@ -91,7 +98,7 @@ func NewClientWithBaseDialers(transportConfig string, sessionConfig string, tcpD
 		}
 	}
 
-	transportPair, err := config.NewDefaultTransportProvider(tcpDialer, udpDialer).Parse(context.Background(), transportYAML)
+	transportPair, err := config.NewDefaultTransportProvider(tcpDialer, udpDialer).Parse(context.Background(), clientConfig.Transport)
 	if err != nil {
 		if errors.Is(err, errors.ErrUnsupported) {
 			return nil, &platerrors.PlatformError{

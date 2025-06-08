@@ -112,6 +112,7 @@
   "gcp-firewall-create-3": "\"Дереккөздің IP аралықтары\" (Source IP ranges) өрісінде \"0.0.0.0/0\" мәнін теріңіз.",
   "gcp-firewall-create-4": "\"Протоколдар және порттар\" (Protocols and ports) тармағының астында \"Барлығына рұқсат ету\" (Allow all) опциясын таңдаңыз.",
   "gcp-name-your-project": "\"Жоба атауы\" (Project name) өрісінде жоба атауын енгізіңіз.",
+  "gcp-oauth-connect-title": "Аккаунтқа кіріңіз немесе Google Cloud Platform арқылы аккаунт жасаңыз.",
   "gcp-project-setup-error": "Google Cloud жобасын реттеу кезінде қате шықты.",
   "gcp-select-machine-type": "\"Жабдық түрі\" (Machine type) тармағының астындағы \"f1-micro\" опциясын таңдаңыз",
   "gcp-select-networking": "\"Басқару, қауіпсіздік, дискілер, желі, дара клиент\" (Management, security, disks, networking, sole tenancy), кейін \"Желі\" (Networking) түймелерін басыңыз.",

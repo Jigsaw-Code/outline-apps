@@ -112,6 +112,7 @@
   "gcp-firewall-create-3": "'स्रोत आईपी सीमा (Source IP ranges)' फ़ील्ड में '0.0.0.0/0' लिखें.",
   "gcp-firewall-create-4": "'प्रोटोकॉल और पोर्ट (Protocols and ports)' में जाकर 'सभी की अनुमति दें ('Allow all)' चुनें.",
   "gcp-name-your-project": "'प्रोजेक्ट के नाम (Project name)' फ़ील्ड में अपने प्रोजेक्ट का नाम लिखें.",
+  "gcp-oauth-connect-title": "Google Cloud Platform खाता बनाएं या इसमें साइन इन करें.",
   "gcp-project-setup-error": "Google Cloud प्रोजेक्ट को सेट अप करने के दौरान, कोई गड़बड़ी हुई",
   "gcp-select-machine-type": "'मशीन किस तरह की है (Machine type)' में 'f1-micro' चुनें",
   "gcp-select-networking": "पहले 'मैनेजमेंट, सिक्योरिटी, डिस्क, नेटवर्किंग, सोल टेनेंसी (Management, security, disks, networking, sole tenancy)' पर क्लिक करें. उसके बाद 'नेटवर्किंग (Networking)' पर क्लिक करें",

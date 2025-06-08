@@ -112,6 +112,7 @@
   "gcp-firewall-create-3": "\"Source IP ranges\" sahəsinə \"0.0.0.0/0\" yazın.",
   "gcp-firewall-create-4": "\"Protocols and ports\" (Protokollar və portlar) bölməsində \"Allow all\" (Hamısına icazə verin) seçimini edin.",
   "gcp-name-your-project": "\"Layihə adı\" sahəsində layihənizə ad verin.",
+  "gcp-oauth-connect-title": "Google Cloud platforması ilə daxil olun və ya hesab yaradın.",
   "gcp-project-setup-error": "Google Cloud layihənizi quraşdırarkən xəta baş verdi",
   "gcp-select-machine-type": "\"Maşın növü\" (Machine type) altında \"f1-micro\" seçimini edin",
   "gcp-select-networking": "\"İdarəetmə, təhlükəsizlik, disklər, şəbəkələşmə, tək sahiblik\" seçiminə, sonra \"Şəbəkələşmə\" seçiminə klikləyin.",

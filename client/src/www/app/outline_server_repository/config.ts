@@ -29,7 +29,7 @@ export type ServiceConfig = StaticServiceConfig | DynamicServiceConfig;
 export class StaticServiceConfig {
   constructor(
     readonly name: string,
-    readonly tunnelConfig: TunnelConfigJson
+    readonly tunnelConfig: FirstHopAndTunnelConfigJson
   ) {}
 }
 
@@ -49,11 +49,16 @@ export class DynamicServiceConfig {
  * This is where VPN-layer parameters would go (e.g. interface IP, routes, dns, etc.).
  */
 export interface TunnelConfigJson {
+  /** client is an opaque string that describes how to create the client object that establish connections to the destinations.
+   * See https://github.com/Jigsaw-Code/outline-apps/blob/master/client/config.md for format. */
+  client: string;
+}
+
+/**
+ * FirstHopAndTunnelConfigJson holds the first hop information and the tunnel config for convenience.
+ */
+export interface FirstHopAndTunnelConfigJson extends TunnelConfigJson {
   firstHop: string;
-  /** transport describes how to establish connections to the destinations.
-   * See https://github.com/Jigsaw-Code/outline-apps/blob/master/client/go/outline/config.go for format. */
-  transport: string;
-  session_report: string;
 }
 
 /**
@@ -64,7 +69,7 @@ export interface TunnelConfigJson {
  */
 export async function parseTunnelConfig(
   tunnelConfigText: string
-): Promise<TunnelConfigJson | null> {
+): Promise<FirstHopAndTunnelConfigJson | null> {
   const config = await methodChannel
     .getDefaultMethodChannel()
     .invokeMethod('ParseTunnelConfig', tunnelConfigText);

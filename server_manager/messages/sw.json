@@ -112,6 +112,7 @@
   "gcp-firewall-create-3": "Andika '0.0.0.0/0' katika sehemu ya 'Viwango vya IP ya chanzo'.",
   "gcp-firewall-create-4": "Chagua 'Ruhusu zote' chini ya 'Itifaki na milango'.",
   "gcp-name-your-project": "Taja jina la mradi wako kwenye sehemu ya 'Jina la mradi'.",
+  "gcp-oauth-connect-title": "Ingia katika akaunti au ufungue akaunti kwenye Mfumo wa Wingu la Google.",
   "gcp-project-setup-error": "Hitilafu imetokea wakati wa kuweka mipangilio ya mradi wako wa Google Cloud",
   "gcp-select-machine-type": "Chagua 'f1-micro' chini ya 'Aina ya mashine'",
   "gcp-select-networking": "Bofya 'Usimamizi, usalama, diski, mitandao, upangaji pekee', kisha ubofye 'Mitandao'",
