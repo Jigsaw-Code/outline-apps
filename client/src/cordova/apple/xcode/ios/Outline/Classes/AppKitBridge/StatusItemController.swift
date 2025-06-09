@@ -97,7 +97,7 @@ class StatusItemController: NSObject {
         guard let uiWindow = getUiWindow() else {
             return
         }
-        AppKitController.shared.observeWindowClose(for: uiWindow)
+        // Observer is managed only in AppKitController, so redundant call is removed
         uiWindow.makeKeyAndOrderFront(self)
     }
 

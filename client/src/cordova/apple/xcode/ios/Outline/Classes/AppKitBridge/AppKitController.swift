@@ -29,13 +29,16 @@ class AppKitController: NSObject {
             name: NSWindow.didBecomeMainNotification,
             object: nil
         )
-        // After the app has fully launched, forcibly attach an observer to the initial UIWindow.
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            for window in NSApp.windows {
-                if String(describing: window).contains("UINSWindow") {
-                    self.observeWindowClose(for: window)
-                }
-            }
+    }
+
+    @objc private func windowDidBecomeMain(_ notification: Notification) {
+        guard let window = notification.object as? NSWindow else {
+            return
+        }
+        setDockIconVisible(true)
+        // Register observer only once (prevent duplicate registration)
+        if windowCloseObservers[window] == nil {
+            observeWindowClose(for: window)
         }
     }
 
@@ -53,27 +56,16 @@ class AppKitController: NSObject {
     }
 
     private func handleWindowClosed(_ notification: Notification) {
-        guard let closedWindow = notification.object as? NSWindow,
-            String(describing: closedWindow).contains("UINSWindow")
-        else {
+        guard let closedWindow = notification.object as? NSWindow else {
             return
         }
         NSLog("[AppKitController] Main window closed, hiding Dock icon")
-        AppKitController.shared.setDockIconVisible(false)
+        self.setDockIconVisible(false)
         // Remove observer for this window
         if let observer = windowCloseObservers[closedWindow] {
             NotificationCenter.default.removeObserver(observer)
             windowCloseObservers.removeValue(forKey: closedWindow)
         }
-    }
-
-    @objc private func windowDidBecomeMain(_ notification: Notification) {
-        guard let window = notification.object as? NSWindow,
-            String(describing: window).contains("UINSWindow")
-        else {
-            return
-        }
-        observeWindowClose(for: window)
     }
 
     @objc public func setDockIconVisible(_ visible: Bool) {
