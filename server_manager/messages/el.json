@@ -112,6 +112,7 @@
   "gcp-firewall-create-3": "Πληκτρολογήστε 0.0.0.0/0 στο πεδίο Εύρη IP πηγής (Source IP ranges).",
   "gcp-firewall-create-4": "Επιλέξτε Αποδοχή όλων (Allow all) στην ενότητα Πρωτόκολλα και θύρες (Protocols and ports).",
   "gcp-name-your-project": "Ονομάστε το έργο σας στο πεδίο Όνομα έργου (Project name).",
+  "gcp-oauth-connect-title": "Συνδεθείτε ή δημιουργήστε έναν λογαριασμό στο Google Cloud Platform.",
   "gcp-project-setup-error": "Παρουσιάστηκε σφάλμα κατά τη ρύθμιση του έργου σας Google Cloud.",
   "gcp-select-machine-type": "Επιλέξτε \"f1-micro\" στην ενότητα Τύπος μηχανήματος (Machine type).",
   "gcp-select-networking": "Κάντε κλικ στην επιλογή Διαχείριση, ασφάλεια, δίσκοι, δικτύωση, αποκλειστική μίσθωση (Management, security, disks, networking, sole tenancy), και έπειτα στην επιλογή Δικτύωση (Networking).",

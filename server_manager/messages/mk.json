@@ -112,6 +112,7 @@
   "gcp-firewall-create-3": "Напишете „0.0.0.0/0“ во полето „Опсези на изворна IP“ ('Source IP ranges').",
   "gcp-firewall-create-4": "Изберете „Дозволи ги сите“ ('Allow all') во „Протоколи и псрти“ ('Protocols and ports').",
   "gcp-name-your-project": "Именувајте го вашиот проект во полето „Име на проектот“ ('Project name').",
+  "gcp-oauth-connect-title": "Најавете се или создајте сметка со Google Cloud Platform.",
   "gcp-project-setup-error": "Се јави грешка при поставувањето на вашиот проект на Google Cloud",
   "gcp-select-machine-type": "Изберете „f1-micro“ во „Тип машина“ ('Machine type')",
   "gcp-select-networking": "Кликнете на „Управување, безбедност, дискови, вмрежување, еден сопственик“ ('Management, security, disks, networking, sole tenancy'), а потоа на „Вмрежување“ ('Networking')",

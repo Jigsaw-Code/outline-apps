@@ -41,7 +41,7 @@ const (
 	MethodFetchResource = "FetchResource"
 
 	// Parses the TunnelConfig and extracts the first hop or provider error as needed.
-	//  - Input: the transport config text
+	//  - Input: the tunnel config text
 	//  - Output: the TunnelConfigJson that Typescript needs
 	MethodParseTunnelConfig = "ParseTunnelConfig"
 

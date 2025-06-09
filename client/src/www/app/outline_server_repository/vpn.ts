@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {TunnelConfigJson} from './config';
+import {FirstHopAndTunnelConfigJson} from './config';
 
 export const enum TunnelStatus {
   CONNECTED,
@@ -25,7 +25,7 @@ export const enum TunnelStatus {
 export interface StartRequestJson {
   id: string;
   name: string;
-  config: TunnelConfigJson;
+  config: FirstHopAndTunnelConfigJson;
 }
 
 /** VpnApi is how we talk to the platform-specific VPN API. */

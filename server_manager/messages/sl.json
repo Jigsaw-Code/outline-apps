@@ -112,6 +112,7 @@
   "gcp-firewall-create-3": "V polje »razponi vira IP« (Source IP ranges) vnesite »0.0.0.0/0«.",
   "gcp-firewall-create-4": "V razdelku »Protokoli in vrata« (Protocols and ports) izberite »Dovoli vse« (Allow all).",
   "gcp-name-your-project": "Poimenujte projekt v polju »Ime projekta« (Project name).",
+  "gcp-oauth-connect-title": "Prijavite se v Google Cloud Platform ali ustvarite račun.",
   "gcp-project-setup-error": "Med nastavljanjem projekta Google Cloud je prišlo do napake.",
   "gcp-select-machine-type": "V razdelku »Vrsta računalnika« (Machine type) izberite »f1-micro«",
   "gcp-select-networking": "Kliknite »Upravljanje, varnost, diski, omrežje, edino skrbništvo« (Management, security, disks, networking, sole tenancy) in nato »Omrežje« (Networking)",
