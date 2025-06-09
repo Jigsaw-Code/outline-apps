@@ -18,9 +18,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"net"
 	"net/netip"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/Jigsaw-Code/outline-sdk/transport"
@@ -70,8 +72,6 @@ func (listener *PacketListener) ListenPacket(ctx context.Context) (net.PacketCon
 	return newPacketConn(ctx, listener.table, listener.defaultListener)
 }
 
-const packetQueueSize = 128
-
 type incomingPacket struct {
 	data []byte
 	addr net.Addr
@@ -87,7 +87,7 @@ type incomingPacket struct {
 // For incoming packets (ReadFrom), it aggregates packets received from all
 // active underlying connections (both specific and default) into a single channel.
 type packetConn struct {
-	isClosed bool
+	isClosed atomic.Bool
 
 	defaultListener transport.PacketListener
 	defaultConn     net.PacketConn
@@ -108,6 +108,17 @@ type packetConn struct {
 
 var _ net.PacketConn = (*packetConn)(nil)
 
+const (
+	defaultMTU      = 1500
+	packetQueueSize = 128
+)
+
+var packetBufferPool = sync.Pool{
+	New: func() interface{} {
+		return make([]byte, defaultMTU)
+	},
+}
+
 func newPacketConn(
 	parentContext context.Context,
 	listenerTable IPTable[transport.PacketListener],
@@ -125,7 +136,7 @@ func newPacketConn(
 	}
 
 	conn := &packetConn{
-		isClosed:                     false,
+		isClosed:                     atomic.Bool{},
 		forwardedPackets:             make(chan incomingPacket, packetQueueSize),
 		forwardingContext:            ctx,
 		closePacketForwardingContext: cancel,
@@ -147,7 +158,7 @@ func newPacketConn(
 }
 
 func (conn *packetConn) ReadFrom(result []byte) (n int, addr net.Addr, err error) {
-	if conn.isClosed {
+	if conn.isClosed.Load() {
 		return 0, nil, net.ErrClosed
 	}
 
@@ -158,21 +169,35 @@ func (conn *packetConn) ReadFrom(result []byte) (n int, addr net.Addr, err error
 
 	// Copy what fits and discard the rest according to UDP standard:
 	n = copy(result, packet.data)
+
+	if len(packet.data) > len(result) {
+		return n, packet.addr, io.ErrShortBuffer
+	}
+
 	return n, packet.addr, nil
 }
 
 func (conn *packetConn) WriteTo(packet []byte, addr net.Addr) (numBytes int, err error) {
-	if conn.isClosed {
+	if conn.isClosed.Load() {
 		return 0, net.ErrClosed
 	}
 
+	host, _, err := net.SplitHostPort(addr.String())
+
 	var ip netip.Addr
-	if udpAddr, ok := addr.(*net.UDPAddr); ok {
-		if parsedIP, ok := netip.AddrFromSlice(udpAddr.IP); ok {
-			ip = parsedIP
+	// SplitHostPort returns an err if the addr is not in the 0.0.0.0:0 format:
+	if err != nil {
+		if udpAddr, ok := addr.(*net.UDPAddr); ok {
+			if parsedIP, ok := netip.AddrFromSlice(udpAddr.IP); ok {
+				ip = parsedIP
+				err = nil
+			}
 		}
+	} else {
+		ip, err = netip.ParseAddr(host)
 	}
-	if !ip.IsValid() {
+
+	if !ip.IsValid() || err != nil {
 		return 0, fmt.Errorf("could not parse valid IP from address %v (%T)", addr, addr)
 	}
 
@@ -222,15 +247,16 @@ func (conn *packetConn) Close() error {
 	var errs error
 	conn.closePacketForwardingContext()
 
-	conn.isClosed = true
+	conn.isClosed.Store(true)
 
 	conn.connMapLock.Lock()
 	for address, subconn := range conn.connMap {
 		if err := subconn.Close(); err != nil {
 			errs = errors.Join(errs, fmt.Errorf("failed to close subconnection for %s: %w", address, err))
 		}
-		delete(conn.connMap, address)
 	}
+	clear(conn.connMap)
+	conn.connMap = nil
 	conn.connMapLock.Unlock()
 
 	if conn.defaultConn != nil {
@@ -317,17 +343,16 @@ func (conn *packetConn) forwardPackets(subconnection net.PacketConn) {
 	conn.forwardCounter.Add(1)
 	go func() {
 		defer conn.forwardCounter.Done()
-		readBuffer := make([]byte, 65536) // Max UDP packet size
+		readBuffer := packetBufferPool.Get().([]byte)
+		defer packetBufferPool.Put(&readBuffer)
+
 		for {
 			numBytes, remoteAddr, err := subconnection.ReadFrom(readBuffer)
-			if err != nil {
+			if err != nil || conn.isClosed.Load() {
 				return
 			}
 
-			packet := make([]byte, numBytes)
-			copy(packet, readBuffer[:numBytes])
-
-			conn.forwardedPackets <- incomingPacket{data: packet, addr: remoteAddr}
+			conn.forwardedPackets <- incomingPacket{data: readBuffer[:numBytes], addr: remoteAddr}
 		}
 	}()
 }
