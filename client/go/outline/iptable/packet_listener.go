@@ -90,10 +90,9 @@ type packetConn struct {
 	isClosed atomic.Bool
 
 	defaultListener transport.PacketListener
-	defaultConn     net.PacketConn
 
 	listenerTable IPTable[transport.PacketListener]
-	connMap       map[netip.Addr]net.PacketConn
+	connMap       map[transport.PacketListener]net.PacketConn
 	connMapLock   sync.Mutex
 
 	forwardingContext            context.Context
@@ -126,32 +125,27 @@ func newPacketConn(
 ) (*packetConn, error) {
 	ctx, cancel := context.WithCancel(parentContext)
 
-	var defaultConn net.PacketConn
-	if defaultListener != nil {
-		connAttempt, err := defaultListener.ListenPacket(ctx)
-
-		if err == nil {
-			defaultConn = connAttempt
-		}
-	}
-
 	conn := &packetConn{
 		isClosed:                     atomic.Bool{},
 		forwardedPackets:             make(chan incomingPacket, packetQueueSize),
 		forwardingContext:            ctx,
 		closePacketForwardingContext: cancel,
-		connMap:                      make(map[netip.Addr]net.PacketConn),
+		connMap:                      make(map[transport.PacketListener]net.PacketConn),
 		connMapLock:                  sync.Mutex{},
 		listenerTable:                listenerTable,
-		defaultConn:                  defaultConn,
 		defaultListener:              defaultListener,
 		deadline:                     time.Time{},
 		readDeadline:                 time.Time{},
 		writeDeadline:                time.Time{},
 	}
 
-	if conn.defaultConn != nil {
-		conn.forwardPackets(conn.defaultConn)
+	if conn.defaultListener != nil {
+		connAttempt, err := defaultListener.ListenPacket(ctx)
+
+		if err == nil {
+			conn.connMap[defaultListener] = connAttempt
+			conn.forwardPackets(connAttempt)
+		}
 	}
 
 	return conn, nil
@@ -202,41 +196,34 @@ func (conn *packetConn) WriteTo(packet []byte, addr net.Addr) (numBytes int, err
 	}
 
 	ip = ip.Unmap()
+	listener, _ := conn.listenerTable.Lookup(ip)
 
 	conn.connMapLock.Lock()
-	subconn := conn.connMap[ip]
+	subconn := conn.connMap[listener]
 	conn.connMapLock.Unlock()
 
-	if subconn == nil {
-		listener, ok := conn.listenerTable.Lookup(ip)
+	if listener != nil && subconn == nil {
+		subconn, err = listener.ListenPacket(conn.forwardingContext)
 
-		if ok {
-			subconn, err = listener.ListenPacket(conn.forwardingContext)
-
-			if err != nil {
-				return 0, err
-			}
-
-			subconn.SetDeadline(conn.deadline)
-			subconn.SetReadDeadline(conn.readDeadline)
-			subconn.SetWriteDeadline(conn.writeDeadline)
-
-			conn.connMapLock.Lock()
-			if conn.connMap[ip] != nil {
-				// Another connection was created while we were creating this connection:
-				subconn.Close()
-			} else {
-				conn.connMap[ip] = subconn
-			}
-			conn.connMapLock.Unlock()
-
-			conn.forwardPackets(subconn)
+		if err != nil {
+			return 0, err
 		}
-	}
 
-	if subconn == nil && conn.defaultListener != nil {
-		subconn = conn.defaultConn
-	} else if subconn == nil {
+		subconn.SetDeadline(conn.deadline)
+		subconn.SetReadDeadline(conn.readDeadline)
+		subconn.SetWriteDeadline(conn.writeDeadline)
+
+		conn.connMapLock.Lock()
+		if conn.connMap[listener] != nil {
+			// Another connection was created while we were creating this connection:
+			subconn.Close()
+		} else {
+			conn.connMap[listener] = subconn
+		}
+		conn.connMapLock.Unlock()
+
+		conn.forwardPackets(subconn)
+	} else {
 		return 0, fmt.Errorf("no connection found for IP %s", ip.String())
 	}
 
@@ -259,12 +246,6 @@ func (conn *packetConn) Close() error {
 	conn.connMap = nil
 	conn.connMapLock.Unlock()
 
-	if conn.defaultConn != nil {
-		if err := conn.defaultConn.Close(); err != nil {
-			errs = errors.Join(errs, fmt.Errorf("failed to close default connection: %w", err))
-		}
-	}
-
 	conn.forwardCounter.Wait()
 	close(conn.forwardedPackets)
 
@@ -273,17 +254,13 @@ func (conn *packetConn) Close() error {
 
 // Return the default connection local addr, then the first available subconnection if no default
 func (conn *packetConn) LocalAddr() net.Addr {
-	if localAddr := conn.defaultConn.LocalAddr(); localAddr != nil {
-		return localAddr
-	}
-
 	conn.connMapLock.Lock()
-	defer conn.connMapLock.Unlock()
 	for _, subconn := range conn.connMap {
 		if localAddr := subconn.LocalAddr(); localAddr != nil {
 			return localAddr
 		}
 	}
+	conn.connMapLock.Unlock()
 
 	return nil
 }
@@ -291,16 +268,11 @@ func (conn *packetConn) LocalAddr() net.Addr {
 func (conn *packetConn) SetDeadline(t time.Time) error {
 	conn.deadline = t
 
-	if conn.defaultConn != nil {
-		conn.defaultConn.SetDeadline(t)
-	}
-
 	conn.connMapLock.Lock()
-	defer conn.connMapLock.Unlock()
-
 	for _, subconnection := range conn.connMap {
 		subconnection.SetDeadline(t)
 	}
+	conn.connMapLock.Unlock()
 
 	return nil
 }
@@ -308,16 +280,11 @@ func (conn *packetConn) SetDeadline(t time.Time) error {
 func (conn *packetConn) SetReadDeadline(t time.Time) error {
 	conn.readDeadline = t
 
-	if conn.defaultConn != nil {
-		conn.defaultConn.SetReadDeadline(t)
-	}
-
 	conn.connMapLock.Lock()
-	defer conn.connMapLock.Unlock()
-
 	for _, subconnection := range conn.connMap {
 		subconnection.SetReadDeadline(t)
 	}
+	conn.connMapLock.Unlock()
 
 	return nil
 }
@@ -325,16 +292,11 @@ func (conn *packetConn) SetReadDeadline(t time.Time) error {
 func (conn *packetConn) SetWriteDeadline(t time.Time) error {
 	conn.writeDeadline = t
 
-	if conn.defaultConn != nil {
-		conn.defaultConn.SetWriteDeadline(t)
-	}
-
 	conn.connMapLock.Lock()
-	defer conn.connMapLock.Unlock()
-
 	for _, subconnection := range conn.connMap {
 		subconnection.SetWriteDeadline(t)
 	}
+	conn.connMapLock.Unlock()
 
 	return nil
 }
@@ -342,9 +304,9 @@ func (conn *packetConn) SetWriteDeadline(t time.Time) error {
 func (conn *packetConn) forwardPackets(subconnection net.PacketConn) {
 	conn.forwardCounter.Add(1)
 	go func() {
-		defer conn.forwardCounter.Done()
 		readBuffer := packetBufferPool.Get().([]byte)
 		defer packetBufferPool.Put(&readBuffer)
+		defer conn.forwardCounter.Done()
 
 		for {
 			numBytes, remoteAddr, err := subconnection.ReadFrom(readBuffer)
