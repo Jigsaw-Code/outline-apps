@@ -196,7 +196,15 @@ func (conn *packetConn) WriteTo(packet []byte, addr net.Addr) (numBytes int, err
 	}
 
 	ip = ip.Unmap()
+
 	listener, listenerFound := conn.listenerTable.Lookup(ip)
+
+	if !listenerFound {
+		if conn.defaultListener == nil {
+			return 0, fmt.Errorf("no route or default listener for IP %s", ip.String())
+		}
+		listener = conn.defaultListener
+	}
 
 	conn.connMapLock.Lock()
 	subconn, subconnFound := conn.connMap[listener]
@@ -206,32 +214,28 @@ func (conn *packetConn) WriteTo(packet []byte, addr net.Addr) (numBytes int, err
 		return subconn.WriteTo(packet, addr)
 	}
 
-	if listenerFound {
-		subconn, err = listener.ListenPacket(conn.forwardingContext)
-
-		if err != nil {
-			return 0, err
-		}
-
-		subconn.SetDeadline(conn.deadline)
-		subconn.SetReadDeadline(conn.readDeadline)
-		subconn.SetWriteDeadline(conn.writeDeadline)
-
-		conn.connMapLock.Lock()
-		if conn.connMap[listener] != nil {
-			// Another connection was created while we were creating this connection:
-			subconn.Close()
-		} else {
-			conn.connMap[listener] = subconn
-		}
-		conn.connMapLock.Unlock()
-
-		conn.forwardPackets(subconn)
-
-		return subconn.WriteTo(packet, addr)
+	newSubConn, err := listener.ListenPacket(conn.forwardingContext)
+	if err != nil {
+		return 0, fmt.Errorf("failed to establish sub-connection for IP %s using listener: %w", ip.String(), err)
 	}
 
-	return 0, fmt.Errorf("no connection found for IP %s", ip.String())
+	newSubConn.SetDeadline(conn.deadline)
+	newSubConn.SetReadDeadline(conn.readDeadline)
+	newSubConn.SetWriteDeadline(conn.writeDeadline)
+
+	conn.connMapLock.Lock()
+	if existingSubConn, exists := conn.connMap[listener]; exists {
+		// A seperate subconnection was created while we were working on this one:
+		newSubConn.Close()
+		subconn = existingSubConn
+	} else {
+		conn.connMap[listener] = newSubConn
+		subconn = newSubConn
+		conn.forwardPackets(subconn)
+	}
+	conn.connMapLock.Unlock()
+
+	return subconn.WriteTo(packet, addr)
 }
 
 func (conn *packetConn) Close() error {
