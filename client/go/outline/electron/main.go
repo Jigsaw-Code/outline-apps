@@ -65,7 +65,7 @@ var args struct {
 
 	adapterIndex *int
 
-	transportConfig *string
+	clientConfig *string
 
 	logLevel          *string
 	checkConnectivity *bool
@@ -98,10 +98,10 @@ func main() {
 	// Windows Network Adapter Index
 	args.adapterIndex = flag.Int("adapterIndex", -1, "Windows network adapter index for proxy connection")
 
-	// Proxy transport config
-	args.transportConfig = flag.String("transport", "", "A JSON object containing the transport config, UTF8-encoded")
+	// Proxy client config
+	args.clientConfig = flag.String("client", "", "A JSON object containing the client config, UTF8-encoded")
 
-	// Check connectivity of transportConfig and exit
+	// Check connectivity of clientConfig and exit
 	args.checkConnectivity = flag.Bool("checkConnectivity", false, "Check the proxy TCP and UDP connectivity and exit.")
 
 	// Misc
@@ -117,8 +117,8 @@ func main() {
 
 	setLogLevel(*args.logLevel)
 
-	if len(*args.transportConfig) == 0 {
-		printErrorAndExit(platerrors.PlatformError{Code: platerrors.InvalidConfig, Message: "transport config missing"}, exitCodeFailure)
+	if len(*args.clientConfig) == 0 {
+		printErrorAndExit(platerrors.PlatformError{Code: platerrors.InvalidConfig, Message: "client config missing"}, exitCodeFailure)
 	}
 
 	var client *outline.Client
@@ -127,12 +127,12 @@ func main() {
 		if err != nil {
 			printErrorAndExit(err, exitCodeFailure)
 		}
-		client, err = outline.NewClientWithBaseDialers(*args.transportConfig, tcp, udp)
+		client, err = outline.NewClientWithBaseDialers(*args.clientConfig, tcp, udp)
 		if err != nil {
 			printErrorAndExit(err, exitCodeFailure)
 		}
 	} else {
-		result := outline.NewClient(*args.transportConfig)
+		result := outline.NewClient(*args.clientConfig)
 		if result.Error != nil {
 			printErrorAndExit(result.Error, exitCodeFailure)
 		}
