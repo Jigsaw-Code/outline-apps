@@ -196,13 +196,17 @@ func (conn *packetConn) WriteTo(packet []byte, addr net.Addr) (numBytes int, err
 	}
 
 	ip = ip.Unmap()
-	listener, _ := conn.listenerTable.Lookup(ip)
+	listener, listenerFound := conn.listenerTable.Lookup(ip)
 
 	conn.connMapLock.Lock()
-	subconn := conn.connMap[listener]
+	subconn, subconnFound := conn.connMap[listener]
 	conn.connMapLock.Unlock()
 
-	if listener != nil && subconn == nil {
+	if subconnFound {
+		return subconn.WriteTo(packet, addr)
+	}
+
+	if listenerFound {
 		subconn, err = listener.ListenPacket(conn.forwardingContext)
 
 		if err != nil {
@@ -223,11 +227,11 @@ func (conn *packetConn) WriteTo(packet []byte, addr net.Addr) (numBytes int, err
 		conn.connMapLock.Unlock()
 
 		conn.forwardPackets(subconn)
-	} else {
-		return 0, fmt.Errorf("no connection found for IP %s", ip.String())
+
+		return subconn.WriteTo(packet, addr)
 	}
 
-	return subconn.WriteTo(packet, addr)
+	return 0, fmt.Errorf("no connection found for IP %s", ip.String())
 }
 
 func (conn *packetConn) Close() error {
@@ -305,12 +309,16 @@ func (conn *packetConn) forwardPackets(subconnection net.PacketConn) {
 	conn.forwardCounter.Add(1)
 	go func() {
 		readBuffer := packetBufferPool.Get().([]byte)
-		defer packetBufferPool.Put(&readBuffer)
+		defer packetBufferPool.Put(readBuffer)
 		defer conn.forwardCounter.Done()
 
 		for {
 			numBytes, remoteAddr, err := subconnection.ReadFrom(readBuffer)
-			if err != nil || conn.isClosed.Load() {
+			if err != nil {
+				return
+			}
+
+			if conn.isClosed.Load() {
 				return
 			}
 
