@@ -112,6 +112,7 @@
   "gcp-firewall-create-3": "'소스 IP 범위(Source IP ranges)' 입력란에 '0.0.0.0/0'을 입력하세요.",
   "gcp-firewall-create-4": "'프로토콜 및 포트(Protocols and ports)'에서 '모두 허용(Allow all)'을 선택하세요.",
   "gcp-name-your-project": "'프로젝트 이름(Project name)' 입력란에 프로젝트 이름을 입력합니다.",
+  "gcp-oauth-connect-title": "Google Cloud Platform 계정으로 로그인하거나 계정을 만드세요",
   "gcp-project-setup-error": "Google Cloud 프로젝트 설정 중에 오류가 발생했습니다.",
   "gcp-select-machine-type": "'머신 유형(Machine type)'에서 'f1-micro'를 선택합니다.",
   "gcp-select-networking": "'관리, 보안, 디스크, 네트워킹, 단독 임대(Management, security, disks, networking, sole tenancy)'와 '네트워킹(Networking)'을 차례로 클릭합니다.",

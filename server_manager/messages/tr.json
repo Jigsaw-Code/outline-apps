@@ -112,6 +112,7 @@
   "gcp-firewall-create-3": "\"Source IP ranges\" (Kaynak IP aralıkları) alanına \"0.0.0.0/0\" yazın.",
   "gcp-firewall-create-4": "\"Protocols and ports\" (Protokoller ve bağlantı noktaları) bölümünde \"Allow all\" (Tümüne izin ver) seçeneğini belirleyin.",
   "gcp-name-your-project": "\"Proje adı\" (Project name) alanına projeniz için bir ad girin.",
+  "gcp-oauth-connect-title": "Oturum açın veya Google Cloud Platform ile bir hesap oluşturun.",
   "gcp-project-setup-error": "Google Cloud projeniz oluşturulurken bir hata meydana geldi",
   "gcp-select-machine-type": "\"Makine türü\" (Machine type) bölümünde \"f1-micro\" seçeneğini belirleyin",
   "gcp-select-networking": "Önce \"Yönetim, güvenlik, diskler, ağ iletişimi, tek kiracılı\" (Management, security, disks, networking, sole tenancy), ardından \"Ağ iletişimi\" (Networking) seçeneğini tıklayın",
