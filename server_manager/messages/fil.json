@@ -112,6 +112,7 @@
   "gcp-firewall-create-3": "I-type ang '0.0.0.0/0' sa field na 'Mga hanay ng Source IP (Source IP ranges).'",
   "gcp-firewall-create-4": "Piliin ang 'Payagan lahat (Allow all)' sa ilalim ng 'Mga protocol at port (Protocols and ports).'",
   "gcp-name-your-project": "Pangalanan ang iyong proyekto sa field na 'Pangalan ng proyekto (Project name).'",
+  "gcp-oauth-connect-title": "Mag-sign in o gumawa ng account sa Google Cloud Platform.",
   "gcp-project-setup-error": "Nagkaroon ng error habang sine-set up ang iyong proyekto sa Google Cloud",
   "gcp-select-machine-type": "Piliin ang 'f1-micro' sa ilalim ng 'Uri ng machine (Machine type)'",
   "gcp-select-networking": "I-click ang 'Pamamahala, seguridad, mga disk, networking, nag-iisang tenancy (Management, security, disks, networking, sole tenancy),' pagkatapos ay ang 'Networking'",

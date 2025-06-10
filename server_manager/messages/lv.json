@@ -112,6 +112,7 @@
   "gcp-firewall-create-3": "Laukā “Source IP ranges” (Mērķa IP diapazoni) ierakstiet “0.0.0.0/0”.",
   "gcp-firewall-create-4": "Sadaļā “Protocols and ports” (Protokoli un porti) atlasiet vienumu “Allow all” (Atļaut visus).",
   "gcp-name-your-project": "Laukā “Projekta nosaukums” (Project name) piešķiriet projektam nosaukumu.",
+  "gcp-oauth-connect-title": "Pierakstieties vai izveidojiet Google Cloud Platform kontu.",
   "gcp-project-setup-error": "Mēģinot izveidot Google Cloud projektu, radās kļūda",
   "gcp-select-machine-type": "Sadaļā “Mašīnas veids” (Machine type) atlasiet “'f1-micro”.",
   "gcp-select-networking": "Noklikšķiniet uz “Pārvaldība, drošība, diski, tīkls, atsevišķa nomāšana” (Management, security, disks, networking, sole tenancy) un pēc tam — uz “Tīkls” (Networking).",

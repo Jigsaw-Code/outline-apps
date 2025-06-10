@@ -112,6 +112,7 @@
   "gcp-firewall-create-3": "Skriv 0.0.0.0/0 i fältet IP-intervall för källan (Source IP ranges).",
   "gcp-firewall-create-4": "Välj Tillåt alla (Allow all) under Protokoll och portar (Protocols and ports).",
   "gcp-name-your-project": "Namnge projektet i fältet Projektnamn (Project name).",
+  "gcp-oauth-connect-title": "Logga in eller skapa ett konto med Google Cloud Platform.",
   "gcp-project-setup-error": "Ett fel inträffade när Google Cloud-projektet skulle konfigureras",
   "gcp-select-machine-type": "Välj ”f1-micro” under Maskintyp (Machine type)",
   "gcp-select-networking": "Klicka på Hantering, säkerhet, diskar, nätverk, ensam besittning (Management, security, disks, networking, sole tenancy) och sedan på Nätverk (Networking).",

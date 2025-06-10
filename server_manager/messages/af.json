@@ -112,6 +112,7 @@
   "gcp-firewall-create-3": "Tik “0.0.0.0/0” by die “bron-IP-reekse”-veld in.",
   "gcp-firewall-create-4": "Kies “Laat alles toe” onder “Protokolle en poorte”.",
   "gcp-name-your-project": "Gee jou projek ’n naam in die “Projeknaam\"-veld.",
+  "gcp-oauth-connect-title": "Meld aan of skep ’n rekening met Google Cloud Platform.",
   "gcp-project-setup-error": "Ons kon nie jou Google Wolk-projek opstel nie",
   "gcp-select-machine-type": "Kies “f1-micro” onder “Masjientipe”",
   "gcp-select-networking": "Klik “Bestuur, sekuriteit, skywe, netwerking, alleenbesetting”, en dan “Netwerking”",

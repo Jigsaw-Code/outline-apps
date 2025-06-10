@@ -112,6 +112,7 @@
   "gcp-firewall-create-3": "សរសេរ '0.0.0.0/0' ក្នុង 'ជូួរប្រភព IP'",
   "gcp-firewall-create-4": "ជ្រើស 'អនុញ្ញាតទាំងអស់' ក្រោម 'ពិធីការ និងច្រក'។",
   "gcp-name-your-project": "ដាក់​ឈ្មោះ​គម្រោង​របស់​អ្នក​នៅ​ក្នុង​កន្លែង​បញ្ចូល 'ឈ្មោះ​គម្រោង (Project name)'។",
+  "gcp-oauth-connect-title": "ចូលគណនី ឬ​បង្កើត​គណនី​តាមរយៈ Google Cloud Platform។",
   "gcp-project-setup-error": "បញ្ហា​មួយ​បាន​កើតឡើង ពេល​រៀបចំ​គម្រោង Google Cloud របស់​អ្នក",
   "gcp-select-machine-type": "ជ្រើសរើស 'f1-micro' នៅ​ក្រោម 'ប្រភេទ​ម៉ាស៊ីន (Machine type)'",
   "gcp-select-networking": "ចុច 'ការគ្រប់គ្រង សុវត្ថិភាព ថាស ការភ្ជាប់​បណ្ដាញ ការចូលប្រើផ្ដាច់មុខ (Management, security, disks, networking, sole tenancy)' រួច 'ការភ្ជាប់​បណ្ដាញ (Networking)'",
