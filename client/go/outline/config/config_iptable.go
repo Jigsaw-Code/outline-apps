@@ -39,12 +39,6 @@ type parsedIPTableStreamEntry struct {
 	dialer transport.StreamDialer
 }
 
-// parsedIPTablePacketEntry is an internal struct to hold a parsed prefix and its corresponding packet listener.
-type parsedIPTablePacketEntry struct {
-	prefix   netip.Prefix
-	listener transport.PacketListener
-}
-
 func parseIPTableStreamDialer(
 	ctx context.Context,
 	configMap map[string]any,
@@ -111,76 +105,4 @@ func parseIPTableStreamDialer(
 	dialer.SetDefault(defaultDialerEntry.dialer)
 
 	return dialer, nil
-}
-
-func parseIPTablePacketListener(
-	ctx context.Context,
-	configMap map[string]any,
-	subListenerParser ParseFunc[*PacketListener],
-) (*iptable.IPTablePacketListener, error) {
-	var rootCfg ipTableRootConfig
-	if err := mapToAny(configMap, &rootCfg); err != nil {
-		return nil, fmt.Errorf("failed to map ip-table packet config: %w", err)
-	}
-
-	if len(rootCfg.Table) == 0 {
-		return nil, errors.New("ip-table config 'table' for packet listener must not be empty and must contain a default entry (e.g., {ip: \"\", dialer: ...})")
-	}
-
-	parsedEntries := make([]parsedIPTablePacketEntry, 0, len(rootCfg.Table))
-	var defaultTransportListener transport.PacketListener
-
-	for i, entryCfg := range rootCfg.Table {
-		parsedSubCfgListener, err := subListenerParser(ctx, entryCfg.Dialer)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse nested packet listener for table entry %d (ip: %s): %w", i, entryCfg.IP, err)
-		}
-
-		if entryCfg.IP == "" { // Default listener entry
-			if defaultTransportListener != nil {
-				return nil, errors.New("multiple default listeners specified in ip-table for packet listener (entry with empty 'ip')")
-			}
-			defaultTransportListener = parsedSubCfgListener.PacketListener
-			continue
-		}
-
-		var prefix netip.Prefix
-		parsedPrefix, errPrefix := netip.ParsePrefix(entryCfg.IP)
-		if errPrefix == nil {
-			prefix = parsedPrefix
-		} else {
-			addr, errAddr := netip.ParseAddr(entryCfg.IP)
-			if errAddr != nil {
-				return nil, fmt.Errorf("ip-table entry %d IP '%s' is not a valid IP address or CIDR prefix: failed to parse as prefix (%v) and failed to parse as address (%v)", i, entryCfg.IP, errPrefix, errAddr)
-			}
-			prefix = netip.PrefixFrom(addr, addr.BitLen())
-		}
-
-		currentEntry := parsedIPTablePacketEntry{
-			prefix:   prefix,
-			listener: parsedSubCfgListener.PacketListener,
-		}
-		parsedEntries = append(parsedEntries, currentEntry)
-	}
-
-	if defaultTransportListener == nil {
-		return nil, errors.New("ip-table config must include a default listener entry (e.g., {ip: \"\", dialer: ...}) for packet listener")
-	}
-
-	table := iptable.NewIPTable[transport.PacketListener]()
-	for _, entry := range parsedEntries {
-		table.AddPrefix(entry.prefix, entry.listener)
-	}
-
-	finalListenerLogic, err := iptable.NewIPTablePacketListener(table, defaultTransportListener)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create IPTablePacketListener: %w", err)
-	}
-
-	cpi := ConnectionProviderInfo{
-		ConnType: ConnTypeTunneled,
-		FirstHop: "",
-	}
-
-	return &PacketListener{ConnectionProviderInfo: cpi, PacketListener: finalListenerLogic}, nil
 }

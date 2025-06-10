@@ -135,7 +135,7 @@ func NewDefaultTransportProvider(tcpDialer transport.StreamDialer, udpDialer tra
 		return parseWebsocketPacketEndpoint(ctx, input, streamEndpoints.Parse)
 	})
 
-	// IPTable support.
+	// IPTable support (TCP anly).
 	streamDialers.RegisterSubParser("ip-table", func(ctx context.Context, input map[string]any) (*Dialer[transport.StreamConn], error) {
 		streamDialer, err := parseIPTableStreamDialer(ctx, input, streamDialers.Parse)
 
@@ -146,10 +146,6 @@ func NewDefaultTransportProvider(tcpDialer transport.StreamDialer, udpDialer tra
 				FirstHop: "",
 			},
 		}, err
-	})
-
-	packetListeners.RegisterSubParser("ip-table", func(ctx context.Context, input map[string]any) (*PacketListener, error) {
-		return parseIPTablePacketListener(ctx, input, packetListeners.Parse)
 	})
 
 	// Support distinct TCP and UDP configuration.
