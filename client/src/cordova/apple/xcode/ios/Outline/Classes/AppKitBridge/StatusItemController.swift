@@ -93,10 +93,10 @@ class StatusItemController: NSObject {
 
     @objc func openApplication(_: AnyObject?) {
         NSLog("[StatusItemController] Opening application")
-        NSApp.activate(ignoringOtherApps: true)
-        guard let uiWindow = getUiWindow() else {
-            return
-        }
+        NSRunningApplication.current.activate(options: [.activateAllWindows, .activateIgnoringOtherApps])
+                guard let uiWindow = getUiWindow() else {
+                    return
+                }
         // Observer is managed only in AppKitController, so redundant call is removed
         uiWindow.makeKeyAndOrderFront(self)
     }
