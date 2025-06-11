@@ -190,6 +190,12 @@ export class App {
       this.setAppLanguage.bind(this)
     );
 
+    // Add listener for error notifications from menu bar
+    window.addEventListener('showErrorInApp', (event: CustomEvent) => {
+      const errorMessage = event.detail.error;
+      this.showLocalizedError(new Error(errorMessage));
+    });
+
     if (this.appearanceFeatureEnabled) {
       this.rootEl.showAppearanceView = true;
       this.setAppearance(

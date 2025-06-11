@@ -1,4 +1,4 @@
-// Copyright 2023 The Outline Authors
+// Copyright 2025 The Outline Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import AppKit
+import WebKit
 
 @objc
 public enum ConnectionStatus: Int {
@@ -121,10 +122,11 @@ class StatusItemController: NSObject {
     @objc func openApplication(_: AnyObject?) {
         NSLog("[StatusItemController] Opening application")
         NSApp.activate(ignoringOtherApps: true)
-        guard let uiWindow = getUiWindow() else {
-            return
+        if let uiWindow = getUiWindow() {
+            DispatchQueue.main.async {
+                uiWindow.makeKeyAndOrderFront(nil)
+            }
         }
-        uiWindow.makeKeyAndOrderFront(self)
     }
 
     @objc func closeApplication(_: AnyObject?) {
@@ -136,6 +138,15 @@ class StatusItemController: NSObject {
     @objc func toggleConnection(_: AnyObject?) {
         NSLog("[StatusItemController] Toggling connection")
         NotificationCenter.default.post(name: Notification.Name("toggleConnection"), object: nil)
+    }
+
+    private func getWebView() -> WKWebView? {
+        for window in NSApp.windows {
+            if let webView = window.contentView?.subviews.first(where: { $0 is WKWebView }) as? WKWebView {
+                return webView
+            }
+        }
+        return nil
     }
 }
 

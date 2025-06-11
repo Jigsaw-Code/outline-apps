@@ -67,7 +67,9 @@
                         if isActiveSession(manager.connection) {
                             // If connected, disconnect
                             if let tunnelId = getTunnelId(forManager: manager) {
-                                await OutlineVpn.shared.stop(tunnelId)
+                                do {
+                                    await OutlineVpn.shared.stop(tunnelId)
+                                }
                             }
                         } else {
                             // If disconnected, try to connect to the last server
@@ -78,6 +80,7 @@
                                     try await OutlineVpn.shared.start(tunnelId, named: "Outline Server", withTransport: transportConfig)
                                 } catch {
                                     DDLogError("Failed to start VPN: \(error.localizedDescription)")
+                                    NotificationCenter.default.post(name: NSNotification.Name("openApplication"), object: nil)
                                 }
                             } else {
                                 // No server available, open the app
