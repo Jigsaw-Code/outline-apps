@@ -196,6 +196,38 @@ export class App {
       this.showLocalizedError(new Error(errorMessage));
     });
 
+    // Add listener for menu bar connect request
+    window.addEventListener('connectFromMenu', async () => {
+      // Get the last used server
+      const servers = this.serverRepo.getAll();
+      if (servers.length === 0) {
+        // No servers available, show error and bring window to front
+        this.showLocalizedError(new Error('No servers available'));
+        window.focus();
+        return;
+      }
+
+      // Try to connect to the last server
+      const lastServer = servers[0];
+      try {
+        await lastServer.connect();
+        this.updateServerListItem(lastServer.id, {
+          connectionState: ServerConnectionState.CONNECTED,
+          address: lastServer.address,
+        });
+        this.rootEl.showToast(
+          this.localize('server-connected', 'serverName', lastServer.name)
+        );
+      } catch (e) {
+        this.updateServerListItem(lastServer.id, {
+          connectionState: ServerConnectionState.DISCONNECTED,
+        });
+        this.showLocalizedError(e);
+        // Bring window to front on error
+        window.focus();
+      }
+    });
+
     if (this.appearanceFeatureEnabled) {
       this.rootEl.showAppearanceView = true;
       this.setAppearance(

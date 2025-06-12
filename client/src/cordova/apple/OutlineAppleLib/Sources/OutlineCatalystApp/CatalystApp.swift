@@ -18,12 +18,9 @@
     import CocoaLumberjackSwift
     import Foundation
     import OutlineNotification
-    import ServiceManagement
-    import UIKit
-    import OutlineTunnel
     import NetworkExtension
+    import UIKit
     import WebKit
-    import OutlineError
 
     @objcMembers
     public class OutlineCatalystApp: NSObject {
@@ -65,67 +62,23 @@
                                                    queue: nil)
             { _ in
                 Task {
-                    if let manager = await getTunnelManager() {
-                        if isActiveSession(manager.connection) {
-                            // If connected, disconnect
-                            if let tunnelId = getTunnelId(forManager: manager) {
-                                do {
-                                    await OutlineVpn.shared.stop(tunnelId)
-                                }
-                            }
-                        } else {
-                            // If disconnected, try to connect to the last server
-                            if let tunnelConfig = manager.protocolConfiguration as? NETunnelProviderProtocol,
-                               let tunnelId = tunnelConfig.providerConfiguration?["id"] as? String,
-                               let transportConfig = tunnelConfig.providerConfiguration?["transport"] as? String {
-                                DDLogInfo("[Outline] Attempting to start VPN with tunnelId: \(tunnelId)")
-                                do {
-                                    try await OutlineVpn.shared.start(tunnelId, named: "Outline Server", withTransport: transportConfig)
-                                    DDLogInfo("[Outline] VPN started successfully")
-                                } catch {
-                                    DDLogError("[Outline] Failed to start VPN: \(error.localizedDescription)")
-                                    // Post notification with error details
-                                    NotificationCenter.default.post(name: NSNotification.Name("vpnError"), 
-                                                                  object: nil,
-                                                                  userInfo: ["error": error])
-                                    NotificationCenter.default.post(name: NSNotification.Name("openApplication"), object: nil)
-                                    
-                                    var webView: WKWebView? = nil
-                                    for _ in 0..<10 {
-                                        if let foundWebView = getWebView() {
-                                            webView = foundWebView
-                                            break
-                                        }
-                                        try? await Task.sleep(nanoseconds: 500_000_000)
-                                    }
-                                    
-                                    if let webView = webView {
-                                        let errorCode = (error as? OutlineError)?.code ?? "ERR_UNKNOWN"
-                                        let errorMessage = (error as? OutlineError)?.localizedDescription ?? error.localizedDescription
-                                        let js = """
-                                        window.dispatchEvent(new CustomEvent('showErrorInApp', { 
-                                            detail: { 
-                                                error: {
-                                                    name: "\(errorCode)",
-                                                    message: "\(errorMessage)",
-                                                    code: "\(errorCode)",
-                                                    toString: function() {
-                                                        return this.name + "\\n" + this.message;
-                                                    }
-                                                }
-                                            }
-                                        }));
-                                        """
-                                        try? await webView.evaluateJavaScript(js)
-                                    }
-                                }
-                            } else {
-                                // No server available, open the app
-                                NotificationCenter.default.post(name: NSNotification.Name("openApplication"), object: nil)
-                            }
+                    var webView: WKWebView? = nil
+                    for _ in 0..<10 {
+                        if let foundWebView = getWebView() {
+                            webView = foundWebView
+                            break
                         }
+                        try? await Task.sleep(nanoseconds: 500_000_000)
+                    }
+                    
+                    if let webView = webView {
+                        // Let JS handle the connection
+                        let js = """
+                        window.dispatchEvent(new CustomEvent('connectFromMenu'));
+                        """
+                        try? await webView.evaluateJavaScript(js)
                     } else {
-                        // No tunnel manager available, open the app
+                        // If we can't find the web view, just open the app
                         NotificationCenter.default.post(name: NSNotification.Name("openApplication"), object: nil)
                     }
                 }
@@ -150,22 +103,6 @@
             }
         }
         preconditionFailure("[CatalystApp] Unable to load")
-    }
-
-    // Helper functions for VPN management
-    func getTunnelManager() async -> NETunnelProviderManager? {
-        do {
-            let managers: [NETunnelProviderManager] = try await NETunnelProviderManager.loadAllFromPreferences()
-            guard managers.count > 0 else { return nil }
-            return managers.first
-        } catch {
-            return nil
-        }
-    }
-
-    func getTunnelId(forManager manager: NETunnelProviderManager?) -> String? {
-        let protoConfig = manager?.protocolConfiguration as? NETunnelProviderProtocol
-        return protoConfig?.providerConfiguration?["id"] as? String
     }
 
     func isActiveSession(_ session: NEVPNConnection?) -> Bool {

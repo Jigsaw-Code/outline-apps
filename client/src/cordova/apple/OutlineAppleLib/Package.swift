@@ -49,7 +49,6 @@ let package = Package(
             dependencies: [
                 .product(name: "CocoaLumberjackSwift", package: "CocoaLumberjack"),
                 "OutlineNotification",
-                "OutlineTunnel",
             ]
         ),
         .target(name: "OutlineError"),
