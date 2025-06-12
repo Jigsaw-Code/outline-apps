@@ -100,10 +100,20 @@
                                     }
                                     
                                     if let webView = webView {
+                                        let errorCode = (error as? OutlineError)?.code ?? "ERR_UNKNOWN"
                                         let errorMessage = (error as? OutlineError)?.localizedDescription ?? error.localizedDescription
                                         let js = """
                                         window.dispatchEvent(new CustomEvent('showErrorInApp', { 
-                                            detail: { error: "\(errorMessage)" }
+                                            detail: { 
+                                                error: {
+                                                    name: "\(errorCode)",
+                                                    message: "\(errorMessage)",
+                                                    code: "\(errorCode)",
+                                                    toString: function() {
+                                                        return this.name + "\\n" + this.message;
+                                                    }
+                                                }
+                                            }
                                         }));
                                         """
                                         try? await webView.evaluateJavaScript(js)
