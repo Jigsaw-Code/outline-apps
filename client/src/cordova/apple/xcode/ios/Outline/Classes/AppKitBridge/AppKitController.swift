@@ -41,8 +41,6 @@ class AppKitController: NSObject {
                    window.canBecomeMain &&
                    !window.isMiniaturized
         }
-        // Hide the icon if the closing window is the last visible window
-        
         if !hasOtherVisibleWindows {
             NSApp.setActivationPolicy(.accessory)
         }
