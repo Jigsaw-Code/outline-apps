@@ -190,6 +190,57 @@ export class App {
       this.setAppLanguage.bind(this)
     );
 
+    // Add listener for error notifications from menu bar
+    window.addEventListener('showErrorInApp', (event: CustomEvent) => {
+      const errorMessage = event.detail.error;
+      this.showLocalizedError(new Error(errorMessage));
+    });
+
+    // Add listener for menu bar connect request
+    window.addEventListener('connectFromMenu', async () => {
+      // Get the last used server
+      const servers = this.serverRepo.getAll();
+      if (servers.length === 0) {
+        // No servers available, show error and bring window to front
+        this.showLocalizedError(new Error('No servers available'));
+        // Ensure window is shown before focusing
+        document.dispatchEvent(new CustomEvent('openApplication'));
+        return;
+      }
+
+      // Try to connect to the last server
+      const lastServer = servers[0];
+      try {
+        if (await lastServer.checkRunning()) {
+          // If connected, disconnect
+          await lastServer.disconnect();
+          this.updateServerListItem(lastServer.id, {
+            connectionState: ServerConnectionState.DISCONNECTED,
+          });
+          this.rootEl.showToast(
+            this.localize('server-disconnected', 'serverName', lastServer.name)
+          );
+        } else {
+          // If disconnected, connect
+          await lastServer.connect();
+          this.updateServerListItem(lastServer.id, {
+            connectionState: ServerConnectionState.CONNECTED,
+            address: lastServer.address,
+          });
+          this.rootEl.showToast(
+            this.localize('server-connected', 'serverName', lastServer.name)
+          );
+        }
+      } catch (e) {
+        this.updateServerListItem(lastServer.id, {
+          connectionState: ServerConnectionState.DISCONNECTED,
+        });
+        this.showLocalizedError(e);
+        // Ensure window is shown before focusing
+        document.dispatchEvent(new CustomEvent('openApplication'));
+      }
+    });
+
     if (this.appearanceFeatureEnabled) {
       this.rootEl.showAppearanceView = true;
       this.setAppearance(
