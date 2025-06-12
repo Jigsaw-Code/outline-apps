@@ -22,6 +22,8 @@
     import UIKit
     import OutlineTunnel
     import NetworkExtension
+    import WebKit
+    import OutlineError
 
     @objcMembers
     public class OutlineCatalystApp: NSObject {
@@ -76,11 +78,36 @@
                             if let tunnelConfig = manager.protocolConfiguration as? NETunnelProviderProtocol,
                                let tunnelId = tunnelConfig.providerConfiguration?["id"] as? String,
                                let transportConfig = tunnelConfig.providerConfiguration?["transport"] as? String {
+                                DDLogInfo("[Outline] Attempting to start VPN with tunnelId: \(tunnelId)")
                                 do {
                                     try await OutlineVpn.shared.start(tunnelId, named: "Outline Server", withTransport: transportConfig)
+                                    DDLogInfo("[Outline] VPN started successfully")
                                 } catch {
-                                    DDLogError("Failed to start VPN: \(error.localizedDescription)")
+                                    DDLogError("[Outline] Failed to start VPN: \(error.localizedDescription)")
+                                    // Post notification with error details
+                                    NotificationCenter.default.post(name: NSNotification.Name("vpnError"), 
+                                                                  object: nil,
+                                                                  userInfo: ["error": error])
                                     NotificationCenter.default.post(name: NSNotification.Name("openApplication"), object: nil)
+                                    
+                                    var webView: WKWebView? = nil
+                                    for _ in 0..<10 {
+                                        if let foundWebView = getWebView() {
+                                            webView = foundWebView
+                                            break
+                                        }
+                                        try? await Task.sleep(nanoseconds: 500_000_000)
+                                    }
+                                    
+                                    if let webView = webView {
+                                        let errorMessage = (error as? OutlineError)?.localizedDescription ?? error.localizedDescription
+                                        let js = """
+                                        window.dispatchEvent(new CustomEvent('showErrorInApp', { 
+                                            detail: { error: "\(errorMessage)" }
+                                        }));
+                                        """
+                                        try? await webView.evaluateJavaScript(js)
+                                    }
                                 }
                             } else {
                                 // No server available, open the app
@@ -134,6 +161,37 @@
     func isActiveSession(_ session: NEVPNConnection?) -> Bool {
         let vpnStatus = session?.status
         return vpnStatus == .connected || vpnStatus == .connecting || vpnStatus == .reasserting
+    }
+
+    // Helper function to get the web view
+    private func getWebView() -> WKWebView? {
+        DDLogInfo("[Outline] Searching for web view in scenes")
+        for scene in UIApplication.shared.connectedScenes {
+            if let windowScene = scene as? UIWindowScene {
+                for window in windowScene.windows {
+                    if let webView = findWebView(in: window) {
+                        return webView
+                    }
+                }
+            }
+        }
+        DDLogInfo("[Outline] No web view found in any scene")
+        return nil
+    }
+    
+    // Helper function to recursively search for web view
+    private func findWebView(in view: UIView) -> WKWebView? {
+        if let webView = view as? WKWebView {
+            return webView
+        }
+        
+        for subview in view.subviews {
+            if let webView = findWebView(in: subview) {
+                return webView
+            }
+        }
+        
+        return nil
     }
 
 #endif

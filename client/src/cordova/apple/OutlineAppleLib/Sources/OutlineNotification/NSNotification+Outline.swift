@@ -22,6 +22,7 @@ public extension Notification.Name {
     static let kHandleUrl = Notification.Name("handleUrl")
     static let kVpnConnected = Notification.Name("vpnConnected")
     static let kVpnDisconnected = Notification.Name("vpnDisconnected")
+    static let kVpnError = Notification.Name("vpnError")
 }
 
 @objc public extension NSNotification {
@@ -29,4 +30,5 @@ public extension Notification.Name {
     static let kHandleUrl = Notification.Name.kHandleUrl
     static let kVpnConnected = Notification.Name.kVpnConnected
     static let kVpnDisconnected = Notification.Name.kVpnDisconnected
+    static let kVpnError = Notification.Name.kVpnError
 }
