@@ -211,14 +211,26 @@ export class App {
       // Try to connect to the last server
       const lastServer = servers[0];
       try {
-        await lastServer.connect();
-        this.updateServerListItem(lastServer.id, {
-          connectionState: ServerConnectionState.CONNECTED,
-          address: lastServer.address,
-        });
-        this.rootEl.showToast(
-          this.localize('server-connected', 'serverName', lastServer.name)
-        );
+        if (await lastServer.checkRunning()) {
+          // If connected, disconnect
+          await lastServer.disconnect();
+          this.updateServerListItem(lastServer.id, {
+            connectionState: ServerConnectionState.DISCONNECTED,
+          });
+          this.rootEl.showToast(
+            this.localize('server-disconnected', 'serverName', lastServer.name)
+          );
+        } else {
+          // If disconnected, connect
+          await lastServer.connect();
+          this.updateServerListItem(lastServer.id, {
+            connectionState: ServerConnectionState.CONNECTED,
+            address: lastServer.address,
+          });
+          this.rootEl.showToast(
+            this.localize('server-connected', 'serverName', lastServer.name)
+          );
+        }
       } catch (e) {
         this.updateServerListItem(lastServer.id, {
           connectionState: ServerConnectionState.DISCONNECTED,
