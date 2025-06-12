@@ -203,7 +203,8 @@ export class App {
       if (servers.length === 0) {
         // No servers available, show error and bring window to front
         this.showLocalizedError(new Error('No servers available'));
-        window.focus();
+        // Ensure window is shown before focusing
+        document.dispatchEvent(new CustomEvent('openApplication'));
         return;
       }
 
@@ -223,8 +224,8 @@ export class App {
           connectionState: ServerConnectionState.DISCONNECTED,
         });
         this.showLocalizedError(e);
-        // Bring window to front on error
-        window.focus();
+        // Ensure window is shown before focusing
+        document.dispatchEvent(new CustomEvent('openApplication'));
       }
     });
 
