@@ -69,15 +69,19 @@ export async function newOutlineServer(
 class OutlineServer implements Server {
   errorMessageId?: string;
   private tunnelConfig?: FirstHopAndTunnelConfigJson;
+  public allowedApps?: string[]; // Added property
 
   constructor(
     private vpnApi: VpnApi,
     readonly id: string,
     public name: string,
-    private serviceConfig: ServiceConfig
+    private serviceConfig: ServiceConfig,
+    allowedApps?: string[] // Optional: initialize from constructor if available from storage
   ) {
     if (serviceConfig instanceof StaticServiceConfig) {
       this.tunnelConfig = serviceConfig.tunnelConfig;
+    }
+    this.allowedApps = allowedApps; // Initialize the property
     }
   }
 
@@ -97,6 +101,7 @@ class OutlineServer implements Server {
         id: this.id,
         name: this.name,
         config: this.tunnelConfig,
+        allowedApplications: this.allowedApps, // Pass allowed apps
       };
       await this.vpnApi.start(request);
     } catch (cause) {

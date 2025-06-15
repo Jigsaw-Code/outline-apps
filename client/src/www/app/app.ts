@@ -238,6 +238,12 @@ export class App {
       this.onServerReconnecting.bind(this)
     );
 
+    // Listen for config updates from views
+    this.rootEl.addEventListener(
+      'update-server-config',
+      this.handleUpdateServerConfig.bind(this)
+    );
+
     this.eventQueue.startPublishing();
 
     this.rootEl.$.addServerView.accessKeyValidator = async (
@@ -904,5 +910,56 @@ export class App {
     }
 
     this.rootEl.selectedAppearance = appearance;
+  }
+
+  private async handleUpdateServerConfig(
+    event: CustomEvent<{serverId: string; allowedApps?: string[]; propertyName: string}>
+  ) {
+    const {serverId, propertyName} = event.detail;
+
+    const server = this.serverRepo.getById(serverId);
+    if (!server) {
+      console.error(`Server not found for ID: ${serverId} while trying to update ${propertyName}`);
+      return;
+    }
+
+    let configChanged = false;
+    if (propertyName === 'allowedApps' && 'allowedApps' in event.detail) {
+      server.allowedApps = event.detail.allowedApps;
+      configChanged = true;
+      console.log(`Updated allowedApps for server ${serverId}:`, server.allowedApps);
+    } else {
+      console.warn(`Unsupported property to update: ${propertyName} or missing data.`);
+      return;
+    }
+
+    if (configChanged) {
+      this.serverRepo.updateServer(server); // Persist the changes
+      this.rootEl.showToast(this.localize('Settings saved'), 2000);
+
+      try {
+        const isRunning = await server.checkRunning();
+        if (isRunning) {
+          console.log(`Server ${serverId} is running. Reconnecting to apply settings change.`);
+          this.updateServerListItem(serverId, {connectionState: ServerConnectionState.DISCONNECTING});
+          this.rootEl.showToast(this.localize('Reconnecting server to apply changes...'), 3000);
+
+          await server.disconnect();
+          // Brief pause to ensure resources are released before reconnecting.
+          await new Promise(resolve => setTimeout(resolve, 500));
+
+          this.updateServerListItem(serverId, {connectionState: ServerConnectionState.CONNECTING});
+          await server.connect(); // Assumes server.connect() now uses the updated server.allowedApps
+
+          this.updateServerListItem(serverId, {connectionState: ServerConnectionState.CONNECTED});
+          this.rootEl.showToast(this.localize('Server reconnected with new settings.'), 3000);
+        }
+      } catch (e) {
+        console.error(`Error during reconnect for server ${serverId} after settings change:`, e);
+        this.showLocalizedError(e);
+        // Attempt to re-sync UI to whatever the actual current state is.
+        await this.syncServerConnectivityState(server);
+      }
+    }
   }
 }

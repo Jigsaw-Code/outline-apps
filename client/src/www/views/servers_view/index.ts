@@ -188,8 +188,30 @@ export class ServerList extends LitElement {
           ?darkMode=${this.darkMode}
           .servers=${this.servers}
           .localize=${this.localize}
+          @set-server-allowed-apps=${this._handleSetServerAllowedApps}
         ></server-list>
       `;
     }
+  }
+
+  private async _handleSetServerAllowedApps(
+    event: CustomEvent<{serverId: string; allowedApps: string[]}>
+  ) {
+    const {serverId, allowedApps} = event.detail;
+    // Dispatch an event for a higher-level component (e.g., root-view) to handle.
+    // This component doesn't directly manage the server repository or connection logic.
+    this.dispatchEvent(
+      new CustomEvent('update-server-config', {
+        detail: {serverId, allowedApps, propertyName: 'allowedApps'}, // Added propertyName for clarity
+        bubbles: true,
+        composed: true,
+      })
+    );
+    // Optional: Provide immediate feedback to the user if necessary,
+    // though the actual change will be processed by the handler of 'update-server-config'.
+    console.log(
+      `Server ${serverId} requested allowed apps update:`,
+      allowedApps
+    );
   }
 }

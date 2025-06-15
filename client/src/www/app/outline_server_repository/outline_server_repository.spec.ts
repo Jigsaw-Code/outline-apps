@@ -79,11 +79,13 @@ describe('OutlineServerRepository', () => {
         id: 'server-0',
         name: 'fake server 0',
         accessKey: serversStorageV0ConfigToAccessKey(CONFIG_0_V0),
+        allowedApps: ['com.app.one'], // Test loading this
       },
       {
         id: 'server-1',
         name: 'renamed server',
         accessKey: serversStorageV0ConfigToAccessKey(CONFIG_1_V0),
+        // No allowedApps here, should be undefined or empty on load
       },
     ];
     const storage = new InMemoryStorage(
@@ -95,11 +97,14 @@ describe('OutlineServerRepository', () => {
     const repo = await newTestRepo(new EventQueue(), storage);
     const server0 = repo.getById('server-0');
     expect(server0?.name).toEqual(CONFIG_0_V0.name);
+    expect(server0?.allowedApps).toEqual(['com.app.one']); // Verify loaded allowedApps
+
     const server1 = repo.getById('server-1');
     expect(server1?.name).toEqual('renamed server');
+    expect(server1?.allowedApps).toBeUndefined(); // Or .toEqual([]) depending on implementation choice in repo
   });
 
-  it('stores V1 servers', async () => {
+  it('stores V1 servers with allowedApps', async () => {
     const storageV0: ServersStorageV0 = {
       'server-0': {...CONFIG_0_V0, name: CONFIG_0_V0.name},
       'server-1': {...CONFIG_1_V0, name: CONFIG_1_V0.name},
@@ -108,26 +113,32 @@ describe('OutlineServerRepository', () => {
       new Map([[TEST_ONLY.SERVERS_STORAGE_KEY_V0, JSON.stringify(storageV0)]])
     );
     const repo = await newTestRepo(new EventQueue(), storage);
-    // Trigger storage change.
-    repo.forget('server-1');
-    repo.undoForget('server-1');
+
+    // Modify a server to include allowedApps
+    const server0 = repo.getById('server-0');
+    expect(server0).toBeDefined();
+    if (!server0) return; // Type guard
+    server0.allowedApps = ['com.test.app', 'com.another.app'];
+    repo.updateServer(server0); // Explicitly call updateServer to trigger storeServers
 
     const item = storage.getItem(TEST_ONLY.SERVERS_STORAGE_KEY) ?? '';
     expect(item).toBeTruthy;
-    const serversJson = JSON.parse(item);
-    expect(serversJson).toContain({
-      id: 'server-0',
-      name: 'fake server 0',
-      accessKey: serversStorageV0ConfigToAccessKey(CONFIG_0_V0),
-    });
-    expect(serversJson).toContain({
-      id: 'server-1',
-      name: 'fake server 1',
-      accessKey: serversStorageV0ConfigToAccessKey(CONFIG_1_V0),
-    });
+    const serversJson: ServersStorageV1 = JSON.parse(item);
+
+    const storedServer0 = serversJson.find(s => s.id === 'server-0');
+    expect(storedServer0).toBeDefined();
+    expect(storedServer0?.name).toEqual(CONFIG_0_V0.name); // Name might be from original V0 config
+    expect(storedServer0?.accessKey).toEqual(serversStorageV0ConfigToAccessKey(CONFIG_0_V0));
+    expect(storedServer0?.allowedApps).toEqual(['com.test.app', 'com.another.app']);
+
+    const storedServer1 = serversJson.find(s => s.id === 'server-1');
+    expect(storedServer1).toBeDefined();
+    expect(storedServer1?.name).toEqual(CONFIG_1_V0.name); // Name might be from original V0 config
+    expect(storedServer1?.accessKey).toEqual(serversStorageV0ConfigToAccessKey(CONFIG_1_V0));
+    expect(storedServer1?.allowedApps).toBeUndefined(); // Or .toEqual([])
   });
 
-  it('add stores servers', async () => {
+  it('add stores servers without allowedApps if not set', async () => {
     const storage = new InMemoryStorage();
     const repo = await newTestRepo(new EventQueue(), storage);
     const accessKey0 = serversStorageV0ConfigToAccessKey(CONFIG_0_V0);
@@ -136,15 +147,17 @@ describe('OutlineServerRepository', () => {
     await repo.add(accessKey1);
     const item = storage.getItem(TEST_ONLY.SERVERS_STORAGE_KEY) ?? '';
     expect(item).toBeTruthy;
-    const servers: ServersStorageV1 = JSON.parse(item);
-    expect(servers.length).toEqual(2);
-    expect(servers[0].accessKey).toEqual(accessKey0);
-    expect(servers[0].name).toEqual(CONFIG_0_V0.name);
-    expect(servers[1].accessKey).toEqual(accessKey1);
-    expect(servers[1].name).toEqual(CONFIG_1_V0.name);
+    const serversJson: ServersStorageV1 = JSON.parse(item);
+    expect(serversJson.length).toEqual(2);
+    expect(serversJson[0].accessKey).toEqual(accessKey0);
+    expect(serversJson[0].name).toEqual(CONFIG_0_V0.name);
+    expect(serversJson[0].allowedApps).toBeUndefined(); // Or .toEqual([])
+    expect(serversJson[1].accessKey).toEqual(accessKey1);
+    expect(serversJson[1].name).toEqual(CONFIG_1_V0.name);
+    expect(serversJson[1].allowedApps).toBeUndefined(); // Or .toEqual([])
   });
 
-  it('add emits ServerAdded event', async () => {
+  it('add emits ServerAdded event, server should not have allowedApps initially', async () => {
     const eventQueue = new EventQueue();
     const repo = await newTestRepo(eventQueue, new InMemoryStorage());
     const accessKey = serversStorageV0ConfigToAccessKey(CONFIG_0_V0);

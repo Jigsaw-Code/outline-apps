@@ -32,6 +32,10 @@ export interface Server {
   // must match one of the localized app message.
   errorMessageId?: string;
 
+  // For Android, a list of package names for apps that should be allowed to use the VPN.
+  // If undefined or empty, all apps will use the VPN (default behavior).
+  allowedApps?: string[];
+
   // Connects to the server, redirecting the device's traffic.
   connect(): Promise<void>;
 
@@ -49,4 +53,5 @@ export interface ServerRepository {
   undoForget(serverId: string): void;
   getAll(): Server[];
   getById(serverId: string): Server | undefined;
+  updateServer(server: Server): void; // Added to persist changes to a server object
 }

@@ -16,6 +16,13 @@ import {deserializeError} from '../model/platform_error';
 
 export const OUTLINE_PLUGIN_NAME = 'OutlinePlugin';
 
+// Describes the structure of application information retrieved from the plugin.
+export interface AppInfo {
+  packageName: string;
+  label: string;
+  // icon?: string; // Future: consider adding app icons
+}
+
 // Helper function to call the Outline Cordova plugin.
 export async function pluginExec<T>(
   cmd: string,
@@ -25,4 +32,9 @@ export async function pluginExec<T>(
     const wrappedReject = (e: unknown) => reject(deserializeError(e));
     cordova.exec(resolve, wrappedReject, OUTLINE_PLUGIN_NAME, cmd, args);
   });
+}
+
+// Fetches the list of installed applications from the native plugin.
+export async function getInstalledApplications(): Promise<AppInfo[]> {
+  return pluginExec<AppInfo[]>('getInstalledApps');
 }
