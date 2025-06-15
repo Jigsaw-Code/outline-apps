@@ -82,11 +82,18 @@ class OutlineServer implements Server {
       this.tunnelConfig = serviceConfig.tunnelConfig;
     }
     this.allowedApps = allowedApps; // Initialize the property
-    }
   }
+  // Removed extra brace here
 
   get address() {
     return this.tunnelConfig?.firstHop || '';
+  }
+
+  get tunnelConfigLocation(): URL | undefined {
+    if (this.serviceConfig instanceof DynamicServiceConfig) {
+      return this.serviceConfig.transportConfigLocation;
+    }
+    return undefined;
   }
 
   async connect() {

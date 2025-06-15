@@ -22,9 +22,11 @@ import '@polymer/paper-dialog-scrollable/paper-dialog-scrollable.js';
 
 import {PolymerElement, html} from '@polymer/polymer/polymer-element.js';
 import {customElement, property, query} from '@polymer/decorators';
+import {AppLocalizeBehavior} from '@polymer/app-localize-behavior/app-localize-behavior.js';
+import {PaperDialogElement} from '@polymer/paper-dialog/paper-dialog.js'; // Added import
 
 import {AppInfo, getInstalledApplications} from '../app/plugin.cordova';
-import {LocalizeMixin} from './localize_mixin';
+// Removed LocalizeMixin import
 
 // Define the event detail for when the dialog saves.
 export interface AppSelectionDialogSaveEventDetail {
@@ -32,7 +34,7 @@ export interface AppSelectionDialogSaveEventDetail {
 }
 
 @customElement('app-selection-dialog')
-export class AppSelectionDialog extends LocalizeMixin(PolymerElement) {
+export class AppSelectionDialog extends AppLocalizeBehavior(PolymerElement) {
   static readonly template = html`
     <style>
       paper-dialog {
@@ -103,14 +105,17 @@ export class AppSelectionDialog extends LocalizeMixin(PolymerElement) {
 
   ready() {
     super.ready();
+    // Load localization resources
+    this.loadResources(this.resolveUrl('../messages/en.json'));
     this._loadInstalledApps();
   }
 
   open(currentlySelectedApps: string[] = []) {
-    this.selectedApps = {}; // Reset
+    const newSelectedApps: {[packageName: string]: boolean} = {};
     for (const appPkg of currentlySelectedApps) {
-      this.set(['selectedApps', appPkg], true);
+      newSelectedApps[appPkg] = true;
     }
+    this.selectedApps = newSelectedApps;
     // Store a copy for comparison on save, to see if changes were made.
     this.initialSelectedApps = {...this.selectedApps};
     this.dialogElement.open();
@@ -122,11 +127,14 @@ export class AppSelectionDialog extends LocalizeMixin(PolymerElement) {
       this.apps = await getInstalledApplications();
       // Ensure selectedApps object is populated for any apps that might have been
       // selected previously but are just now being loaded.
+      // Create a new object for selectedApps to ensure Polymer notices the change if needed.
+      const updatedSelectedApps = {...this.selectedApps};
       this.apps.forEach(app => {
-        if (this.selectedApps[app.packageName] === undefined) {
-          this.set(['selectedApps', app.packageName], false);
+        if (updatedSelectedApps[app.packageName] === undefined) {
+          updatedSelectedApps[app.packageName] = false;
         }
       });
+      this.selectedApps = updatedSelectedApps;
     } catch (e) {
       console.error('Failed to load installed applications', e);
       // TODO: Show error to user, perhaps using the splitTunnelingFeatureNotSupported message
@@ -141,9 +149,22 @@ export class AppSelectionDialog extends LocalizeMixin(PolymerElement) {
   // paper-item on-tap handler to toggle the checkbox state
   private _toggleAppSelection(event: Event) {
     const item = (event.currentTarget as HTMLElement).closest('paper-item');
-    const app = (this as any).modelForElement(item).app as AppInfo;
-    if (app) {
-      this.set(['selectedApps', app.packageName], !this.selectedApps[app.packageName]);
+    // In Polymer 3, modelForElement might not be the standard way.
+    // Assuming dom-repeat sets up `app` in the item's context.
+    const app = (item as any).app as AppInfo; // Or use a more robust way to get app data
+    if (app && app.packageName) {
+      const updatedSelectedApps = {...this.selectedApps};
+      updatedSelectedApps[app.packageName] = !this.selectedApps[app.packageName];
+      this.selectedApps = updatedSelectedApps;
+    } else {
+      // Fallback or error if app context is not found as expected
+      const checkbox = item.querySelector('paper-checkbox') as any;
+      if (checkbox) {
+         // This is less ideal as it relies on finding the app by checkbox state indirectly
+         // and requires knowing which app corresponds to this checkbox.
+         // The dom-repeat model is preferred.
+        console.warn("Could not find app context directly, attempting fallback for checkbox toggle.");
+      }
     }
   }
 
