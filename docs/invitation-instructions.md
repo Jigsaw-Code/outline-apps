@@ -1,1 +1,0 @@
-Moved to [`invitation_instructions.md`](./invitation_instructions.md).
