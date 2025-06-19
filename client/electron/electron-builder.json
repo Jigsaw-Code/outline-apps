@@ -16,6 +16,7 @@
     "name": "outline-client",
     "main": "output/client/electron/index.js"
   },
+  "extraResources": ["node_modules/koffi/build/koffi"],
   "files": [
     "client/www",
     "client/resources/tray",
