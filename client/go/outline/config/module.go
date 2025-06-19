@@ -89,20 +89,24 @@ func NewDefaultTransportProvider(tcpDialer transport.StreamDialer, udpDialer tra
 		return parseShadowsocksTransport(ctx, input, streamEndpoints.Parse, packetEndpoints.Parse)
 	})
 
-	// Dial Endpoint support.
+	// Stream endpoints.
 	streamEndpoints.RegisterSubParser("dial", NewDialEndpointSubParser(streamDialers.Parse))
-	packetEndpoints.RegisterSubParser("dial", NewDialEndpointSubParser(packetDialers.Parse))
-
-	// Shadowsocks support.
-	streamDialers.RegisterSubParser("shadowsocks", NewShadowsocksStreamDialerSubParser(streamEndpoints.Parse))
-	packetDialers.RegisterSubParser("shadowsocks", NewShadowsocksPacketDialerSubParser(packetEndpoints.Parse))
-	packetListeners.RegisterSubParser("shadowsocks", NewShadowsocksPacketListenerSubParser(packetEndpoints.Parse))
-
-	// Websocket support.
 	streamEndpoints.RegisterSubParser("websocket", NewWebsocketStreamEndpointSubParser(streamEndpoints.Parse))
+
+	// Packet endpoints.
+	packetEndpoints.RegisterSubParser("dial", NewDialEndpointSubParser(packetDialers.Parse))
 	packetEndpoints.RegisterSubParser("websocket", NewWebsocketPacketEndpointSubParser(streamEndpoints.Parse))
 
-	// Support distinct TCP and UDP configuration.
+	// Stream dialers.
+	streamDialers.RegisterSubParser("shadowsocks", NewShadowsocksStreamDialerSubParser(streamEndpoints.Parse))
+
+	// Packet dialers.
+	packetDialers.RegisterSubParser("shadowsocks", NewShadowsocksPacketDialerSubParser(packetEndpoints.Parse))
+
+	// Packet listeners.
+	packetListeners.RegisterSubParser("shadowsocks", NewShadowsocksPacketListenerSubParser(packetEndpoints.Parse))
+
+	// Transport pairs.
 	transports.RegisterSubParser("tcpudp", NewTCPUDPTransportPairSubParser(streamDialers.Parse, packetListeners.Parse))
 
 	return transports
