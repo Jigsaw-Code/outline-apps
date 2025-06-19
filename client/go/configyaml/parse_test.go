@@ -25,13 +25,13 @@ type TestStruct struct {
 	Field2 int
 }
 
-func TestMapToAnyEmpty(t *testing.T) {
+func TestMapToAny_Empty(t *testing.T) {
 	var s TestStruct
 	require.NoError(t, MapToAny(map[string]any{}, &s))
 	require.Zero(t, s)
 }
 
-func TestMapToAnyFields(t *testing.T) {
+func TestMapToAny_Fields(t *testing.T) {
 	var s TestStruct
 	require.NoError(t, MapToAny(map[string]any{
 		"field1": "value1",
@@ -52,14 +52,14 @@ func TestMapToAnyFields(t *testing.T) {
 	require.Equal(t, TestStruct{Field1: "value1", Field2: 2}, s)
 }
 
-func TestMapToAnyInvalidType(t *testing.T) {
+func TestMapToAny_InvalidType(t *testing.T) {
 	var s TestStruct
 	require.Error(t, MapToAny(map[string]any{
 		"field2": "should be int, not string",
 	}, &s))
 }
 
-func TestMapToAnyCoercesIntToString(t *testing.T) {
+func TestMapToAny_CoercesIntToString(t *testing.T) {
 	var s TestStruct
 	// Not sure this is desirable, but it's how the library works.
 	// This test is intended to document the behavior.
@@ -69,7 +69,7 @@ func TestMapToAnyCoercesIntToString(t *testing.T) {
 	require.Equal(t, TestStruct{Field1: "10"}, s)
 }
 
-func TestMapToAnyMissingFields(t *testing.T) {
+func TestMapToAny_UnknownField(t *testing.T) {
 	var s TestStruct
 	require.Error(t, MapToAny(map[string]any{
 		"field3": "value3",
