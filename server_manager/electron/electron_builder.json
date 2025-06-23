@@ -1,0 +1,40 @@
+{
+  "asarUnpack": ["server_manager/www/images"],
+  "artifactName": "Outline-Manager.${ext}",
+  "linux": {
+    "icon": "icons/png",
+    "category": "Network",
+    "target": [
+      {
+        "target": "AppImage",
+        "arch": ["x64"]
+      }
+    ]
+  },
+  "win": {
+    "icon": "icons/win/icon.ico",
+    "sign": "server_manager/electron/windows/electron_builder_signing_plugin.cjs",
+    "signingHashAlgorithms": ["sha256"],
+    "target": [
+      {
+        "target": "nsis",
+        "arch": "ia32"
+      }
+    ]
+  },
+  "mac": {
+    "hardenedRuntime": true,
+    "entitlements": "server_manager/electron/release/macos.entitlements",
+    "entitlementsInherit": "server_manager/electron/release/macos.entitlements",
+    "icon": "icons/mac/icon.icns",
+    "target": [
+      {
+        "target": "default",
+        "arch": "universal"
+      }
+    ],
+    "notarize": {
+      "teamId": "QT8Z3Q9V3A"
+    }
+  }
+}

@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="app_name">Outline-POC</string>
-    <string name="title_activity_main">Outline-POC</string>
-    <string name="package_name">org.outline.android.client</string>
-    <string name="custom_url_scheme">org.outline.android.client</string>
-</resources>

@@ -1,7 +1,8 @@
 {
-  "name": "capacitor-app",
+  "name": "outline-apps",
+  "productName": "Outline",
   "version": "1.0.0",
-  "description": "An Amazing Capacitor App",
+  "description": "Outline Client",
   "type": "module",
   "keywords": [
     "capacitor",

@@ -1,0 +1,17 @@
+name: "Jsign"
+description:
+    "Java implementation of Microsoft Authenticode for signing Windows "
+    "executable files, installers and scripts."
+
+third_party {
+  url {
+    type: HOMEPAGE
+    value: "https://ebourg.github.io/jsign/"
+  }
+  url {
+    type: GIT
+    value: "https://github.com/ebourg/jsign"
+  }
+  version: "4.2"
+  last_upgrade_date { year: 2022 month: 10 day: 6 }
+}

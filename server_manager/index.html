@@ -1,0 +1,49 @@
+<!--
+  Copyright 2018 The Outline Authors
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!DOCTYPE html>
+<!-- Default LTR direction will be changed dynamically for RTL locales. -->
+<html dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"
+    />
+    <!-- TODO: Add Outline servers to connect-src on-demand (in addition to the DigitalOcean API). -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self' 'unsafe-inline' outline: data:; connect-src https: 'self'; frame-src https://s3.amazonaws.com/outline-vpn/ ss:"
+    />
+
+    <style>
+      /* 
+        TODO: currently webpack wants to resolve the `url` link here but doesn't know how.
+        Index.html isn't transformed by webpack, so this sidesteps the issue, but ideally we teach webpack how to handle this filetype.
+      */
+      @font-face {
+        font-family: 'Material Icons';
+        font-style: normal;
+        font-weight: 400;
+        src: url(images/Material-Icons.woff2) format('woff2');
+      }
+    </style>
+
+    <title>Outline Manager</title>
+  </head>
+  <body>
+    <app-root id="appRoot"></app-root>
+  </body>
+</html>

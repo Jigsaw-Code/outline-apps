@@ -1,0 +1,18 @@
+name: "tap-windows6"
+description:
+    "Provides a TAP driver on Windows. In conjunction with tun2socks this "
+    "allows Shadowsocks to act as a VPN for the whole system. From the OpenVPN "
+    "project."
+
+third_party {
+  url {
+    type: HOMEPAGE
+    value: "https://openvpn.net/index.php/download/community-downloads.html"
+  }
+  url {
+    type: GIT
+    value: "https://github.com/OpenVPN/tap-windows6"
+  }
+  version: "9.21.2"
+  last_upgrade_date { year: 2018 month: 5 day: 7 }
+}

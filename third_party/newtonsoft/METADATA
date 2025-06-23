@@ -1,0 +1,16 @@
+name: "Newtonsoft.Json"
+description:
+  "Json.NET is a high-performance JSON framework for .NET."
+
+third_party {
+  url {
+    type: HOMEPAGE
+    value: "https://www.newtonsoft.com/json"
+  }
+  url {
+    type: GIT
+    value: "https://github.com/JamesNK/Newtonsoft.Json"
+  }
+  version: "11.0.0"
+  last_upgrade_date { year: 2018 month: 6 day: 26 }
+}
