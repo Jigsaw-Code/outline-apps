@@ -26,6 +26,7 @@ export interface StartRequestJson {
   id: string;
   name: string;
   config: FirstHopAndTunnelConfigJson;
+  allowedApplications?: string[]; // Added: For Android split tunneling
 }
 
 /** VpnApi is how we talk to the platform-specific VPN API. */

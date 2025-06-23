@@ -20,6 +20,8 @@ import {createRef, Ref, ref} from 'lit/directives/ref.js';
 
 import '../../server_connection_indicator';
 import './server_rename_dialog';
+import '../../../../ui_components/app_selection_dialog'; // Added import
+import type {AppSelectionDialogSaveEventDetail} from '../../../../ui_components/app_selection_dialog'; // Added import
 import {ServerListItem, ServerListItemElement, ServerListItemEvent} from '..';
 import {ServerConnectionState} from '../../server_connection_indicator';
 
@@ -179,6 +181,7 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
           composed: true,
         })
       ),
+    beginAppSelection: () => (element.isAppSelectionDialogOpen = true), // Added dispatcher
     connectToggle: () =>
       element.dispatchEvent(
         new CustomEvent(
@@ -234,6 +237,9 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
           <md-menu-item @click="${dispatchers.forget}">
             ${localize('server-forget')}
           </md-menu-item>
+          <md-menu-item @click="${dispatchers.beginAppSelection}">
+            ${localize('splitTunnelingSettingButtonLabel')}
+          </md-menu-item>
         </md-menu>
       `,
       menuButton: html`
@@ -265,6 +271,24 @@ const getSharedComponents = (element: ServerListItemElement & LitElement) => {
         @cancel=${() => (element.isRenameDialogOpen = false)}
         @submit=${dispatchers.submitRename}
       ></server-rename-dialog>`,
+      appSelectionDialog: html`
+        <app-selection-dialog
+          .open=${element.isAppSelectionDialogOpen}
+          .localize=${element.localize}
+          .currentlySelectedApps=${element.server.allowedApps || []}
+          @save-selected-apps=${(event: CustomEvent<AppSelectionDialogSaveEventDetail>) => {
+            element.isAppSelectionDialogOpen = false;
+            element.dispatchEvent(
+              new CustomEvent(ServerListItemEvent.SET_ALLOWED_APPS, {
+                detail: {serverId: element.server.id, allowedApps: event.detail.selectedApps},
+                bubbles: true,
+                composed: true,
+              })
+            );
+          }}
+          @close=${() => (element.isAppSelectionDialogOpen = false)}
+        ></app-selection-dialog>
+      `,
     },
   };
 };
@@ -279,6 +303,7 @@ export class ServerRowCard extends LitElement implements ServerListItemElement {
   @property({type: Object}) localize: Localizer;
 
   @state() isRenameDialogOpen = false;
+  @state() isAppSelectionDialogOpen = false; // Added state
 
   menu: Ref<Menu> = createRef();
   menuButton: Ref<HTMLElement> = createRef();
@@ -325,7 +350,7 @@ export class ServerRowCard extends LitElement implements ServerListItemElement {
         </div>
         ${elements.menuButton} ${elements.footer}
       </div>
-      ${elements.menu} ${elements.renameDialog}
+      ${elements.menu} ${elements.renameDialog} ${elements.appSelectionDialog}
     `;
   }
 }
@@ -343,6 +368,7 @@ export class ServerHeroCard
   @property({type: Boolean}) darkMode = false;
 
   @state() isRenameDialogOpen = false;
+  @state() isAppSelectionDialogOpen = false; // Added state
 
   menu: Ref<Menu> = createRef();
   menuButton: Ref<HTMLElement> = createRef();
@@ -431,7 +457,7 @@ export class ServerHeroCard
         </div>
         ${elements.footer}
       </div>
-      ${elements.menu} ${elements.renameDialog}
+      ${elements.menu} ${elements.renameDialog} ${elements.appSelectionDialog}
     `;
   }
 }
