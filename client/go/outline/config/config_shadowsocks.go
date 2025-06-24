@@ -238,7 +238,7 @@ func cutLast(s, sep string) (before, after string, found bool) {
 // https://shadowsocks.org/doc/configs.html#uri-and-qr-code
 func parseShadowsocksLegacyBase64URL(url url.URL) (*ShadowsocksConfig, error) {
 	if url.Host == "" {
-		return nil, errors.New("host not specified (LegacyBase64URL)")
+		return nil, errors.New("host not specified")
 	}
 	decoded, err := base64.URLEncoding.WithPadding(base64.NoPadding).DecodeString(url.Host)
 	if err != nil {
@@ -280,7 +280,7 @@ func parseShadowsocksLegacyBase64URL(url url.URL) (*ShadowsocksConfig, error) {
 // https://shadowsocks.org/doc/sip002.html
 func parseShadowsocksSIP002URL(url url.URL) (*ShadowsocksConfig, error) {
 	if url.Host == "" {
-		return nil, errors.New("host not specified (SIP002URL)")
+		return nil, errors.New("host not specified")
 	}
 	userInfo := url.User.String()
 	// Cipher info can be optionally encoded with Base64URL.
