@@ -87,6 +87,27 @@ transport:
     expect(staticConfig.tunnelConfig.client).toEqual(yamlConfig);
   });
 
+  it('parses websockets:// access key with provided base64 encoded YAML correctly', async () => {
+    const encodedConfig =
+      'dHJhbnNwb3J0OgogICR0eXBlOiB0Y3B1ZHAKICB0Y3A6CiAgICAkdHlwZTogc2hhZG93c29ja3MKICAgIGVuZHBvaW50OgogICAgICAgICR0eXBlOiB3ZWJzb2NrZXQKICAgICAgICB1cmw6IHdzczovL2V4YW1wbGUuY29tL1NFQ1JFVF9QQVRIL3RjcAogICAgY2lwaGVyOiBjaGFjaGEyMC1pZXRmLXBvbHkxMzA1CiAgICBzZWNyZXQ6IFNTX1NFQ1JFVAogIHVkcDoKICAgICR0eXBlOiBzaGFkb3dzb2NrcwogICAgZW5kcG9pbnQ6CiAgICAgICAgJHR5cGU6IHdlYnNvY2tldAogICAgICAgIHVybDogd3NzOi8vZXhhbXBsZS5jb20vU0VDUkVUX1BBVEgvdWRwCiAgICBjaXBoZXI6IGNoYWNoYTIwLWlldGYtcG9seTEzMDUKICAgIHNlY3JldDogU1NfU0VDUkVU';
+    const decodedYaml = atob(encodedConfig);
+    mockMethodChannel.invokeMethod.and.returnValue({
+      client: decodedYaml,
+      firstHop:
+        '{"host":"example.com","port":443,"method":"chacha20-ietf-poly1305","password":"SS_SECRET"}',
+    });
+    const config = await parseAccessKey(
+      `websockets://${encodedConfig}#MyServer`
+    );
+    expect(config instanceof StaticServiceConfig).toBe(true);
+    const staticConfig = config as StaticServiceConfig;
+    expect(staticConfig.name).toEqual('MyServer');
+    expect(staticConfig.tunnelConfig.firstHop).toEqual(
+      '{"host":"example.com","port":443,"method":"chacha20-ietf-poly1305","password":"SS_SECRET"}'
+    );
+    expect(staticConfig.tunnelConfig.client).toEqual(decodedYaml);
+  });
+
   it('name extraction ignores parameters', async () => {
     const transportConfig = 'ss://anything';
     const accessKey = `${transportConfig}#foo=bar&My%20Server&baz=boo`;
