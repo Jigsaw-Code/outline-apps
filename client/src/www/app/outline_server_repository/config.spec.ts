@@ -52,6 +52,41 @@ describe('parseAccessKey', () => {
     );
   });
 
+  it('parses websockets:// access key correctly', async () => {
+    // Basic YAML config
+    const yamlConfig = `
+transport:
+  $type: tcpudp
+  tcp:
+    $type: shadowsocks
+    endpoint: ss.example.com:4321
+    cipher: chacha20-ietf-poly1305
+    secret: SECRET
+    prefix: "POST "
+  udp:
+    $type: shadowsocks
+    endpoint: ss.example.com:4321
+    cipher: chacha20-ietf-poly1305
+    secret: SECRET
+`;
+    const encodedConfig = btoa(yamlConfig);
+    mockMethodChannel.invokeMethod.and.returnValue({
+      client: yamlConfig,
+      firstHop:
+        '{"host":"ss.example.com","port":4321,"method":"chacha20-ietf-poly1305","password":"SECRET"}',
+    });
+    const config = await parseAccessKey(
+      `websockets://${encodedConfig}#testname`
+    );
+    expect(config instanceof StaticServiceConfig).toBe(true);
+    const staticConfig = config as StaticServiceConfig;
+    expect(staticConfig.name).toEqual('testname');
+    expect(staticConfig.tunnelConfig.firstHop).toEqual(
+      '{"host":"ss.example.com","port":4321,"method":"chacha20-ietf-poly1305","password":"SECRET"}'
+    );
+    expect(staticConfig.tunnelConfig.client).toEqual(yamlConfig);
+  });
+
   it('name extraction ignores parameters', async () => {
     const transportConfig = 'ss://anything';
     const accessKey = `${transportConfig}#foo=bar&My%20Server&baz=boo`;

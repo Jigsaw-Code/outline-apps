@@ -32,6 +32,7 @@ import {SERVER_CONNECTION_INDICATOR_DURATION_MS} from '../views/servers_view/ser
 enum OUTLINE_ACCESS_KEY_SCHEME {
   STATIC = 'ss',
   DYNAMIC = 'ssconf',
+  WEBSOCKETS = 'websockets',
 }
 
 // If "possiblyInviteUul" is a URL whose fragment contains a Shadowsocks URL
@@ -75,7 +76,8 @@ export function isOutlineAccessKey(url: string): boolean {
   // so we're using `startsWith`
   return (
     url.startsWith(`${OUTLINE_ACCESS_KEY_SCHEME.STATIC}://`) ||
-    url.startsWith(`${OUTLINE_ACCESS_KEY_SCHEME.DYNAMIC}://`)
+    url.startsWith(`${OUTLINE_ACCESS_KEY_SCHEME.DYNAMIC}://`) ||
+    url.startsWith(`${OUTLINE_ACCESS_KEY_SCHEME.WEBSOCKETS}://`)
   );
 }
 

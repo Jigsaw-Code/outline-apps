@@ -149,9 +149,38 @@ transport:
 
 ### <a id=TunnelConfig></a>TunnelConfig
 
-Tunnel is the top-level object in the Outline configuration returned by [Dynamic Access Keys](https://www.reddit.com/r/outlinevpn/wiki/index/dynamic_access_keys/). It specifies how the VPN should be configured.
+Tunnel is the top-level object in the Outline configuration returned by [Dynamic Access Keys](https://www.reddit.com/r/outlinevpn/wiki/index/dynamic_access_keys/) or by using the `websockets://` scheme. It specifies how the VPN should be configured.
 
-**Format:** [ExplicitTunnelConfig](#ExplicitTunnelConfig) | [LegacyShadowsocksConfig](#LegacyShadowsocksConfig) | [LegacyShadowsocksURI](#LegacyShadowsocksURI)
+**Format:** [ExplicitTunnelConfig](#ExplicitTunnelConfig) | [LegacyShadowsocksConfig](#LegacyShadowsocksConfig) | [LegacyShadowsocksURI](#LegacyShadowsocksURI) | [WebsocketsConfig](#WebsocketsConfig)
+
+### <a id=WebsocketsConfig></a>WebsocketsConfig
+
+The `websockets://` scheme allows embedding the YAML configuration directly in the URL after being base64 encoded.
+
+Example:
+
+`websockets://BASE64_ENCODED_YAML_CONFIG#ServerName`
+
+Where `BASE64_ENCODED_YAML_CONFIG` is the base64 representation of a YAML file like:
+
+```yaml
+transport:
+  $type: tcpudp
+  tcp:
+    $type: shadowsocks
+    endpoint:
+        $type: websocket
+        url: wss://example.com/SECRET_PATH/tcp
+    cipher: chacha20-ietf-poly1305
+    secret: SS_SECRET
+  udp:
+    $type: shadowsocks
+    endpoint:
+        $type: websocket
+        url: wss://example.com/SECRET_PATH/udp
+    cipher: chacha20-ietf-poly1305
+    secret: SS_SECRET
+```
 
 ### <a id=ExplicitTunnelConfig></a>ExplicitTunnelConfig
 

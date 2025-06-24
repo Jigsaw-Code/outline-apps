@@ -112,9 +112,28 @@ export async function parseAccessKey(
       }
     }
 
-    throw new TypeError('Access Key is not a ss:// or ssconf:// URL');
+    // Websockets websockets:// keys. It encodes the full service config as base64 YAML.
+    if (noHashAccessKey.protocol === 'websockets:') {
+      try {
+        const encodedConfig = noHashAccessKey.pathname.substring(2); // Remove // prefix
+        const decodedConfig = atob(encodedConfig);
+        return new StaticServiceConfig(
+          name,
+          await parseTunnelConfig(decodedConfig)
+        );
+      } catch (e) {
+        throw new errors.InvalidServiceConfiguration(
+          'Invalid websockets access key.',
+          {cause: e}
+        );
+      }
+    }
+
+    throw new TypeError(
+      'Access Key is not a ss://, ssconf://, or websockets:// URL'
+    );
   } catch (e) {
-    throw new errors.InvalidServiceConfiguration('Invalid static access key.', {
+    throw new errors.InvalidServiceConfiguration('Invalid access key.', {
       cause: e,
     });
   }
