@@ -33,6 +33,10 @@ export const Example = ({open, accessKey}: AddAccessKeyDialog) =>
     .localize=${localize}
     .accessKey=${accessKey}
     .accessKeyValidator=${async (key: string) => {
-      return key.startsWith('ss://') || key.startsWith('ssconf://');
+      return (
+        key.startsWith('ss://') ||
+        key.startsWith('ssconf://') ||
+        key.startsWith('websockets://')
+      );
     }}
   ></add-access-key-dialog>`;
