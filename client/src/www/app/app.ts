@@ -81,6 +81,9 @@ export function isOutlineAccessKey(url: string): boolean {
 
 const DEFAULT_SERVER_CONNECTION_STATUS_CHANGE_TIMEOUT = 600;
 
+// Storage key for tracking the last connected server
+const LAST_CONNECTED_SERVER_STORAGE_KEY = 'lastConnectedServerId';
+
 export class App {
   private localize: Localizer;
   private ignoredAccessKeys: {[accessKey: string]: boolean} = {};
@@ -203,40 +206,57 @@ export class App {
       if (servers.length === 0) {
         // No servers available, show error and bring window to front
         this.showLocalizedError(new Error('No servers available'));
-        // Ensure window is shown before focusing
         document.dispatchEvent(new CustomEvent('openApplication'));
         return;
       }
 
-      // Try to connect to the last server
-      const lastServer = servers[0];
+      // Try to get the last connected server from storage
+      const lastConnectedServerId = localStorage.getItem(
+        LAST_CONNECTED_SERVER_STORAGE_KEY
+      );
+      let targetServer = servers[0]; // Default to first server if no last connected server
+
+      if (lastConnectedServerId) {
+        const lastConnectedServer = servers.find(
+          server => server.id === lastConnectedServerId
+        );
+        if (lastConnectedServer) {
+          targetServer = lastConnectedServer;
+        }
+      }
+
       try {
-        if (await lastServer.checkRunning()) {
+        if (await targetServer.checkRunning()) {
           // If connected, disconnect
-          await lastServer.disconnect();
-          this.updateServerListItem(lastServer.id, {
+          await targetServer.disconnect();
+          this.updateServerListItem(targetServer.id, {
             connectionState: ServerConnectionState.DISCONNECTED,
           });
           this.rootEl.showToast(
-            this.localize('server-disconnected', 'serverName', lastServer.name)
+            this.localize(
+              'server-disconnected',
+              'serverName',
+              targetServer.name
+            )
           );
         } else {
           // If disconnected, connect
-          await lastServer.connect();
-          this.updateServerListItem(lastServer.id, {
+          await targetServer.connect();
+          this.updateServerListItem(targetServer.id, {
             connectionState: ServerConnectionState.CONNECTED,
-            address: lastServer.address,
+            address: targetServer.address,
           });
           this.rootEl.showToast(
-            this.localize('server-connected', 'serverName', lastServer.name)
+            this.localize('server-connected', 'serverName', targetServer.name)
           );
         }
       } catch (e) {
-        this.updateServerListItem(lastServer.id, {
+        this.updateServerListItem(targetServer.id, {
           connectionState: ServerConnectionState.DISCONNECTED,
         });
         this.showLocalizedError(e);
-        // Ensure window is shown before focusing
+        // Try to bring the window to front by dispatching an event
+        // The native code should handle this when the web view is available
         document.dispatchEvent(new CustomEvent('openApplication'));
       }
     });
@@ -736,6 +756,8 @@ export class App {
     this.updateServerListItem(event.serverId, {
       connectionState: ServerConnectionState.CONNECTED,
     });
+    // Store the last connected server ID for menu bar functionality
+    localStorage.setItem(LAST_CONNECTED_SERVER_STORAGE_KEY, event.serverId);
   }
 
   private onServerDisconnected(event: events.ServerDisconnected): void {
@@ -779,6 +801,15 @@ export class App {
     const server = event.server;
     console.debug('Server forgotten');
     this.syncServersToUI();
+
+    // Clean up the last connected server ID if the forgotten server was the last connected one
+    const lastConnectedServerId = localStorage.getItem(
+      LAST_CONNECTED_SERVER_STORAGE_KEY
+    );
+    if (lastConnectedServerId === server.id) {
+      localStorage.removeItem(LAST_CONNECTED_SERVER_STORAGE_KEY);
+    }
+
     this.rootEl.showToast(
       this.localize('server-forgotten', 'serverName', server.name),
       10000,

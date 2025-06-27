@@ -139,15 +139,6 @@ class StatusItemController: NSObject {
         NSLog("[StatusItemController] Toggling connection")
         NotificationCenter.default.post(name: Notification.Name("toggleConnection"), object: nil)
     }
-
-    private func getWebView() -> WKWebView? {
-        for window in NSApp.windows {
-            if let webView = window.contentView?.subviews.first(where: { $0 is WKWebView }) as? WKWebView {
-                return webView
-            }
-        }
-        return nil
-    }
 }
 
 private func getUiWindow() -> NSWindow? {

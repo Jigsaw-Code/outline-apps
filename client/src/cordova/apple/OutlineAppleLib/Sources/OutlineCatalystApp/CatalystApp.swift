@@ -24,6 +24,8 @@
 
     @objcMembers
     public class OutlineCatalystApp: NSObject {
+        private static var webViewReference: WKWebView?
+        
         public static func initApp() {
             DDLog.add(DDOSLogger.sharedInstance)
 
@@ -62,13 +64,21 @@
                                                    queue: nil)
             { _ in
                 Task {
-                    var webView: WKWebView? = nil
-                    for _ in 0..<10 {
-                        if let foundWebView = getWebView() {
-                            webView = foundWebView
-                            break
+                    // First, ensure the window is open
+                    NotificationCenter.default.post(name: NSNotification.Name("openApplication"), object: nil)
+                    
+                    // Wait a bit for the window to open
+                    try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+                    
+                    // Try to get the web view from our stored reference first
+                    var webView = webViewReference
+                    
+                    // If we don't have a stored reference, try to find it once
+                    if webView == nil {
+                        webView = getWebView()
+                        if webView != nil {
+                            webViewReference = webView
                         }
-                        try? await Task.sleep(nanoseconds: 500_000_000)
                     }
                     
                     if let webView = webView {
@@ -77,11 +87,17 @@
                         window.dispatchEvent(new CustomEvent('connectFromMenu'));
                         """
                         try? await webView.evaluateJavaScript(js)
-                    } else {
-                        // If we can't find the web view, just open the app
-                        NotificationCenter.default.post(name: NSNotification.Name("openApplication"), object: nil)
                     }
                 }
+            }
+            
+            // Listen for web view lifecycle events to store the reference
+            NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification,
+                                                   object: nil,
+                                                   queue: nil)
+            { _ in
+                // Update web view reference when app becomes active
+                webViewReference = getWebView()
             }
         }
     }
