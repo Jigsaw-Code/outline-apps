@@ -26,11 +26,11 @@ import (
 // ConfigTypeKey is the config key used to specify the type of the config in order to select the corresponding parser.
 const ConfigTypeKey = "$type"
 
-// configyaml.ConfigNode represents an intermediate config node. It's typically one of the types supported by YAML (list, map, scalar)
+// ConfigNode represents an intermediate config node. It's typically one of the types supported by YAML (list, map, scalar)
 // but it can be arbitrary objects returned by parsers as well.
 type ConfigNode any
 
-// ParseFunc takes a [configyaml.ConfigNode] and returns an object of the given type.
+// ParseFunc takes a [ConfigNode] and returns an object of the given type.
 type ParseFunc[OutputType any] func(ctx context.Context, input ConfigNode) (OutputType, error)
 
 // ParseConfigYAML takes a YAML config string and returns it as an object that the type parsers can use.
@@ -132,7 +132,7 @@ func (p *TypeParser[T]) Parse(ctx context.Context, config ConfigNode) (T, error)
 }
 
 // RegisterSubParser registers the given subparser function with the given name for the type T.
-// Note that a subparser always take a map[string]any, not configyaml.ConfigNode, since we must have a map[string]any in
+// Note that a subparser always take a map[string]any, not [ConfigNode], since we must have a map[string]any in
 // order to set the value for the ConfigParserKey.
 func (p *TypeParser[T]) RegisterSubParser(name string, function func(context.Context, map[string]any) (T, error)) {
 	p.subparsers[name] = function

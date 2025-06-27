@@ -6,7 +6,7 @@ The Outline Config framework is a composable and extensible system to specify ne
 
 - **Composable** because it lets strategies to be combined to build more advanced strategies.
   For example, Shadowsocks-over-Websocket, or multi-hop.
-- **Extensible** because it's possible to register new strategies without hacing to change the
+- **Extensible** because it's possible to register new strategies without having to change the
   framework.
 
 This framework underpins how the Outline client understands and establishes connections through various proxy protocols and combinations.
