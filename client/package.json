@@ -49,7 +49,7 @@
     "electron-updater": "^5.0.5",
     "element-internals-polyfill": "^1.3.12",
     "fs-extra": "^11.2.0",
-    "koffi": "^2.9.1",
+    "koffi": "^2.12.0",
     "lit": "^3.2.1",
     "ShadowsocksConfig": "github:Jigsaw-Code/outline-shadowsocksconfig#v0.2.1",
     "socks": "^1.1.10",
