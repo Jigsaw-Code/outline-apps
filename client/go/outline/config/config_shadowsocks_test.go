@@ -22,12 +22,13 @@ import (
 	"net/url"
 	"testing"
 
+	"github.com/Jigsaw-Code/outline-apps/client/go/configyaml"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 	"github.com/stretchr/testify/require"
 )
 
 func parseFromYAMLText(configText string) (*ShadowsocksConfig, error) {
-	node, err := ParseConfigYAML(configText)
+	node, err := configyaml.ParseConfigYAML(configText)
 	if err != nil {
 		return nil, err
 	}
@@ -143,11 +144,11 @@ func TestParseShadowsocksConfig_LegacyJSON(t *testing.T) {
 }
 
 func TestParseShadowsocksConfig_YAML(t *testing.T) {
-	streamEndpoints := NewTypeParser(func(ctx context.Context, config ConfigNode) (*Endpoint[transport.StreamConn], error) {
+	streamEndpoints := configyaml.NewTypeParser(func(ctx context.Context, config configyaml.ConfigNode) (*Endpoint[transport.StreamConn], error) {
 		require.Equal(t, "example.com:1234", config)
 		return &Endpoint[transport.StreamConn]{}, nil
 	})
-	packetEndpoints := NewTypeParser(func(ctx context.Context, config ConfigNode) (*Endpoint[net.Conn], error) {
+	packetEndpoints := configyaml.NewTypeParser(func(ctx context.Context, config configyaml.ConfigNode) (*Endpoint[net.Conn], error) {
 		require.Equal(t, "example.com:1234", config)
 		return &Endpoint[net.Conn]{}, nil
 	})
