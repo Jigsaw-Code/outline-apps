@@ -26,14 +26,19 @@ import (
 
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/connectivity"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
-	"github.com/Jigsaw-Code/outline-apps/client/go/tunnel"
 )
 
 // Tunnel represents a tunnel from a TUN device to a server.
 type Tunnel interface {
-	tunnel.Tunnel
+	// IsConnected is true if Disconnect has not been called.
+	IsConnected() bool
+	// Disconnect closes the underlying resources. Subsequent Write calls will fail.
+	Disconnect()
+	// Write writes input data to the TUN interface.
+	Write(data []byte) (int, error)
 
 	// UpdateUDPSupport determines if UDP is supported following a network connectivity change.
 	// Sets the tunnel's UDP connection handler accordingly, falling back to DNS over TCP if UDP is not supported.
@@ -49,22 +54,22 @@ type ConnectOutlineTunnelResult struct {
 	Error  *platerrors.PlatformError
 }
 
-// Deprecated: use Tunnel directly.
-type OutlineTunnel = Tunnel
-
 type outlinetunnel struct {
-	tunnel.Tunnel
+	tunWriter    io.WriteCloser
+	lwipStack    core.LWIPStack
+	isConnected  bool
 	packetDialer transport.PacketListener
 	udpHandler   *toggleUDPConnHandler
 }
 
-// newTunnel connects a tunnel to the given stream and packet dialers and returns an `outline.Tunnel`.
+var _ Tunnel = (*outlinetunnel)(nil)
+
+// newTunnel connects a tunnel to the given client and returns an `outline.Tunnel`.
 //
-// `streamDialer` is the StreamDialer to proxy TCP traffic.
-// `packetListener` is the PacketListener tp proxy UDP traffic.
+// `client` is the StreamDialer to proxy TCP traffic and the PacketListener to proxy UDP traffic.
 // `isUDPEnabled` indicates if the Outline proxy and the network support proxying UDP traffic.
 // `tunWriter` is used to output packets back to the TUN device.  OutlineTunnel.Disconnect() will close `tunWriter`.
-func newTunnel(streamDialer transport.StreamDialer, packetListener transport.PacketListener, isUDPEnabled bool, tunWriter io.WriteCloser) (Tunnel, error) {
+func newTunnel(client *outline.Client, isUDPEnabled bool, tunWriter io.WriteCloser) (Tunnel, error) {
 	if tunWriter == nil {
 		return nil, errors.New("must provide a TUN writer")
 	}
@@ -72,16 +77,35 @@ func newTunnel(streamDialer transport.StreamDialer, packetListener transport.Pac
 		return tunWriter.Write(data)
 	})
 	lwipStack := core.NewLWIPStack()
-	base := tunnel.NewTunnel(tunWriter, lwipStack)
 	udpHandler := &toggleUDPConnHandler{
-		Handler:         NewUDPHandler(packetListener, 30*time.Second),
+		Handler:         NewUDPHandler(client, 30*time.Second),
 		FallbackHandler: dnsfallback.NewUDPHandler(),
 	}
 	udpHandler.UseFallback.Store(!isUDPEnabled)
-	t := &outlinetunnel{base, packetListener, udpHandler}
-	core.RegisterTCPConnHandler(NewTCPHandler(streamDialer))
+	t := &outlinetunnel{tunWriter, lwipStack, true, client, udpHandler}
+	core.RegisterTCPConnHandler(NewTCPHandler(client))
 	core.RegisterUDPConnHandler(udpHandler)
 	return t, nil
+}
+
+func (t *outlinetunnel) IsConnected() bool {
+	return t.isConnected
+}
+
+func (t *outlinetunnel) Disconnect() {
+	if !t.isConnected {
+		return
+	}
+	t.isConnected = false
+	t.lwipStack.Close()
+	t.tunWriter.Close()
+}
+
+func (t *outlinetunnel) Write(data []byte) (int, error) {
+	if !t.isConnected {
+		return 0, errors.New("failed to write, network stack closed")
+	}
+	return t.lwipStack.Write(data)
 }
 
 func (t *outlinetunnel) UpdateUDPSupport() bool {

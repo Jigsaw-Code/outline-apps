@@ -112,6 +112,7 @@
   "gcp-firewall-create-3": "Introduceți „0.0.0.0/0” în câmpul „Intervale de adrese IP sursă” (Source IP ranges).",
   "gcp-firewall-create-4": "Selectați „Permiteți tot” (Allow all) în secțiunea „Protocoale și porturi´ (Protocols and ports).",
   "gcp-name-your-project": "Denumiți proiectul în câmpul „Numele proiectului” (Project name).",
+  "gcp-oauth-connect-title": "Conectați-vă sau creați un cont cu Google Cloud Platform.",
   "gcp-project-setup-error": "A apărut o eroare la configurarea proiectului dvs. Google Cloud.",
   "gcp-select-machine-type": "Selectați „f1-micro” în „Tip de mașină” (Machine type)",
   "gcp-select-networking": "Dați clic pe „Gestionare, securitate, discuri, networking, găzduire pentru o singură entitate” (Management, security, disks, networking, sole tenancy), apoi „Networking”",

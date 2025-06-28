@@ -112,6 +112,7 @@
   "gcp-firewall-create-3": "Введіть \"0.0.0.0/0\" у полі \"Source IP ranges\" (Вихідні діапазони IP-адрес).",
   "gcp-firewall-create-4": "У розділі \"Protocols and ports\" (Протоколи й порти) виберіть \"Allow all\" (Дозволити всі).",
   "gcp-name-your-project": "Введіть назву в полі \"Назва проекту\" (Project name).",
+  "gcp-oauth-connect-title": "Увійдіть в обліковий запис Google Cloud Platform або створіть його.",
   "gcp-project-setup-error": "Не вдалося налаштувати проект Google Cloud",
   "gcp-select-machine-type": "У розділі \"Тип машини\" (Machine type) виберіть \"f1-micro\"",
   "gcp-select-networking": "Натисніть \"Керування, безпека, диски, мережі, одноосібне володіння\" (Management, security, disks, networking, sole tenancy), а потім \"Мережі\" (Networking)",

@@ -141,7 +141,7 @@ function setupWindow(): void {
   // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 360,
-    height: 640,
+    height: 680,
     resizable: false,
     webPreferences: {
       nodeIntegration: false,
@@ -347,7 +347,7 @@ async function tearDownAutoLaunch() {
 // Factory function to create a VPNTunnel instance backed by a network stack
 // specified at build time.
 async function createVpnTunnel(
-  tunnelConfig: config.TunnelConfigJson,
+  tunnelConfig: config.FirstHopAndTunnelConfigJson,
   isAutoConnect: boolean
 ): Promise<VpnTunnel> {
   // We must convert the host from a potential "hostname" to an "IP" address
@@ -360,7 +360,7 @@ async function createVpnTunnel(
   }
   const hostIp = await lookupIp(host);
   const routing = new RoutingDaemon(hostIp || '', isAutoConnect);
-  const tunnel = new GoVpnTunnel(routing, tunnelConfig.transport);
+  const tunnel = new GoVpnTunnel(routing, tunnelConfig.client);
   routing.onNetworkChange = tunnel.networkChanged.bind(tunnel);
   return tunnel;
 }
@@ -421,9 +421,10 @@ async function stopVpn() {
     return;
   }
 
+  const onceDisconnected = currentTunnel.onceDisconnected;
   void currentTunnel.disconnect();
   await tearDownAutoLaunch();
-  await currentTunnel.onceDisconnected;
+  await onceDisconnected;
 }
 
 function setUiTunnelStatus(status: TunnelStatus, tunnelId: string) {

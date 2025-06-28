@@ -112,6 +112,7 @@
   "gcp-firewall-create-3": "در فیلد «محدوده IP منبع» (Source IP ranges)،‏ «0.0.0.0/0» را تایپ کنید.",
   "gcp-firewall-create-4": "در بخش «پروتکل‌ها و درگاه‌ها» (Protocols and ports)، «همه مجاز باشند» (Allow all) را انتخاب کنید.",
   "gcp-name-your-project": "پروژه‌تان را در فیلد «نام پروژه» (Project name) نام‌گذاری کنید.",
+  "gcp-oauth-connect-title": "به سیستم حساب وارد شوید یا با Google Cloud Platform حساب بسازید.",
   "gcp-project-setup-error": "درحین تنظیم «پروژه ابری» Google خطایی رخ داد",
   "gcp-select-machine-type": "در بخش «نوع ماشین» (Machine type)‏، «f1-micro» را انتخاب کنید.",
   "gcp-select-networking": "روی «مدیریت، امنیت دیسک‌ها، حوزه شبکه، مالکیت انحصاری» (Management, security, disks, networking, sole tenancy) و سپس «حوزه شبکه» (Networking) کلیک کنید",

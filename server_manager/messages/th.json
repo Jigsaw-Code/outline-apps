@@ -112,6 +112,7 @@
   "gcp-firewall-create-3": "พิมพ์ \"0.0.0.0/0\" ในช่อง \"ช่วง IP ต้นทาง\"",
   "gcp-firewall-create-4": "เลือก \"อนุญาตทั้งหมด\" ในส่วนของ \"โปรโตคอลและพอร์ต\"",
   "gcp-name-your-project": "ตั้งชื่อโครงการในช่อง \"ชื่อโครงการ (Project name)\"",
+  "gcp-oauth-connect-title": "ลงชื่อเข้าใช้หรือสร้างบัญชีกับ Google Cloud Platform",
   "gcp-project-setup-error": "เกิดข้อผิดพลาดขณะตั้งค่าโครงการ Google Cloud",
   "gcp-select-machine-type": "เลือก \"f1-micro\" ในส่วน \"ประเภทเครื่อง (Machine type)\"",
   "gcp-select-networking": "คลิก \"การจัดการ (Management), ความปลอดภัย (Security), ดิสก์ (Disks), การสร้างเครือข่าย (Networking), กลุ่มผู้ใช้กลุ่มเดียว (Sole tenancy)\" จากนั้นคลิก \"การสร้างเครือข่ายเครือข่าย (Networking)\"",

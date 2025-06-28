@@ -112,6 +112,7 @@
   "gcp-firewall-create-3": "Gerð „0.0.0.0/0“ í reitnum „IP-svið uppruna (Source IP ranges)“.",
   "gcp-firewall-create-4": "Veldu „Leyfa allt (Allow all)“ undir „Samskiptareglur og gáttir (Protocols and ports)“.",
   "gcp-name-your-project": "Gefðu verkefninu heiti í reitnum „Heiti verkefnis (Project name)“.",
+  "gcp-oauth-connect-title": "Skráðu þig inn eða stofnaðu reikning á Google Cloud Platform.",
   "gcp-project-setup-error": "Villa kom upp við uppsetningu Google Cloud-verkefnisins",
   "gcp-select-machine-type": "Veldu „f1-micro“ undir „Gerð vélar (Machine type)“",
   "gcp-select-networking": "Smelltu á „Stjórnun, öryggi, diskar, net, einkaleiga (Management, security, disks, networking, sole tenancy)“ og síðan á „Net (Networking)“",

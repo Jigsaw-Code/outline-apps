@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package config
+package configyaml
 
 import (
 	"bytes"
@@ -42,9 +42,9 @@ func ParseConfigYAML(configText string) (ConfigNode, error) {
 	return node, nil
 }
 
-// mapToAny marshalls a map into a struct. It's a helper for parsers that want to
+// MapToAny marshalls a map into a struct. It's a helper for parsers that want to
 // map config maps into their config structures.
-func mapToAny(in map[string]any, out any) error {
+func MapToAny(in map[string]any, out any) error {
 	newMap := make(map[string]any)
 	for k, v := range in {
 		if len(k) > 0 && k[0] == '$' {
@@ -132,7 +132,7 @@ func (p *TypeParser[T]) Parse(ctx context.Context, config ConfigNode) (T, error)
 }
 
 // RegisterSubParser registers the given subparser function with the given name for the type T.
-// Note that a subparser always take a map[string]any, not ConfigNode, since we must have a map[string]any in
+// Note that a subparser always take a map[string]any, not [ConfigNode], since we must have a map[string]any in
 // order to set the value for the ConfigParserKey.
 func (p *TypeParser[T]) RegisterSubParser(name string, function func(context.Context, map[string]any) (T, error)) {
 	p.subparsers[name] = function

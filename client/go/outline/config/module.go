@@ -19,32 +19,27 @@ import (
 	"errors"
 	"net"
 
+	"github.com/Jigsaw-Code/outline-apps/client/go/configyaml"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
-// TransportPair provides a StreamDialer and PacketListener, to use as the transport in a Tun2Socks VPN.
-type TransportPair struct {
-	StreamDialer   *Dialer[transport.StreamConn]
-	PacketListener *PacketListener
-}
+// newTypeParser is a wrapper around [configyaml.NewTypeParser] that allows us to centralize the registration
+// of subparsers that should apply to all supported types.
+func newTypeParser[T any](fallbackHandler func(context.Context, configyaml.ConfigNode) (T, error)) *configyaml.TypeParser[T] {
+	parser := configyaml.NewTypeParser(fallbackHandler)
 
-var _ transport.StreamDialer = (*TransportPair)(nil)
-var _ transport.PacketListener = (*TransportPair)(nil)
+	// Registrations that should apply to all supported type.
+	parser.RegisterSubParser("first-supported", NewFirstSupportedSubParser(parser.Parse))
 
-func (t *TransportPair) DialStream(ctx context.Context, address string) (transport.StreamConn, error) {
-	return t.StreamDialer.Dial(ctx, address)
-}
-
-func (t *TransportPair) ListenPacket(ctx context.Context) (net.PacketConn, error) {
-	return t.PacketListener.ListenPacket(ctx)
+	return parser
 }
 
 // NewDefaultTransportProvider provider a [TransportPair].
-func NewDefaultTransportProvider(tcpDialer transport.StreamDialer, udpDialer transport.PacketDialer) *TypeParser[*TransportPair] {
-	var streamEndpoints *TypeParser[*Endpoint[transport.StreamConn]]
-	var packetEndpoints *TypeParser[*Endpoint[net.Conn]]
+func NewDefaultTransportProvider(tcpDialer transport.StreamDialer, udpDialer transport.PacketDialer) *configyaml.TypeParser[*TransportPair] {
+	var streamEndpoints *configyaml.TypeParser[*Endpoint[transport.StreamConn]]
+	var packetEndpoints *configyaml.TypeParser[*Endpoint[net.Conn]]
 
-	streamDialers := NewTypeParser(func(ctx context.Context, input ConfigNode) (*Dialer[transport.StreamConn], error) {
+	streamDialers := newTypeParser(func(ctx context.Context, input configyaml.ConfigNode) (*Dialer[transport.StreamConn], error) {
 		switch input.(type) {
 		case nil:
 			// An absent config implicitly means TCP.
@@ -57,7 +52,7 @@ func NewDefaultTransportProvider(tcpDialer transport.StreamDialer, udpDialer tra
 		}
 	})
 
-	packetDialers := NewTypeParser(func(ctx context.Context, input ConfigNode) (*Dialer[net.Conn], error) {
+	packetDialers := newTypeParser(func(ctx context.Context, input configyaml.ConfigNode) (*Dialer[net.Conn], error) {
 		switch input.(type) {
 		case nil:
 			// An absent config implicitly means UDP.
@@ -70,7 +65,7 @@ func NewDefaultTransportProvider(tcpDialer transport.StreamDialer, udpDialer tra
 		}
 	})
 
-	packetListeners := NewTypeParser(func(ctx context.Context, input ConfigNode) (*PacketListener, error) {
+	packetListeners := newTypeParser(func(ctx context.Context, input configyaml.ConfigNode) (*PacketListener, error) {
 		switch input.(type) {
 		case nil:
 			// An absent config implicitly means UDP.
@@ -80,60 +75,30 @@ func NewDefaultTransportProvider(tcpDialer transport.StreamDialer, udpDialer tra
 		}
 	})
 
-	streamEndpoints = NewTypeParser(func(ctx context.Context, input ConfigNode) (*Endpoint[transport.StreamConn], error) {
+	streamEndpoints = newTypeParser(func(ctx context.Context, input configyaml.ConfigNode) (*Endpoint[transport.StreamConn], error) {
 		// TODO: perhaps only support string here to force the struct to have an explicit parser.
 		return parseDirectDialerEndpoint(ctx, input, streamDialers.Parse)
 	})
-	streamEndpoints.RegisterSubParser("dial", func(ctx context.Context, input map[string]any) (*Endpoint[transport.StreamConn], error) {
-		return parseDirectDialerEndpoint(ctx, input, streamDialers.Parse)
-	})
 
-	packetEndpoints = NewTypeParser(func(ctx context.Context, input ConfigNode) (*Endpoint[net.Conn], error) {
-		return parseDirectDialerEndpoint(ctx, input, packetDialers.Parse)
-	})
-	packetEndpoints.RegisterSubParser("dial", func(ctx context.Context, input map[string]any) (*Endpoint[net.Conn], error) {
+	packetEndpoints = newTypeParser(func(ctx context.Context, input configyaml.ConfigNode) (*Endpoint[net.Conn], error) {
 		return parseDirectDialerEndpoint(ctx, input, packetDialers.Parse)
 	})
 
-	transports := NewTypeParser(func(ctx context.Context, input ConfigNode) (*TransportPair, error) {
+	transports := newTypeParser(func(ctx context.Context, input configyaml.ConfigNode) (*TransportPair, error) {
 		// If parser directive is missing, parse as Shadowsocks for backwards-compatibility.
 		return parseShadowsocksTransport(ctx, input, streamEndpoints.Parse, packetEndpoints.Parse)
 	})
 
-	// First-Supported support.
-	streamEndpoints.RegisterSubParser("first-supported", func(ctx context.Context, input map[string]any) (*Endpoint[transport.StreamConn], error) {
-		return parseFirstSupported(ctx, input, streamEndpoints.Parse)
-	})
-	packetEndpoints.RegisterSubParser("first-supported", func(ctx context.Context, input map[string]any) (*Endpoint[net.Conn], error) {
-		return parseFirstSupported(ctx, input, packetEndpoints.Parse)
-	})
-	streamDialers.RegisterSubParser("first-supported", func(ctx context.Context, input map[string]any) (*Dialer[transport.StreamConn], error) {
-		return parseFirstSupported(ctx, input, streamDialers.Parse)
-	})
-	packetDialers.RegisterSubParser("first-supported", func(ctx context.Context, input map[string]any) (*Dialer[net.Conn], error) {
-		return parseFirstSupported(ctx, input, packetDialers.Parse)
-	})
-	packetListeners.RegisterSubParser("first-supported", func(ctx context.Context, input map[string]any) (*PacketListener, error) {
-		return parseFirstSupported(ctx, input, packetListeners.Parse)
-	})
+	// Stream endpoints.
+	streamEndpoints.RegisterSubParser("dial", NewDialEndpointSubParser(streamDialers.Parse))
+	streamEndpoints.RegisterSubParser("websocket", NewWebsocketStreamEndpointSubParser(streamEndpoints.Parse))
 
-	// Shadowsocks support.
-	streamDialers.RegisterSubParser("shadowsocks", func(ctx context.Context, input map[string]any) (*Dialer[transport.StreamConn], error) {
-		return parseShadowsocksStreamDialer(ctx, input, streamEndpoints.Parse)
-	})
-	packetDialers.RegisterSubParser("shadowsocks", func(ctx context.Context, input map[string]any) (*Dialer[net.Conn], error) {
-		return parseShadowsocksPacketDialer(ctx, input, packetEndpoints.Parse)
-	})
-	packetListeners.RegisterSubParser("shadowsocks", func(ctx context.Context, input map[string]any) (*PacketListener, error) {
-		return parseShadowsocksPacketListener(ctx, input, packetEndpoints.Parse)
-	})
+	// Packet endpoints.
+	packetEndpoints.RegisterSubParser("dial", NewDialEndpointSubParser(packetDialers.Parse))
+	packetEndpoints.RegisterSubParser("websocket", NewWebsocketPacketEndpointSubParser(streamEndpoints.Parse))
 
-	streamEndpoints.RegisterSubParser("websocket", func(ctx context.Context, input map[string]any) (*Endpoint[transport.StreamConn], error) {
-		return parseWebsocketStreamEndpoint(ctx, input, streamEndpoints.Parse)
-	})
-	packetEndpoints.RegisterSubParser("websocket", func(ctx context.Context, input map[string]any) (*Endpoint[net.Conn], error) {
-		return parseWebsocketPacketEndpoint(ctx, input, streamEndpoints.Parse)
-	})
+	// Stream dialers.
+	streamDialers.RegisterSubParser("shadowsocks", NewShadowsocksStreamDialerSubParser(streamEndpoints.Parse))
 
 	// IPTable support (TCP anly).
 	streamDialers.RegisterSubParser("ip-table", func(ctx context.Context, input map[string]any) (*Dialer[transport.StreamConn], error) {
@@ -148,10 +113,14 @@ func NewDefaultTransportProvider(tcpDialer transport.StreamDialer, udpDialer tra
 		}, err
 	})
 
-	// Support distinct TCP and UDP configuration.
-	transports.RegisterSubParser("tcpudp", func(ctx context.Context, config map[string]any) (*TransportPair, error) {
-		return parseTCPUDPTransportPair(ctx, config, streamDialers.Parse, packetListeners.Parse)
-	})
+	// Packet dialers.
+	packetDialers.RegisterSubParser("shadowsocks", NewShadowsocksPacketDialerSubParser(packetEndpoints.Parse))
+
+	// Packet listeners.
+	packetListeners.RegisterSubParser("shadowsocks", NewShadowsocksPacketListenerSubParser(packetEndpoints.Parse))
+
+	// Transport pairs.
+	transports.RegisterSubParser("tcpudp", NewTCPUDPTransportPairSubParser(streamDialers.Parse, packetListeners.Parse))
 
 	return transports
 }

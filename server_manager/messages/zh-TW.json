@@ -112,6 +112,7 @@
   "gcp-firewall-create-3": "在 [Source IP ranges] (來源 IP 範圍) 欄位中輸入「0.0.0.0/0」。",
   "gcp-firewall-create-4": "選取「Protocols and ports」(通訊協定和通訊埠) 下方的 [Allow all] (全部允許)。",
   "gcp-name-your-project": "在 [Project name] (專案名稱) 欄位中為專案命名。",
+  "gcp-oauth-connect-title": "登入或建立 Google Cloud Platform 帳戶。",
   "gcp-project-setup-error": "設定 Google Cloud 專案時發生錯誤",
   "gcp-select-machine-type": "在「Machine type」(機器類型) 下方選取 [f1-micro]",
   "gcp-select-networking": "依序按一下 [Management, security, disks, networking, sole tenancy] (管理、安全性、磁碟、網路、單獨租用) 和 [Networking] (網路)",

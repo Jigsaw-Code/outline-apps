@@ -25,13 +25,14 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Jigsaw-Code/outline-apps/client/go/configyaml"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 	"github.com/Jigsaw-Code/outline-sdk/transport/shadowsocks"
 )
 
 // ShadowsocksConfig is the format for the Shadowsocks config. It can specify Dialers or PacketListener.
 type ShadowsocksConfig struct {
-	Endpoint ConfigNode
+	Endpoint configyaml.ConfigNode
 	Cipher   string
 	Secret   string
 	Prefix   string
@@ -46,7 +47,25 @@ type LegacyShadowsocksConfig struct {
 	Prefix      string
 }
 
-func parseShadowsocksTransport(ctx context.Context, config ConfigNode, parseSE ParseFunc[*Endpoint[transport.StreamConn]], parsePE ParseFunc[*Endpoint[net.Conn]]) (*TransportPair, error) {
+func NewShadowsocksStreamDialerSubParser(parseSE configyaml.ParseFunc[*Endpoint[transport.StreamConn]]) func(ctx context.Context, input map[string]any) (*Dialer[transport.StreamConn], error) {
+	return func(ctx context.Context, input map[string]any) (*Dialer[transport.StreamConn], error) {
+		return parseShadowsocksStreamDialer(ctx, input, parseSE)
+	}
+}
+
+func NewShadowsocksPacketDialerSubParser(parsePE configyaml.ParseFunc[*Endpoint[net.Conn]]) func(ctx context.Context, input map[string]any) (*Dialer[net.Conn], error) {
+	return func(ctx context.Context, input map[string]any) (*Dialer[net.Conn], error) {
+		return parseShadowsocksPacketDialer(ctx, input, parsePE)
+	}
+}
+
+func NewShadowsocksPacketListenerSubParser(parsePE configyaml.ParseFunc[*Endpoint[net.Conn]]) func(ctx context.Context, input map[string]any) (*PacketListener, error) {
+	return func(ctx context.Context, input map[string]any) (*PacketListener, error) {
+		return parseShadowsocksPacketListener(ctx, input, parsePE)
+	}
+}
+
+func parseShadowsocksTransport(ctx context.Context, config configyaml.ConfigNode, parseSE configyaml.ParseFunc[*Endpoint[transport.StreamConn]], parsePE configyaml.ParseFunc[*Endpoint[net.Conn]]) (*TransportPair, error) {
 	params, err := parseShadowsocksParams(config)
 	if err != nil {
 		return nil, err
@@ -80,7 +99,7 @@ func parseShadowsocksTransport(ctx context.Context, config ConfigNode, parseSE P
 	}, nil
 }
 
-func parseShadowsocksStreamDialer(ctx context.Context, config ConfigNode, parseSE ParseFunc[*Endpoint[transport.StreamConn]]) (*Dialer[transport.StreamConn], error) {
+func parseShadowsocksStreamDialer(ctx context.Context, config configyaml.ConfigNode, parseSE configyaml.ParseFunc[*Endpoint[transport.StreamConn]]) (*Dialer[transport.StreamConn], error) {
 	params, err := parseShadowsocksParams(config)
 	if err != nil {
 		return nil, err
@@ -101,7 +120,7 @@ func parseShadowsocksStreamDialer(ctx context.Context, config ConfigNode, parseS
 	return &Dialer[transport.StreamConn]{ConnectionProviderInfo{ConnTypeTunneled, se.FirstHop}, sd.DialStream}, nil
 }
 
-func parseShadowsocksPacketDialer(ctx context.Context, config ConfigNode, parsePE ParseFunc[*Endpoint[net.Conn]]) (*Dialer[net.Conn], error) {
+func parseShadowsocksPacketDialer(ctx context.Context, config configyaml.ConfigNode, parsePE configyaml.ParseFunc[*Endpoint[net.Conn]]) (*Dialer[net.Conn], error) {
 	pl, err := parseShadowsocksPacketListener(ctx, config, parsePE)
 	if err != nil {
 		return nil, err
@@ -110,7 +129,7 @@ func parseShadowsocksPacketDialer(ctx context.Context, config ConfigNode, parseP
 	return &Dialer[net.Conn]{ConnectionProviderInfo{ConnTypeTunneled, pl.FirstHop}, pd.DialPacket}, nil
 }
 
-func parseShadowsocksPacketListener(ctx context.Context, config ConfigNode, parsePE ParseFunc[*Endpoint[net.Conn]]) (*PacketListener, error) {
+func parseShadowsocksPacketListener(ctx context.Context, config configyaml.ConfigNode, parsePE configyaml.ParseFunc[*Endpoint[net.Conn]]) (*PacketListener, error) {
 	params, err := parseShadowsocksParams(config)
 	if err != nil {
 		return nil, err
@@ -130,12 +149,12 @@ func parseShadowsocksPacketListener(ctx context.Context, config ConfigNode, pars
 }
 
 type shadowsocksParams struct {
-	Endpoint      ConfigNode
+	Endpoint      configyaml.ConfigNode
 	Key           *shadowsocks.EncryptionKey
 	SaltGenerator shadowsocks.SaltGenerator
 }
 
-func parseShadowsocksConfig(node ConfigNode) (*ShadowsocksConfig, error) {
+func parseShadowsocksConfig(node configyaml.ConfigNode) (*ShadowsocksConfig, error) {
 	switch typed := node.(type) {
 	case string:
 		urlConfig, err := neturl.Parse(typed)
@@ -147,14 +166,14 @@ func parseShadowsocksConfig(node ConfigNode) (*ShadowsocksConfig, error) {
 		// If the map has an "endpoint" field, we assume the new format.
 		if _, ok := typed["endpoint"]; ok {
 			config := ShadowsocksConfig{}
-			if err := mapToAny(typed, &config); err != nil {
+			if err := configyaml.MapToAny(typed, &config); err != nil {
 				return nil, err
 			}
 			return &config, nil
 		} else if _, ok := typed["server"]; ok {
 			// Else, we assume the legacy format if "server" is present.
 			config := LegacyShadowsocksConfig{}
-			if err := mapToAny(typed, &config); err != nil {
+			if err := configyaml.MapToAny(typed, &config); err != nil {
 				return nil, err
 			}
 			return &ShadowsocksConfig{
@@ -171,7 +190,7 @@ func parseShadowsocksConfig(node ConfigNode) (*ShadowsocksConfig, error) {
 	}
 }
 
-func parseShadowsocksParams(node ConfigNode) (*shadowsocksParams, error) {
+func parseShadowsocksParams(node configyaml.ConfigNode) (*shadowsocksParams, error) {
 	config, err := parseShadowsocksConfig(node)
 	if err != nil {
 		return nil, err

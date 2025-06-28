@@ -26,18 +26,18 @@ import {ChildProcessHelper} from './process';
  * Checks whether proxy server is reachable, whether the network and proxy support UDP forwarding
  * and validates the proxy credentials.
  *
- * @param config The transport configuration in JSON.
+ * @param clientConfig The configuration to create the tunnel client.
  * @param debugMode Optional. Whether to forward logs to stdout. Defaults to false.
  * @returns A boolean indicating whether UDP forwarding is supported.
  * @throws Error if TCP connection cannot be established.
  * @throws ProcessTerminatedExitCodeError if tun2socks failed to run.
  */
 export function checkUDPConnectivity(
-  config: string,
+  clientConfig: string,
   debugMode: boolean = false
 ): Promise<boolean> {
   return checkUDPConnectivityWithArgs(
-    ['-transport', config, '-checkConnectivity'],
+    ['-client', clientConfig, '-checkConnectivity'],
     debugMode
   );
 }
@@ -47,7 +47,7 @@ export function checkUDPConnectivity(
  * Checks whether proxy server is reachable, whether the network and proxy support UDP forwarding
  * and validates the proxy credentials.
  *
- * @param config The transport configuration in JSON.
+ * @param clientConfig The configuration to create the tunnel client.
  * @param adapterIndex Optional. Whether to use a specific network adapter for testing.
  * @param debugMode Optional. Whether to forward logs to stdout. Defaults to false.
  * @returns A boolean indicating whether UDP forwarding is supported.
@@ -55,11 +55,11 @@ export function checkUDPConnectivity(
  * @throws ProcessTerminatedExitCodeError if tun2socks failed to run.
  */
 export function checkUDPConnectivityWindows(
-  config: string,
+  clientConfig: string,
   adapterIndex: string,
   debugMode: boolean = false
 ): Promise<boolean> {
-  const args = ['-transport', config, '-checkConnectivity'];
+  const args = ['-client', clientConfig, '-checkConnectivity'];
   if (adapterIndex) {
     args.push('-adapterIndex', adapterIndex);
   }

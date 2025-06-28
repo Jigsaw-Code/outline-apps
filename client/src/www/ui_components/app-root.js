@@ -102,7 +102,7 @@ export class AppRoot extends mixinBehaviors(
           flex-direction: column;
           font-family: var(--outline-font-family);
           color: var(--outline-text-color);
-          background-color: var(--outline-card-background);
+          background-color: var(--outline-background);
         }
 
         app-header {
@@ -151,18 +151,18 @@ export class AppRoot extends mixinBehaviors(
         iron-pages {
           display: flex;
           flex: 1;
-          background-color: var(--outline-card-background);
+          background-color: var(--outline-background);
           color: var(--outline-text-color);
         }
 
         appearance-view {
-          background-color: var(--outline-card-background);
+          background-color: var(--outline-background);
           color: var(--outline-text-color);
         }
 
         #drawer-nav {
           padding: 0;
-          background-color: var(--outline-card-background);
+          background-color: var(--outline-background);
           color: var(--outline-text-color);
         }
 
@@ -320,6 +320,7 @@ export class AppRoot extends mixinBehaviors(
           <servers-view
             name="home"
             id="serversView"
+            dark-mode="[[darkMode]]"
             servers="[[servers]]"
             localize="[[localize]]"
             should-show-access-key-wiki-link="[[useAltAccessMessage]]"
@@ -337,6 +338,7 @@ export class AppRoot extends mixinBehaviors(
           <about-view
             name="about"
             id="aboutView"
+            dark-mode="[[darkMode]]"
             localize="[[localize]]"
             root-path="[[rootPath]]"
             version="[[appVersion]]"
@@ -357,11 +359,10 @@ export class AppRoot extends mixinBehaviors(
             root-path="[[rootPath]]"
           ></licenses-view>
           <appearance-view
-            name="theme"
-            id="themeView"
+            name="appearance"
+            id="appearanceView"
+            selected-appearance="[[selectedAppearance]]"
             localize="[[localize]]"
-            selected-theme-id="[[currentTheme]]"
-            on-set-theme-requested="_onThemeRequested"
           ></appearance-view>
         </iron-pages>
       </app-header-layout>
@@ -371,7 +372,7 @@ export class AppRoot extends mixinBehaviors(
         id="drawer"
         show-quit="[[shouldShowQuitButton]]"
         data-collection-page-url="[[_computeSupportSiteUrl(language, 'https://support.google.com/outline/answer/15331222')]]"
-        dark-mode-enabled="[[darkModeEnabled]]"
+        show-appearance-view="[[showAppearanceView]]"
       ></root-navigation>
 
       <add-access-key-dialog
@@ -590,10 +591,14 @@ export class AppRoot extends mixinBehaviors(
         type: Boolean,
         computed: '_computeUseAltAccessMessage(language)',
       },
-      // Feature flag to control whether dark mode is enabled
-      // When set to true, the theme option will appear in the navigation menu
-      // and the app will respect system theme or user theme selection
-      darkModeEnabled: {
+      showAppearanceView: {
+        type: Boolean,
+        value: false,
+      },
+      selectedAppearance: {
+        type: String,
+      },
+      darkMode: {
         type: Boolean,
         value: false,
       },
@@ -650,11 +655,6 @@ export class AppRoot extends mixinBehaviors(
     } else {
       // Don't use cordova?.platformId, ReferenceError will be thrown
       this.platform = globalThis.cordova.platformId;
-    }
-
-    // Initialize current theme if theme manager is available
-    if (this.__themeManager) {
-      this.currentTheme = this.__themeManager.getThemePreference();
     }
   }
 
@@ -879,23 +879,6 @@ export class AppRoot extends mixinBehaviors(
     return (
       language === 'fa' && this.platform !== 'ios' && this.platform !== 'osx'
     );
-  }
-
-  // Handle theme selection from the theme view
-  _onThemeRequested(event) {
-    // Forward the theme change event to app.ts
-    this.dispatchEvent(
-      new globalThis.CustomEvent('SetThemeRequested', {
-        bubbles: true,
-        composed: true,
-        detail: event.detail,
-      })
-    );
-
-    // Update the current theme property to reflect the change
-    if (this.__themeManager) {
-      this.currentTheme = this.__themeManager.getThemePreference();
-    }
   }
 }
 globalThis.customElements.define(AppRoot.is, AppRoot);

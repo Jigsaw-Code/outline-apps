@@ -18,8 +18,7 @@ import {OperationTimedOut} from '@outline/infrastructure/timeout_promise';
 import {Clipboard} from './clipboard';
 import {EnvironmentVariables} from './environment';
 import * as config from './outline_server_repository/config';
-import {Settings, SettingsKey, ThemePreference} from './settings';
-import {ThemeManager} from './theme_manager';
+import {Settings, SettingsKey, Appearance} from './settings';
 import {Updater} from './updater';
 import {UrlInterceptor} from './url_interceptor';
 import {VpnInstaller} from './vpn_installer';
@@ -86,7 +85,12 @@ export class App {
   private localize: Localizer;
   private ignoredAccessKeys: {[accessKey: string]: boolean} = {};
   private serverConnectionChangeTimeouts: {[serverId: string]: boolean} = {};
-  private themeManager: ThemeManager;
+
+  // Feature flag to control whether dark mode is enabled
+  // When set to true, the theme option will appear in the navigation menu
+  // and the app will respect system theme or user theme selection
+  // TODO: remove once appearance translations are ready
+  private appearanceFeatureEnabled = false;
 
   constructor(
     private eventQueue: events.EventQueue,
@@ -105,23 +109,7 @@ export class App {
   ) {
     this.localize = this.rootEl.localize.bind(this.rootEl);
 
-    // Get dark mode feature flag from rootEl (app-root)
-    // Access it safely as a property of rootEl
-    let darkModeEnabled = false;
-    if (this.rootEl && 'darkModeEnabled' in this.rootEl) {
-      darkModeEnabled = Boolean(this.rootEl['darkModeEnabled']);
-    }
-
-    // Initialize ThemeManager with the feature flag
-    this.themeManager = new ThemeManager(settings, document, darkModeEnabled);
-
-    // Store ThemeManager reference on rootEl for access from the app-root component
-    if (this.rootEl && typeof this.rootEl === 'object') {
-      this.rootEl.__themeManager = this.themeManager;
-    }
-
     this.syncServersToUI();
-    this.syncConnectivityStateToServerCards();
     rootEl.appVersion = environmentVars.APP_VERSION;
     rootEl.appBuild = environmentVars.APP_BUILD_NUMBER;
     rootEl.errorReporter = this.errorReporter;
@@ -201,10 +189,20 @@ export class App {
       'SetLanguageRequested',
       this.setAppLanguage.bind(this)
     );
-    this.rootEl.addEventListener(
-      'SetThemeRequested',
-      this.setAppTheme.bind(this)
-    );
+
+    if (this.appearanceFeatureEnabled) {
+      this.rootEl.showAppearanceView = true;
+      this.setAppearance(
+        this.settings.get(SettingsKey.APPEARANCE) as Appearance
+      );
+      this.rootEl.addEventListener(
+        'SetAppearanceRequested',
+        (event: CustomEvent) => {
+          this.settings.set(SettingsKey.APPEARANCE, event.detail.appearance);
+          this.setAppearance(event.detail.appearance);
+        }
+      );
+    }
 
     // Register handlers for events published to our event queue.
     this.eventQueue.subscribe(
@@ -748,7 +746,7 @@ export class App {
     );
   }
 
-  private onServerRenamed(event: events.ServerForgotten) {
+  private onServerRenamed(event: events.ServerRenamed) {
     const server = event.server;
     console.debug('Server renamed');
     this.updateServerListItem(server.id, {name: server.name});
@@ -807,6 +805,7 @@ export class App {
     this.rootEl.servers = this.serverRepo
       .getAll()
       .map(this.makeServerListItem.bind(this));
+    this.syncConnectivityStateToServerCards();
   }
 
   private syncConnectivityStateToServerCards() {
@@ -880,8 +879,30 @@ export class App {
     return !('cordova' in window);
   }
 
-  private setAppTheme(event: CustomEvent) {
-    const theme = event.detail.themePreference;
-    this.themeManager.setThemePreference(theme as ThemePreference);
+  private setAppearance(appearance: Appearance) {
+    const documentClassList = window.document.documentElement.classList;
+    const isSystemDark = matchMedia('(prefers-color-scheme: dark)').matches;
+
+    let applyDarkTheme;
+
+    if (appearance === Appearance.DARK) {
+      applyDarkTheme = true;
+    } else if (appearance === Appearance.LIGHT) {
+      applyDarkTheme = false;
+    } else {
+      // guard against potentially corrupt value
+      appearance = Appearance.SYSTEM;
+      applyDarkTheme = isSystemDark;
+    }
+
+    if (applyDarkTheme) {
+      this.rootEl.darkMode = true;
+      documentClassList.add('dark');
+    } else {
+      this.rootEl.darkMode = false;
+      documentClassList.remove('dark');
+    }
+
+    this.rootEl.selectedAppearance = appearance;
   }
 }
