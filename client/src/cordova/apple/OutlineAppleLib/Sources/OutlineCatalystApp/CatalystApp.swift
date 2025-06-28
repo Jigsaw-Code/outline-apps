@@ -1,4 +1,4 @@
-// Copyright 2023 The Outline Authors
+// Copyright 2025 The Outline Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,10 +18,14 @@
     import CocoaLumberjackSwift
     import Foundation
     import OutlineNotification
-    import ServiceManagement
+    import NetworkExtension
+    import UIKit
+    import WebKit
 
     @objcMembers
     public class OutlineCatalystApp: NSObject {
+        private static var webViewReference: WKWebView?
+        
         public static func initApp() {
             DDLog.add(DDOSLogger.sharedInstance)
 
@@ -53,6 +57,48 @@
             { _ in
                 appKitController._AppKitBridge_setConnectionStatus(.disconnected)
             }
+            
+            // Handle connection toggle from tray menu
+            NotificationCenter.default.addObserver(forName: NSNotification.Name("toggleConnection"),
+                                                   object: nil,
+                                                   queue: nil)
+            { _ in
+                Task {
+                    // First, ensure the window is open
+                    NotificationCenter.default.post(name: NSNotification.Name("openApplication"), object: nil)
+                    
+                    // Wait a bit for the window to open
+                    try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+                    
+                    // Try to get the web view from our stored reference first
+                    var webView = webViewReference
+                    
+                    // If we don't have a stored reference, try to find it once
+                    if webView == nil {
+                        webView = getWebView()
+                        if webView != nil {
+                            webViewReference = webView
+                        }
+                    }
+                    
+                    if let webView = webView {
+                        // Let JS handle the connection
+                        let js = """
+                        window.dispatchEvent(new CustomEvent('connectFromMenu'));
+                        """
+                        try? await webView.evaluateJavaScript(js)
+                    }
+                }
+            }
+            
+            // Listen for web view lifecycle events to store the reference
+            NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification,
+                                                   object: nil,
+                                                   queue: nil)
+            { _ in
+                // Update web view reference when app becomes active
+                webViewReference = getWebView()
+            }
         }
     }
 
@@ -73,6 +119,42 @@
             }
         }
         preconditionFailure("[CatalystApp] Unable to load")
+    }
+
+    func isActiveSession(_ session: NEVPNConnection?) -> Bool {
+        let vpnStatus = session?.status
+        return vpnStatus == .connected || vpnStatus == .connecting || vpnStatus == .reasserting
+    }
+
+    // Helper function to get the web view
+    private func getWebView() -> WKWebView? {
+        DDLogInfo("[Outline] Searching for web view in scenes")
+        for scene in UIApplication.shared.connectedScenes {
+            if let windowScene = scene as? UIWindowScene {
+                for window in windowScene.windows {
+                    if let webView = findWebView(in: window) {
+                        return webView
+                    }
+                }
+            }
+        }
+        DDLogInfo("[Outline] No web view found in any scene")
+        return nil
+    }
+    
+    // Helper function to recursively search for web view
+    private func findWebView(in view: UIView) -> WKWebView? {
+        if let webView = view as? WKWebView {
+            return webView
+        }
+        
+        for subview in view.subviews {
+            if let webView = findWebView(in: subview) {
+                return webView
+            }
+        }
+        
+        return nil
     }
 
 #endif

@@ -1,4 +1,4 @@
-// Copyright 2023 The Outline Authors
+// Copyright 2025 The Outline Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import AppKit
+import WebKit
 
 @objc
 public enum ConnectionStatus: Int {
@@ -54,6 +55,16 @@ class StatusItemController: NSObject {
             bundle: Bundle(for: StatusItemController.self),
             comment: "Tray menu entry indicating no server is currently connected."
         )
+        static let connect = NSLocalizedString(
+            "connect",
+            bundle: Bundle(for: StatusItemController.self),
+            comment: "Tray menu entry to connect to the last connected server."
+        )
+        static let disconnect = NSLocalizedString(
+            "disconnect",
+            bundle: Bundle(for: StatusItemController.self),
+            comment: "Tray menu entry to disconnect from the current server."
+        )
     }
 
     override init() {
@@ -68,11 +79,23 @@ class StatusItemController: NSObject {
         openMenuItem.target = self
         menu.addItem(openMenuItem)
         menu.addItem(connectionStatusMenuItem)
+        
+        // Add Connect/Disconnect menu item
+        let toggleConnectionMenuItem = NSMenuItem(title: MenuTitle.connect, action: #selector(toggleConnection), keyEquivalent: "")
+        toggleConnectionMenuItem.target = self
+        menu.addItem(toggleConnectionMenuItem)
+        
         menu.addItem(NSMenuItem.separator())
         let closeMenuItem = NSMenuItem(title: MenuTitle.quit, action: #selector(closeApplication), keyEquivalent: "q")
         closeMenuItem.target = self
         menu.addItem(closeMenuItem)
         StatusItem.menu = menu
+
+        // Add observer for opening the app
+        NotificationCenter.default.addObserver(self,
+                                             selector: #selector(openApplication),
+                                             name: NSNotification.Name("openApplication"),
+                                             object: nil)
     }
 
     func setStatus(status: ConnectionStatus) {
@@ -84,21 +107,37 @@ class StatusItemController: NSObject {
 
         let connectionStatusTitle = isConnected ? MenuTitle.statusConnected : MenuTitle.statusDisconnected
         connectionStatusMenuItem.title = connectionStatusTitle
+        
+        // Update the Connect/Disconnect menu item title
+        if let menu = StatusItem.menu {
+            for item in menu.items {
+                if item.action == #selector(toggleConnection) {
+                    item.title = isConnected ? MenuTitle.disconnect : MenuTitle.connect
+                    break
+                }
+            }
+        }
     }
 
     @objc func openApplication(_: AnyObject?) {
         NSLog("[StatusItemController] Opening application")
         NSApp.activate(ignoringOtherApps: true)
-        guard let uiWindow = getUiWindow() else {
-            return
+        if let uiWindow = getUiWindow() {
+            DispatchQueue.main.async {
+                uiWindow.makeKeyAndOrderFront(nil)
+            }
         }
-        uiWindow.makeKeyAndOrderFront(self)
     }
 
     @objc func closeApplication(_: AnyObject?) {
         NSLog("[StatusItemController] Closing application")
         NotificationCenter.default.post(name: Notification.Name("appQuit"), object: nil)
         NSApplication.shared.terminate(self)
+    }
+
+    @objc func toggleConnection(_: AnyObject?) {
+        NSLog("[StatusItemController] Toggling connection")
+        NotificationCenter.default.post(name: Notification.Name("toggleConnection"), object: nil)
     }
 }
 
