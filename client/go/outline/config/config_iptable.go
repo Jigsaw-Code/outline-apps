@@ -20,13 +20,14 @@ import (
 	"fmt"
 	"net/netip"
 
+	"github.com/Jigsaw-Code/outline-apps/client/go/configyaml"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/iptable"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
 type ipTableEntryConfig struct {
-	IP     string     `yaml:"ip,omitempty"`
-	Dialer ConfigNode `yaml:"dialer"`
+	IP     string                `yaml:"ip,omitempty"`
+	Dialer configyaml.ConfigNode `yaml:"dialer"`
 }
 
 type ipTableRootConfig struct {
@@ -42,10 +43,10 @@ type parsedIPTableStreamEntry struct {
 func parseIPTableStreamDialer(
 	ctx context.Context,
 	configMap map[string]any,
-	subDialerParser ParseFunc[*Dialer[transport.StreamConn]],
+	subDialerParser configyaml.ParseFunc[*Dialer[transport.StreamConn]],
 ) (*iptable.IPTableStreamDialer, error) {
 	var rootCfg ipTableRootConfig
-	if err := mapToAny(configMap, &rootCfg); err != nil {
+	if err := configyaml.MapToAny(configMap, &rootCfg); err != nil {
 		return nil, fmt.Errorf("failed to map ip-table stream config: %w", err)
 	}
 

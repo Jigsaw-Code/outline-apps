@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/Jigsaw-Code/outline-apps/client/go/configyaml"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 	"github.com/stretchr/testify/require"
 )
@@ -27,8 +28,8 @@ import (
 // mockSubDialerParser returns a mock parsing function for our tests.
 // This function simulates the behavior of a real sub-dialer parser.
 // It looks for a "name" in the config and returns the corresponding mock dialer.
-func mockSubDialerParser(dialers map[string]transport.StreamDialer) ParseFunc[*Dialer[transport.StreamConn]] {
-	return func(ctx context.Context, config ConfigNode) (*Dialer[transport.StreamConn], error) {
+func mockSubDialerParser(dialers map[string]transport.StreamDialer) configyaml.ParseFunc[*Dialer[transport.StreamConn]] {
+	return func(ctx context.Context, config configyaml.ConfigNode) (*Dialer[transport.StreamConn], error) {
 		configMap, ok := config.(map[string]any)
 		if !ok {
 			return nil, errors.New("config is not a map[string]any")
@@ -154,7 +155,7 @@ func TestParseIPTableStreamDialer(t *testing.T) {
 	}
 
 	t.Run("Error - sub-dialer parser fails", func(t *testing.T) {
-		errorParser := func(ctx context.Context, configMap ConfigNode) (*Dialer[transport.StreamConn], error) {
+		errorParser := func(ctx context.Context, configMap configyaml.ConfigNode) (*Dialer[transport.StreamConn], error) {
 			return nil, errors.New("sub-parser failed")
 		}
 
