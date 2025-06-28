@@ -19,6 +19,7 @@ import (
 	"errors"
 	"net"
 
+	"github.com/Jigsaw-Code/outline-apps/client/go/configyaml"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/config"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
@@ -44,7 +45,7 @@ func (c *Client) ListenPacket(ctx context.Context) (net.PacketConn, error) {
 
 // ClientConfig is used to create the Client.
 type ClientConfig struct {
-	Transport config.ConfigNode
+	Transport configyaml.ConfigNode
 }
 
 // NewClientResult represents the result of [NewClientAndReturnError].

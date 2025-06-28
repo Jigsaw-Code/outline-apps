@@ -16,6 +16,7 @@ package config
 
 import (
 	"context"
+	"net"
 
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
@@ -61,4 +62,21 @@ type ConnectFunc[ConnType any] func(ctx context.Context) (ConnType, error)
 type Endpoint[ConnType any] struct {
 	ConnectionProviderInfo
 	Connect ConnectFunc[ConnType]
+}
+
+// TransportPair provides a StreamDialer and PacketListener, to use as the transport in a Tun2Socks VPN.
+type TransportPair struct {
+	StreamDialer   *Dialer[transport.StreamConn]
+	PacketListener *PacketListener
+}
+
+var _ transport.StreamDialer = (*TransportPair)(nil)
+var _ transport.PacketListener = (*TransportPair)(nil)
+
+func (t *TransportPair) DialStream(ctx context.Context, address string) (transport.StreamConn, error) {
+	return t.StreamDialer.Dial(ctx, address)
+}
+
+func (t *TransportPair) ListenPacket(ctx context.Context) (net.PacketConn, error) {
+	return t.PacketListener.ListenPacket(ctx)
 }
