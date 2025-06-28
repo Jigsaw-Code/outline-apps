@@ -16,7 +16,7 @@ package config
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"net"
 	"testing"
 
@@ -95,7 +95,7 @@ type mockStreamDialer struct {
 }
 
 func (d *mockStreamDialer) DialStream(ctx context.Context, addr string) (transport.StreamConn, error) {
-	return nil, errors.New("dialed by mock: " + d.name)
+	return nil, fmt.Errorf("dialer '%s' called for address '%s'", d.name, addr)
 }
 
 func TestParseIPTableTCP(t *testing.T) {
@@ -104,42 +104,39 @@ func TestParseIPTableTCP(t *testing.T) {
 		nil, // UDP transport not under test.
 	)
 
-	// Define our config with an ip-table for the TCP transport.
-	// We'll have one IP route to a "proxy" (which is a mock dialer)
-	// and a default route to "direct" (also a mock).
-	yamlConfig := `
-$type: tcpudp
+	yamlConfig := `$type: tcpudp
 tcp:
   $type: ip-table
   table:
     - ip: 192.168.1.128
-      dialer:
+      dialer: &shared
         $type: shadowsocks
-        config: "ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTp0ZXN0@example.com:443#proxy"
+        endpoint: example.com:1234
+        cipher: chacha20-ietf-poly1305
+        secret: SECRET
 
     - ip: 2001:db8:1:1::/64
-      dialer:
-        $type: shadowsocks
-        config: "ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTp0ZXN0@example.com:443#proxy"
+      dialer: *shared
 
-    - dialer:
-        $type: direct
-udp:
-	$type: direct
-`
-	transportPair, err := tp.Parse(context.Background(), yamlConfig)
+    - dialer: null
+udp: null`
+
+	node, err := configyaml.ParseConfigYAML(yamlConfig)
+	require.NoError(t, err)
+
+	transportPair, err := tp.Parse(context.Background(), node)
 	require.NoError(t, err)
 	require.NotNil(t, transportPair.StreamDialer, "StreamDialer should be configured")
 
 	_, err = transportPair.DialStream(context.Background(), "192.168.1.128:12345")
 	require.Error(t, err)
-	require.Contains(t, err.Error(), "dialed by mock: default-tcp", "Traffic to proxy IP should use the default mock dialer via shadowsocks config")
-
-	_, err = transportPair.DialStream(context.Background(), "8.8.8.8:53")
-	require.Error(t, err)
-	require.Contains(t, err.Error(), "dialed by mock: default-tcp", "Traffic to other IPs should use the default mock dialer")
+	require.Contains(t, err.Error(), "dialer 'default-tcp' called for address 'example.com:1234'", "Traffic to proxy IP should use the default mock dialer via shadowsocks config")
 
 	_, err = transportPair.DialStream(context.Background(), "[2001:db8:1:1::a:b]:443")
 	require.Error(t, err)
-	require.Contains(t, err.Error(), "dialed by mock: default-tcp", "Traffic to proxy IPv6 should use the default mock dialer")
+	require.Contains(t, err.Error(), "dialer 'default-tcp' called for address 'example.com:1234'", "Traffic to proxy IPv6 should use the default mock dialer")
+
+	_, err = transportPair.DialStream(context.Background(), "8.8.8.8:53")
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "dialer 'default-tcp' called for address '8.8.8.8:53'")
 }

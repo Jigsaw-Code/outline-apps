@@ -84,13 +84,13 @@ func TestParseIPTableStreamDialer(t *testing.T) {
 			},
 			checkDialer: func(t *testing.T, dialer transport.StreamDialer) {
 				_, err := dialer.DialStream(ctx, "192.168.1.100:1234")
-				require.ErrorContains(t, err, "dialed by mock: dialerA")
+				require.ErrorContains(t, err, "dialer 'dialerA' called for address '192.168.1.100:1234'")
 
 				_, err = dialer.DialStream(ctx, "10.0.0.1:5678")
-				require.ErrorContains(t, err, "dialed by mock: dialerB")
+				require.ErrorContains(t, err, "dialer 'dialerB' called for address '10.0.0.1:5678'")
 
 				_, err = dialer.DialStream(ctx, "8.8.8.8:53")
-				require.ErrorContains(t, err, "dialed by mock: default")
+				require.ErrorContains(t, err, "dialer 'default' called for address '8.8.8.8:53'")
 			},
 		},
 		{

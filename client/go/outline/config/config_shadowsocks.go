@@ -19,6 +19,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"log"
 	"net"
 	"net/url"
 	neturl "net/url"
@@ -159,6 +160,8 @@ func parseShadowsocksConfig(node configyaml.ConfigNode) (*ShadowsocksConfig, err
 	case string:
 		urlConfig, err := neturl.Parse(typed)
 		if err != nil {
+			log.Printf("Failed to parse URL from string config: %v", err)
+
 			return nil, fmt.Errorf("string config is not a valid URL")
 		}
 		return parseShadowsocksURL(*urlConfig)
