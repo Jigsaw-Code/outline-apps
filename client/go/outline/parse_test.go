@@ -136,15 +136,15 @@ transport:
     cipher: chacha20-ietf-poly1305
     secret: SECRET
   udp: *shared
-  session_report:
-	$type: sessionreport
-	url: https://your-callback-server.com/outline_callback
-	interval: 24h
-	enable_cookies: true`)
+report:
+  $type: sessionreport
+  url: https://your-callback-server.com/outline_callback
+  interval: 24h
+  enable_cookies: true`)
 
 	require.Nil(t, result.Error)
 	require.Equal(t,
-		"{\"firstHop\":\"example.com:80\",\"transport\":\"  $type: tcpudp\\n  tcp: \\u0026shared\\n    $type: shadowsocks\\n    endpoint: example.com:80\\n    cipher: chacha20-ietf-poly1305\\n    secret: SECRET\\n  udp: *shared\\n\",\"session_report\":\"  $type: sessionreport\\n  url: https://your-callback-server.com/outline_callback\\n  interval: 24h\\n  enable_cookies: true\\n\"}",
+		"{\"client\":\"{transport: {$type: tcpudp, tcp: {$type: shadowsocks, cipher: chacha20-ietf-poly1305, endpoint: \\\"example.com:80\\\", secret: SECRET}, udp: {$type: shadowsocks, cipher: chacha20-ietf-poly1305, endpoint: \\\"example.com:80\\\", secret: SECRET}}, report: {$type: sessionreport, enable_cookies: true, interval: 24h, url: https://your-callback-server.com/outline_callback}}\\n\",\"firstHop\":\"example.com:80\"}",
 		result.Value)
 }
 

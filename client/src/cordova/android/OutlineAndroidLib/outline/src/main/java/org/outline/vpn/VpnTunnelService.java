@@ -42,6 +42,7 @@ import java.util.Locale;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.io.File;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -206,8 +207,8 @@ public class VpnTunnelService extends VpnService {
   private synchronized PlatformError startTunnel(
           @NonNull final TunnelConfig config, boolean isAutoStart) {
     LOG.info(String.format(Locale.ROOT, "Starting tunnel %s for server %s", config.id, config.name));
-    if (config.id == null || config.transportConfig == null) {
-      return new PlatformError(Platerrors.InvalidConfig, "id and transportConfig are required");
+    if (config.id == null || config.clientConfig == null) {
+      return new PlatformError(Platerrors.InvalidConfig, "id and clientConfig are required");
     }
     // We check if the VPN is already running. This happens when a user connects to a server while
     // already connected to another one.
@@ -230,7 +231,7 @@ public class VpnTunnelService extends VpnService {
       this.tunFd = null;
     }
 
-    final NewClientResult clientResult = Outline.newClient(config.transportConfig, config.sessionConfig);
+    final NewClientResult clientResult = Outline.newClient(config.clientConfig);
     if (clientResult.getError() != null) {
       LOG.log(Level.WARNING, "Failed to create Outline Client", clientResult.getError());
       tearDownActiveTunnel();
@@ -302,6 +303,7 @@ public class VpnTunnelService extends VpnService {
       startNetworkConnectivityMonitor();
     }
 
+    this.outlineClient.setKeyId(config.id);
     // Start exchanging traffic between the local TUN device and the remote device.
     final ConnectOutlineTunnelResult result =
             Tun2socks.connectOutlineTunnel(this.tunFd.getFd(), this.outlineClient, remoteUdpForwardingEnabled);
@@ -309,7 +311,18 @@ public class VpnTunnelService extends VpnService {
       tearDownActiveTunnel();
       return result.getError();
     }
-    this.outlineClient.startReporting();
+    // Set the cookie file path for reporting
+    try {
+        File filesDir = this.getFilesDir();
+        if (filesDir != null) {
+            this.outlineClient.setCookieFilePath(filesDir.getAbsolutePath());
+            this.outlineClient.startReporting();
+        } else {
+            LOG.log(Level.SEVERE, "Cookies path is null");
+        }
+    } catch (Exception e) {
+        LOG.log(Level.SEVERE, "Failed to get the cookies path", e);
+    }
     this.remoteDevice = result.getTunnel();
     
     startForegroundWithNotification(config.name);
@@ -320,11 +333,10 @@ public class VpnTunnelService extends VpnService {
   @Nullable
   private synchronized DetailedJsonError stopTunnel(@NonNull final String tunnelId) {
     if (!isTunnelActive(tunnelId)) {
-        return Errors.toDetailedJsonError(new PlatformError(
-            Platerrors.InternalError,
-            "VPN profile is not active"));
+      return Errors.toDetailedJsonError(new PlatformError(
+          Platerrors.InternalError,
+          "VPN profile is not active"));
     }
-
     tearDownActiveTunnel();
     return null;
   }
@@ -487,7 +499,7 @@ public class VpnTunnelService extends VpnService {
       final TunnelConfig tunnelConfig = new TunnelConfig();
       tunnelConfig.id = tunnel.getString(TUNNEL_ID_KEY);
       tunnelConfig.name = tunnel.getString(TUNNEL_SERVER_NAME);
-      tunnelConfig.transportConfig = tunnel.getString(TUNNEL_CONFIG_KEY);
+      tunnelConfig.clientConfig = tunnel.getString(TUNNEL_CONFIG_KEY);
 
       // Start the service in the foreground as per Android 8+ background service execution limits.
       // Requires android.permission.FOREGROUND_SERVICE since Android P.
@@ -503,7 +515,7 @@ public class VpnTunnelService extends VpnService {
     JSONObject tunnel = new JSONObject();
     try {
       tunnel.put(TUNNEL_ID_KEY, config.id).put(
-        TUNNEL_CONFIG_KEY, config.transportConfig).put(TUNNEL_SERVER_NAME, config.name);
+        TUNNEL_CONFIG_KEY, config.clientConfig).put(TUNNEL_SERVER_NAME, config.name);
       tunnelStore.save(tunnel);
     } catch (JSONException e) {
       LOG.log(Level.SEVERE, "Failed to store JSON tunnel data", e);

@@ -25,7 +25,7 @@ func Test_NewTransport_SS_URL(t *testing.T) {
 	config := "transport: ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@example.com:4321/"
 	firstHop := "example.com:4321"
 
-	result := NewClient(config, "")
+	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
 	require.Equal(t, firstHop, result.Client.pl.FirstHop)
@@ -41,7 +41,7 @@ transport: {
 }`
 	firstHop := "example.com:4321"
 
-	result := NewClient(config, "")
+	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
 	require.Equal(t, firstHop, result.Client.pl.FirstHop)
@@ -58,7 +58,7 @@ transport: {
 }`
 	firstHop := "example.com:4321"
 
-	result := NewClient(config, "")
+	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
 	require.Equal(t, firstHop, result.Client.pl.FirstHop)
@@ -74,7 +74,7 @@ transport:
   password: SECRET`
 	firstHop := "example.com:4321"
 
-	result := NewClient(config, "")
+	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
 	require.Equal(t, firstHop, result.Client.pl.FirstHop)
@@ -90,7 +90,7 @@ transport:
   secret: SECRET`
 	firstHop := "example.com:4321"
 
-	result := NewClient(config, "")
+	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
 	require.Equal(t, firstHop, result.Client.pl.FirstHop)
@@ -107,7 +107,7 @@ transport:
   secret: SECRET`
 	firstHop := "entry.example.com:4321"
 
-	result := NewClient(config, "")
+	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
 	require.Equal(t, firstHop, result.Client.pl.FirstHop)
@@ -128,7 +128,7 @@ transport:
   secret: EXIT_SECRET`
 	firstHop := "entry.example.com:4321"
 
-	result := NewClient(config, "")
+	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
 	require.Equal(t, firstHop, result.Client.pl.FirstHop)
@@ -150,36 +150,39 @@ transport:
       cipher: chacha20-ietf-poly1305
       secret: SECRET`
 
-	result := NewClient(config, "")
+	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, "example.com:80", result.Client.sd.FirstHop)
 	require.Equal(t, "example.com:53", result.Client.pl.FirstHop)
 }
 
-func Test_SessionReport(t *testing.T) {
-	transportConfig := `
-$type: tcpudp
-tcp:
-    $type: shadowsocks
-    endpoint: example.com:80
-    cipher: chacha20-ietf-poly1305
-    secret: SECRET
-    prefix: "POST "
-udp:
-    $type: shadowsocks
-    endpoint: example.com:53
-    cipher: chacha20-ietf-poly1305
-    secret: SECRET`
-	sessionConfig := `
-$type: sessionreport
-url: https://your-callback-server.com/outline_callback
-interval: 24h
-enable_cookies: true`
+func Test_UsageReporting(t *testing.T) {
+	config := `
+transport:
+  $type: tcpudp
+  tcp:
+      $type: shadowsocks
+      endpoint: example.com:80
+      <<: &cipher
+        cipher: chacha20-ietf-poly1305
+        secret: SECRET
+      prefix: "POST "
+  udp:
+      $type: shadowsocks
+      endpoint: example.com:53
+      <<: *cipher
+report:
+  $type: sessionreport
+  url: https://your-callback-server.com/outline_callback
+  interval: 10s
+  enable_cookies: true`
 
-	client := NewClient(transportConfig, sessionConfig)
-	require.Nil(t, client.Error, "Got %v", client.Error)
-	require.NotNil(t, client.Client.ur, "UsageReporter is nil")
-	require.Equal(t, "https://your-callback-server.com/outline_callback", client.Client.ur.Url)
+	result := NewClient(config)
+	require.Nil(t, result.Error, "Got %v", result.Error)
+	require.Equal(t, "example.com:80", result.Client.sd.FirstHop)
+	require.Equal(t, "example.com:53", result.Client.pl.FirstHop)
+	require.NotNil(t, result.Client.Ur, "UsageReporter is nil")
+	require.Equal(t, "https://your-callback-server.com/outline_callback", result.Client.Ur.Url)
 }
 
 func Test_NewTransport_YAML_Reuse(t *testing.T) {
@@ -196,7 +199,7 @@ transport:
       prefix: "POST "`
 	firstHop := "example.com:4321"
 
-	result := NewClient(config, "")
+	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
 	require.Equal(t, firstHop, result.Client.pl.FirstHop)
@@ -218,7 +221,7 @@ transport:
       endpoint: example.com:53
       <<: *cipher`
 
-	result := NewClient(config, "")
+	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, "example.com:80", result.Client.sd.FirstHop)
 	require.Equal(t, "example.com:53", result.Client.pl.FirstHop)
@@ -226,7 +229,7 @@ transport:
 
 func Test_NewTransport_Unsupported(t *testing.T) {
 	config := `transport: {$type: unsupported}`
-	result := NewClient(config, "")
+	result := NewClient(config)
 	require.Error(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, "unsupported config", result.Error.Message)
 }
@@ -249,7 +252,7 @@ transport:
           url: https://entrypoint.cdn.example.com/udp`
 	firstHop := "entrypoint.cdn.example.com:443"
 
-	result := NewClient(config, "")
+	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
 	require.Equal(t, firstHop, result.Client.pl.FirstHop)
@@ -261,7 +264,7 @@ transport:
   $type: tcpudp
   tcp:
   udp:`
-	result := NewClient(config, "")
+	result := NewClient(config)
 	require.Error(t, result.Error, "Got %v", result.Error)
 	perr := &platerrors.PlatformError{}
 	require.ErrorAs(t, result.Error, &perr)
@@ -321,7 +324,7 @@ func Test_NewClientFromJSON_Errors(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewClient(tt.input, "")
+			got := NewClient(tt.input)
 			if got.Error == nil || got.Client != nil {
 				t.Errorf("NewClientFromJSON() expects an error, got = %v", got.Client)
 				return

@@ -27,6 +27,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/config"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 	"github.com/Jigsaw-Code/outline-sdk/transport/shadowsocks"
 )
@@ -37,12 +38,17 @@ var server *http.Server
 var clientCookie string
 
 func TestReport(t *testing.T) {
-	err := Report(&fakeSSClient{}, "https://example.com")
+	RemoveCookiesByKeyID("") // Remove all the cookies to have a clean slate for testing
+	ur := &config.UsageReporter{
+		Url:   "http://localhost:8080/",
+		KeyId: "random-key-id-fghij",
+	}
+	err := Report(ur)
 	if err != nil {
 		t.Fatalf("Report failed: %v", err)
 	}
 	// Report again to get the original cookie.
-	err = Report(&fakeSSClient{}, "https://example.com")
+	err = Report(ur)
 	if err != nil {
 		t.Fatalf("Report failed: %v", err)
 	}
@@ -164,23 +170,23 @@ var _ transport.StreamConn = (*fakeDuplexConn)(nil)
 
 func echoHandler(w http.ResponseWriter, r *http.Request) {
 	// Check if the cookie is already set
-	cookie, err := r.Cookie("client-id")
+	cookie, err := r.Cookie("client_id")
 	if err != nil {
 		// If the cookie is not set, generate a unique ID and set the cookie
 		if err == http.ErrNoCookie {
 			http.SetCookie(w, &http.Cookie{
-				Name:   "client-id",
-				Domain: "example.com",
+				Name:   "client_id",
+				Domain: "localhost",
 				Value:  uniqueClientID,
 				Path:   "/",
 			})
-			fmt.Printf("Set new client-id cookie: %s\n", uniqueClientID)
+			fmt.Printf("Set new client_id cookie: %s\n", uniqueClientID)
 		} else {
 			http.Error(w, "Failed to read cookie", http.StatusInternalServerError)
 			return
 		}
 	} else {
-		fmt.Printf("Existing client-id cookie: %s\n", cookie.Value)
+		fmt.Printf("Existing client_id cookie: %s\n", cookie.Value)
 		clientCookie = cookie.Value
 		http.SetCookie(w, cookie)
 	}

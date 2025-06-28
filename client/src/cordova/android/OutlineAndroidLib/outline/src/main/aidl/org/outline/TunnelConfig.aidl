@@ -17,6 +17,5 @@ package org.outline;
 parcelable TunnelConfig {
   String id;
   String name;
-  String transportConfig;
-  String sessionConfig;
+  String clientConfig;
 }

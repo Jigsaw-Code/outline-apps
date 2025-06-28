@@ -31,7 +31,7 @@ func newTestTransportProvider() *configyaml.TypeParser[*TransportPair] {
 	return NewDefaultTransportProvider(tcpDialer, udpDialer)
 }
 
-func newTestUsageReportProvider() *TypeParser[*UsageReporter] {
+func newTestUsageReportProvider() *configyaml.TypeParser[*UsageReporter] {
 	return NewUsageReportProvider()
 }
 
@@ -94,9 +94,9 @@ func TestRegisterParseURLInQuotes(t *testing.T) {
 }
 
 func TestRegisterUsageReporting(t *testing.T) {
-	provider := newTestUsageReporProvider()
+	provider := newTestUsageReportProvider()
 
-	node, err := ParseConfigYAML(`
+	node, err := configyaml.ParseConfigYAML(`
   $type: sessionreport
   interval: 1h
   url: https://example.com/report`)

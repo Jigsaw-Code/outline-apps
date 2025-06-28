@@ -121,27 +121,6 @@ Note that Websockets is not yet supported on Windows. In order to have a single 
 
 ```yaml
 transport:
-  $type: first-supported
-  options: 
-    - $type: tcpudp
-      tcp: &shared
-      $type: shadowsocks
-      endpoint: example.com:80
-      cipher: chacha20-ietf-poly1305
-      secret: SECRET
-
-      udp: *shared
-
-      session_report:
-      $type: sessionreport
-      url: https://your-callback-server.com/outline_callback
-      interval: 24h
-      enable_cookies: true`)
-
-    tcpudp with session 
-    - $type: tcpudp without session
-      <<: &tcpudp
-
   $type: tcpudp
   tcp:
     $type: shadowsocks
@@ -164,6 +143,28 @@ transport:
         - ss.example.com:4321
     cipher: chacha20-ietf-poly1305
     secret: SS_SECRET
+```
+
+In case the count of users is needed to have an exact estimate of the daily/monthly users, a reporting server can be used for that. The reporting server gives a cookie to the Outline client which is used by the client in consequent connections so that a user is not counted twice. This feature is currently only supported in Android, but the reporing server can extrapolate the number of users based on the cookie support of its users.
+```yaml
+transport:
+  $type: tcpudp
+
+  tcp:
+    <<: &shared
+      $type: shadowsocks
+      endpoint: ss.example.com:4321
+      cipher: chacha20-ietf-poly1305
+      secret: SECRET
+    prefix: "POST "
+
+  udp: *shared
+
+report:
+  $type: sessionreport
+  url: https://your-callback-server.com/outline_callback
+  interval: 24h
+  enable_cookies: true
 ```
 
 ## Tunnels

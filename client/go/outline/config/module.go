@@ -112,8 +112,8 @@ func NewDefaultTransportProvider(tcpDialer transport.StreamDialer, udpDialer tra
 	return transports
 }
 
-func NewUsageReportProvider() *TypeParser[*UsageReporter] {
-	usageReporting := NewTypeParser(func(ctx context.Context, input ConfigNode) (*UsageReporter, error) {
+func NewUsageReportProvider() *configyaml.TypeParser[*UsageReporter] {
+	usageReporting := newTypeParser(func(ctx context.Context, input configyaml.ConfigNode) (*UsageReporter, error) {
 		switch input.(type) {
 		// An absent config is acceptable.
 		case nil:

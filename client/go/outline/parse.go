@@ -123,20 +123,6 @@ func doParseTunnelConfig(input string) *InvokeMethodResult {
 		}
 	}
 
-	// 	if hasKey(yamlValue, "session_report") {
-	// 	// Extract usage report config as an opaque string.
-	// 	sessionReportConfigBytes, err := yaml.Marshal(tunnelConfig.SessionReport)
-	// 	if err != nil {
-	// 		return &InvokeMethodResult{
-	// 			Error: &platerrors.PlatformError{
-	// 				Code:    platerrors.InvalidConfig,
-	// 				Message: fmt.Sprintf("failed to normalize session config: %s", err),
-	// 			},
-	// 		}
-	// 	}
-	// 	sessionReportConfigText = string(sessionReportConfigBytes)
-	// }
-
 	result := NewClient(string(clientConfigBytes))
 	if result.Error != nil {
 		return &InvokeMethodResult{

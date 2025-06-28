@@ -18,12 +18,16 @@ import (
 	"context"
 	"fmt"
 	"time"
+
+	"github.com/Jigsaw-Code/outline-apps/client/go/configyaml"
+
 )
 
 type UsageReporter struct {
 	Interval      time.Duration
 	Url           string
 	EnableCookies bool
+	KeyId        string
 }
 
 // UsageReporterConfig is the format for the Usage Reporter config.
@@ -35,13 +39,16 @@ type UsageReporterConfig struct {
 
 func parseUsageReporterConfig(ctx context.Context, configMap map[string]any) (*UsageReporter, error) {
 	var config UsageReporterConfig
-	if err := mapToAny(configMap, &config); err != nil {
+	if err := configyaml.MapToAny(configMap, &config); err != nil {
 		return nil, fmt.Errorf("invalid config format: %w", err)
 	}
 
 	duration, err := time.ParseDuration(config.Interval)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse interval: %w", err)
+	}
+	if duration <= 0 {
+		return nil, fmt.Errorf("tunnel usage interval must be greater than 0")
 	}
 
 	return &UsageReporter{

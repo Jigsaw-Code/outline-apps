@@ -7,7 +7,7 @@
 //      http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS BASIS,
+// distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
@@ -17,7 +17,6 @@ package outline
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/configyaml"
@@ -49,7 +48,8 @@ func (c *Client) ListenPacket(ctx context.Context) (net.PacketConn, error) {
 
 // ClientConfig is used to create the Client.
 type ClientConfig struct {
-	Transport configyaml.ConfigNode
+	Transport       configyaml.ConfigNode
+	ReportingConfig configyaml.ConfigNode `yaml:"report,omitempty"`
 }
 
 // NewClientResult represents the result of [NewClientAndReturnError].
@@ -77,18 +77,18 @@ func (c *Client) StopReporting() {
 	}
 }
 
-// NewClient creates a new Outline client from a configuration string.
-func NewClient(clientConfig string, sessionConfig string) *NewClientResult {
+func NewClient(clientConfig string) *NewClientResult {
 	tcpDialer := transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
 	udpDialer := transport.UDPDialer{}
-	client, err := NewClientWithBaseDialers(clientConfig, sessionConfig, &tcpDialer, &udpDialer)
+	client, err := NewClientWithBaseDialers(clientConfig, &tcpDialer, &udpDialer)
 	if err != nil {
 		return &NewClientResult{Error: platerrors.ToPlatformError(err)}
 	}
 	return &NewClientResult{Client: client}
 }
 
-func NewClientWithBaseDialers(clientConfigText string, sessionConfig string, tcpDialer transport.StreamDialer, udpDialer transport.PacketDialer) (*Client, error) {
+// NewClientWithBaseDialers creates a new Client with the given clientConfig and base dialers.
+func NewClientWithBaseDialers(clientConfigText string, tcpDialer transport.StreamDialer, udpDialer transport.PacketDialer) (*Client, error) {
 	var clientConfig ClientConfig
 	err := yaml.Unmarshal([]byte(clientConfigText), &clientConfig)
 	if err != nil {
@@ -129,32 +129,42 @@ func NewClientWithBaseDialers(clientConfigText string, sessionConfig string, tcp
 			Message: "transport must tunnel UDP traffic",
 		}
 	}
-
-	usageReportYAML, err := config.ParseConfigYAML(sessionConfig)
-	if err != nil {
-		return nil, &platerrors.PlatformError{
-			Code:    platerrors.InvalidConfig,
-			Message: "client config is not valid YAML",
-			Cause:   platerrors.ToPlatformError(err),
-		}
-	}
-	usageReporter, err := config.NewUsageReportProvider().Parse(context.Background(), usageReportYAML)
-	if err != nil {
-		if errors.Is(err, errors.ErrUnsupported) {
-			return nil, &platerrors.PlatformError{
-				Code:    platerrors.InvalidConfig,
-				Message: "unsupported client config",
-				Cause:   platerrors.ToPlatformError(err),
-			}
-		} else {
-			return nil, &platerrors.PlatformError{
-				Code:    platerrors.InvalidConfig,
-				Message: "failed to create usage report",
-				Cause:   platerrors.ToPlatformError(err),
+	var usageReporter *config.UsageReporter
+	if clientConfig.ReportingConfig != nil {
+		usageReporter, err = config.NewUsageReportProvider().Parse(context.Background(), clientConfig.ReportingConfig)
+		if err != nil {
+			if errors.Is(err, errors.ErrUnsupported) {
+				return nil, &platerrors.PlatformError{
+					Code:    platerrors.InvalidConfig,
+					Message: "unsupported client config",
+					Cause:   platerrors.ToPlatformError(err),
+				}
+			} else {
+				return nil, &platerrors.PlatformError{
+					Code:    platerrors.InvalidConfig,
+					Message: "failed to create usage report",
+					Cause:   platerrors.ToPlatformError(err),
+				}
 			}
 		}
 	}
-	fmt.Println("usageReporter", usageReporter)
 
 	return &Client{sd: transportPair.StreamDialer, pl: transportPair.PacketListener, ur: usageReporter}, nil
+}
+
+// Get the reporting server
+func (c *Client) Getur() *config.UsageReporter {
+	return c.ur
+}
+
+// Set the Key ID (Server UUID)
+func (c *Client) SetKeyId(keyId string) {
+	if c.ur != nil {
+		c.ur.KeyId = keyId
+	}
+}
+
+// This interface can be used by various other modules to call the Go code set the cookie file path.
+func (c *Client) SetCookieFilePath(path string) {
+	go reporting.SetCookieFilePath(path)
 }
