@@ -22,6 +22,7 @@ import (
 	"net/url"
 	"runtime"
 
+	"github.com/Jigsaw-Code/outline-apps/client/go/configyaml"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 	"github.com/Jigsaw-Code/outline-sdk/x/websocket"
 )
@@ -31,19 +32,23 @@ type WebsocketEndpointConfig struct {
 	Endpoint any
 }
 
-func parseWebsocketStreamEndpoint(ctx context.Context, configMap map[string]any, parseSE ParseFunc[*Endpoint[transport.StreamConn]]) (*Endpoint[transport.StreamConn], error) {
-	return parseWebsocketEndpoint[transport.StreamConn](ctx, configMap, parseSE, websocket.NewStreamEndpoint)
+func NewWebsocketStreamEndpointSubParser(parseSE configyaml.ParseFunc[*Endpoint[transport.StreamConn]]) func(ctx context.Context, input map[string]any) (*Endpoint[transport.StreamConn], error) {
+	return func(ctx context.Context, input map[string]any) (*Endpoint[transport.StreamConn], error) {
+		return parseWebsocketEndpoint(ctx, input, parseSE, websocket.NewStreamEndpoint)
+	}
 }
 
-func parseWebsocketPacketEndpoint(ctx context.Context, configMap map[string]any, parseSE ParseFunc[*Endpoint[transport.StreamConn]]) (*Endpoint[net.Conn], error) {
-	return parseWebsocketEndpoint[net.Conn](ctx, configMap, parseSE, websocket.NewPacketEndpoint)
+func NewWebsocketPacketEndpointSubParser(parseSE configyaml.ParseFunc[*Endpoint[transport.StreamConn]]) func(ctx context.Context, input map[string]any) (*Endpoint[net.Conn], error) {
+	return func(ctx context.Context, input map[string]any) (*Endpoint[net.Conn], error) {
+		return parseWebsocketEndpoint(ctx, input, parseSE, websocket.NewPacketEndpoint)
+	}
 }
 
 type newWebsocketEndpoint[ConnType any] func(urlStr string, se transport.StreamEndpoint, opts ...websocket.Option) (func(context.Context) (ConnType, error), error)
 
-func parseWebsocketEndpoint[ConnType any](ctx context.Context, configMap map[string]any, parseSE ParseFunc[*Endpoint[transport.StreamConn]], newWE newWebsocketEndpoint[ConnType]) (*Endpoint[ConnType], error) {
+func parseWebsocketEndpoint[ConnType any](ctx context.Context, configMap map[string]any, parseSE configyaml.ParseFunc[*Endpoint[transport.StreamConn]], newWE newWebsocketEndpoint[ConnType]) (*Endpoint[ConnType], error) {
 	var config WebsocketEndpointConfig
-	if err := mapToAny(configMap, &config); err != nil {
+	if err := configyaml.MapToAny(configMap, &config); err != nil {
 		return nil, fmt.Errorf("invalid config format: %w", err)
 	}
 

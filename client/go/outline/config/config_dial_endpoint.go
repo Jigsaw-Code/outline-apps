@@ -22,6 +22,8 @@ import (
 	"runtime"
 	"strconv"
 	"testing"
+
+	"github.com/Jigsaw-Code/outline-apps/client/go/configyaml"
 )
 
 // DialEndpointConfig is the format for the Dial Endpoint config.
@@ -30,7 +32,13 @@ type DialEndpointConfig struct {
 	Dialer  any
 }
 
-func parseDirectDialerEndpoint[ConnType any](ctx context.Context, config any, newDialer ParseFunc[*Dialer[ConnType]]) (*Endpoint[ConnType], error) {
+func NewDialEndpointSubParser[ConnType any](parse configyaml.ParseFunc[*Dialer[ConnType]]) func(ctx context.Context, input map[string]any) (*Endpoint[ConnType], error) {
+	return func(ctx context.Context, input map[string]any) (*Endpoint[ConnType], error) {
+		return parseDirectDialerEndpoint(ctx, input, parse)
+	}
+}
+
+func parseDirectDialerEndpoint[ConnType any](ctx context.Context, config any, newDialer configyaml.ParseFunc[*Dialer[ConnType]]) (*Endpoint[ConnType], error) {
 	if config == nil {
 		return nil, errors.New("endpoint config cannot be nil")
 	}
@@ -69,7 +77,7 @@ func parseDirectDialerEndpoint[ConnType any](ctx context.Context, config any, ne
 	return endpoint, nil
 }
 
-func parseEndpointConfig(node ConfigNode) (*DialEndpointConfig, error) {
+func parseEndpointConfig(node configyaml.ConfigNode) (*DialEndpointConfig, error) {
 	config, err := toDialEndpointConfig(node)
 	if err != nil {
 		return nil, err
@@ -94,7 +102,7 @@ func parseEndpointConfig(node ConfigNode) (*DialEndpointConfig, error) {
 	return config, err
 }
 
-func toDialEndpointConfig(node ConfigNode) (*DialEndpointConfig, error) {
+func toDialEndpointConfig(node configyaml.ConfigNode) (*DialEndpointConfig, error) {
 	switch typed := node.(type) {
 	case string:
 		return &DialEndpointConfig{Address: typed}, nil
@@ -102,7 +110,7 @@ func toDialEndpointConfig(node ConfigNode) (*DialEndpointConfig, error) {
 	case map[string]any:
 		// TODO: Make it type-based
 		var config DialEndpointConfig
-		if err := mapToAny(typed, &config); err != nil {
+		if err := configyaml.MapToAny(typed, &config); err != nil {
 			return nil, err
 		}
 		return &config, nil
