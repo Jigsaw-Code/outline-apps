@@ -129,7 +129,7 @@ func NewClientWithBaseDialers(clientConfigText string, sessionConfig string, tcp
 		}
 	}
 
-	usageReportYAML, err := config.ParseConfigYAML(sessionConfig)
+	usageReportYAML, err := configyaml.ParseConfigYAML(sessionConfig)
 	if err != nil {
 		return nil, &platerrors.PlatformError{
 			Code:    platerrors.InvalidConfig,

@@ -18,6 +18,9 @@ import (
 	"context"
 	"fmt"
 	"time"
+
+	"github.com/Jigsaw-Code/outline-apps/client/go/configyaml"
+
 )
 
 type UsageReporter struct {
@@ -35,7 +38,7 @@ type UsageReporterConfig struct {
 
 func parseUsageReporterConfig(ctx context.Context, configMap map[string]any) (*UsageReporter, error) {
 	var config UsageReporterConfig
-	if err := mapToAny(configMap, &config); err != nil {
+	if err := configyaml.MapToAny(configMap, &config); err != nil {
 		return nil, fmt.Errorf("invalid config format: %w", err)
 	}
 
