@@ -76,18 +76,31 @@ func (c *Client) StopReporting() {
 	}
 }
 
-// NewClient creates a new Outline client from a configuration string.
-func NewClient(clientConfig string, sessionConfig string) *NewClientResult {
+// NewClient creates a new Client with the given clientConfig.
+func NewClient(clientConfig string) *NewClientResult {
+	return NewClientWithSession(clientConfig, "")
+}
+
+// NewClientWithSession creates a new Client with the given clientConfig and sessionConfig.
+// A variadic function could be used to combine this function with NewClient, but it could
+// not be used in the Java code, so we keep it separate.
+func NewClientWithSession(clientConfig string, sessionConfig string) *NewClientResult {
 	tcpDialer := transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
 	udpDialer := transport.UDPDialer{}
-	client, err := NewClientWithBaseDialers(clientConfig, sessionConfig, &tcpDialer, &udpDialer)
+	client, err := NewClientFull(clientConfig, sessionConfig, &tcpDialer, &udpDialer)
 	if err != nil {
 		return &NewClientResult{Error: platerrors.ToPlatformError(err)}
 	}
 	return &NewClientResult{Client: client}
 }
 
-func NewClientWithBaseDialers(clientConfigText string, sessionConfig string, tcpDialer transport.StreamDialer, udpDialer transport.PacketDialer) (*Client, error) {
+// NewClientWithBaseDialers creates a new Client with the given clientConfig and base dialers.
+func NewClientWithBaseDialers(clientConfigText string, tcpDialer transport.StreamDialer, udpDialer transport.PacketDialer) (*Client, error) {
+	return NewClientFull(clientConfigText, "", tcpDialer, udpDialer)
+}
+
+// The main function with all arguments:
+func NewClientFull(clientConfigText string, sessionConfig string, tcpDialer transport.StreamDialer, udpDialer transport.PacketDialer) (*Client, error) {
 	var clientConfig ClientConfig
 	err := yaml.Unmarshal([]byte(clientConfigText), &clientConfig)
 	if err != nil {
@@ -129,27 +142,30 @@ func NewClientWithBaseDialers(clientConfigText string, sessionConfig string, tcp
 		}
 	}
 
-	usageReportYAML, err := configyaml.ParseConfigYAML(sessionConfig)
-	if err != nil {
-		return nil, &platerrors.PlatformError{
-			Code:    platerrors.InvalidConfig,
-			Message: "client config is not valid YAML",
-			Cause:   platerrors.ToPlatformError(err),
-		}
-	}
-	usageReporter, err := config.NewUsageReportProvider().Parse(context.Background(), usageReportYAML)
-	if err != nil {
-		if errors.Is(err, errors.ErrUnsupported) {
+	var usageReporter *config.UsageReporter
+	if sessionConfig != "" {
+		usageReportYAML, err := configyaml.ParseConfigYAML(sessionConfig)
+		if err != nil {
 			return nil, &platerrors.PlatformError{
 				Code:    platerrors.InvalidConfig,
-				Message: "unsupported client config",
+				Message: "client config is not valid YAML",
 				Cause:   platerrors.ToPlatformError(err),
 			}
-		} else {
-			return nil, &platerrors.PlatformError{
-				Code:    platerrors.InvalidConfig,
-				Message: "failed to create usage report",
-				Cause:   platerrors.ToPlatformError(err),
+		}
+		usageReporter, err = config.NewUsageReportProvider().Parse(context.Background(), usageReportYAML)
+		if err != nil {
+			if errors.Is(err, errors.ErrUnsupported) {
+				return nil, &platerrors.PlatformError{
+					Code:    platerrors.InvalidConfig,
+					Message: "unsupported client config",
+					Cause:   platerrors.ToPlatformError(err),
+				}
+			} else {
+				return nil, &platerrors.PlatformError{
+					Code:    platerrors.InvalidConfig,
+					Message: "failed to create usage report",
+					Cause:   platerrors.ToPlatformError(err),
+				}
 			}
 		}
 	}
