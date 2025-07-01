@@ -27,6 +27,7 @@ type UsageReporter struct {
 	Interval      time.Duration
 	Url           string
 	EnableCookies bool
+	KeyId        string
 }
 
 // UsageReporterConfig is the format for the Usage Reporter config.

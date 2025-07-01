@@ -302,6 +302,7 @@ public class VpnTunnelService extends VpnService {
       startNetworkConnectivityMonitor();
     }
 
+    this.outlineClient.setKeyId(config.id);
     // Start exchanging traffic between the local TUN device and the remote device.
     final ConnectOutlineTunnelResult result =
             Tun2socks.connectOutlineTunnel(this.tunFd.getFd(), this.outlineClient, remoteUdpForwardingEnabled);

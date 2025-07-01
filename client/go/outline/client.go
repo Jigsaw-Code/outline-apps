@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"net"
+	"log/slog"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/configyaml"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/config"
@@ -34,7 +35,7 @@ import (
 type Client struct {
 	sd     *config.Dialer[transport.StreamConn]
 	pl     *config.PacketListener
-	ur     *config.UsageReporter
+	Ur     *config.UsageReporter
 	cancel context.CancelFunc // Used to stop reporting
 }
 
@@ -60,13 +61,13 @@ type NewClientResult struct {
 }
 
 func (c *Client) StartReporting() {
-	if c.ur == nil {
+	if c.Ur == nil {
 		return
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	c.cancel = cancel // Store the cancel function to stop reporting later
 
-	go reporting.StartReporting(ctx, c, c.ur)
+	go reporting.StartReporting(ctx, c, c.Ur)
 }
 
 func (c *Client) StopReporting() {
@@ -141,7 +142,6 @@ func NewClientFull(clientConfigText string, sessionConfig string, tcpDialer tran
 			Message: "transport must tunnel UDP traffic",
 		}
 	}
-
 	var usageReporter *config.UsageReporter
 	if sessionConfig != "" {
 		usageReportYAML, err := configyaml.ParseConfigYAML(sessionConfig)
@@ -170,5 +170,17 @@ func NewClientFull(clientConfigText string, sessionConfig string, tcpDialer tran
 		}
 	}
 
-	return &Client{sd: transportPair.StreamDialer, pl: transportPair.PacketListener, ur: usageReporter}, nil
+	return &Client{sd: transportPair.StreamDialer, pl: transportPair.PacketListener, Ur: usageReporter}, nil
+}
+
+// Get the reporting server
+func (c *Client) GetUr() *config.UsageReporter {
+   return c.Ur
+}
+
+// Set the Key ID (Server UUID)
+func (c *Client) SetKeyId(keyId string) {
+   if c.Ur != nil {
+       c.Ur.KeyId = keyId
+   }
 }
