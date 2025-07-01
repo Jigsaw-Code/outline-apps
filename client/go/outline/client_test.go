@@ -156,6 +156,32 @@ transport:
 	require.Equal(t, "example.com:53", result.Client.pl.FirstHop)
 }
 
+func Test_SessionReport(t *testing.T) {
+	transportConfig := `
+$type: tcpudp
+tcp:
+    $type: shadowsocks
+    endpoint: example.com:80
+    cipher: chacha20-ietf-poly1305
+    secret: SECRET
+    prefix: "POST "
+udp:
+    $type: shadowsocks
+    endpoint: example.com:53
+    cipher: chacha20-ietf-poly1305
+    secret: SECRET`
+	sessionConfig := `
+$type: sessionreport
+url: https://your-callback-server.com/outline_callback
+interval: 24h
+enable_cookies: true`
+
+	client := NewClientWithSession(transportConfig, sessionConfig)
+	require.Nil(t, client.Error, "Got %v", client.Error)
+	require.NotNil(t, client.Client.ur, "UsageReporter is nil")
+	require.Equal(t, "https://your-callback-server.com/outline_callback", client.Client.ur.Url)
+}
+
 func Test_NewTransport_YAML_Reuse(t *testing.T) {
 	config := `
 transport:
@@ -295,7 +321,7 @@ func Test_NewClientFromJSON_Errors(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewClient(tt.input)
+			got := NewClient(tt.input, "")
 			if got.Error == nil || got.Client != nil {
 				t.Errorf("NewClientFromJSON() expects an error, got = %v", got.Client)
 				return

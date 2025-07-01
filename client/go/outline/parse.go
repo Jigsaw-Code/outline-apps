@@ -47,6 +47,7 @@ type ProviderTunnelConfig struct {
 type firstHopAndTunnelConfigJSON struct {
 	Client   string `json:"client"`
 	FirstHop string `json:"firstHop"`
+	SessionReport string `json:"session_report"`
 }
 
 func hasKey[K comparable, V any](m map[K]V, key K) bool {
@@ -63,11 +64,11 @@ func doParseTunnelConfig(input string) *InvokeMethodResult {
 	// - Legacy Shadowsocks JSON (parsed as YAML)
 	// - Advanced YAML format
 	var stringValue string
+	var yamlValue map[string]any
 	if err := yaml.Unmarshal([]byte(input), &stringValue); err == nil {
 		// Legacy URL format. Input is the transport config.
 		clientConfig.Transport = stringValue
 	} else {
-		var yamlValue map[string]any
 		if err := yaml.Unmarshal([]byte(input), &yamlValue); err != nil {
 			return &InvokeMethodResult{
 				Error: &platerrors.PlatformError{
@@ -121,7 +122,23 @@ func doParseTunnelConfig(input string) *InvokeMethodResult {
 		}
 	}
 
-	result := NewClient(string(clientConfigBytes))
+	var result *NewClientResult
+	if hasKey(yamlValue, "session_report") {
+		// Extract usage report config as an opaque string.
+		sessionReportConfigBytes, err := yaml.Marshal(providerConfig.Session_Report)
+		if err != nil {
+			return &InvokeMethodResult{
+				Error: &platerrors.PlatformError{
+					Code:    platerrors.InvalidConfig,
+					Message: fmt.Sprintf("failed to normalize session config: %s", err),
+				},
+			}
+		}
+		sessionReportConfigText := string(sessionReportConfigBytes)
+		result = NewClientWithSession(string(clientConfigBytes), sessionReportConfigText)
+	} else {
+		result = NewClient(string(clientConfigBytes))
+	}
 	if result.Error != nil {
 		return &InvokeMethodResult{
 			Error: result.Error,
