@@ -655,6 +655,38 @@
       }
     }
   },
+  "splitTunnelingSettingButtonLabel": {
+    "description": "Label for a button or link in settings to open the app exclusion/split tunneling configuration dialog.",
+    "message": "App Exclusion"
+  },
+  "splitTunnelingDialogTitle": {
+    "description": "Title for the dialog where users can select which apps should use the VPN.",
+    "message": "App Exclusion"
+  },
+  "splitTunnelingDialogSaveButton": {
+    "description": "Text for the 'Save' button in the app exclusion dialog.",
+    "message": "Save"
+  },
+  "splitTunnelingDialogCancelButton": {
+    "description": "Text for the 'Cancel' button in the app exclusion dialog.",
+    "message": "Cancel"
+  },
+  "splitTunnelingDialogDescription": {
+    "description": "Descriptive text explaining how the app exclusion (split tunneling) feature works.",
+    "message": "When App Exclusion is on, only apps selected here will use the VPN. All other apps will bypass the VPN. If no apps are selected, all apps will use the VPN."
+  },
+  "splitTunnelingDialogAllAppsLabel": {
+    "description": "A label shown above the list of applications in the app exclusion dialog.",
+    "message": "All installed apps"
+  },
+  "splitTunnelingFeatureNotSupported": {
+    "description": "Message shown if the app exclusion feature is not supported on the current device/platform.",
+    "message": "App exclusion is not supported on this device."
+  },
+  "splitTunnelingNoAppsFound": {
+    "description": "Message shown in the app exclusion dialog if no configurable apps are found on the device.",
+    "message": "No apps found to configure."
+  },
   "yes": {
     "description": "Affirmative answer to a form question.",
     "message": "Yes"

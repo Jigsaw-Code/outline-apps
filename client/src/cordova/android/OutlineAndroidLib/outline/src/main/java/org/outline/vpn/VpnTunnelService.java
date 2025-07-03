@@ -38,6 +38,7 @@ import androidx.annotation.Nullable;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 import java.util.logging.Level;
@@ -114,6 +115,7 @@ public class VpnTunnelService extends VpnService {
   private NetworkConnectivityMonitor networkConnectivityMonitor;
   private VpnTunnelStore tunnelStore;
   private Notification.Builder notificationBuilder;
+  private List<String> allowedApplications;
 
   private final IVpnTunnelService.Stub binder = new IVpnTunnelService.Stub() {
     @Override
@@ -134,6 +136,11 @@ public class VpnTunnelService extends VpnService {
     @Override
     public void initErrorReporting(String apiKey) {
       VpnTunnelService.this.initErrorReporting(apiKey);
+    }
+
+    @Override
+    public void setAllowedApplications(List<String> packageNames) {
+      VpnTunnelService.this.setAllowedApplications(packageNames);
     }
   };
 
@@ -193,6 +200,12 @@ public class VpnTunnelService extends VpnService {
   }
 
   // Tunnel API
+
+  /** Sets the list of allowed applications for split tunneling. */
+  public void setAllowedApplications(List<String> packageNames) {
+    LOG.info(String.format(Locale.ROOT, "Setting allowed applications: %s", packageNames));
+    this.allowedApplications = packageNames;
+  }
 
   /**  This is the entry point when called from the Outline plugin, via the service IPC. */
   private DetailedJsonError startTunnel(@NonNull final TunnelConfig config) {
@@ -275,8 +288,23 @@ public class VpnTunnelService extends VpnService {
                         // TODO(fortuna): dynamically select it.
                         .addAddress("10.111.222.1", 24)
                         .addDnsServer(dnsResolver)
-                        .setBlocking(true)
-                        .addDisallowedApplication(this.getPackageName());
+                        .setBlocking(true);
+                        // Always disallow this application, as it is the VPN controller.
+                        builder.addDisallowedApplication(this.getPackageName());
+
+        if (this.allowedApplications != null && !this.allowedApplications.isEmpty()) {
+          LOG.info(String.format(Locale.ROOT, "Adding %d allowed applications.", this.allowedApplications.size()));
+          for (String packageName : this.allowedApplications) {
+            try {
+              builder.addAllowedApplication(packageName);
+              LOG.fine(String.format(Locale.ROOT, "Added allowed application: %s", packageName));
+            } catch (PackageManager.NameNotFoundException e) {
+              LOG.warning(String.format(Locale.ROOT, "Package not found, cannot add to allowed list: %s", packageName));
+            }
+          }
+        } else {
+          LOG.info("No allowed applications configured, all applications will use the VPN.");
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
           builder.setMetered(false);
