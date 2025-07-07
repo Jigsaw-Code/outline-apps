@@ -47,7 +47,6 @@ type ProviderTunnelConfig struct {
 type firstHopAndTunnelConfigJSON struct {
 	Client   string `json:"client"`
 	FirstHop string `json:"firstHop"`
-	SessionReport string `json:"session_report"`
 }
 
 func hasKey[K comparable, V any](m map[K]V, key K) bool {
@@ -122,23 +121,7 @@ func doParseTunnelConfig(input string) *InvokeMethodResult {
 		}
 	}
 
-	var result *NewClientResult
-	if hasKey(yamlValue, "session_report") {
-		// Extract usage report config as an opaque string.
-		sessionReportConfigBytes, err := yaml.Marshal(providerConfig.Session_Report)
-		if err != nil {
-			return &InvokeMethodResult{
-				Error: &platerrors.PlatformError{
-					Code:    platerrors.InvalidConfig,
-					Message: fmt.Sprintf("failed to normalize session config: %s", err),
-				},
-			}
-		}
-		sessionReportConfigText := string(sessionReportConfigBytes)
-		result = NewClientWithSession(string(clientConfigBytes), sessionReportConfigText)
-	} else {
-		result = NewClient(string(clientConfigBytes))
-	}
+	result := NewClient(string(clientConfigBytes))
 	if result.Error != nil {
 		return &InvokeMethodResult{
 			Error: result.Error,

@@ -156,30 +156,33 @@ transport:
 	require.Equal(t, "example.com:53", result.Client.pl.FirstHop)
 }
 
-func Test_SessionReport(t *testing.T) {
-	transportConfig := `
-$type: tcpudp
-tcp:
-    $type: shadowsocks
-    endpoint: example.com:80
-    cipher: chacha20-ietf-poly1305
-    secret: SECRET
-    prefix: "POST "
-udp:
-    $type: shadowsocks
-    endpoint: example.com:53
-    cipher: chacha20-ietf-poly1305
-    secret: SECRET`
-	sessionConfig := `
-$type: sessionreport
-url: https://your-callback-server.com/outline_callback
-interval: 24h
-enable_cookies: true`
+func Test_UsageReporting(t *testing.T) {
+	config := `
+transport:
+  $type: tcpudp
+  tcp:
+      $type: shadowsocks
+      endpoint: example.com:80
+      <<: &cipher
+        cipher: chacha20-ietf-poly1305
+        secret: SECRET
+      prefix: "POST "
+  udp:
+      $type: shadowsocks
+      endpoint: example.com:53
+      <<: *cipher
+reporting_config:
+  $type: sessionreport
+  url: https://your-callback-server.com/outline_callback
+  interval: 10s
+  enable_cookies: true`
 
-	client := NewClientWithSession(transportConfig, sessionConfig)
-	require.Nil(t, client.Error, "Got %v", client.Error)
-	require.NotNil(t, client.Client.ur, "UsageReporter is nil")
-	require.Equal(t, "https://your-callback-server.com/outline_callback", client.Client.ur.Url)
+	result := NewClient(config)
+	require.Nil(t, result.Error, "Got %v", result.Error)
+	require.Equal(t, "example.com:80", result.Client.sd.FirstHop)
+	require.Equal(t, "example.com:53", result.Client.pl.FirstHop)
+	require.NotNil(t, result.Client.Ur, "UsageReporter is nil")
+	require.Equal(t, "https://your-callback-server.com/outline_callback", result.Client.Ur.Url)
 }
 
 func Test_NewTransport_YAML_Reuse(t *testing.T) {
@@ -321,7 +324,7 @@ func Test_NewClientFromJSON_Errors(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewClient(tt.input, "")
+			got := NewClient(tt.input)
 			if got.Error == nil || got.Client != nil {
 				t.Errorf("NewClientFromJSON() expects an error, got = %v", got.Client)
 				return

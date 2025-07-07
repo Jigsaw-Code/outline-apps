@@ -18,7 +18,6 @@ import (
 	"context"
 	"errors"
 	"net"
-	"log/slog"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/configyaml"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/config"
@@ -49,7 +48,8 @@ func (c *Client) ListenPacket(ctx context.Context) (net.PacketConn, error) {
 
 // ClientConfig is used to create the Client.
 type ClientConfig struct {
-	Transport configyaml.ConfigNode
+	Transport       configyaml.ConfigNode
+	ReportingConfig configyaml.ConfigNode `yaml:"reporting_config,omitempty"`
 }
 
 // NewClientResult represents the result of [NewClientAndReturnError].
@@ -77,18 +77,10 @@ func (c *Client) StopReporting() {
 	}
 }
 
-// NewClient creates a new Client with the given clientConfig.
 func NewClient(clientConfig string) *NewClientResult {
-	return NewClientWithSession(clientConfig, "")
-}
-
-// NewClientWithSession creates a new Client with the given clientConfig and sessionConfig.
-// A variadic function could be used to combine this function with NewClient, but it could
-// not be used in the Java code, so we keep it separate.
-func NewClientWithSession(clientConfig string, sessionConfig string) *NewClientResult {
 	tcpDialer := transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
 	udpDialer := transport.UDPDialer{}
-	client, err := NewClientFull(clientConfig, sessionConfig, &tcpDialer, &udpDialer)
+	client, err := NewClientWithBaseDialers(clientConfig, &tcpDialer, &udpDialer)
 	if err != nil {
 		return &NewClientResult{Error: platerrors.ToPlatformError(err)}
 	}
@@ -97,11 +89,6 @@ func NewClientWithSession(clientConfig string, sessionConfig string) *NewClientR
 
 // NewClientWithBaseDialers creates a new Client with the given clientConfig and base dialers.
 func NewClientWithBaseDialers(clientConfigText string, tcpDialer transport.StreamDialer, udpDialer transport.PacketDialer) (*Client, error) {
-	return NewClientFull(clientConfigText, "", tcpDialer, udpDialer)
-}
-
-// The main function with all arguments:
-func NewClientFull(clientConfigText string, sessionConfig string, tcpDialer transport.StreamDialer, udpDialer transport.PacketDialer) (*Client, error) {
 	var clientConfig ClientConfig
 	err := yaml.Unmarshal([]byte(clientConfigText), &clientConfig)
 	if err != nil {
@@ -143,16 +130,8 @@ func NewClientFull(clientConfigText string, sessionConfig string, tcpDialer tran
 		}
 	}
 	var usageReporter *config.UsageReporter
-	if sessionConfig != "" {
-		usageReportYAML, err := configyaml.ParseConfigYAML(sessionConfig)
-		if err != nil {
-			return nil, &platerrors.PlatformError{
-				Code:    platerrors.InvalidConfig,
-				Message: "client config is not valid YAML",
-				Cause:   platerrors.ToPlatformError(err),
-			}
-		}
-		usageReporter, err = config.NewUsageReportProvider().Parse(context.Background(), usageReportYAML)
+	if clientConfig.ReportingConfig != nil {
+		usageReporter, err = config.NewUsageReportProvider().Parse(context.Background(), clientConfig.ReportingConfig)
 		if err != nil {
 			if errors.Is(err, errors.ErrUnsupported) {
 				return nil, &platerrors.PlatformError{
@@ -175,12 +154,12 @@ func NewClientFull(clientConfigText string, sessionConfig string, tcpDialer tran
 
 // Get the reporting server
 func (c *Client) GetUr() *config.UsageReporter {
-   return c.Ur
+	return c.Ur
 }
 
 // Set the Key ID (Server UUID)
 func (c *Client) SetKeyId(keyId string) {
-   if c.Ur != nil {
-       c.Ur.KeyId = keyId
-   }
+	if c.Ur != nil {
+		c.Ur.KeyId = keyId
+	}
 }

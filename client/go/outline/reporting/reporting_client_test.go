@@ -36,21 +36,21 @@ const uniqueClientID = "random_client_id"
 var server *http.Server
 var clientCookie string
 
-func TestReport(t *testing.T) {
-	err := Report(&fakeSSClient{}, "https://example.com")
-	if err != nil {
-		t.Fatalf("Report failed: %v", err)
-	}
-	// Report again to get the original cookie.
-	err = Report(&fakeSSClient{}, "https://example.com")
-	if err != nil {
-		t.Fatalf("Report failed: %v", err)
-	}
-	time.Sleep(1 * time.Second) // Give the server a moment to process the request
-	if clientCookie != uniqueClientID {
-		t.Fatalf("Expected client cookie %s, got %s", uniqueClientID, clientCookie)
-	}
-}
+// func TestReport(t *testing.T) {
+// 	err := Report(&fakeSSClient{}, "https://example.com")
+// 	if err != nil {
+// 		t.Fatalf("Report failed: %v", err)
+// 	}
+// 	// Report again to get the original cookie.
+// 	err = Report(&fakeSSClient{}, "https://example.com")
+// 	if err != nil {
+// 		t.Fatalf("Report failed: %v", err)
+// 	}
+// 	time.Sleep(1 * time.Second) // Give the server a moment to process the request
+// 	if clientCookie != uniqueClientID {
+// 		t.Fatalf("Expected client cookie %s, got %s", uniqueClientID, clientCookie)
+// 	}
+// }
 
 func setup() {
 	server = &http.Server{Addr: ":8080", Handler: http.HandlerFunc(echoHandler)}

@@ -52,7 +52,7 @@ func Report(ur *config.UsageReporter) (err error) {
 	var urls []*url.URL
 	configDir, err := os.UserConfigDir()
 	if err != nil {
-		slog.Error("failed to get user config dir: %w", err)
+		slog.Error("failed to get user config dir", "err", err)
 		// In case we cannot get the user config dir, we use a default path.
 		configDir = "/data/data/org.outline.android.client/files/"
 	}
@@ -76,7 +76,7 @@ func Report(ur *config.UsageReporter) (err error) {
 	var cookies []*http.Cookie
 	for _, c := range allCookies {
 		if c.Name == ur.KeyId {
-			c.Name = "client_id"	// Reporting server is not supposed to know the Key ID
+			c.Name = "client_id" // Reporting server is not supposed to know the Key ID
 			cookies = append(cookies, c)
 		}
 	}
@@ -242,51 +242,51 @@ func RemoveCookiesByKeyID(keyID string) error {
 
 	configDir, err := os.UserConfigDir()
 	if err != nil {
-		slog.Error("failed to get user config dir: %w", err)
+		slog.Error("failed to get user config dir", "err", err)
 		configDir = "/data/data/org.outline.android.client/files/"
 	}
-    file, err := os.Open(filepath.Join(configDir, cookiesFile))
-    if err != nil {
-        return fmt.Errorf("failed to open cookies file: %w", err)
-    }
-    defer file.Close()
+	file, err := os.Open(filepath.Join(configDir, cookiesFile))
+	if err != nil {
+		return fmt.Errorf("failed to open cookies file: %w", err)
+	}
+	defer file.Close()
 
-    var cookieDataMap map[string][]CookieDetail
-    decoder := json.NewDecoder(file)
-    if err := decoder.Decode(&cookieDataMap); err != nil {
-        return fmt.Errorf("failed to decode cookies: %w", err)
-    }
+	var cookieDataMap map[string][]CookieDetail
+	decoder := json.NewDecoder(file)
+	if err := decoder.Decode(&cookieDataMap); err != nil {
+		return fmt.Errorf("failed to decode cookies: %w", err)
+	}
 
-    // Filter out cookies with matching KeyID
-    for urlStr, cookieDetails := range cookieDataMap {
-        var filteredCookies []CookieDetail
-        for _, c := range cookieDetails {
-            if c.Name != keyID {
-                filteredCookies = append(filteredCookies, c)
-            }
-        }
-        cookieDataMap[urlStr] = filteredCookies
-    }
+	// Filter out cookies with matching KeyID
+	for urlStr, cookieDetails := range cookieDataMap {
+		var filteredCookies []CookieDetail
+		for _, c := range cookieDetails {
+			if c.Name != keyID {
+				filteredCookies = append(filteredCookies, c)
+			}
+		}
+		cookieDataMap[urlStr] = filteredCookies
+	}
 
-    // Save the updated cookies back to the file
-    file, err = os.Create(filepath.Join(configDir, cookiesFile))
-    if err != nil {
-        return fmt.Errorf("failed to create cookies file: %w", err)
-    }
-    defer file.Close()
+	// Save the updated cookies back to the file
+	file, err = os.Create(filepath.Join(configDir, cookiesFile))
+	if err != nil {
+		return fmt.Errorf("failed to create cookies file: %w", err)
+	}
+	defer file.Close()
 
-    encoder := json.NewEncoder(file)
-    if err := encoder.Encode(cookieDataMap); err != nil {
-        return fmt.Errorf("failed to encode cookies: %w", err)
-    }
+	encoder := json.NewEncoder(file)
+	if err := encoder.Encode(cookieDataMap); err != nil {
+		return fmt.Errorf("failed to encode cookies: %w", err)
+	}
 
-    slog.Info("Cookies removed successfully.")
-    return nil
+	slog.Info("Cookies removed successfully.")
+	return nil
 }
 
 // StartReporting calls the Report function at every internal.
 func StartReporting(ctx context.Context, tcp transport.StreamDialer, ur *config.UsageReporter) {
-    slog.Info("StartReporting started...")
+	slog.Info("StartReporting started...")
 	if !ur.EnableCookies {
 		return
 	}
@@ -310,5 +310,4 @@ func StartReporting(ctx context.Context, tcp transport.StreamDialer, ur *config.
 			return
 		}
 	}
-    slog.Info("StartReporting ended...")
 }
