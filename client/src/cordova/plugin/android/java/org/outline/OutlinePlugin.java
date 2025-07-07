@@ -210,7 +210,7 @@ public class OutlinePlugin extends CordovaPlugin {
           final String serverName = args.getString(1);
           final String clientConfig = args.getString(2);
           String sessionConfig = null;
-          f (args.length() > 3) {
+          if (args.length() > 3) {
             sessionConfig = args.getString(3);
           }
           sendActionResult(callback, startVpnTunnel(tunnelId, clientConfig, sessionConfig, serverName));

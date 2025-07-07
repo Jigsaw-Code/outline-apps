@@ -488,7 +488,7 @@ public class VpnTunnelService extends VpnService {
       final TunnelConfig tunnelConfig = new TunnelConfig();
       tunnelConfig.id = tunnel.getString(TUNNEL_ID_KEY);
       tunnelConfig.name = tunnel.getString(TUNNEL_SERVER_NAME);
-      tunnelConfig.transportConfig = tunnel.getString(TUNNEL_CONFIG_KEY);
+      tunnelConfig.clientConfig = tunnel.getString(TUNNEL_CONFIG_KEY);
 
       // Start the service in the foreground as per Android 8+ background service execution limits.
       // Requires android.permission.FOREGROUND_SERVICE since Android P.
@@ -504,7 +504,7 @@ public class VpnTunnelService extends VpnService {
     JSONObject tunnel = new JSONObject();
     try {
       tunnel.put(TUNNEL_ID_KEY, config.id).put(
-        TUNNEL_CONFIG_KEY, config.transportConfig).put(TUNNEL_SERVER_NAME, config.name);
+        TUNNEL_CONFIG_KEY, config.clientConfig).put(TUNNEL_SERVER_NAME, config.name);
       tunnelStore.save(tunnel);
     } catch (JSONException e) {
       LOG.log(Level.SEVERE, "Failed to store JSON tunnel data", e);
