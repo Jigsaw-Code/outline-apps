@@ -206,8 +206,8 @@ public class VpnTunnelService extends VpnService {
   private synchronized PlatformError startTunnel(
           @NonNull final TunnelConfig config, boolean isAutoStart) {
     LOG.info(String.format(Locale.ROOT, "Starting tunnel %s for server %s", config.id, config.name));
-    if (config.id == null || config.transportConfig == null) {
-      return new PlatformError(Platerrors.InvalidConfig, "id and transportConfig are required");
+    if (config.id == null || config.clientConfig == null) {
+      return new PlatformError(Platerrors.InvalidConfig, "id and clientConfig are required");
     }
     // We check if the VPN is already running. This happens when a user connects to a server while
     // already connected to another one.
@@ -230,7 +230,7 @@ public class VpnTunnelService extends VpnService {
       this.tunFd = null;
     }
 
-    final NewClientResult clientResult = Outline.newClientWithSession(config.transportConfig, config.sessionConfig);
+    final NewClientResult clientResult = Outline.newClient(config.clientConfig);
     if (clientResult.getError() != null) {
       LOG.log(Level.WARNING, "Failed to create Outline Client", clientResult.getError());
       tearDownActiveTunnel();
