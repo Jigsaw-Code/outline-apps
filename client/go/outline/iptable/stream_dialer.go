@@ -38,23 +38,23 @@ func lookupInTable[D any](table IPTable[D], address string) (foundDialer D, ok b
 	return zeroD, false
 }
 
-// IPTableStreamDialer is a [transport.StreamDialer] that routes connections
+// StreamDialer is a [transport.StreamDialer] that routes connections
 // based on the destination IP address using an [IPTable].
 // If a specific route is found in the table, the corresponding dialer is used.
 // Otherwise, the default dialer (if set) is used.
-type IPTableStreamDialer struct {
+type StreamDialer struct {
 	table         IPTable[transport.StreamDialer]
 	defaultDialer transport.StreamDialer
 }
 
-// NewIPTableStreamDialer creates a new [IPTableStreamDialer].
+// NewStreamDialer creates a new [StreamDialer].
 // If the provided table is nil, a new empty table will be created internally.
 // It returns the new dialer and a nil error.
-func NewIPTableStreamDialer(table IPTable[transport.StreamDialer]) (*IPTableStreamDialer, error) {
+func NewStreamDialer(table IPTable[transport.StreamDialer]) (*StreamDialer, error) {
 	if table == nil {
 		table = NewIPTable[transport.StreamDialer]()
 	}
-	return &IPTableStreamDialer{
+	return &StreamDialer{
 		table: table,
 	}, nil
 }
@@ -62,7 +62,7 @@ func NewIPTableStreamDialer(table IPTable[transport.StreamDialer]) (*IPTableStre
 // SetDefault sets the dialer to be used when no specific route is found
 // for a destination address in the IP table.
 // Passing nil will clear the default dialer.
-func (dialer *IPTableStreamDialer) SetDefault(defaultDialer transport.StreamDialer) {
+func (dialer *StreamDialer) SetDefault(defaultDialer transport.StreamDialer) {
 	dialer.defaultDialer = defaultDialer
 }
 
@@ -71,7 +71,7 @@ func (dialer *IPTableStreamDialer) SetDefault(defaultDialer transport.StreamDial
 // If no specific route is found, it uses the default dialer.
 // If no specific route is found and no default dialer is set, or if the
 // selected dialer fails, it returns an error.
-func (dialer *IPTableStreamDialer) DialStream(ctx context.Context, address string) (transport.StreamConn, error) {
+func (dialer *StreamDialer) DialStream(ctx context.Context, address string) (transport.StreamConn, error) {
 	selectedDialer, ok := lookupInTable(dialer.table, address)
 
 	if !ok {
@@ -85,23 +85,23 @@ func (dialer *IPTableStreamDialer) DialStream(ctx context.Context, address strin
 	return selectedDialer.DialStream(ctx, address)
 }
 
-// IPTablePacketDialer is a [transport.PacketDialer] that routes connections
+// PacketDialer is a [transport.PacketDialer] that routes connections
 // based on the destination IP address using an [IPTable].
 // If a specific route is found in the table, the corresponding dialer is used.
 // Otherwise, the default dialer (if set) is used.
-type IPTablePacketDialer struct {
+type PacketDialer struct {
 	table         IPTable[transport.PacketDialer]
 	defaultDialer transport.PacketDialer
 }
 
-// NewIPTablePacketDialer creates a new [IPTablePacketDialer].
+// NewPacketDialer creates a new [PacketDialer].
 // If the provided table is nil, a new empty table will be created internally.
 // It returns the new dialer and a nil error.
-func NewIPTablePacketDialer(table IPTable[transport.PacketDialer]) (*IPTablePacketDialer, error) {
+func NewPacketDialer(table IPTable[transport.PacketDialer]) (*PacketDialer, error) {
 	if table == nil {
 		table = NewIPTable[transport.PacketDialer]()
 	}
-	return &IPTablePacketDialer{
+	return &PacketDialer{
 		table: table,
 	}, nil
 }
@@ -109,7 +109,7 @@ func NewIPTablePacketDialer(table IPTable[transport.PacketDialer]) (*IPTablePack
 // SetDefault sets the dialer to be used when no specific route is found
 // for a destination address in the IP table.
 // Passing nil will clear the default dialer.
-func (dialer *IPTablePacketDialer) SetDefault(defaultDialer transport.PacketDialer) {
+func (dialer *PacketDialer) SetDefault(defaultDialer transport.PacketDialer) {
 	dialer.defaultDialer = defaultDialer
 }
 
@@ -118,7 +118,7 @@ func (dialer *IPTablePacketDialer) SetDefault(defaultDialer transport.PacketDial
 // If no specific route is found, it uses the default dialer.
 // If no specific route is found and no default dialer is set, or if the
 // selected dialer fails, it returns an error.
-func (dialer *IPTablePacketDialer) DialPacket(ctx context.Context, address string) (net.Conn, error) {
+func (dialer *PacketDialer) DialPacket(ctx context.Context, address string) (net.Conn, error) {
 	selectedDialer, ok := lookupInTable(dialer.table, address)
 
 	if !ok {

@@ -44,7 +44,7 @@ func parseIPTableStreamDialer(
 	ctx context.Context,
 	configMap map[string]any,
 	subDialerParser configyaml.ParseFunc[*Dialer[transport.StreamConn]],
-) (*iptable.IPTableStreamDialer, error) {
+) (*iptable.StreamDialer, error) {
 	var rootCfg ipTableRootConfig
 	if err := configyaml.MapToAny(configMap, &rootCfg); err != nil {
 		return nil, fmt.Errorf("failed to map ip-table stream config: %w", err)
@@ -97,10 +97,14 @@ func parseIPTableStreamDialer(
 		table.AddPrefix(entry.prefix, entry.dialer)
 	}
 
-	dialer, err := iptable.NewIPTableStreamDialer(table)
+	dialer, err := iptable.NewStreamDialer(table)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to create IPTableStreamDialer: %w", err)
+	}
+
+	if defaultDialerEntry == nil {
+		return dialer, nil
 	}
 
 	dialer.SetDefault(defaultDialerEntry.dialer)

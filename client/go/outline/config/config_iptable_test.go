@@ -68,8 +68,7 @@ func TestParseIPTableStreamDialer(t *testing.T) {
 	testCases := []struct {
 		name        string
 		config      map[string]any
-		expectErr   bool
-		expectedErr string
+		expectErr   string
 		checkDialer func(*testing.T, transport.StreamDialer)
 		expectPanic bool
 	}{
@@ -94,10 +93,9 @@ func TestParseIPTableStreamDialer(t *testing.T) {
 			},
 		},
 		{
-			name:        "Error - empty table",
-			config:      map[string]any{"table": []any{}},
-			expectErr:   true,
-			expectedErr: "ip-table config 'table' must not be empty for stream dialer",
+			name:      "Error - empty table",
+			config:    map[string]any{"table": []any{}},
+			expectErr: "ip-table config 'table' must not be empty for stream dialer",
 		},
 		{
 			name: "Error - multiple defaults",
@@ -107,8 +105,7 @@ func TestParseIPTableStreamDialer(t *testing.T) {
 					map[string]any{"ip": "", "dialer": map[string]any{"name": "dialerA"}},
 				},
 			},
-			expectErr:   true,
-			expectedErr: "multiple default dialers specified in ip-table for stream",
+			expectErr: "multiple default dialers specified in ip-table for stream",
 		},
 		{
 			name: "Error - invalid IP",
@@ -118,13 +115,7 @@ func TestParseIPTableStreamDialer(t *testing.T) {
 					map[string]any{"ip": "", "dialer": map[string]any{"name": "default"}},
 				},
 			},
-			expectErr:   true,
-			expectedErr: "is not a valid IP address or CIDR prefix",
-		},
-		{
-			name:        "Panic - no default dialer",
-			config:      map[string]any{"table": []any{map[string]any{"ip": "192.168.1.0/24", "dialer": map[string]any{"name": "dialerA"}}}},
-			expectPanic: true,
+			expectErr: "is not a valid IP address or CIDR prefix",
 		},
 	}
 
@@ -139,11 +130,8 @@ func TestParseIPTableStreamDialer(t *testing.T) {
 
 			dialer, err := parseIPTableStreamDialer(ctx, tc.config, parser)
 
-			if tc.expectErr {
-				require.Error(t, err)
-				if tc.expectedErr != "" {
-					require.Contains(t, err.Error(), tc.expectedErr)
-				}
+			if tc.expectErr != "" {
+				require.Contains(t, err.Error(), tc.expectErr)
 			} else {
 				require.NoError(t, err)
 				require.NotNil(t, dialer)
