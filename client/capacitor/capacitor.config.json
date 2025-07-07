@@ -1,0 +1,11 @@
+{
+    "appId": "org.outline.client",
+    "appName": "Outline Client",
+    "webDir": "www",
+    "bundledWebRuntime": false,
+    "plugins": {
+        "SplashScreen": {
+            "launchAutoHide": true
+        }
+    }
+}
