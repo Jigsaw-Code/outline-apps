@@ -22,7 +22,7 @@ import {Appearance} from '../../app/settings';
 
 export type AppearanceDefinition = {
   id: Appearance;
-  name: string;
+  localizeKey: string;
   icon: string;
 };
 
@@ -39,17 +39,17 @@ export class AppearanceView extends LitElement {
     this.appearances = [
       {
         id: Appearance.SYSTEM,
-        name: this.localize('appearance-system') || 'System',
+        localizeKey: 'appearance-system',
         icon: 'brightness_auto',
       },
       {
         id: Appearance.LIGHT,
-        name: this.localize('appearance-light') || 'Light',
+        localizeKey: 'appearance-light',
         icon: 'light_mode',
       },
       {
         id: Appearance.DARK,
-        name: this.localize('appearance-dark') || 'Dark',
+        localizeKey: 'appearance-dark',
         icon: 'dark_mode',
       },
     ];
@@ -141,7 +141,7 @@ export class AppearanceView extends LitElement {
     return html`
       <md-list>
         ${this.appearances.map(
-          ({id, name, icon}) => html`
+          ({id, localizeKey, icon}) => html`
             <md-list-item
               class=${classMap({selected: this.selectedAppearance === id})}
               data-value="${id}"
@@ -155,7 +155,9 @@ export class AppearanceView extends LitElement {
                 >${icon}</md-icon
               >
               <md-ripple></md-ripple>
-              <span class="appearance-item-text">${name}</span>
+              <span class="appearance-item-text"
+                >${this.localize(localizeKey)}</span
+              >
               ${this.selectedAppearance === id
                 ? html`<md-icon slot="end" class="appearance-icon-selected"
                     >check</md-icon
