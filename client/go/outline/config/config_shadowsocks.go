@@ -19,10 +19,9 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"net"
 	"net/url"
-	neturl "net/url"
 	"strconv"
 	"strings"
 
@@ -158,7 +157,7 @@ type shadowsocksParams struct {
 func parseShadowsocksConfig(node configyaml.ConfigNode) (*ShadowsocksConfig, error) {
 	switch typed := node.(type) {
 	case string:
-		urlConfig, err := neturl.Parse(typed)
+		urlConfig, err := url.Parse(typed)
 		if err != nil {
 			slog.Warn("Failed to parse URL from string config", "err", err)
 
@@ -284,7 +283,7 @@ func parseShadowsocksLegacyBase64URL(url url.URL) (*ShadowsocksConfig, error) {
 	} else {
 		fragment = ""
 	}
-	newURL, err := neturl.Parse(strings.ToLower(url.Scheme) + "://" + host + fragment)
+	newURL, err := url.Parse(strings.ToLower(url.Scheme) + "://" + host + fragment)
 	if err != nil {
 		// if parsing fails, return the original url with error
 		return nil, fmt.Errorf("failed to parse config part: %w", err)
