@@ -70,7 +70,6 @@ func TestParseIPTableStreamDialer(t *testing.T) {
 		config      map[string]any
 		expectErr   string
 		checkDialer func(*testing.T, transport.StreamDialer)
-		expectPanic bool
 	}{
 		{
 			name: "Happy Path - valid config",
@@ -121,13 +120,6 @@ func TestParseIPTableStreamDialer(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			if tc.expectPanic {
-				require.Panics(t, func() {
-					_, _ = parseIPTableStreamDialer(ctx, tc.config, parser)
-				})
-				return
-			}
-
 			dialer, err := parseIPTableStreamDialer(ctx, tc.config, parser)
 
 			if tc.expectErr != "" {
