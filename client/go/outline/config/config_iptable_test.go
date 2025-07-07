@@ -94,7 +94,7 @@ func TestParseIPTableStreamDialer(t *testing.T) {
 		{
 			name:      "Error - empty table",
 			config:    map[string]any{"table": []any{}},
-			expectErr: "ip-table config 'table' must not be empty for stream dialer",
+			expectErr: "iptable config 'table' must not be empty for stream dialer",
 		},
 		{
 			name: "Error - multiple defaults",
@@ -104,7 +104,7 @@ func TestParseIPTableStreamDialer(t *testing.T) {
 					map[string]any{"ip": "", "dialer": map[string]any{"name": "dialerA"}},
 				},
 			},
-			expectErr: "multiple default dialers specified in ip-table for stream",
+			expectErr: "multiple default dialers specified in iptable for stream",
 		},
 		{
 			name: "Error - invalid IP",

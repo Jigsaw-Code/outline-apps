@@ -47,11 +47,11 @@ func parseIPTableStreamDialer(
 ) (*iptable.StreamDialer, error) {
 	var rootCfg ipTableRootConfig
 	if err := configyaml.MapToAny(configMap, &rootCfg); err != nil {
-		return nil, fmt.Errorf("failed to map ip-table stream config: %w", err)
+		return nil, fmt.Errorf("failed to map iptable stream config: %w", err)
 	}
 
 	if len(rootCfg.Table) == 0 {
-		return nil, errors.New("ip-table config 'table' must not be empty for stream dialer")
+		return nil, errors.New("iptable config 'table' must not be empty for stream dialer")
 	}
 
 	parsedEntries := make([]parsedIPTableStreamEntry, 0, len(rootCfg.Table))
@@ -69,7 +69,7 @@ func parseIPTableStreamDialer(
 
 		if entryCfg.IP == "" { // Default dialer
 			if defaultDialerEntry != nil {
-				return nil, errors.New("multiple default dialers specified in ip-table for stream")
+				return nil, errors.New("multiple default dialers specified in iptable for stream")
 			}
 			defaultDialerEntry = &currentEntry
 			continue
@@ -82,7 +82,7 @@ func parseIPTableStreamDialer(
 		} else {
 			addr, errAddr := netip.ParseAddr(entryCfg.IP)
 			if errAddr != nil {
-				return nil, fmt.Errorf("ip-table entry %d IP '%s' is not a valid IP address or CIDR prefix: failed to parse as prefix (%v) and failed to parse as address (%v)", i, entryCfg.IP, errPrefix, errAddr)
+				return nil, fmt.Errorf("iptable entry %d IP '%s' is not a valid IP address or CIDR prefix: failed to parse as prefix (%v) and failed to parse as address (%v)", i, entryCfg.IP, errPrefix, errAddr)
 			}
 			prefix = netip.PrefixFrom(addr, addr.BitLen())
 		}

@@ -106,7 +106,7 @@ func TestParseIPTableTCP(t *testing.T) {
 
 	yamlConfig := `$type: tcpudp
 tcp:
-  $type: ip-table
+  $type: iptable
   table:
     - ip: 192.168.1.128
       dialer: &shared
