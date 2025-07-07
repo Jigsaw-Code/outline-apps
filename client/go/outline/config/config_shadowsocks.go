@@ -160,7 +160,7 @@ func parseShadowsocksConfig(node configyaml.ConfigNode) (*ShadowsocksConfig, err
 	case string:
 		urlConfig, err := neturl.Parse(typed)
 		if err != nil {
-			log.Printf("Failed to parse URL from string config: %v", err)
+			slog.Warn("Failed to parse URL from string config", "err", err)
 
 			return nil, fmt.Errorf("string config is not a valid URL")
 		}
