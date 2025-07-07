@@ -101,7 +101,7 @@ func NewDefaultTransportProvider(tcpDialer transport.StreamDialer, udpDialer tra
 	streamDialers.RegisterSubParser("shadowsocks", NewShadowsocksStreamDialerSubParser(streamEndpoints.Parse))
 
 	// IPTable support (TCP anly).
-	streamDialers.RegisterSubParser("ip-table", func(ctx context.Context, input map[string]any) (*Dialer[transport.StreamConn], error) {
+	streamDialers.RegisterSubParser("iptable", func(ctx context.Context, input map[string]any) (*Dialer[transport.StreamConn], error) {
 		streamDialer, err := parseIPTableStreamDialer(ctx, input, streamDialers.Parse)
 
 		return &Dialer[transport.StreamConn]{
