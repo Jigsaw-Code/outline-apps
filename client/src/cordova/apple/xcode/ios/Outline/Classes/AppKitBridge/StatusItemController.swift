@@ -30,7 +30,7 @@ class StatusItemController: NSObject {
                                               keyEquivalent: "")
     let connectDisconnectMenuItem = NSMenuItem(title: MenuTitle.connect,
                                                action: #selector(toggleVpnConnection),
-                                               keyEquivalent: "v")
+                                               keyEquivalent: "c")
 
     private enum AppIconImage {
         static let statusConnected = getImage(name: "status_bar_button_image_connected")
