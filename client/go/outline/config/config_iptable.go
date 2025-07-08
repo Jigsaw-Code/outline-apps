@@ -103,11 +103,9 @@ func parseIPTableStreamDialer(
 		return nil, fmt.Errorf("failed to create IPTableStreamDialer: %w", err)
 	}
 
-	if defaultDialerEntry == nil {
-		return dialer, nil
+	if defaultDialerEntry != nil {
+		dialer.SetDefault(defaultDialerEntry.dialer)
 	}
-
-	dialer.SetDefault(defaultDialerEntry.dialer)
 
 	return dialer, nil
 }
