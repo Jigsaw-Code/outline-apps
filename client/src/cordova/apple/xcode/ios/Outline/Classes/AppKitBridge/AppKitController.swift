@@ -20,9 +20,30 @@ class AppKitController: NSObject {
 
     override public required init() {
         super.init()
-
-        // Indicates that the application is an ordinary app that appears in the Dock and may have a user interface.
         NSApp.setActivationPolicy(.regular)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(windowWillClose(_:)),
+            name: NSWindow.willCloseNotification,
+            object: nil
+        )
+    }
+
+    @objc public func windowWillClose(_ notification: Notification) {
+        guard let closingWindow = notification.object as? NSWindow else {
+            return
+        }
+        // Are there any other visible "main" windows?
+        // (this notification also fires for menu popup and status windows)
+        let hasOtherVisibleWindows = NSApp.windows.contains { window in
+            return window !== closingWindow &&
+                   window.isVisible &&
+                   window.canBecomeMain &&
+                   !window.isMiniaturized
+        }
+        if !hasOtherVisibleWindows {
+            NSApp.setActivationPolicy(.accessory)
+        }
     }
 
     /// Set the connection status in the app's menu in the system-wide menu bar.
