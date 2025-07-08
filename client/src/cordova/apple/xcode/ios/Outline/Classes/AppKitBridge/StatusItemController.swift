@@ -122,48 +122,45 @@ class StatusItemController: NSObject {
         NSApplication.shared.terminate(self)
     }
     
-    @objc func toggleVpnConnection(_: AnyObject?) {
+    @objc func toggleVpnConnection(_ sender: NSMenuItem) {
         NSLog("[StatusItemController] Toggle VPN connection")
         
-        // Check current VPN status
         Task {
             let managers = try? await NETunnelProviderManager.loadAllFromPreferences()
-            let hasProfile = managers?.count ?? 0 > 0
             
-            if hasProfile {
-                // Get the first (and only) VPN profile
-                guard let manager = managers?.first else {
-                    NSLog("[StatusItemController] Failed to get VPN manager")
-                    return
-                }
-                
-                let isActive = manager.connection.status == .connected || 
-                              manager.connection.status == .connecting || 
-                              manager.connection.status == .reasserting
-                
-                if isActive {
-                    // Disconnect
-                    NSLog("[StatusItemController] Disconnecting VPN")
-                    manager.connection.stopVPNTunnel()
-                } else {
-                    // Connect - start the VPN tunnel directly
-                    NSLog("[StatusItemController] Connecting to VPN tunnel")
-                    do {
-                        try manager.connection.startVPNTunnel()
-                    } catch {
-                        NSLog("[StatusItemController] Failed to connect VPN: \(error.localizedDescription)")
-                        // If connection fails, open the app
-                        DispatchQueue.main.async {
-                            self.openApplication(nil)
-                        }
-                    }
-                }
-            } else {
-                // No VPN profile exists, open the app
+            // Early return if no VPN profile exists
+            guard let managers = managers, !managers.isEmpty else {
                 NSLog("[StatusItemController] No VPN profile found, opening app")
                 DispatchQueue.main.async {
                     self.openApplication(nil)
                 }
+                return
+            }
+            
+            guard let manager = managers.first else {
+                NSLog("[StatusItemController] Failed to get VPN manager")
+                return
+            }
+            
+            // Base action purely on menu item title, not current status
+            let isConnectAction = sender.title == MenuTitle.connect
+            
+            if isConnectAction {
+                // User clicked "Connect" - attempt to connect regardless of current state
+                NSLog("[StatusItemController] Connecting to VPN tunnel")
+                do {
+                    try manager.connection.startVPNTunnel()
+                } catch {
+                    NSLog("[StatusItemController] Failed to connect VPN: \(error.localizedDescription)")
+                    // If connection fails, open the app
+                    DispatchQueue.main.async {
+                        self.openApplication(nil)
+                    }
+                }
+            } else {
+                // User clicked "Disconnect" - attempt to disconnect regardless of current state
+                NSLog("[StatusItemController] Disconnecting VPN")
+                manager.connection.stopVPNTunnel()
             }
         }
     }
