@@ -238,6 +238,7 @@ func loadCookies(jar http.CookieJar, filename string) ([]*url.URL, error) {
 }
 
 // RemoveCookiesByKeyID removes cookies with the specified KeyID from the cookie file.
+// If keyID is empty, all cookies will be removed.
 func RemoveCookiesByKeyID(keyID string) error {
 
 	configDir, err := os.UserConfigDir()
@@ -261,7 +262,7 @@ func RemoveCookiesByKeyID(keyID string) error {
 	for urlStr, cookieDetails := range cookieDataMap {
 		var filteredCookies []CookieDetail
 		for _, c := range cookieDetails {
-			if c.Name != keyID {
+			if c.Name != keyID && keyID != "" {
 				filteredCookies = append(filteredCookies, c)
 			}
 		}
