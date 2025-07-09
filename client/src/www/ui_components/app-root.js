@@ -102,6 +102,8 @@ export class AppRoot extends mixinBehaviors(
           flex-direction: column;
           font-family: var(--outline-font-family);
           color: var(--outline-text-color);
+        }
+         :host {
           background-color: var(--outline-background);
         }
 
@@ -113,17 +115,23 @@ export class AppRoot extends mixinBehaviors(
           font-family: Jigsaw Sans;
           font-size: 1.5rem;
           font-weight: 500;
+        }
+
+         app-header h1 {
           margin: 0;
         }
 
         app-toolbar {
           height: var(--app-toolbar-height);
           color: #fff;
+          display: flex;
+          justify-content: space-between;
+        }
+
+         app-toolbar {
           padding: var(--app-toolbar-gutter);
           background: var(--dark-green);
           text-align: center;
-          display: flex;
-          justify-content: space-between;
         }
 
         app-toolbar [main-title] {
@@ -133,12 +141,18 @@ export class AppRoot extends mixinBehaviors(
 
         app-toolbar img {
           height: 19px;
+        }
+
+         app-toolbar img {
           margin-top: 2px;
         }
 
         app-toolbar paper-button {
           /* make the ink color (used for tap animations) actually visible */
           --paper-icon-button-ink-color: #eff;
+        }
+
+         app-toolbar paper-button {
           padding: var(--app-toolbar-button-gutter);
         }
 
@@ -151,27 +165,34 @@ export class AppRoot extends mixinBehaviors(
         iron-pages {
           display: flex;
           flex: 1;
-          background-color: var(--outline-background);
           color: var(--outline-text-color);
+        }
+
+         iron-pages {
+          background-color: var(--outline-background);
         }
 
         appearance-view {
-          background-color: var(--outline-background);
           color: var(--outline-text-color);
         }
 
+         appearance-view {
+          background-color: var(--outline-background);
+        }
+
         #drawer-nav {
+          color: var(--outline-text-color);
+        }
+
+         #drawer-nav {
           padding: 0;
           background-color: var(--outline-background);
-          color: var(--outline-text-color);
         }
 
         #nav-scrollable-container {
           height: 100%;
           overflow-y: auto;
         }
-
-        /* rtl:begin:ignore */
         #drawer-nav paper-item {
           cursor: pointer;
           font-size: 16px;
@@ -188,34 +209,46 @@ export class AppRoot extends mixinBehaviors(
           color: var(--medium-green);
           background-color: var(--light-gray);
         }
-        /* rtl:end:ignore */
 
         /* Manually reverse icons that require mirroring in RTL languages. */
-        :host(:dir(rtl)) #backBtn {
+         :host(:dir(rtl)) #backBtn {
           transform: scaleX(-1);
         }
 
         #logo-nav {
+          height: 120px;
+        }
+
+         #logo-nav {
           background-color: var(--dark-green);
           text-align: center;
-          height: 120px;
         }
 
         #logo {
           width: 60px;
           height: 60px;
+        }
+
+         #logo {
           margin-top: 30px;
         }
 
         .nav-hr {
-          background-color: #e0e0e0;
           height: 1px;
+        }
+
+         .nav-hr {
+          background-color: #e0e0e0;
           margin: 0;
           border-width: 0px;
         }
 
-        #drawer-nav paper-item .item-label {
+        :host(:dir(ltr)) #drawer-nav paper-item .item-label {
           float: left;
+        }
+
+        :host(:dir(rtl)) #drawer-nav paper-item .item-label {
+          float: right;
         }
 
         #drawer-nav paper-item:not(.iron-selected) {
@@ -227,27 +260,34 @@ export class AppRoot extends mixinBehaviors(
           text-transform: capitalize;
         }
 
-        .first-menu-item {
+         .first-menu-item {
           margin-top: 12px;
         }
 
-        .last-menu-item {
+         .last-menu-item {
           margin-bottom: 12px;
         }
 
-        .border-top {
+         .border-top {
           border-top: 1px solid #e0e0e0;
           padding-top: 12px;
         }
 
-        paper-item > :first-child {
+         paper-item > :first-child {
           cursor: pointer;
         }
 
         paper-item > img {
           height: 24px;
           width: 24px;
+        }
+
+        :host(:dir(ltr)) paper-item > img {
           margin-right: 10px;
+        }
+
+        :host(:dir(rtl)) paper-item > img {
+          margin-left: 10px;
         }
 
         paper-item > a {
@@ -257,6 +297,9 @@ export class AppRoot extends mixinBehaviors(
 
         paper-button {
           min-width: 0;
+        }
+
+         paper-button {
           margin: 0;
         }
 
@@ -270,9 +313,19 @@ export class AppRoot extends mixinBehaviors(
 
         paper-toast paper-button {
           color: var(--light-green);
-          text-align: center;
           /* Prevent the button getting too close to the toast's text. */
+        }
+
+         paper-toast paper-button {
+          text-align: center;
+        }
+
+        :host(:dir(ltr)) paper-toast paper-button {
           margin-left: 12px;
+        }
+
+        :host(:dir(rtl)) paper-toast paper-button {
+          margin-right: 12px;
         }
 
         @media (max-height: 480px) {
@@ -290,6 +343,8 @@ export class AppRoot extends mixinBehaviors(
           #logo {
             width: 68px;
             height: 68px;
+          }
+           #logo {
             margin-top: 56px;
           }
           #drawer-nav paper-item {

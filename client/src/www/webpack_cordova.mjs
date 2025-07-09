@@ -25,7 +25,7 @@ import {
   require,
   __dirname,
   TS_LOADER,
-  GENERATE_CSS_RTL_LOADER,
+  
 } from './webpack_base.mjs';
 
 const BABEL_LOADER = {
@@ -47,7 +47,7 @@ export default merge(baseConfig, browserConfig, {
       {
         test: /\.m?ts$/,
         exclude: /node_modules/,
-        use: [BABEL_LOADER, TS_LOADER, GENERATE_CSS_RTL_LOADER],
+        use: [BABEL_LOADER, TS_LOADER],
       },
       {
         test: /\.m?ts$/,
@@ -57,7 +57,7 @@ export default merge(baseConfig, browserConfig, {
       {
         test: /\.m?js$/,
         exclude: /node_modules/,
-        use: [BABEL_LOADER, GENERATE_CSS_RTL_LOADER],
+        use: [BABEL_LOADER],
       },
       {
         test: /\.m?js$/,
