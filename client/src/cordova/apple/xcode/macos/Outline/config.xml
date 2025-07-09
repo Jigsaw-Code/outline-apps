@@ -52,7 +52,7 @@
     <preference name="KeyboardDisplayRequiresUserAction" value="true" />
     <preference name="MediaPlaybackRequiresUserAction" value="false" />
     <preference name="android-minSdkVersion" value="29" />
-    <preference name="android-targetSdkVersion" value="34" />
+    <preference name="android-targetSdkVersion" value="35" />
     <preference name="AndroidLaunchMode" value="singleInstance" />
     <preference name="ShowSplashScreenSpinner" value="false" />
     <preference name="deployment-target" value="10.11" />
