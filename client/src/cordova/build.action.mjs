@@ -16,24 +16,24 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import url from 'url';
 
-import {downloadHttpsFile} from '@outline/infrastructure/build/download_file.mjs';
-import {getRootDir} from '@outline/infrastructure/build/get_root_dir.mjs';
-import {runAction} from '@outline/infrastructure/build/run_action.mjs';
-import {spawnStream} from '@outline/infrastructure/build/spawn_stream.mjs';
+import { downloadHttpsFile } from '@outline/infrastructure/build/download_file.mjs';
+import { getRootDir } from '@outline/infrastructure/build/get_root_dir.mjs';
+import { runAction } from '@outline/infrastructure/build/run_action.mjs';
+import { spawnStream } from '@outline/infrastructure/build/spawn_stream.mjs';
 import cordovaLib from 'cordova-lib';
-const {cordova} = cordovaLib;
+const { cordova } = cordovaLib;
 
-import {getBuildParameters} from '../../build/get_build_parameters.mjs';
+import { getBuildParameters } from '../../build/get_build_parameters.mjs';
 
-const CORDOVA_PLATFORMS = ['android', 'ios', 'maccatalyst', 'macos'];
+const CORDOVA_PLATFORMS = ['android', 'ios', 'macos'];
 
 /**
- * @description Builds the parameterized cordova binary (ios, macos, maccatalyst, android).
+ * @description Builds the parameterized cordova binary (ios, macos, android).
  *
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  const {platform, buildMode, verbose} = getBuildParameters(parameters);
+  const { platform, buildMode, verbose } = getBuildParameters(parameters);
 
   if (!CORDOVA_PLATFORMS.includes(platform)) {
     throw new TypeError(
@@ -85,11 +85,9 @@ export async function main(...parameters) {
       );
     case 'ios' + 'debug':
     case 'macos' + 'debug':
-    case 'maccatalyst' + 'debug':
       return appleDebug(platform);
     case 'ios' + 'release':
     case 'macos' + 'release':
-    case 'maccatalyst' + 'release':
       return appleRelease(platform);
   }
 }
@@ -98,17 +96,13 @@ function getXcodeBuildArgs(platform) {
   let destination, workspaceFilename;
   switch (platform) {
     case 'macos':
-      destination = 'generic/platform=macOS';
-      workspaceFilename = 'macos.xcworkspace';
-      break;
-    case 'maccatalyst':
       destination = 'generic/platform=macOS,variant=Mac Catalyst';
-      workspaceFilename = 'ios.xcworkspace';
+      workspaceFilename = 'client.xcworkspace';
       break;
     case 'ios':
     default:
       destination = 'generic/platform=iOS';
-      workspaceFilename = 'ios.xcworkspace';
+      workspaceFilename = 'client.xcworkspace';
       break;
   }
   return [
