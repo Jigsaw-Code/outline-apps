@@ -43,7 +43,7 @@ type parsedIPTableStreamEntry struct {
 func parseIPTableStreamDialer(
 	ctx context.Context,
 	configMap map[string]any,
-	subDialerParser configyaml.ParseFunc[*Dialer[transport.StreamConn]],
+	parseSD configyaml.ParseFunc[*Dialer[transport.StreamConn]],
 ) (*iptable.StreamDialer, error) {
 	var rootCfg ipTableRootConfig
 	if err := configyaml.MapToAny(configMap, &rootCfg); err != nil {
@@ -58,7 +58,7 @@ func parseIPTableStreamDialer(
 	var defaultDialerEntry *parsedIPTableStreamEntry
 
 	for i, entryCfg := range rootCfg.Table {
-		parsedSubDialer, err := subDialerParser(ctx, entryCfg.Dialer)
+		parsedSubDialer, err := parseSD(ctx, entryCfg.Dialer)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse nested stream dialer for table entry %d (ip: %s): %w", i, entryCfg.IP, err)
 		}
