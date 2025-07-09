@@ -90,20 +90,16 @@ func TestRegisterParseURLInQuotes(t *testing.T) {
 }
 
 type errorStreamDialer struct {
-  name string
+	name string
 }
 
 func (d *errorStreamDialer) DialStream(ctx context.Context, addr string) (transport.StreamConn, error) {
 	return nil, fmt.Errorf("dialer '%s' called for address '%s'", d.name, addr)
 }
 
-func (d *mockStreamDialer) DialStream(ctx context.Context, addr string) (transport.StreamConn, error) {
-	return nil, fmt.Errorf("dialer '%s' called for address '%s'", d.name, addr)
-}
-
 func TestParseIPTableTCP(t *testing.T) {
 	tp := NewDefaultTransportProvider(
-		&mockStreamDialer{name: "default-tcp"},
+		&errorStreamDialer{name: "default-tcp"},
 		nil, // UDP transport not under test.
 	)
 

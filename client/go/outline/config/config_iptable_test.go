@@ -25,32 +25,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// mockSubDialerParser returns a mock parsing function for our tests.
-// This function simulates the behavior of a real sub-dialer parser.
-// It looks for a "name" in the config and returns the corresponding mock dialer.
-func mockSubDialerParser(dialers map[string]transport.StreamDialer) configyaml.ParseFunc[*Dialer[transport.StreamConn]] {
-	return func(ctx context.Context, config configyaml.ConfigNode) (*Dialer[transport.StreamConn], error) {
-		configMap, ok := config.(map[string]any)
-		if !ok {
-			return nil, errors.New("config is not a map[string]any")
-		}
-
-		name, ok := configMap["name"].(string)
-		if !ok {
-			return nil, errors.New("mock dialer config must have a 'name'")
-		}
-
-		dialer, ok := dialers[name]
-		if !ok {
-			return nil, fmt.Errorf("no mock dialer found with name: %s", name)
-		}
-
-		return &Dialer[transport.StreamConn]{
-			Dial: dialer.DialStream,
-		}, nil
-	}
-}
-
 func TestParseIPTableStreamDialer(t *testing.T) {
 	ctx := context.Background()
 
@@ -66,34 +40,37 @@ func TestParseIPTableStreamDialer(t *testing.T) {
 			return nil, errors.New("mock dialer config must have a 'name'")
 		}
 
+		var dialer transport.StreamDialer
 		switch name {
-			case "dialerA": return &mockStreamDialer{name: "dialerA"},
-			case "dialerB": return &mockStreamDialer{name: "dialerB"},
-			case "default": return &mockStreamDialer{name: "default"},
-		}
-      
-		dialer, ok := dialers[name]
-		if !ok {
+		case "dialerA":
+			dialer = &errorStreamDialer{name: "dialerA"}
+		case "dialerB":
+			dialer = &errorStreamDialer{name: "dialerB"}
+		case "default":
+			dialer = &errorStreamDialer{name: "default"}
+		default:
 			return nil, fmt.Errorf("no mock dialer found with name: %s", name)
 		}
+		return &Dialer[transport.StreamConn]{Dial: dialer.DialStream}, nil
 	}
 
 	// Define test cases
 	testCases := []struct {
 		name        string
-		config      map[string]any
+		configYAML  string
 		expectErr   string
 		checkDialer func(*testing.T, transport.StreamDialer)
 	}{
 		{
 			name: "Happy Path - valid config",
-			config: map[string]any{
-				"table": []any{
-					map[string]any{"ip": "192.168.1.0/24", "dialer": map[string]any{"name": "dialerA"}},
-					map[string]any{"ip": "10.0.0.1", "dialer": map[string]any{"name": "dialerB"}},
-					map[string]any{"ip": "", "dialer": map[string]any{"name": "default"}},
-				},
-			},
+			configYAML: `
+table:
+  - ip: 192.168.1.0/24
+    dialer: {name: dialerA}
+  - ip: 10.0.0.1
+    dialer: {name: dialerB}
+  - dialer: {name: default}
+`,
 			checkDialer: func(t *testing.T, dialer transport.StreamDialer) {
 				_, err := dialer.DialStream(ctx, "192.168.1.100:1234")
 				require.ErrorContains(t, err, "dialer 'dialerA' called for address '192.168.1.100:1234'")
@@ -106,35 +83,39 @@ func TestParseIPTableStreamDialer(t *testing.T) {
 			},
 		},
 		{
-			name:      "Error - empty table",
-			config:    map[string]any{"table": []any{}},
-			expectErr: "iptable config 'table' must not be empty for stream dialer",
+			name:       "Error - empty table",
+			configYAML: `table: []`,
+			expectErr:  "iptable config 'table' must not be empty for stream dialer",
 		},
 		{
 			name: "Error - multiple defaults",
-			config: map[string]any{
-				"table": []any{
-					map[string]any{"ip": "", "dialer": map[string]any{"name": "default"}},
-					map[string]any{"ip": "", "dialer": map[string]any{"name": "dialerA"}},
-				},
-			},
+			configYAML: `
+table:
+  - dialer: {name: default}
+  - dialer: {name: dialerA}
+`,
 			expectErr: "multiple default dialers specified in iptable for stream",
 		},
 		{
 			name: "Error - invalid IP",
-			config: map[string]any{
-				"table": []any{
-					map[string]any{"ip": "not-an-ip", "dialer": map[string]any{"name": "dialerA"}},
-					map[string]any{"ip": "", "dialer": map[string]any{"name": "default"}},
-				},
-			},
+			configYAML: `
+table:
+  - ip: not-an-ip
+    dialer: {name: dialerA}
+  - dialer: {name: default}
+`,
 			expectErr: "is not a valid IP address or CIDR prefix",
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			dialer, err := parseIPTableStreamDialer(ctx, tc.config, parser)
+			node, err := configyaml.ParseConfigYAML(tc.configYAML)
+			require.NoError(t, err)
+			configMap, ok := node.(map[string]any)
+			require.True(t, ok, "parsed yaml is not a map")
+
+			dialer, err := parseIPTableStreamDialer(ctx, configMap, parseSE)
 
 			if tc.expectErr != "" {
 				require.Contains(t, err.Error(), tc.expectErr)
