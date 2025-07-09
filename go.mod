@@ -8,7 +8,7 @@ require (
 	github.com/Wifx/gonetworkmanager/v2 v2.1.0
 	github.com/eycorsican/go-tun2socks v1.16.11
 	github.com/go-task/task/v3 v3.36.0
-	github.com/goccy/go-yaml v1.15.19
+	github.com/goccy/go-yaml v1.18.0
 	github.com/google/addlicense v1.1.1
 	github.com/google/go-licenses v1.6.0
 	github.com/songgao/water v0.0.0-20200317203138-2b4b6d7c09d8

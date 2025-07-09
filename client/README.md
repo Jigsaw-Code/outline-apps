@@ -6,7 +6,6 @@ The Outline Client is a cross-platform VPN or proxy client for Windows, macOS, i
 
 The client's user interface is implemented in [Polymer](https://www.polymer-project.org/) 2.0. Platform support is provided by [Cordova](https://cordova.apache.org/) and [Electron](https://electronjs.org/), with additional native components in this repository.
 
-
 ## Requirements for all builds
 
 All builds require [Node](https://nodejs.org/) 18 (lts/hydrogen), and [Go](https://golang.org/) 1.22 installed in addition to other per-platform requirements.

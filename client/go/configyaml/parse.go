@@ -17,21 +17,86 @@ package configyaml
 import (
 	"bytes"
 	"context"
-	"errors"
-	"fmt"
 
 	"github.com/goccy/go-yaml"
+	"github.com/goccy/go-yaml/ast"
 )
 
 // ConfigTypeKey is the config key used to specify the type of the config in order to select the corresponding parser.
 const ConfigTypeKey = "$type"
+
+type ParseFunc[OutputType any] func(ctx context.Context, input []byte) (OutputType, error)
+
+type parseOption *typeParserOption
+
+type typeParserOption struct {
+	yamlOption yaml.DecodeOption
+}
+
+func WithTypeParser[OutputType any](parse ParseFunc[OutputType]) parseOption {
+	return &typeParserOption{
+		yamlOption: yaml.CustomUnmarshalerContext(func(ctx context.Context, t *OutputType, b []byte) error {
+			var err error
+			*t, err = parse(ctx, b)
+			return err
+		}),
+	}
+}
+
+// NewConfigParser is a convenience functions to create parsers for the OutputType based on a config format
+// determined by a struct, the InputType. Parsing happens in two steps:
+// 1) Map the input bytes to InputType
+// 2) Feed newOutput with InputType, to get OutputType.
+// parseOptions are used to pass dependent parsers, specified with `WithTypeParser`.
+func NewConfigParser[InputType any, OutputType any](
+	newOutput func(context.Context, InputType) (OutputType, error),
+	parseOptions ...parseOption,
+) ParseFunc[OutputType] {
+	return func(ctx context.Context, config []byte) (OutputType, error) {
+		var zero OutputType
+
+		yamlOptions := make([]yaml.DecodeOption, 0, len(parseOptions)+1)
+		for _, opt := range parseOptions {
+			yamlOptions = append(yamlOptions, opt.yamlOption)
+		}
+		yamlOptions = append(yamlOptions, yaml.DisallowUnknownField())
+		var parsedConfig InputType
+		// TODO: make it not panic if parser for a dependency type is missing.
+		if err := yaml.UnmarshalContext(ctx, config, &parsedConfig, yamlOptions...); err != nil {
+			return zero, err
+		}
+		return newOutput(ctx, parsedConfig)
+	}
+}
+
+func ConfigNodeToOutput[InputType any, OutputType any](
+	ctx context.Context, node *ast.MappingNode, newOutput func(context.Context, InputType) (OutputType, error), parseOptions ...parseOption) (OutputType, error) {
+	yamlOptions := make([]yaml.DecodeOption, 0, len(parseOptions)+1)
+	for _, opt := range parseOptions {
+		yamlOptions = append(yamlOptions, opt.yamlOption)
+	}
+	yamlOptions = append(yamlOptions, yaml.DisallowUnknownField())
+	var buf bytes.Buffer
+	var input InputType
+	// TODO: Handle unknown fields. Idea:
+	// 1) Remove optional fields and parse disallowing unknown fields. If it fails, return error.
+	// 2) Rename optional fields without the optional marker
+	// 3) Parse allowing unknown fields
+	// TODO: make it not panic if dependency is missing.
+	err := yaml.NewDecoder(&buf, yamlOptions...).DecodeFromNodeContext(ctx, node, &input)
+	if err != nil {
+		var zero OutputType
+		return zero, err
+	}
+	return newOutput(ctx, input)
+}
 
 // configyaml.ConfigNode represents an intermediate config node. It's typically one of the types supported by YAML (list, map, scalar)
 // but it can be arbitrary objects returned by parsers as well.
 type ConfigNode any
 
 // ParseFunc takes a [configyaml.ConfigNode] and returns an object of the given type.
-type ParseFunc[OutputType any] func(ctx context.Context, input ConfigNode) (OutputType, error)
+// type ParseFunc[OutputType any] func(ctx context.Context, input ConfigNode) (OutputType, error)
 
 // ParseConfigYAML takes a YAML config string and returns it as an object that the type parsers can use.
 func ParseConfigYAML(configText string) (ConfigNode, error) {
@@ -42,6 +107,7 @@ func ParseConfigYAML(configText string) (ConfigNode, error) {
 	return node, nil
 }
 
+/*
 // MapToAny marshalls a map into a struct. It's a helper for parsers that want to
 // map config maps into their config structures.
 func MapToAny(in map[string]any, out any) error {
@@ -137,3 +203,5 @@ func (p *TypeParser[T]) Parse(ctx context.Context, config ConfigNode) (T, error)
 func (p *TypeParser[T]) RegisterSubParser(name string, function func(context.Context, map[string]any) (T, error)) {
 	p.subparsers[name] = function
 }
+
+*/

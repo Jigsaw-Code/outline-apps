@@ -134,6 +134,8 @@ github.com/go-task/task/v3 v3.36.0 h1:XVJ5hQ5hdzTAulHpAGzbUMUuYr9MUOEQFOFazI3hUs
 github.com/go-task/task/v3 v3.36.0/go.mod h1:XBCIAzuyG/mgZVHMUm3cCznz4+IpsBQRlW1gw7OA5sA=
 github.com/goccy/go-yaml v1.15.19 h1:ivDxLiW6SbmqPZwSAM9Yq+Yr68C9FLbTNyuH3ITizxQ=
 github.com/goccy/go-yaml v1.15.19/go.mod h1:XBurs7gK8ATbW4ZPGKgcbrY1Br56PdM69F7LkFRi1kA=
+github.com/goccy/go-yaml v1.18.0 h1:8W7wMFS12Pcas7KU+VVkaiCng+kG8QiFeFwzFb+rwuw=
+github.com/goccy/go-yaml v1.18.0/go.mod h1:XBurs7gK8ATbW4ZPGKgcbrY1Br56PdM69F7LkFRi1kA=
 github.com/godbus/dbus/v5 v5.1.0 h1:4KLkAxT3aOY8Li4FRJe/KvhoNFFxo0m6fNuFUO8QJUk=
 github.com/godbus/dbus/v5 v5.1.0/go.mod h1:xhWf0FNVPg57R7Z0UbKHbJfkEywrmjJnf7w5xrFpKfA=
 github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b/go.mod h1:SBH7ygxi8pfUlaOkMMuAQtPIUF8ecWP5IEl/CR7VP2Q=
