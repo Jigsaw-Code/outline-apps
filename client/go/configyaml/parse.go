@@ -198,7 +198,7 @@ func (p *TypeParser[T]) Parse(ctx context.Context, config ConfigNode) (T, error)
 }
 
 // RegisterSubParser registers the given subparser function with the given name for the type T.
-// Note that a subparser always take a map[string]any, not configyaml.ConfigNode, since we must have a map[string]any in
+// Note that a subparser always take a map[string]any, not [ConfigNode], since we must have a map[string]any in
 // order to set the value for the ConfigParserKey.
 func (p *TypeParser[T]) RegisterSubParser(name string, function func(context.Context, map[string]any) (T, error)) {
 	p.subparsers[name] = function

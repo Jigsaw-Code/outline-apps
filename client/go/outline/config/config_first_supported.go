@@ -50,5 +50,5 @@ func parseFirstSupported[Output any](ctx context.Context, configMap map[string]a
 		}
 		return endpoint, err
 	}
-	return zero, fmt.Errorf("no suported option found: %w", errors.ErrUnsupported)
+	return zero, fmt.Errorf("no supported option found: %w", errors.ErrUnsupported)
 }
