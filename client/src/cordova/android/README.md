@@ -45,7 +45,7 @@ Alternatively, you can do it on the command-line:
 1. Install platform and build tools:
 
     ```shell
-    sdkmanager "platforms;android-35" "build-tools;35.0.0" "ndk;25.1.8937393" 
+    sdkmanager "platforms;android-35" "build-tools;35.0.0" "ndk;26.1.10909125" 
     ```
 
 1. Install optional components that help development (source code, emulator and image):
