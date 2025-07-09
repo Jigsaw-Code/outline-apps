@@ -80,7 +80,6 @@
     "cordova-browser": "~6.0.0",
     "cordova-ios": "github:apache/cordova-ios#1a5cd45e2243b239b5045a0ade9d2da1d779b72a",
     "cordova-lib": "^11.0.0",
-    "cordova-osx": "github:apache/cordova-osx",
     "cordova-plugin-clipboard": "github:Jigsaw-Code/outline-cordova-plugin-clipboard#v2.0.0",
     "cordova-plugin-outline": "file:src/cordova/plugin",
     "cordova-webintent": "github:cordova-misc/cordova-webintent#v2.0.0",
