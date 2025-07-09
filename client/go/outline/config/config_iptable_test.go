@@ -55,14 +55,28 @@ func TestParseIPTableStreamDialer(t *testing.T) {
 	ctx := context.Background()
 
 	// Define a set of mock dialers for our tests to use.
-	mockDialers := map[string]transport.StreamDialer{
-		"dialerA": &mockStreamDialer{name: "dialerA"},
-		"dialerB": &mockStreamDialer{name: "dialerB"},
-		"default": &mockStreamDialer{name: "default"},
-	}
+	parseSE := func(ctx context.Context, config configyaml.ConfigNode) (*Dialer[transport.StreamConn], error) {
+		configMap, ok := config.(map[string]any)
+		if !ok {
+			return nil, errors.New("config is not a map[string]any")
+		}
 
-	// Create a parser instance with our mock dialers.
-	parser := mockSubDialerParser(mockDialers)
+		name, ok := configMap["name"].(string)
+		if !ok {
+			return nil, errors.New("mock dialer config must have a 'name'")
+		}
+
+		switch name {
+			case "dialerA": return &mockStreamDialer{name: "dialerA"},
+			case "dialerB": return &mockStreamDialer{name: "dialerB"},
+			case "default": return &mockStreamDialer{name: "default"},
+		}
+      
+		dialer, ok := dialers[name]
+		if !ok {
+			return nil, fmt.Errorf("no mock dialer found with name: %s", name)
+		}
+	}
 
 	// Define test cases
 	testCases := []struct {
