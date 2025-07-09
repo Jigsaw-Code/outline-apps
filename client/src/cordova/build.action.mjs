@@ -16,14 +16,14 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import url from 'url';
 
-import { downloadHttpsFile } from '@outline/infrastructure/build/download_file.mjs';
-import { getRootDir } from '@outline/infrastructure/build/get_root_dir.mjs';
-import { runAction } from '@outline/infrastructure/build/run_action.mjs';
-import { spawnStream } from '@outline/infrastructure/build/spawn_stream.mjs';
+import {downloadHttpsFile} from '@outline/infrastructure/build/download_file.mjs';
+import {getRootDir} from '@outline/infrastructure/build/get_root_dir.mjs';
+import {runAction} from '@outline/infrastructure/build/run_action.mjs';
+import {spawnStream} from '@outline/infrastructure/build/spawn_stream.mjs';
 import cordovaLib from 'cordova-lib';
-const { cordova } = cordovaLib;
+const {cordova} = cordovaLib;
 
-import { getBuildParameters } from '../../build/get_build_parameters.mjs';
+import {getBuildParameters} from '../../build/get_build_parameters.mjs';
 
 const CORDOVA_PLATFORMS = ['android', 'ios', 'macos'];
 
@@ -33,7 +33,7 @@ const CORDOVA_PLATFORMS = ['android', 'ios', 'macos'];
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  const { platform, buildMode, verbose } = getBuildParameters(parameters);
+  const {platform, buildMode, verbose} = getBuildParameters(parameters);
 
   if (!CORDOVA_PLATFORMS.includes(platform)) {
     throw new TypeError(

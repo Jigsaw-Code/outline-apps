@@ -16,17 +16,16 @@ import os from 'os';
 import path from 'path';
 import url from 'url';
 
-import { getRootDir } from '@outline/infrastructure/build/get_root_dir.mjs';
-import { runAction } from '@outline/infrastructure/build/run_action.mjs';
-import { spawnStream } from '@outline/infrastructure/build/spawn_stream.mjs';
+import {getRootDir} from '@outline/infrastructure/build/get_root_dir.mjs';
+import {runAction} from '@outline/infrastructure/build/run_action.mjs';
+import {spawnStream} from '@outline/infrastructure/build/spawn_stream.mjs';
 import cordovaLib from 'cordova-lib';
 import rmfr from 'rmfr';
 
-import { getBuildParameters } from '../../build/get_build_parameters.mjs';
-import { makeReplacements } from '../../build/make_replacements.mjs';
+import {getBuildParameters} from '../../build/get_build_parameters.mjs';
+import {makeReplacements} from '../../build/make_replacements.mjs';
 
-const { cordova } = cordovaLib;
-const WORKING_CORDOVA_OSX_COMMIT = '07e62a53aa6a8a828fd988bc9e884c38c3495a67';
+const {cordova} = cordovaLib;
 
 /**
  * @description Prepares the paramterized cordova project (ios, macos, android) for being built.
@@ -36,7 +35,7 @@ const WORKING_CORDOVA_OSX_COMMIT = '07e62a53aa6a8a828fd988bc9e884c38c3495a67';
  * @param {string[]} parameters
  */
 export async function main(...parameters) {
-  const { platform, buildMode, verbose, buildNumber, versionName } =
+  const {platform, buildMode, verbose, buildNumber, versionName} =
     getBuildParameters(parameters);
 
   await runAction('client/src/www/build', ...parameters);
