@@ -89,9 +89,12 @@ func TestRegisterParseURLInQuotes(t *testing.T) {
 	require.Equal(t, ConnTypeTunneled, d.PacketListener.ConnType)
 }
 
-type mockStreamDialer struct {
-	name string
-	transport.StreamDialer
+type errorStreamDialer struct {
+  name string
+}
+
+func (d *errorStreamDialer) DialStream(ctx context.Context, addr string) (transport.StreamConn, error) {
+	return nil, fmt.Errorf("dialer '%s' called for address '%s'", d.name, addr)
 }
 
 func (d *mockStreamDialer) DialStream(ctx context.Context, addr string) (transport.StreamConn, error) {
