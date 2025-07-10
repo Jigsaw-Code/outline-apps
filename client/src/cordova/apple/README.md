@@ -13,18 +13,18 @@ You will need:
 
 ## Initalizing the XCode Project
 
-The XCode project is assembled by Cordova. To initialize and open the **iOS/Mac Catalyst** project, run the following commands:
+The XCode project is assembled by Cordova. To initialize and open the **iOS** project, run the following commands:
 
 ```sh
 npm run action client/src/cordova/setup ios
-open ./client/src/cordova/apple/ios.xcworkspace
+open ./client/src/cordova/apple/client.xcworkspace
 ```
 
-For legacy **macOS**:
+For **macOS**:
 
 ```sh
 npm run action client/src/cordova/setup macos 
-open ./client/src/cordova/apple/macos.xcworkspace
+open ./client/src/cordova/apple/client.xcworkspace
 ```
 
 > [!NOTE] 
@@ -87,9 +87,10 @@ For the **macOS** client, you can simply select your macOS computer: **Product >
 
 <img width="802" alt="image" src="https://github.com/Jigsaw-Code/outline-internal-sdk/assets/113565/f3289c08-5f33-423a-a496-d5d764f4fce0">
 
+
 ## Development
 
-Most of the Apple-specific development can happen directly on XCode. However, if you edit files in the generated `platforms/ios` or `platforms/osx`, you will need to copy your changes to the appropriate version-controlled location at [`src/cordova/apple/xcode`](./xcode) or [`src/cordova/plugin/apple`](../plugin/apple).
+Most of the Apple-specific development can happen directly on XCode. However, if you edit files in the generated `platforms/ios`, you will need to copy your changes to the appropriate version-controlled location at [`src/cordova/apple/xcode`](./xcode) or [`src/cordova/plugin/apple`](../plugin/apple).
 
 Changes to the [OutlineAppleLib](./OutlineAppleLib) package don't need to be copied, since the package is linked by the XCode workspace and the changes happen in the original location.
 
@@ -137,62 +138,17 @@ Sometimes the app will refuse to connect, with a `VpnStartFailure` error:
 
 <img width="283" alt="image" src="https://github.com/Jigsaw-Code/outline-apps/assets/113565/5f6ff845-8be3-431d-a40c-98bcfbd6ec8a">
 
-If that happens, there are some things you can try.
+If that happens, it may be the case that the app is trying to use the wrong version of the plugin.
 
+To fix, run:
 
-#### Kill any leftover processes
-
-You can kill the app and extension with the [`pkill` command](https://man7.org/linux/man-pages/man1/pgrep.1.html):
 ```sh
-pkill -9 Outline VpnExtension
-```
-
-Sometimes the processes will not die, even with `-9`. For the Outline process, you may need to kill its parent process, usually `debugserver`.
-
-You can check running processes with the [`pgrep` command](https://man7.org/linux/man-pages/man1/pgrep.1.html):
-```sh
-pgrep Outline VpnExtension
-```
-
-
-#### Ensure the right extension is being loaded
-
-The VpnExtension is an [application extension](https://developer.apple.com/library/content/documentation/General/Conceptual/ExtensibilityPG/) that handles the device’s traffic when the VPN is enabled. The system must be aware of the extension in order to invoke it. Normally, running the app is enough to trigger the registration of the VpnExtension. However, the system can get confused in a development environment, failing to register the plugin automatically, or using the extension from the production app, if you have it installed, or from a different build.
-
-In your terminal, use the `pluginkit` command to inspect the registered plugins:
-```sh
-pluginkit -mvA | grep outline
-```
-
-You should see an for the VpnExtension in your Xcode project, where the version and binary location match.  This should output something similar to:
-
-`org.outline.macos.client.VpnExtension(0.0.0-dev)   508D6616-9FCB-4302-B00F-22121C236AAC    2023-07-14 00:05:34 +0000       /Users/$USER/Library/Developer/Xcode/DerivedData/macos-bnidlwvulcdazjfxleynwzkychqi/Build/Products/Debug/Outline.app/Contents/PlugIns/VpnExtension.appex`
-
-Note how `VpnExtension.appex` is inside `Outline.app/`.
-
-It's safe to unregister all the Outline VPN Extensions, since the system will load them on demand. To do so, for each of them, call
-
-```
-pluginkit -r $APP_EXTENSION_PATH
-```
-
-Make sure that you list the registered plugins again after unregistering them, since they may fallback to other versions of it, which you may also need to unregister.
-
-Where the `$APP_EXTENSION_PATH` is the location of the `VpnExtension.appex` file from the pluginkit command.
-
-If your extenstion is still not loading, you can try to force register it:
-
-1. Determine the VpnExtension path
-  1. In XCode, go to **Product > Show Build Folder in Finder**. That will open the `Build/` folder.
-  1. The VpnExtension will be at `Build/Products/Debug/Outline.app/Contents/PlugIns/VpnExtension.appex`
-1. Run `run pluginkit -a <your appex file>`, e.g. `pluginkit -a /Users/$USER/Library/Developer/Xcode/DerivedData/macos-bnidlwvulcdazjfxleynwzkychqi/Build/Products/Debug/Outline.app/Contents/PlugIns/VpnExtension.appex`
-
-You may need to run the `lsregister` garbage collector to make sure old entries
-in the Launch Services database are cleared:
-
-```
+pkill -9 VpnExtension
+for p in $(pluginkit -Amv | cut -f 4 | grep Outline); do pluginkit -r $p; done;
 /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -gc
 ```
+
+This will kill any running VPN extension, unregister all versions of the Outline VPN plugin and garbage collect the Launch Services database.
 
 #### Delete the existing VPN configuration
 
@@ -211,7 +167,7 @@ If all fails, restart your device. That usually takes care of the issue.
 To debug the webview:
 
 1. You may need to enable the Develop menu first, by selecting **Settings > Advanced > Show Develop menu** in menu bar
-1. In your terminal, run `defaults write org.outline.osx.client WebKitDeveloperExtras -bool true`.  This is only needed once, to make the Outline webview debuggable.  You may need to re-run the whole Outline app (use Cmd+R).
+1. In your terminal, run `defaults write org.outline.ios.client WebKitDeveloperExtras -bool true`.  This is only needed once, to make the Outline webview debuggable.  You may need to re-run the whole Outline app (use Cmd+R).
 1. In the Outline Client app, right click → Inspect Context. This will open the Safari debugger
 
 To reload the UI without re-running the application, right-click → Reload.
