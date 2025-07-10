@@ -212,7 +212,7 @@ export class AppRoot extends mixinBehaviors(
         }
 
         #drawer-nav paper-item .item-label {
-          float: inline-start
+          float: inline-start;
         }
 
         #drawer-nav paper-item:not(.iron-selected) {
@@ -291,7 +291,7 @@ export class AppRoot extends mixinBehaviors(
             width: 68px;
             height: 68px;
           }
-           #logo {
+          #logo {
             margin-top: 56px;
           }
           #drawer-nav paper-item {

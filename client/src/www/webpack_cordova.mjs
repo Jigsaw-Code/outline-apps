@@ -25,7 +25,6 @@ import {
   require,
   __dirname,
   TS_LOADER,
-  
 } from './webpack_base.mjs';
 
 const BABEL_LOADER = {

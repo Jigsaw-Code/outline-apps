@@ -22,7 +22,6 @@ import {
   browserConfig,
   __dirname,
   TS_LOADER,
-  
 } from './webpack_base.mjs';
 
 export default merge(baseConfig, browserConfig, {
