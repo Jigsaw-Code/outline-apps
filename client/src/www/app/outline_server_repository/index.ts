@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import * as methodChannel from '@outline/client/src/www/app/method_channel';
 import {Localizer} from '@outline/infrastructure/i18n';
 import {makeConfig, SIP002_URI} from 'ShadowsocksConfig';
 import uuidv4 from 'uuidv4';
@@ -164,7 +165,20 @@ class OutlineServerRepository implements ServerRepository {
     this.eventQueue.enqueue(new events.ServerRenamed(server));
   }
 
-  forget(serverId: string) {
+  /**
+   * parseTunnelConfig parses the given tunnel config as text and returns a new TunnelConfigJson.
+   * The config text may be a "ss://" link or a JSON object.
+   * This is used by the server to parse the config fetched from the dynamic key, and to parse
+   * static keys as tunnel configs (which may be present in the dynamic config).
+   */
+  async removeCookieByKeyID(KeyID: string) {
+    const output = await methodChannel
+      .getDefaultMethodChannel()
+      .invokeMethod('RemoveCookieByKeyID', KeyID);
+    return JSON.parse(output);
+  }
+
+  async forget(serverId: string) {
     const entry = this.serverById.get(serverId);
     if (!entry) {
       console.warn(`Cannot remove nonexistent server ${serverId}`);
@@ -174,6 +188,8 @@ class OutlineServerRepository implements ServerRepository {
     this.lastForgottenServer = entry;
     this.storeServers();
     this.eventQueue.enqueue(new events.ServerForgotten(entry.server));
+    // Call removeCookiesByKeyID in reporting_client.go with serverId
+    this.removeCookieByKeyID(serverId);
   }
 
   undoForget(serverId: string) {

@@ -18,6 +18,7 @@ import (
 	"fmt"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/reporting"
 )
 
 // API name constants. Keep sorted by name.
@@ -54,6 +55,7 @@ const (
 	//  - Input: A callback token string.
 	//  - Output: null
 	MethodSetVPNStateChangeListener = "SetVPNStateChangeListener"
+	MethodRemoveCookieByKeyID = "RemoveCookieByKeyID"
 )
 
 // InvokeMethodResult represents the result of an InvokeMethod call.
@@ -92,6 +94,12 @@ func InvokeMethod(method string, input string) *InvokeMethodResult {
 
 	case MethodSetVPNStateChangeListener:
 		err := setVPNStateChangeListener(input)
+		return &InvokeMethodResult{
+			Error: platerrors.ToPlatformError(err),
+		}
+
+	case MethodRemoveCookieByKeyID:
+		err := reporting.RemoveCookiesByKeyID(input)
 		return &InvokeMethodResult{
 			Error: platerrors.ToPlatformError(err),
 		}

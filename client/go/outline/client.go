@@ -22,6 +22,7 @@ import (
 	"github.com/Jigsaw-Code/outline-apps/client/go/configyaml"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/config"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/reporting"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 	"github.com/goccy/go-yaml"
 )
@@ -31,8 +32,10 @@ import (
 // It's used by the connectivity test and the tun2socks handlers.
 // TODO: Rename to Transport. Needs to update per-platform code.
 type Client struct {
-	sd *config.Dialer[transport.StreamConn]
-	pl *config.PacketListener
+	sd     *config.Dialer[transport.StreamConn]
+	pl     *config.PacketListener
+	Ur     *config.UsageReporter
+	cancel context.CancelFunc // Used to stop reporting
 }
 
 func (c *Client) DialStream(ctx context.Context, address string) (transport.StreamConn, error) {
@@ -45,7 +48,8 @@ func (c *Client) ListenPacket(ctx context.Context) (net.PacketConn, error) {
 
 // ClientConfig is used to create the Client.
 type ClientConfig struct {
-	Transport configyaml.ConfigNode
+	Transport       configyaml.ConfigNode
+	ReportingConfig configyaml.ConfigNode `yaml:"reporting_config,omitempty"`
 }
 
 // NewClientResult represents the result of [NewClientAndReturnError].
@@ -56,7 +60,23 @@ type NewClientResult struct {
 	Error  *platerrors.PlatformError
 }
 
-// NewClient creates a new Outline client from a configuration string.
+func (c *Client) StartReporting() {
+	if c.Ur == nil {
+		return
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	c.cancel = cancel // Store the cancel function to stop reporting later
+
+	go reporting.StartReporting(ctx, c, c.Ur)
+}
+
+func (c *Client) StopReporting() {
+	if c.cancel != nil {
+		c.cancel() // Signal the context to stop reporting
+		c.cancel = nil
+	}
+}
+
 func NewClient(clientConfig string) *NewClientResult {
 	tcpDialer := transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
 	udpDialer := transport.UDPDialer{}
@@ -67,6 +87,7 @@ func NewClient(clientConfig string) *NewClientResult {
 	return &NewClientResult{Client: client}
 }
 
+// NewClientWithBaseDialers creates a new Client with the given clientConfig and base dialers.
 func NewClientWithBaseDialers(clientConfigText string, tcpDialer transport.StreamDialer, udpDialer transport.PacketDialer) (*Client, error) {
 	var clientConfig ClientConfig
 	err := yaml.Unmarshal([]byte(clientConfigText), &clientConfig)
@@ -108,6 +129,37 @@ func NewClientWithBaseDialers(clientConfigText string, tcpDialer transport.Strea
 			Message: "transport must tunnel UDP traffic",
 		}
 	}
+	var usageReporter *config.UsageReporter
+	if clientConfig.ReportingConfig != nil {
+		usageReporter, err = config.NewUsageReportProvider().Parse(context.Background(), clientConfig.ReportingConfig)
+		if err != nil {
+			if errors.Is(err, errors.ErrUnsupported) {
+				return nil, &platerrors.PlatformError{
+					Code:    platerrors.InvalidConfig,
+					Message: "unsupported client config",
+					Cause:   platerrors.ToPlatformError(err),
+				}
+			} else {
+				return nil, &platerrors.PlatformError{
+					Code:    platerrors.InvalidConfig,
+					Message: "failed to create usage report",
+					Cause:   platerrors.ToPlatformError(err),
+				}
+			}
+		}
+	}
 
-	return &Client{sd: transportPair.StreamDialer, pl: transportPair.PacketListener}, nil
+	return &Client{sd: transportPair.StreamDialer, pl: transportPair.PacketListener, Ur: usageReporter}, nil
+}
+
+// Get the reporting server
+func (c *Client) GetUr() *config.UsageReporter {
+	return c.Ur
+}
+
+// Set the Key ID (Server UUID)
+func (c *Client) SetKeyId(keyId string) {
+	if c.Ur != nil {
+		c.Ur.KeyId = keyId
+	}
 }
