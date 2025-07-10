@@ -110,17 +110,4 @@
         <icon src="resources/icons/ios/Icon-20@2x.png" width="40" height="40" />
         <icon src="resources/icons/ios/Icon-20@3x.png" width="60" height="60" />
     </platform>
-
-    <!-- macOS -->
-    <platform name="osx">
-        <preference name="deployment-target" value="10.11" />
-        <preference name="AllowWebViewNavigation" value="false" />
-        <icon src="resources/icons/osx/icon-16.png" width="16" height="16" />
-        <icon src="resources/icons/osx/icon-32.png" width="32" height="32" />
-        <icon src="resources/icons/osx/icon-64.png" width="64" height="64" />
-        <icon src="resources/icons/osx/icon-128.png" width="128" height="128" />
-        <icon src="resources/icons/osx/icon-256.png" width="256" height="256" />
-        <icon src="resources/icons/osx/icon-512.png" width="512" height="512" />
-        <icon src="resources/icons/osx/icon-1024.png" width="1024" height="1024" />
-    </platform>
 </widget>

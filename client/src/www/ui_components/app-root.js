@@ -878,9 +878,7 @@ export class AppRoot extends mixinBehaviors(
 
   _computeUseAltAccessMessage(language) {
     // Hack to show an alternative message
-    return (
-      language === 'fa' && this.platform !== 'ios' && this.platform !== 'osx'
-    );
+    return language === 'fa' && this.platform !== 'ios';
   }
 }
 globalThis.customElements.define(AppRoot.is, AppRoot);
