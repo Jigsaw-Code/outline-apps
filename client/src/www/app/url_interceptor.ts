@@ -56,7 +56,7 @@ export class AndroidUrlInterceptor extends UrlInterceptor {
 export class AppleUrlInterceptor extends UrlInterceptor {
   constructor(launchUrl?: string) {
     super();
-    // cordova-[ios|osx] call a global function with this signature when a URL is intercepted.
+    // cordova-ios calls a global function with this signature when a URL is intercepted.
     // We define it in |main.cordova|, redefine it to use this interceptor.
     window.handleOpenURL = (url: string) => {
       this.executeListeners(url);

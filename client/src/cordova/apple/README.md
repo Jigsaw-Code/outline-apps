@@ -90,7 +90,7 @@ For the **macOS** client, you can simply select your macOS computer: **Product >
 
 ## Development
 
-Most of the Apple-specific development can happen directly on XCode. However, if you edit files in the generated `platforms/ios` or `platforms/osx`, you will need to copy your changes to the appropriate version-controlled location at [`src/cordova/apple/xcode`](./xcode) or [`src/cordova/plugin/apple`](../plugin/apple).
+Most of the Apple-specific development can happen directly on XCode. However, if you edit files in the generated `platforms/ios`, you will need to copy your changes to the appropriate version-controlled location at [`src/cordova/apple/xcode`](./xcode) or [`src/cordova/plugin/apple`](../plugin/apple).
 
 Changes to the [OutlineAppleLib](./OutlineAppleLib) package don't need to be copied, since the package is linked by the XCode workspace and the changes happen in the original location.
 
@@ -167,7 +167,7 @@ If all fails, restart your device. That usually takes care of the issue.
 To debug the webview:
 
 1. You may need to enable the Develop menu first, by selecting **Settings > Advanced > Show Develop menu** in menu bar
-1. In your terminal, run `defaults write org.outline.osx.client WebKitDeveloperExtras -bool true`.  This is only needed once, to make the Outline webview debuggable.  You may need to re-run the whole Outline app (use Cmd+R).
+1. In your terminal, run `defaults write org.outline.ios.client WebKitDeveloperExtras -bool true`.  This is only needed once, to make the Outline webview debuggable.  You may need to re-run the whole Outline app (use Cmd+R).
 1. In the Outline Client app, right click → Inspect Context. This will open the Safari debugger
 
 To reload the UI without re-running the application, right-click → Reload.

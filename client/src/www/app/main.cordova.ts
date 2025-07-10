@@ -91,7 +91,7 @@ class CordovaPlatform implements OutlinePlatform {
   }
 
   getUrlInterceptor() {
-    if (cordova.platformId === 'ios' || cordova.platformId === 'osx') {
+    if (cordova.platformId === 'ios') {
       return new interceptors.AppleUrlInterceptor(appleLaunchUrl);
     } else if (cordova.platformId === 'android') {
       return new interceptors.AndroidUrlInterceptor();
@@ -144,7 +144,7 @@ const onceDeviceReady = new Promise(resolve => {
   document.addEventListener('deviceready', resolve);
 });
 
-// cordova-[ios|osx] call a global function with this signature when a URL is
+// cordova-ios call a global function with this signature when a URL is
 // intercepted. We handle URL interceptions with an intent interceptor; however,
 // when the app is launched via URL our start up sequence misses the call due to
 // a race. Define the function temporarily here, and set a global variable.
