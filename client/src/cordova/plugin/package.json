@@ -5,8 +5,7 @@
     "id": "cordova-plugin-outline",
     "platforms": [
       "android",
-      "ios",
-      "osx"
+      "ios"
     ]
   }
 }

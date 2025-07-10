@@ -25,7 +25,7 @@ import rmfr from 'rmfr';
 
 const APPLE_ROOT = path.join(getRootDir(), 'client', 'src', 'cordova', 'apple');
 
-const SUPPORTED_PLATFORMS = new Set(['ios', 'macos', 'maccatalyst']);
+const SUPPORTED_PLATFORMS = new Set(['ios', 'macos']);
 
 /**
  * @description Tests the parameterized cordova binary (ios, macos).
@@ -65,8 +65,8 @@ export async function main(...parameters) {
     'VpnExtensionTest',
     '-destination',
     outlinePlatform === 'macos'
-      ? `platform=macOS,arch=${os.machine()}`
-      : 'platform=iOS Simulator,OS=16.2,name=iPhone SE (3rd generation)',
+      ? `platform=macOS,variant=Mac Catalyst,arch=${os.machine()}`
+      : 'platform=iOS Simulator,OS=17.0.1,name=iPhone 15',
     '-project',
     path.join(APPLE_ROOT, 'OutlineLib', 'OutlineLib.xcodeproj'),
     '-enableCodeCoverage',

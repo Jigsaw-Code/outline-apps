@@ -33,7 +33,7 @@
                BlueprintIdentifier = "70BD682218FFB02D00A1EFCF"
                BuildableName = "Outline.app"
                BlueprintName = "Outline"
-               ReferencedContainer = "container:../../../../platforms/osx/Outline.xcodeproj">
+               ReferencedContainer = "container:../../../../platforms/ios/Outline.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -65,7 +65,7 @@
             BlueprintIdentifier = "70BD682218FFB02D00A1EFCF"
             BuildableName = "Outline.app"
             BlueprintName = "Outline"
-            ReferencedContainer = "container:../../../../platforms/osx/Outline.xcodeproj">
+            ReferencedContainer = "container:../../../../platforms/ios/Outline.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -83,7 +83,7 @@
             BlueprintIdentifier = "70BD682218FFB02D00A1EFCF"
             BuildableName = "Outline.app"
             BlueprintName = "Outline"
-            ReferencedContainer = "container:../../../../platforms/osx/Outline.xcodeproj">
+            ReferencedContainer = "container:../../../../platforms/ios/Outline.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
