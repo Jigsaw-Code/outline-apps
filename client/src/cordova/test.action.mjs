@@ -65,7 +65,7 @@ export async function main(...parameters) {
     'VpnExtensionTest',
     '-destination',
     outlinePlatform === 'macos'
-      ? `platform=macOS,arch=${os.machine()}`
+      ? `platform=macOS,variant=Mac Catalyst,arch=${os.machine()}`
       : 'platform=iOS Simulator,OS=16.2,name=iPhone SE (3rd generation)',
     '-project',
     path.join(APPLE_ROOT, 'OutlineLib', 'OutlineLib.xcodeproj'),
