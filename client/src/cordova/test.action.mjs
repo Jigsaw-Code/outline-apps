@@ -25,7 +25,7 @@ import rmfr from 'rmfr';
 
 const APPLE_ROOT = path.join(getRootDir(), 'client', 'src', 'cordova', 'apple');
 
-const SUPPORTED_PLATFORMS = new Set(['ios', 'macos', 'maccatalyst']);
+const SUPPORTED_PLATFORMS = new Set(['ios', 'macos']);
 
 /**
  * @description Tests the parameterized cordova binary (ios, macos).
