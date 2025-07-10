@@ -160,6 +160,17 @@ class StatusItemController: NSObject {
             } else {
                 // User clicked "Disconnect" - attempt to disconnect regardless of current state
                 NSLog("[StatusItemController] Disconnecting VPN")
+                
+                // Disable on-demand rules to prevent automatic reconnection, this automatically gets re-enabled if the user clicks the connect button again (regardless of app or menubar)
+                do {
+                    try await manager.loadFromPreferences()
+                    manager.isOnDemandEnabled = false
+                    try await manager.saveToPreferences()
+                    NSLog("[StatusItemController] Disabled on-demand rules")
+                } catch {
+                    NSLog("[StatusItemController] Failed to disable on-demand rules: \(error.localizedDescription)")
+                }
+                
                 manager.connection.stopVPNTunnel()
             }
         }
