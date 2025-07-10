@@ -19,7 +19,7 @@ set -eux
 readonly DOCKER_IMAGE_NAME=outline_proxy_controller-build
 docker build -t $DOCKER_IMAGE_NAME $(dirname $0)
 
-# Work in a directory which Docker on OSX will by default make available to containers.
+# Work in a directory which Docker on macOS will by default make available to containers.
 readonly TEMP=$(mktemp -d /tmp/temp.XXXX)
 cp -Rv tools/outline_proxy_controller/* $TEMP/
 
