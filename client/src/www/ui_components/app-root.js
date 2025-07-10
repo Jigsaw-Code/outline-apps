@@ -211,12 +211,8 @@ export class AppRoot extends mixinBehaviors(
           border-width: 0px;
         }
 
-        :host(:dir(ltr)) #drawer-nav paper-item .item-label {
-          float: left;
-        }
-
-        :host(:dir(rtl)) #drawer-nav paper-item .item-label {
-          float: right;
+        #drawer-nav paper-item .item-label {
+          float: inline-start
         }
 
         #drawer-nav paper-item:not(.iron-selected) {
@@ -248,14 +244,7 @@ export class AppRoot extends mixinBehaviors(
         paper-item > img {
           height: 24px;
           width: 24px;
-        }
-
-        :host(:dir(ltr)) paper-item > img {
-          margin-right: 10px;
-        }
-
-        :host(:dir(rtl)) paper-item > img {
-          margin-left: 10px;
+          margin: 0 10px;
         }
 
         paper-item > a {
@@ -282,12 +271,8 @@ export class AppRoot extends mixinBehaviors(
           text-align: center;
         }
 
-        :host(:dir(ltr)) paper-toast paper-button {
-          margin-left: 12px;
-        }
-
-        :host(:dir(rtl)) paper-toast paper-button {
-          margin-right: 12px;
+        paper-toast paper-button {
+          margin: 0 12px;
         }
 
         @media (max-height: 480px) {
