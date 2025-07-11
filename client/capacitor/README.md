@@ -21,6 +21,7 @@ Then run the following on the command-line:
 
   ```shell
 npx webpack    
+npx capacitor-assets generate
 npx cap sync
   ```
 
