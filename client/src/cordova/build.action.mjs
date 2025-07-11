@@ -156,7 +156,7 @@ async function androidDebug(verbose) {
   );
 
   // Alternatively:
-  // npx cordova run android -- --gradleArg=--include-build=../../src/cordova/android/OutlineAndroidLib
+  // npx cordova build android -- --gradleArg=--include-build=../../src/cordova/android/OutlineAndroidLib
   return cordova.compile({
     verbose,
     platforms: ['android'],
