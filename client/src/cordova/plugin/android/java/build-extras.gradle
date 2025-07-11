@@ -1,7 +1,4 @@
 repositories {
-  flatDir {
-    dirs 'src/main/libs'
-  }
   maven {
     // This is relative to $WORKSPACE/client/platforms/android/
     url = uri(layout.settingsDirectory.dir("../../../output/client/android"))
