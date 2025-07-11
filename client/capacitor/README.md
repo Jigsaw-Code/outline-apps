@@ -39,3 +39,7 @@ For Android:
 npx cap open android
   ```
   
+
+  ## TODOs
+
+- [ ] Merge dependencies with parent package.json (Milestone 3)

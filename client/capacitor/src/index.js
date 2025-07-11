@@ -1,3 +1,6 @@
+// TODO(M3): Need to merge dependencies with parent package.json.
+
+
 import '@capacitor/core';
 import {
   Device
