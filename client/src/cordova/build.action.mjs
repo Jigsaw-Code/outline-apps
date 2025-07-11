@@ -155,13 +155,16 @@ async function androidDebug(verbose) {
     'WARNING: building "android" in [DEBUG] mode. Do not publish this build!!'
   );
 
+  // Alternatively:
+  // npx cordova build android -- --gradleArg=--include-build=../../src/cordova/android/OutlineAndroidLib
   return cordova.compile({
     verbose,
     platforms: ['android'],
     options: {
       argv: [
-        // Path is relative to /platforms/android/.
+        // Path is relative to $WORKSPACE/client/platforms/android/.
         // See https://docs.gradle.org/current/userguide/composite_builds.html#command_line_composite
+        // TODO(fortuna): Can we embed this in the gradle settings instead?
         '--gradleArg=--include-build=../../src/cordova/android/OutlineAndroidLib',
         verbose ? '--gradleArg=--info' : '--gradleArg=--quiet',
       ],
