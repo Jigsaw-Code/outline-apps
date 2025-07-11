@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package outline
+package iptable
 
 import (
 	"context"
@@ -22,7 +22,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Jigsaw-Code/outline-apps/client/go/outline/iptable"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -151,10 +150,10 @@ func (m *MockPacketDialer) Reset() {
 // --- Stream Dialer Tests ---
 
 func TestNewIPTableStreamDialer(t *testing.T) {
-	table := iptable.NewIPTable[transport.StreamDialer]()
+	table := NewIPTable[transport.StreamDialer]()
 
 	t.Run("Valid Table", func(t *testing.T) {
-		d, err := NewIPTableStreamDialer(table)
+		d, err := NewStreamDialer(table)
 		require.NoError(t, err)
 		require.NotNil(t, d)
 		assert.Nil(t, d.defaultDialer)
@@ -162,7 +161,7 @@ func TestNewIPTableStreamDialer(t *testing.T) {
 	})
 
 	t.Run("Nil Table", func(t *testing.T) {
-		d, err := NewIPTableStreamDialer(nil)
+		d, err := NewStreamDialer(nil)
 		require.NoError(t, err)
 		require.NotNil(t, d)
 		assert.Nil(t, d.defaultDialer)
@@ -170,8 +169,8 @@ func TestNewIPTableStreamDialer(t *testing.T) {
 	})
 }
 
-func TestIPTableStreamDialer_SetDefault(t *testing.T) {
-	d, err := NewIPTableStreamDialer(nil)
+func TestNewIPTableStreamDialer_SetDefault(t *testing.T) {
+	d, err := NewStreamDialer(nil)
 	require.NoError(t, err)
 	require.NotNil(t, d)
 	assert.Nil(t, d.defaultDialer)
@@ -187,22 +186,22 @@ func TestIPTableStreamDialer_DialStream(t *testing.T) {
 	routeV4Dialer := NewMockStreamDialer("routeV4")
 	routeV6Dialer := NewMockStreamDialer("routeV6")
 
-	table := iptable.NewIPTable[transport.StreamDialer]()
+	table := NewIPTable[transport.StreamDialer]()
 	table.AddPrefix(netip.MustParsePrefix("192.0.2.0/24"), routeV4Dialer)
 	table.AddPrefix(netip.MustParsePrefix("2001:db8:cafe::/48"), routeV6Dialer)
 
-	iptDialerWithDefault, err := NewIPTableStreamDialer(table)
+	iptDialerWithDefault, err := NewStreamDialer(table)
 	require.NoError(t, err)
 	require.NotNil(t, iptDialerWithDefault)
 	iptDialerWithDefault.SetDefault(defaultDialer)
 
-	iptDialerNoDefault, err := NewIPTableStreamDialer(table)
+	iptDialerNoDefault, err := NewStreamDialer(table)
 	require.NoError(t, err)
 	require.NotNil(t, iptDialerNoDefault)
 
 	testCases := []struct {
 		name         string
-		dialerToUse  *IPTableStreamDialer
+		dialerToUse  *StreamDialer
 		address      string
 		expectDialer *MockStreamDialer
 		expectConn   bool
@@ -335,10 +334,10 @@ func TestIPTableStreamDialer_DialStream(t *testing.T) {
 // --- Packet Dialer Tests ---
 
 func TestNewIPTablePacketDialer(t *testing.T) {
-	table := iptable.NewIPTable[transport.PacketDialer]()
+	table := NewIPTable[transport.PacketDialer]()
 
 	t.Run("Valid Table", func(t *testing.T) {
-		d, err := NewIPTablePacketDialer(table)
+		d, err := NewPacketDialer(table)
 		require.NoError(t, err)
 		require.NotNil(t, d)
 		assert.Nil(t, d.defaultDialer)
@@ -346,7 +345,7 @@ func TestNewIPTablePacketDialer(t *testing.T) {
 	})
 
 	t.Run("Nil Table", func(t *testing.T) {
-		d, err := NewIPTablePacketDialer(nil)
+		d, err := NewPacketDialer(nil)
 		require.NoError(t, err)
 		require.NotNil(t, d)
 		assert.Nil(t, d.defaultDialer)
@@ -355,7 +354,7 @@ func TestNewIPTablePacketDialer(t *testing.T) {
 }
 
 func TestIPTablePacketDialer_SetDefault(t *testing.T) {
-	d, err := NewIPTablePacketDialer(nil)
+	d, err := NewPacketDialer(nil)
 	require.NoError(t, err)
 	require.NotNil(t, d)
 	assert.Nil(t, d.defaultDialer)
@@ -371,22 +370,22 @@ func TestIPTablePacketDialer_DialPacket(t *testing.T) {
 	routeV4Dialer := NewMockPacketDialer("routeV4")
 	routeV6Dialer := NewMockPacketDialer("routeV6")
 
-	table := iptable.NewIPTable[transport.PacketDialer]()
+	table := NewIPTable[transport.PacketDialer]()
 	table.AddPrefix(netip.MustParsePrefix("192.0.2.0/24"), routeV4Dialer)
 	table.AddPrefix(netip.MustParsePrefix("2001:db8:cafe::/48"), routeV6Dialer)
 
-	iptDialerWithDefault, err := NewIPTablePacketDialer(table)
+	iptDialerWithDefault, err := NewPacketDialer(table)
 	require.NoError(t, err)
 	require.NotNil(t, iptDialerWithDefault)
 	iptDialerWithDefault.SetDefault(defaultDialer)
 
-	iptDialerNoDefault, err := NewIPTablePacketDialer(table)
+	iptDialerNoDefault, err := NewPacketDialer(table)
 	require.NoError(t, err)
 	require.NotNil(t, iptDialerNoDefault)
 
 	testCases := []struct {
 		name         string
-		dialerToUse  *IPTablePacketDialer
+		dialerToUse  *PacketDialer
 		address      string
 		expectDialer *MockPacketDialer
 		expectConn   bool
