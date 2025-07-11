@@ -22,11 +22,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.net.VpnService;
 import android.os.IBinder;
 import android.os.RemoteException;
 import androidx.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
@@ -62,7 +66,8 @@ public class OutlinePlugin extends CordovaPlugin {
     IS_RUNNING("isRunning"),
     INIT_ERROR_REPORTING("initializeErrorReporting"),
     REPORT_EVENTS("reportEvents"),
-    QUIT("quitApplication");
+    QUIT("quitApplication"),
+    GET_INSTALLED_APPS("getInstalledApps");
 
     private final static Map<String, Action> actions = new HashMap<>();
     static {
@@ -91,9 +96,13 @@ public class OutlinePlugin extends CordovaPlugin {
   private static class StartVpnRequest {
     public final JSONArray args;
     public final CallbackContext callback;
-    public StartVpnRequest(JSONArray args, CallbackContext callback) {
+    // Store allowedApplications separately as JSONArray doesn't directly support List<String>
+    public final List<String> allowedApplications;
+
+    public StartVpnRequest(JSONArray args, CallbackContext callback, List<String> allowedApplications) {
       this.args = args;
       this.callback = callback;
+      this.allowedApplications = allowedApplications;
     }
   }
 
@@ -173,11 +182,24 @@ public class OutlinePlugin extends CordovaPlugin {
       // Prepare the VPN before spawning a new thread. Fall through if it's already prepared.
       try {
         if (!prepareVpnService()) {
-          startVpnRequest = new StartVpnRequest(args, callbackContext);
+          List<String> allowedApplications = null;
+          if (args.length() > 3) {
+            JSONArray allowedAppsJson = args.optJSONArray(3);
+            if (allowedAppsJson != null) {
+              allowedApplications = new ArrayList<>();
+              for (int i = 0; i < allowedAppsJson.length(); ++i) {
+                allowedApplications.add(allowedAppsJson.getString(i));
+              }
+            }
+          }
+          startVpnRequest = new StartVpnRequest(args, callbackContext, allowedApplications);
           return true;
         }
       } catch (ActivityNotFoundException e) {
         sendActionResult(callbackContext, new PlatformError(Platerrors.InternalError, e.toString()));
+      } catch (JSONException e) {
+        LOG.log(Level.SEVERE, "Failed to parse allowedApplications from JSONArray", e);
+        sendActionResult(callbackContext, new PlatformError(Platerrors.InvalidOutlineInvite, e.toString()));
         return true;
       }
     }
@@ -209,7 +231,17 @@ public class OutlinePlugin extends CordovaPlugin {
           final String tunnelId = args.getString(0);
           final String serverName = args.getString(1);
           final String transportConfig = args.getString(2);
-          sendActionResult(callback, startVpnTunnel(tunnelId, transportConfig, serverName));
+          List<String> allowedApplications = null;
+          if (args.length() > 3) {
+            JSONArray allowedAppsJson = args.optJSONArray(3);
+            if (allowedAppsJson != null) {
+              allowedApplications = new ArrayList<>();
+              for (int i = 0; i < allowedAppsJson.length(); ++i) {
+                allowedApplications.add(allowedAppsJson.getString(i));
+              }
+            }
+          }
+          sendActionResult(callback, startVpnTunnel(tunnelId, transportConfig, serverName, allowedApplications));
         } else if (Action.STOP.is(action)) {
           final String tunnelId = args.getString(0);
           LOG.info(String.format(Locale.ROOT, "Stopping VPN tunnel %s", tunnelId));
@@ -230,6 +262,8 @@ public class OutlinePlugin extends CordovaPlugin {
           final String uuid = args.getString(0);
           SentryErrorReporter.send(uuid);
           callback.success();
+        } else if (Action.GET_INSTALLED_APPS.is(action)) {
+          callback.success(getInstalledApplications());
         } else {
           throw new IllegalArgumentException(
               String.format(Locale.ROOT, "Unexpected action %s", action));
@@ -272,9 +306,20 @@ public class OutlinePlugin extends CordovaPlugin {
   }
 
   private DetailedJsonError startVpnTunnel(
-      final String tunnelId, final String transportConfig, final String serverName
+      final String tunnelId, final String transportConfig, final String serverName, @Nullable final List<String> allowedApplications
   ) throws RemoteException {
     LOG.info(String.format(Locale.ROOT, "Starting VPN tunnel %s for server %s", tunnelId, serverName));
+    if (vpnTunnelService == null) {
+      return Errors.toDetailedJsonError(new PlatformError(Platerrors.IllegalState, "VPN service not connected"));
+    }
+    if (allowedApplications != null && !allowedApplications.isEmpty()) {
+      LOG.info(String.format(Locale.ROOT, "Setting %d allowed applications", allowedApplications.size()));
+      vpnTunnelService.setAllowedApplications(allowedApplications);
+    } else {
+      // Explicitly clear if null or empty to reset previous settings
+      LOG.info("Clearing allowed applications list.");
+      vpnTunnelService.setAllowedApplications(new ArrayList<>());
+    }
     final TunnelConfig tunnelConfig = new TunnelConfig();
     tunnelConfig.id = tunnelId;
     tunnelConfig.name = serverName;
@@ -353,5 +398,29 @@ public class OutlinePlugin extends CordovaPlugin {
     } else {
       callback.error(error.errorJson);
     }
+  }
+
+  private JSONArray getInstalledApplications() {
+    PackageManager pm = cordova.getActivity().getPackageManager();
+    List<ApplicationInfo> packages = pm.getInstalledApplications(PackageManager.GET_META_DATA);
+    JSONArray apps = new JSONArray();
+    for (ApplicationInfo appInfo : packages) {
+      try {
+        // Filter out system apps to provide a cleaner list to the user.
+        // Also filter out the Outline app itself.
+        if ((appInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0 ||
+            appInfo.packageName.equals(this.cordova.getActivity().getPackageName())) {
+          continue;
+        }
+        JSONObject app = new JSONObject();
+        app.put("packageName", appInfo.packageName);
+        app.put("label", pm.getApplicationLabel(appInfo).toString());
+        apps.put(app);
+      } catch (JSONException e) {
+        LOG.log(Level.WARNING, "Failed to serialize app info to JSON", e);
+      }
+    }
+    LOG.info(String.format(Locale.ROOT, "Found %d installed non-system applications.", apps.length()));
+    return apps;
   }
 }
