@@ -8,37 +8,34 @@ This document describes how to develop and debug for iOS & Android for Capacitor
 
 Install these pre-requisites:
 
-  ```shell
+```sh
  npm install @capacitor/cli @capacitor/core @capacitor/device @capacitor/assets
  npm install -D webpack-cli 
-  ```
-
+```
 
 ## Set up the Apps
 
 Then run the following on the command-line:
 
-
-  ```shell
+```sh
 npx webpack    
 npx capacitor-assets generate
 npx cap sync
-  ```
-
+```
 
 ## Run the Apps
 
 For iOS:
 
-  ```shell
+```sh
 npx cap open ios
-  ```
+```
 
 For Android:
 
-  ```shell
+```sh
 npx cap open android
-  ```
+```
   
 
   ## TODOs
