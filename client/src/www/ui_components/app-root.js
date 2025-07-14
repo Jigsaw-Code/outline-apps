@@ -244,7 +244,7 @@ export class AppRoot extends mixinBehaviors(
         paper-item > img {
           height: 24px;
           width: 24px;
-          margin: 0 10px;
+          margin: unset 10px;
         }
 
         paper-item > a {
@@ -272,7 +272,7 @@ export class AppRoot extends mixinBehaviors(
         }
 
         paper-toast paper-button {
-          margin: 0 12px;
+          margin: unset 12px;
         }
 
         @media (max-height: 480px) {
