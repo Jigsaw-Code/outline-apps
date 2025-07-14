@@ -67,20 +67,11 @@
       <meta-data android:name="io.sentry.auto-init" android:value="false" />
     </config-file>
 
-    <hook type="before_plugin_install" src="android/scripts/copy_third_party.js" />
-
     <source-file
       src="android/java/org/outline/OutlinePlugin.java"
       target-dir="app/src/main/java/org/outline" />
-    <source-file
-      src="android/libs/tun2socks.aar"
-      target-dir="app/src/main/libs" />
-    <resource-file src="android/resources/small_icon.png" target="res/drawable/small_icon.png" />
-    <resource-file src="android/resources/bypass_subnets.xml" target="res/values/bypass_subnets.xml" />
-    <resource-file src="android/resources/strings/" target="res/" />
-
-    <framework src="android/java/build-extras.gradle" custom="true"
-      type="gradleReference" />
+    <resource-file src="android/res/" target="res/" />
+    <framework src="android/build-extras.gradle" custom="true" type="gradleReference" />
   </platform>
 
   <!-- iOS -->
