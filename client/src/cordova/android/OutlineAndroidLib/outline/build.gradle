@@ -7,7 +7,7 @@ group = 'org.outline'
 
 android {
     namespace 'org.outline'
-    compileSdk 35
+    compileSdk 34
 
     buildFeatures {
         aidl true
