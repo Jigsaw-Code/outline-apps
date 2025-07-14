@@ -22,7 +22,6 @@ import {
   browserConfig,
   __dirname,
   TS_LOADER,
-  GENERATE_CSS_RTL_LOADER,
 } from './webpack_base.mjs';
 
 export default merge(baseConfig, browserConfig, {
@@ -33,7 +32,7 @@ export default merge(baseConfig, browserConfig, {
       {
         test: /\.m?ts$/,
         exclude: /node_modules/,
-        use: [TS_LOADER, GENERATE_CSS_RTL_LOADER],
+        use: [TS_LOADER],
       },
       {
         test: /\.m?ts$/,
@@ -43,7 +42,7 @@ export default merge(baseConfig, browserConfig, {
       {
         test: /\.m?js$/,
         exclude: /node_modules/,
-        use: [GENERATE_CSS_RTL_LOADER],
+        use: [],
       },
       {
         test: /\.txt$/i,

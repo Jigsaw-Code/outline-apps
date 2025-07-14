@@ -119,11 +119,11 @@ export class AppRoot extends mixinBehaviors(
         app-toolbar {
           height: var(--app-toolbar-height);
           color: #fff;
+          display: flex;
+          justify-content: space-between;
           padding: var(--app-toolbar-gutter);
           background: var(--dark-green);
           text-align: center;
-          display: flex;
-          justify-content: space-between;
         }
 
         app-toolbar [main-title] {
@@ -151,27 +151,25 @@ export class AppRoot extends mixinBehaviors(
         iron-pages {
           display: flex;
           flex: 1;
-          background-color: var(--outline-background);
           color: var(--outline-text-color);
+          background-color: var(--outline-background);
         }
 
         appearance-view {
-          background-color: var(--outline-background);
           color: var(--outline-text-color);
+          background-color: var(--outline-background);
         }
 
         #drawer-nav {
+          color: var(--outline-text-color);
           padding: 0;
           background-color: var(--outline-background);
-          color: var(--outline-text-color);
         }
 
         #nav-scrollable-container {
           height: 100%;
           overflow-y: auto;
         }
-
-        /* rtl:begin:ignore */
         #drawer-nav paper-item {
           cursor: pointer;
           font-size: 16px;
@@ -188,7 +186,6 @@ export class AppRoot extends mixinBehaviors(
           color: var(--medium-green);
           background-color: var(--light-gray);
         }
-        /* rtl:end:ignore */
 
         /* Manually reverse icons that require mirroring in RTL languages. */
         :host(:dir(rtl)) #backBtn {
@@ -196,9 +193,9 @@ export class AppRoot extends mixinBehaviors(
         }
 
         #logo-nav {
+          height: 120px;
           background-color: var(--dark-green);
           text-align: center;
-          height: 120px;
         }
 
         #logo {
@@ -208,14 +205,14 @@ export class AppRoot extends mixinBehaviors(
         }
 
         .nav-hr {
-          background-color: #e0e0e0;
           height: 1px;
+          background-color: #e0e0e0;
           margin: 0;
           border-width: 0px;
         }
 
         #drawer-nav paper-item .item-label {
-          float: left;
+          float: inline-start;
         }
 
         #drawer-nav paper-item:not(.iron-selected) {
@@ -247,7 +244,7 @@ export class AppRoot extends mixinBehaviors(
         paper-item > img {
           height: 24px;
           width: 24px;
-          margin-right: 10px;
+          margin: unset 10px;
         }
 
         paper-item > a {
@@ -270,9 +267,12 @@ export class AppRoot extends mixinBehaviors(
 
         paper-toast paper-button {
           color: var(--light-green);
-          text-align: center;
           /* Prevent the button getting too close to the toast's text. */
-          margin-left: 12px;
+          text-align: center;
+        }
+
+        paper-toast paper-button {
+          margin: unset 12px;
         }
 
         @media (max-height: 480px) {
@@ -290,6 +290,8 @@ export class AppRoot extends mixinBehaviors(
           #logo {
             width: 68px;
             height: 68px;
+          }
+          #logo {
             margin-top: 56px;
           }
           #drawer-nav paper-item {
