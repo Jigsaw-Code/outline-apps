@@ -39,6 +39,9 @@
 
         <preference name="AndroidWindowSplashScreenAnimatedIcon" value="resources/splashscreen/android/splash_screen_icon_xxxhdpi.png" />
         <preference name="AndroidWindowSplashScreenBackground" value="#263237" />
+        <preference name="SplashScreenDelay" value="3000" />
+        <preference name="FadeSplashScreenDuration" value="750" />
+        <preference name="AutoHideSplashScreen" value="true" />
 
         <preference name="AndroidInsecureFileModeEnabled" value="true" />
 
@@ -79,7 +82,6 @@
         <preference name="StatusBarBackgroundColor" value="#263238" />
         <preference name="StatusBarStyle" value="lightcontent" />
 
-        <!-- https://github.com/apache/cordova-plugin-splashscreen#launch-storyboard-images -->
         <splash src="resources/splashscreen/ios/splashscreen@2x~universal~anyany.png" />
 
         <!-- https://developer.apple.com/ios/human-interface-guidelines/icons-and-images/app-icon -->
