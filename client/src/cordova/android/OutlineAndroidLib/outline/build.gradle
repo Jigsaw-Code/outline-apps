@@ -7,7 +7,7 @@ group = 'org.outline'
 
 android {
     namespace 'org.outline'
-    compileSdk 34
+    compileSdk 35
 
     buildFeatures {
         aidl true
@@ -36,14 +36,8 @@ android {
 }
 
 dependencies {
-
-    // To make this project editable directly in the source tree, we need to load
-    // tun2socks.aar from its original path in the third_party directory.  We do
-    // this by relative path:
-    compileOnly fileTree(dir: '../../../../../../output/client/android',
-            include: ['tun2socks.aar'])
-    // Note: A flatDir repository might be preferable, but this is not compatible
-    // with a composite build (https://github.com/gradle/gradle/issues/911).
+    // From our local maven repository directory.
+    implementation 'org.getoutline.client:tun2socks:0.0.1'
 
     implementation 'io.sentry:sentry-android:2.0.2'
     implementation 'org.apache.commons:commons-collections4:4.4'
