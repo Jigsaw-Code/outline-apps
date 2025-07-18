@@ -44,23 +44,28 @@ func parseIPTableStreamDialer(
 	ctx context.Context,
 	configMap map[string]any,
 	parseSD configyaml.ParseFunc[*Dialer[transport.StreamConn]],
-) (*iptable.StreamDialer, error) {
+) (*iptable.StreamDialer, bool, error) {
 	var rootCfg ipTableRootConfig
 	if err := configyaml.MapToAny(configMap, &rootCfg); err != nil {
-		return nil, fmt.Errorf("failed to map iptable stream config: %w", err)
+		return nil, false, fmt.Errorf("failed to map iptable stream config: %w", err)
 	}
 
 	if len(rootCfg.Table) == 0 {
-		return nil, errors.New("iptable config 'table' must not be empty for stream dialer")
+		return nil, false, errors.New("iptable config 'table' must not be empty for stream dialer")
 	}
 
 	parsedEntries := make([]parsedIPTableStreamEntry, 0, len(rootCfg.Table))
 	var defaultDialerEntry *parsedIPTableStreamEntry
+	hasDirectConn := false
 
 	for i, entryCfg := range rootCfg.Table {
 		parsedSubDialer, err := parseSD(ctx, entryCfg.Dialer)
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse nested stream dialer for table entry %d (ip: %s): %w", i, entryCfg.IP, err)
+			return nil, false, fmt.Errorf("failed to parse nested stream dialer for table entry %d (ip: %s): %w", i, entryCfg.IP, err)
+		}
+
+		if parsedSubDialer.ConnType == ConnTypeDirect {
+			hasDirectConn = true
 		}
 
 		currentEntry := parsedIPTableStreamEntry{
@@ -69,7 +74,7 @@ func parseIPTableStreamDialer(
 
 		if entryCfg.IP == "" { // Default dialer
 			if defaultDialerEntry != nil {
-				return nil, errors.New("multiple default dialers specified in iptable for stream")
+				return nil, false, errors.New("multiple default dialers specified in iptable for stream")
 			}
 			defaultDialerEntry = &currentEntry
 			continue
@@ -82,7 +87,7 @@ func parseIPTableStreamDialer(
 		} else {
 			addr, errAddr := netip.ParseAddr(entryCfg.IP)
 			if errAddr != nil {
-				return nil, fmt.Errorf("iptable entry %d IP '%s' is not a valid IP address or CIDR prefix: failed to parse as prefix (%v) and failed to parse as address (%v)", i, entryCfg.IP, errPrefix, errAddr)
+				return nil, false, fmt.Errorf("iptable entry %d IP '%s' is not a valid IP address or CIDR prefix: failed to parse as prefix (%v) and failed to parse as address (%v)", i, entryCfg.IP, errPrefix, errAddr)
 			}
 			prefix = netip.PrefixFrom(addr, addr.BitLen())
 		}
@@ -100,24 +105,56 @@ func parseIPTableStreamDialer(
 	dialer, err := iptable.NewStreamDialer(table)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to create IPTableStreamDialer: %w", err)
+		return nil, false, fmt.Errorf("failed to create IPTableStreamDialer: %w", err)
 	}
 
+	isFullTunnel := !hasDirectConn && (defaultDialerEntry != nil || isExhaustive(parsedEntries))
 	if defaultDialerEntry != nil {
 		dialer.SetDefault(defaultDialerEntry.dialer)
 	}
 
-	return dialer, nil
+	return dialer, isFullTunnel, nil
+}
+
+func isExhaustive(entries []parsedIPTableStreamEntry) bool {
+	// This is a heuristic. It checks for the presence of two prefixes that cover the entire address space.
+	// For IPv4, this is 0.0.0.0/1 and 128.0.0.0/1.
+	// For IPv6, this is ::/1 and 8000::/1.
+	var hasIPv4FirstHalf, hasIPv4SecondHalf bool
+	var hasIPv6FirstHalf, hasIPv6SecondHalf bool
+
+	for _, entry := range entries {
+		if entry.prefix.Addr().Is4() {
+			if entry.prefix == netip.MustParsePrefix("0.0.0.0/1") {
+				hasIPv4FirstHalf = true
+			} else if entry.prefix == netip.MustParsePrefix("128.0.0.0/1") {
+				hasIPv4SecondHalf = true
+			}
+		} else if entry.prefix.Addr().Is6() {
+			if entry.prefix == netip.MustParsePrefix("::/1") {
+				hasIPv6FirstHalf = true
+			} else if entry.prefix == netip.MustParsePrefix("8000::/1") {
+				hasIPv6SecondHalf = true
+			}
+		}
+	}
+
+	return (hasIPv4FirstHalf && hasIPv4SecondHalf) || (hasIPv6FirstHalf && hasIPv6SecondHalf)
 }
 
 func NewIPTableStreamDialerSubParser(parseSD configyaml.ParseFunc[*Dialer[transport.StreamConn]]) func(ctx context.Context, input map[string]any) (*Dialer[transport.StreamConn], error) {
 	return func(ctx context.Context, input map[string]any) (*Dialer[transport.StreamConn], error) {
-		streamDialer, err := parseIPTableStreamDialer(ctx, input, parseSD)
+		streamDialer, isFullTunnel, err := parseIPTableStreamDialer(ctx, input, parseSD)
+
+		connType := ConnTypePartial
+		if isFullTunnel {
+			connType = ConnTypeTunneled
+		}
 
 		return &Dialer[transport.StreamConn]{
 			Dial: streamDialer.DialStream,
 			ConnectionProviderInfo: ConnectionProviderInfo{
-				ConnType: ConnTypeTunneled,
+				ConnType: connType,
 				FirstHop: "",
 			},
 		}, err

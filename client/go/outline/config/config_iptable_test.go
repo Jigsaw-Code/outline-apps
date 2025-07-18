@@ -41,6 +41,7 @@ func TestParseIPTableStreamDialer(t *testing.T) {
 		}
 
 		var dialer transport.StreamDialer
+		connType := ConnTypeTunneled
 		switch name {
 		case "dialerA":
 			dialer = &errorStreamDialer{name: "dialerA"}
@@ -48,18 +49,22 @@ func TestParseIPTableStreamDialer(t *testing.T) {
 			dialer = &errorStreamDialer{name: "dialerB"}
 		case "default":
 			dialer = &errorStreamDialer{name: "default"}
+		case "direct":
+			dialer = &errorStreamDialer{name: "direct"}
+			connType = ConnTypeDirect
 		default:
 			return nil, fmt.Errorf("no mock dialer found with name: %s", name)
 		}
-		return &Dialer[transport.StreamConn]{Dial: dialer.DialStream}, nil
+		return &Dialer[transport.StreamConn]{Dial: dialer.DialStream, ConnectionProviderInfo: ConnectionProviderInfo{ConnType: connType}}, nil
 	}
 
 	// Define test cases
 	testCases := []struct {
-		name        string
-		configYAML  string
-		expectErr   string
-		checkDialer func(*testing.T, transport.StreamDialer)
+		name         string
+		configYAML   string
+		expectErr    string
+		checkDialer  func(*testing.T, transport.StreamDialer)
+		isFullTunnel bool
 	}{
 		{
 			name: "Happy Path - valid config",
@@ -81,6 +86,59 @@ table:
 				_, err = dialer.DialStream(ctx, "8.8.8.8:53")
 				require.ErrorContains(t, err, "dialer 'default' called for address '8.8.8.8:53'")
 			},
+			isFullTunnel: true,
+		},
+		{
+			name: "Happy Path - no default dialer",
+			configYAML: `
+table:
+  - ip: 192.168.1.0/24
+    dialer: {name: dialerA}
+`,
+			isFullTunnel: false,
+		},
+		{
+			name: "Happy Path - direct sub-dialer",
+			configYAML: `
+table:
+  - ip: 192.168.1.0/24
+    dialer: {name: direct}
+  - dialer: {name: default}
+`,
+			isFullTunnel: false,
+		},
+		{
+			name: "Happy Path - exhaustive IPv4",
+			configYAML: `
+table:
+  - ip: 0.0.0.0/1
+    dialer: {name: dialerA}
+  - ip: 128.0.0.0/1
+    dialer: {name: dialerB}
+`,
+			isFullTunnel: true,
+		},
+		{
+			name: "Happy Path - exhaustive IPv6",
+			configYAML: `
+table:
+  - ip: ::/1
+    dialer: {name: dialerA}
+  - ip: 8000::/1
+    dialer: {name: dialerB}
+`,
+			isFullTunnel: true,
+		},
+		{
+			name: "Happy Path - exhaustive IPv4 with direct",
+			configYAML: `
+table:
+  - ip: 0.0.0.0/1
+    dialer: {name: direct}
+  - ip: 128.0.0.0/1
+    dialer: {name: dialerB}
+`,
+			isFullTunnel: false,
 		},
 		{
 			name:       "Error - empty table",
@@ -115,13 +173,14 @@ table:
 			configMap, ok := node.(map[string]any)
 			require.True(t, ok, "parsed yaml is not a map")
 
-			dialer, err := parseIPTableStreamDialer(ctx, configMap, parseSE)
+			dialer, isFullTunnel, err := parseIPTableStreamDialer(ctx, configMap, parseSE)
 
 			if tc.expectErr != "" {
 				require.Contains(t, err.Error(), tc.expectErr)
 			} else {
 				require.NoError(t, err)
 				require.NotNil(t, dialer)
+				require.Equal(t, tc.isFullTunnel, isFullTunnel)
 				if tc.checkDialer != nil {
 					tc.checkDialer(t, dialer)
 				}
@@ -140,7 +199,7 @@ table:
 			},
 		}
 
-		_, err := parseIPTableStreamDialer(ctx, config, errorParser)
+		_, _, err := parseIPTableStreamDialer(ctx, config, errorParser)
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "failed to parse nested stream dialer")
 		require.Contains(t, err.Error(), "sub-parser failed")
