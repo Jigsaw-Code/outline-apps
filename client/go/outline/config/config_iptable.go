@@ -109,3 +109,17 @@ func parseIPTableStreamDialer(
 
 	return dialer, nil
 }
+
+func NewIPTableStreamDialerSubParser(parseSD configyaml.ParseFunc[*Dialer[transport.StreamConn]]) func(ctx context.Context, input map[string]any) (*Dialer[transport.StreamConn], error) {
+	return func(ctx context.Context, input map[string]any) (*Dialer[transport.StreamConn], error) {
+		streamDialer, err := parseIPTableStreamDialer(ctx, input, parseSD)
+
+		return &Dialer[transport.StreamConn]{
+			Dial: streamDialer.DialStream,
+			ConnectionProviderInfo: ConnectionProviderInfo{
+				ConnType: ConnTypeTunneled,
+				FirstHop: "",
+			},
+		}, err
+	}
+}
