@@ -18,6 +18,7 @@ import (
 	"fmt"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/reporting"
 )
 
 // API name constants. Keep sorted by name.
@@ -44,6 +45,11 @@ const (
 	//  - Input: the tunnel config text
 	//  - Output: the TunnelConfigJson that Typescript needs
 	MethodParseTunnelConfig = "ParseTunnelConfig"
+
+	// Removes a cookie by its key ID.
+	//  - Input: the key ID (server ID) string of the cookie to remove
+	//  - Output: null
+	MethodRemoveCookieByKeyID = "RemoveCookieByKeyID"
 
 	// SetVPNStateChangeListener sets a callback to be invoked when the VPN state changes.
 	//
@@ -89,6 +95,12 @@ func InvokeMethod(method string, input string) *InvokeMethodResult {
 
 	case MethodParseTunnelConfig:
 		return doParseTunnelConfig(input)
+
+	case MethodRemoveCookieByKeyID:
+		err := reporting.RemoveCookiesByKeyID(input)
+		return &InvokeMethodResult{
+			Error: platerrors.ToPlatformError(err),
+		}
 
 	case MethodSetVPNStateChangeListener:
 		err := setVPNStateChangeListener(input)
