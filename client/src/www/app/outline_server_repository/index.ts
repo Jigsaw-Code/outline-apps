@@ -166,16 +166,12 @@ class OutlineServerRepository implements ServerRepository {
   }
 
   /**
-   * parseTunnelConfig parses the given tunnel config as text and returns a new TunnelConfigJson.
-   * The config text may be a "ss://" link or a JSON object.
-   * This is used by the server to parse the config fetched from the dynamic key, and to parse
-   * static keys as tunnel configs (which may be present in the dynamic config).
+   * Removes the cookie associated with the given key ID (server ID).
    */
-  async removeCookieByKeyID(KeyID: string) {
-    const output = await methodChannel
+  async removeCookieByKeyID(keyID: string) {
+    await methodChannel
       .getDefaultMethodChannel()
-      .invokeMethod('RemoveCookieByKeyID', KeyID);
-    return JSON.parse(output);
+      .invokeMethod('RemoveCookieByKeyID', keyID);
   }
 
   async forget(serverId: string) {
@@ -189,7 +185,7 @@ class OutlineServerRepository implements ServerRepository {
     this.storeServers();
     this.eventQueue.enqueue(new events.ServerForgotten(entry.server));
     // Call removeCookiesByKeyID in reporting_client.go with serverId
-    this.removeCookieByKeyID(serverId);
+    await this.removeCookieByKeyID(serverId);
   }
 
   undoForget(serverId: string) {

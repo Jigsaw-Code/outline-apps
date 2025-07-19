@@ -42,6 +42,7 @@ import java.util.Locale;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.io.File;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -310,7 +311,18 @@ public class VpnTunnelService extends VpnService {
       tearDownActiveTunnel();
       return result.getError();
     }
-    this.outlineClient.startReporting();
+    // Set the cookie file path for reporting
+    try {
+        File filesDir = this.getFilesDir();
+        if (filesDir != null) {
+            this.outlineClient.setCookieFilePath(filesDir.getAbsolutePath());
+            this.outlineClient.startReporting();
+        } else {
+            LOG.log(Level.SEVERE, "Cookies path is null");
+        }
+    } catch (Exception e) {
+        LOG.log(Level.SEVERE, "Failed to get the cookies path", e);
+    }
     this.remoteDevice = result.getTunnel();
     
     startForegroundWithNotification(config.name);
@@ -321,11 +333,10 @@ public class VpnTunnelService extends VpnService {
   @Nullable
   private synchronized DetailedJsonError stopTunnel(@NonNull final String tunnelId) {
     if (!isTunnelActive(tunnelId)) {
-        return Errors.toDetailedJsonError(new PlatformError(
-            Platerrors.InternalError,
-            "VPN profile is not active"));
+      return Errors.toDetailedJsonError(new PlatformError(
+          Platerrors.InternalError,
+          "VPN profile is not active"));
     }
-
     tearDownActiveTunnel();
     return null;
   }

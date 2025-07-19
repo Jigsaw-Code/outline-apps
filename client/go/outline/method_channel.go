@@ -46,6 +46,11 @@ const (
 	//  - Output: the TunnelConfigJson that Typescript needs
 	MethodParseTunnelConfig = "ParseTunnelConfig"
 
+	// Removes a cookie by its key ID.
+	//  - Input: the key ID (server ID) string of the cookie to remove
+	//  - Output: null
+	MethodRemoveCookieByKeyID = "RemoveCookieByKeyID"
+
 	// SetVPNStateChangeListener sets a callback to be invoked when the VPN state changes.
 	//
 	// We recommend the caller to set this listener at app startup to catch all VPN state changes.
@@ -55,7 +60,6 @@ const (
 	//  - Input: A callback token string.
 	//  - Output: null
 	MethodSetVPNStateChangeListener = "SetVPNStateChangeListener"
-	MethodRemoveCookieByKeyID = "RemoveCookieByKeyID"
 )
 
 // InvokeMethodResult represents the result of an InvokeMethod call.
@@ -92,14 +96,14 @@ func InvokeMethod(method string, input string) *InvokeMethodResult {
 	case MethodParseTunnelConfig:
 		return doParseTunnelConfig(input)
 
-	case MethodSetVPNStateChangeListener:
-		err := setVPNStateChangeListener(input)
+	case MethodRemoveCookieByKeyID:
+		err := reporting.RemoveCookiesByKeyID(input)
 		return &InvokeMethodResult{
 			Error: platerrors.ToPlatformError(err),
 		}
 
-	case MethodRemoveCookieByKeyID:
-		err := reporting.RemoveCookiesByKeyID(input)
+	case MethodSetVPNStateChangeListener:
+		err := setVPNStateChangeListener(input)
 		return &InvokeMethodResult{
 			Error: platerrors.ToPlatformError(err),
 		}

@@ -31,18 +31,16 @@ import (
 	"net/http/cookiejar"
 	"net/url"
 	"os"
-	"path/filepath"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/config"
-	"github.com/Jigsaw-Code/outline-apps/client/go/outline/connectivity"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
-func checkTCPConnectivity(tcp transport.StreamDialer, reportingUrl string) error {
-	return connectivity.CheckTCPConnectivityWithHTTP(tcp, reportingUrl)
-}
+var CookieFilePath string
 
-const cookiesFile = "cookies.json"
+func SetCookieFilePath(path string) {
+	CookieFilePath = path + "/cookies.json"
+}
 
 func Report(ur *config.UsageReporter) (err error) {
 	jar, err := cookiejar.New(nil)
@@ -50,19 +48,8 @@ func Report(ur *config.UsageReporter) (err error) {
 		return fmt.Errorf("failed to create cookie jar: %w", err)
 	}
 	var urls []*url.URL
-	configDir, err := os.UserConfigDir()
-	if err != nil {
-		slog.Error("failed to get user config dir", "err", err)
-		// In case we cannot get the user config dir, we use a default path.
-		configDir = "/data/data/org.outline.android.client/files/"
-	}
-	// Creating a directory for cookie storage if it does not exist
-	err = os.MkdirAll(configDir, os.ModePerm)
-	if err != nil {
-		return err
-	}
 	// Load cookies from file
-	urls, err = loadCookies(jar, filepath.Join(configDir, cookiesFile))
+	urls, err = loadCookies(jar, CookieFilePath)
 	if err != nil {
 		return fmt.Errorf("failed to load cookies: %w", err)
 	}
@@ -103,7 +90,7 @@ func Report(ur *config.UsageReporter) (err error) {
 		req.AddCookie(cookie)
 	}
 
-	slog.Info(fmt.Sprintf("HTTP Request: Method=%s, URL=%s, Headers=%v, Cookies=%v", req.Method, req.URL.String(), req.Header, req.Cookies()))
+	slog.Info("HTTP Request", "Method", req.Method, "URL", req.URL, "Headers", req.Header, "Cookies", req.Cookies())
 	// Send the HTTP request.
 	resp, err := client.Do(req)
 	if err != nil {
@@ -140,7 +127,7 @@ func Report(ur *config.UsageReporter) (err error) {
 			urls = append(urls, u)
 		}
 		// Save new cookies to file
-		if err := saveCookies(urls, jar, filepath.Join(configDir, cookiesFile)); err != nil {
+		if err := saveCookies(urls, jar, CookieFilePath); err != nil {
 			return fmt.Errorf("failed to save cookies: %w", err)
 		}
 	}
@@ -240,13 +227,7 @@ func loadCookies(jar http.CookieJar, filename string) ([]*url.URL, error) {
 // RemoveCookiesByKeyID removes cookies with the specified KeyID from the cookie file.
 // If keyID is empty, all cookies will be removed.
 func RemoveCookiesByKeyID(keyID string) error {
-
-	configDir, err := os.UserConfigDir()
-	if err != nil {
-		slog.Error("failed to get user config dir", "err", err)
-		configDir = "/data/data/org.outline.android.client/files/"
-	}
-	file, err := os.Open(filepath.Join(configDir, cookiesFile))
+	file, err := os.Open(CookieFilePath)
 	if err != nil {
 		return fmt.Errorf("failed to open cookies file: %w", err)
 	}
@@ -270,7 +251,7 @@ func RemoveCookiesByKeyID(keyID string) error {
 	}
 
 	// Save the updated cookies back to the file
-	file, err = os.Create(filepath.Join(configDir, cookiesFile))
+	file, err = os.Create(CookieFilePath)
 	if err != nil {
 		return fmt.Errorf("failed to create cookies file: %w", err)
 	}
@@ -285,7 +266,7 @@ func RemoveCookiesByKeyID(keyID string) error {
 	return nil
 }
 
-// StartReporting calls the Report function at every internal.
+// StartReporting calls the Report function at every interval.
 func StartReporting(ctx context.Context, tcp transport.StreamDialer, ur *config.UsageReporter) {
 	slog.Info("StartReporting started...")
 	if !ur.EnableCookies {
@@ -296,14 +277,14 @@ func StartReporting(ctx context.Context, tcp transport.StreamDialer, ur *config.
 
 	err := Report(ur)
 	if err != nil {
-		slog.Error("Report failed", "error", err)
+		slog.Warn("Report failed", "error", err)
 	}
 	for {
 		select {
 		case <-ticker.C:
 			err := Report(ur)
 			if err != nil {
-				slog.Error("Report failed", "error", err)
+				slog.Warn("Report failed", "error", err)
 			}
 		case <-ctx.Done():
 			// Stop reporting when the context is canceled

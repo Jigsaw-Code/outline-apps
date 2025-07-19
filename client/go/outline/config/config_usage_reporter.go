@@ -47,6 +47,9 @@ func parseUsageReporterConfig(ctx context.Context, configMap map[string]any) (*U
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse interval: %w", err)
 	}
+	if duration <= 0 {
+		return nil, fmt.Errorf("tunnel usage interval must be greater than 0")
+	}
 
 	return &UsageReporter{
 		Interval:      duration,

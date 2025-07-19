@@ -34,7 +34,7 @@ import (
 type Client struct {
 	sd     *config.Dialer[transport.StreamConn]
 	pl     *config.PacketListener
-	Ur     *config.UsageReporter
+	ur     *config.UsageReporter
 	cancel context.CancelFunc // Used to stop reporting
 }
 
@@ -61,13 +61,13 @@ type NewClientResult struct {
 }
 
 func (c *Client) StartReporting() {
-	if c.Ur == nil {
+	if c.ur == nil {
 		return
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	c.cancel = cancel // Store the cancel function to stop reporting later
 
-	go reporting.StartReporting(ctx, c, c.Ur)
+	go reporting.StartReporting(ctx, c, c.ur)
 }
 
 func (c *Client) StopReporting() {
@@ -149,17 +149,22 @@ func NewClientWithBaseDialers(clientConfigText string, tcpDialer transport.Strea
 		}
 	}
 
-	return &Client{sd: transportPair.StreamDialer, pl: transportPair.PacketListener, Ur: usageReporter}, nil
+	return &Client{sd: transportPair.StreamDialer, pl: transportPair.PacketListener, ur: usageReporter}, nil
 }
 
 // Get the reporting server
-func (c *Client) GetUr() *config.UsageReporter {
-	return c.Ur
+func (c *Client) Getur() *config.UsageReporter {
+	return c.ur
 }
 
 // Set the Key ID (Server UUID)
 func (c *Client) SetKeyId(keyId string) {
-	if c.Ur != nil {
-		c.Ur.KeyId = keyId
+	if c.ur != nil {
+		c.ur.KeyId = keyId
 	}
+}
+
+// This interface can be used by various other modules to call the Go code set the cookie file path.
+func (c *Client) SetCookieFilePath(path string) {
+	go reporting.SetCookieFilePath(path)
 }

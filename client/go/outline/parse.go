@@ -63,11 +63,11 @@ func doParseTunnelConfig(input string) *InvokeMethodResult {
 	// - Legacy Shadowsocks JSON (parsed as YAML)
 	// - Advanced YAML format
 	var stringValue string
-	var yamlValue map[string]any
 	if err := yaml.Unmarshal([]byte(input), &stringValue); err == nil {
 		// Legacy URL format. Input is the transport config.
 		clientConfig.Transport = stringValue
 	} else {
+		var yamlValue map[string]any
 		if err := yaml.Unmarshal([]byte(input), &yamlValue); err != nil {
 			return &InvokeMethodResult{
 				Error: &platerrors.PlatformError{
