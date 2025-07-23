@@ -26,8 +26,8 @@ import (
 
 // TODO: make these values configurable by exposing a struct with the connectivity methods.
 const (
-	tcpTimeout          = 10 * time.Second
-	udpTimeout          = 1 * time.Second
+	tcpTimeout          = 30 * time.Second
+	udpTimeout          = 5 * time.Second
 	udpMaxRetryAttempts = 5
 	bufferLength        = 512
 )
