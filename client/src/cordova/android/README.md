@@ -107,6 +107,12 @@ Make sure to rebuild after modifying platform dependent files!
    adb install -r -d client/platforms/android/app/build/outputs/apk/debug/app-debug.apk
    ```
 
+Alternatively, run with:
+
+```sh
+npx cordova run android -- --gradleArg=--include-build=../../src/cordova/android/OutlineAndroidLib
+```
+
 ## Develop code
 
 Open `src/cordova/android/OutlineAndroidLib` on Android Studio. That will allow you to leverage the IDE features (auto-complete, warnings, etc) and run unit tests easily.

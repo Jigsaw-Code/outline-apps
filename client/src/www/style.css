@@ -125,6 +125,8 @@ body {
 
 /* Class-based dark mode - applied when user selects dark theme */
 html.dark {
+  --outline-error: hsl(4, 90%, 62%);
+
   --outline-background: var(--outline-dark-bg);
   --outline-card-background: var(--outline-dark-card);
   --outline-card-footer: var(--outline-dark-footer);

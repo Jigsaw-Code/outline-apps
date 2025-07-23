@@ -8,6 +8,10 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
+        maven {
+            // This is relative to $WORKSPACE/client/src/cordova/android/OutlineAndroidLib/
+            url = uri(layout.settingsDirectory.dir("../../../../../output/client/android"))
+        }
         google()
         mavenCentral()
     }
