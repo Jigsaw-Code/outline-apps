@@ -49,8 +49,8 @@ func parseIPTableStreamDialer(
 	}
 
 	dialerTable := iptable.NewIPTable[transport.StreamDialer]()
-	hasTunneledConn := false
-	hasDirectConn := false
+	allConnTunnelled := true
+	allConnDirect := true
 	for i, entryCfg := range rootCfg.Table {
 		parsedSubDialer, err := parseSD(ctx, entryCfg.Dialer)
 		if err != nil {
@@ -58,11 +58,11 @@ func parseIPTableStreamDialer(
 		}
 
 		if parsedSubDialer.ConnType == ConnTypeDirect || parsedSubDialer.ConnType == ConnTypePartial {
-			hasDirectConn = true
+			allConnTunnelled = false
 		}
 
 		if parsedSubDialer.ConnType == ConnTypeTunneled || parsedSubDialer.ConnType == ConnTypePartial {
-			hasTunneledConn = true
+			allConnDirect = false
 		}
 
 		var currentPrefix netip.Prefix
@@ -87,12 +87,14 @@ func parseIPTableStreamDialer(
 	}
 
 	var connType ConnType
-	if hasTunneledConn && hasDirectConn {
-		connType = ConnTypePartial
-	} else if hasTunneledConn {
+	if allConnDirect && allConnTunnelled {
+		return nil, fmt.Errorf("internal error: allConnDirect and allConnTunnelled cannot both be true")
+	} else if allConnTunnelled {
 		connType = ConnTypeTunneled
-	} else { // If nothing is tunneled, default to 'direct'
+	} else if allConnDirect {
 		connType = ConnTypeDirect
+	} else {
+		connType = ConnTypePartial
 	}
 
 	return &Dialer[transport.StreamConn]{
