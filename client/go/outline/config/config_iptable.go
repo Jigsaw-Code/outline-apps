@@ -88,7 +88,8 @@ func parseIPTableStreamDialer(
 
 	var connType ConnType
 	if allConnDirect && allConnTunnelled {
-		return nil, fmt.Errorf("internal error: allConnDirect and allConnTunnelled cannot both be true")
+		// This should never happen because we require len(rootCfg.Table) != 0
+		return nil, fmt.Errorf("allConnDirect and allConnTunnelled cannot both be true")
 	} else if allConnTunnelled {
 		connType = ConnTypeTunneled
 	} else if allConnDirect {
