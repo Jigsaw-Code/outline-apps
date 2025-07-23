@@ -60,11 +60,11 @@ func TestParseIPTableStreamDialer(t *testing.T) {
 
 	// Define test cases
 	testCases := []struct {
-		name         string
-		configYAML   string
-		expectErr    string
-		checkDialer  func(*testing.T, transport.StreamDialer)
-		isFullTunnel bool
+		name             string
+		configYAML       string
+		expectErr        string
+		checkDialer      func(*testing.T, *Dialer[transport.StreamConn])
+		expectedConnType ConnType
 	}{
 		{
 			name: "Happy Path - valid config",
@@ -74,19 +74,20 @@ table:
     dialer: {name: dialerA}
   - ip: 10.0.0.1
     dialer: {name: dialerB}
-  - dialer: {name: default}
+  - ip: 0.0.0.0/0
+    dialer: {name: default}
 `,
-			checkDialer: func(t *testing.T, dialer transport.StreamDialer) {
-				_, err := dialer.DialStream(ctx, "192.168.1.100:1234")
+			checkDialer: func(t *testing.T, dialer *Dialer[transport.StreamConn]) {
+				_, err := dialer.Dial(ctx, "192.168.1.100:1234")
 				require.ErrorContains(t, err, "dialer 'dialerA' called for address '192.168.1.100:1234'")
 
-				_, err = dialer.DialStream(ctx, "10.0.0.1:5678")
+				_, err = dialer.Dial(ctx, "10.0.0.1:5678")
 				require.ErrorContains(t, err, "dialer 'dialerB' called for address '10.0.0.1:5678'")
 
-				_, err = dialer.DialStream(ctx, "8.8.8.8:53")
+				_, err = dialer.Dial(ctx, "8.8.8.8:53")
 				require.ErrorContains(t, err, "dialer 'default' called for address '8.8.8.8:53'")
 			},
-			isFullTunnel: true,
+			expectedConnType: ConnTypeTunneled,
 		},
 		{
 			name: "Happy Path - no default dialer",
@@ -95,7 +96,7 @@ table:
   - ip: 192.168.1.0/24
     dialer: {name: dialerA}
 `,
-			isFullTunnel: false,
+			expectedConnType: ConnTypeTunneled,
 		},
 		{
 			name: "Happy Path - direct sub-dialer",
@@ -103,9 +104,10 @@ table:
 table:
   - ip: 192.168.1.0/24
     dialer: {name: direct}
-  - dialer: {name: default}
+  - ip: 0.0.0.0/0
+    dialer: {name: default}
 `,
-			isFullTunnel: false,
+			expectedConnType: ConnTypePartial,
 		},
 		{
 			name: "Happy Path - exhaustive IPv4",
@@ -116,7 +118,7 @@ table:
   - ip: 128.0.0.0/1
     dialer: {name: dialerB}
 `,
-			isFullTunnel: true,
+			expectedConnType: ConnTypeTunneled,
 		},
 		{
 			name: "Happy Path - exhaustive IPv6",
@@ -127,7 +129,7 @@ table:
   - ip: 8000::/1
     dialer: {name: dialerB}
 `,
-			isFullTunnel: true,
+			expectedConnType: ConnTypeTunneled,
 		},
 		{
 			name: "Happy Path - exhaustive IPv4 with direct",
@@ -138,7 +140,7 @@ table:
   - ip: 128.0.0.0/1
     dialer: {name: dialerB}
 `,
-			isFullTunnel: false,
+			expectedConnType: ConnTypePartial,
 		},
 		{
 			name:       "Error - empty table",
@@ -146,21 +148,11 @@ table:
 			expectErr:  "iptable config 'table' must not be empty for stream dialer",
 		},
 		{
-			name: "Error - multiple defaults",
-			configYAML: `
-table:
-  - dialer: {name: default}
-  - dialer: {name: dialerA}
-`,
-			expectErr: "multiple default dialers specified in iptable for stream",
-		},
-		{
 			name: "Error - invalid IP",
 			configYAML: `
 table:
   - ip: not-an-ip
     dialer: {name: dialerA}
-  - dialer: {name: default}
 `,
 			expectErr: "is not a valid IP address or CIDR prefix",
 		},
@@ -173,14 +165,15 @@ table:
 			configMap, ok := node.(map[string]any)
 			require.True(t, ok, "parsed yaml is not a map")
 
-			dialer, isFullTunnel, err := parseIPTableStreamDialer(ctx, configMap, parseSE)
+			dialer, err := parseIPTableStreamDialer(ctx, configMap, parseSE)
 
 			if tc.expectErr != "" {
+				require.Error(t, err)
 				require.Contains(t, err.Error(), tc.expectErr)
 			} else {
 				require.NoError(t, err)
 				require.NotNil(t, dialer)
-				require.Equal(t, tc.isFullTunnel, isFullTunnel)
+				require.Equal(t, tc.expectedConnType, dialer.ConnType)
 				if tc.checkDialer != nil {
 					tc.checkDialer(t, dialer)
 				}
@@ -199,7 +192,7 @@ table:
 			},
 		}
 
-		_, _, err := parseIPTableStreamDialer(ctx, config, errorParser)
+		_, err := parseIPTableStreamDialer(ctx, config, errorParser)
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "failed to parse nested stream dialer")
 		require.Contains(t, err.Error(), "sub-parser failed")

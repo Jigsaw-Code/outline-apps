@@ -113,11 +113,12 @@ tcp:
         endpoint: example.com:1234
         cipher: chacha20-ietf-poly1305
         secret: SECRET
-
     - ip: 2001:db8:1:1::/64
       dialer: *shared
-
-    - dialer: null
+    - ip: 0.0.0.0/0
+      dialer: null
+    - ip: ::/0
+      dialer: null
 udp: null`
 
 	node, err := configyaml.ParseConfigYAML(yamlConfig)
