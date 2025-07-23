@@ -45,7 +45,7 @@ func TestCheckUDPConnectivityWithDNS_Fail(t *testing.T) {
 
 func TestCheckTCPConnectivityWithHTTP_Success(t *testing.T) {
 	client := &fakeSSClient{}
-	err := CheckTCPConnectivityWithHTTP(client, "")
+	err := CheckTCPConnectivityWithHTTP(client, []string{""})
 	if err != nil {
 		t.Fail()
 	}
@@ -53,7 +53,7 @@ func TestCheckTCPConnectivityWithHTTP_Success(t *testing.T) {
 
 func TestCheckTCPConnectivityWithHTTP_FailReachability(t *testing.T) {
 	client := &fakeSSClient{failReachability: true}
-	err := CheckTCPConnectivityWithHTTP(client, "")
+	err := CheckTCPConnectivityWithHTTP(client, []string{""})
 	require.Error(t, err)
 	perr := platerrors.ToPlatformError(err)
 	require.Equal(t, platerrors.ProxyServerUnreachable, perr.Code)
@@ -61,7 +61,7 @@ func TestCheckTCPConnectivityWithHTTP_FailReachability(t *testing.T) {
 
 func TestCheckTCPConnectivityWithHTTP_FailAuthentication(t *testing.T) {
 	client := &fakeSSClient{failAuthentication: true}
-	err := CheckTCPConnectivityWithHTTP(client, "")
+	err := CheckTCPConnectivityWithHTTP(client, []string{""})
 	require.Error(t, err)
 	perr := platerrors.ToPlatformError(err)
 	require.Equal(t, platerrors.ProxyServerReadFailed, perr.Code)

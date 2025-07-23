@@ -16,6 +16,7 @@ package connectivity
 
 import (
 	"context"
+	"errors"
 	"net"
 	"net/http"
 	"time"
@@ -33,7 +34,6 @@ const (
 )
 
 const (
-	testTCPWebsite    = "http://example.com"
 	testDNSServerIP   = "1.1.1.1"
 	testDNSServerPort = 53
 )
@@ -52,7 +52,10 @@ func CheckTCPAndUDPConnectivity(
 		udpErrChan <- CheckUDPConnectivityWithDNS(udp, resolverAddr)
 	}()
 
-	tcpErr = CheckTCPConnectivityWithHTTP(tcp, testTCPWebsite)
+	tcpErr = CheckTCPConnectivityWithHTTP(tcp, []string{
+		"https://connectivitycheck.gstatic.com/generate_204",
+		"https://www.google.com/generate_204",
+	})
 	udpErr = <-udpErrChan
 	return
 }
@@ -94,15 +97,7 @@ func CheckUDPConnectivityWithDNS(client transport.PacketListener, resolverAddr n
 	}
 }
 
-// CheckTCPConnectivityWithHTTP determines whether the proxy is reachable over TCP and validates the
-// client's authentication credentials by performing an HTTP HEAD request to `targetURL`, which must
-// be of the form: http://[host](:[port])(/[path]).
-//
-// Returns nil on success, error on connectivity failure.
-func CheckTCPConnectivityWithHTTP(dialer transport.StreamDialer, targetURL string) error {
-	deadline := time.Now().Add(tcpTimeout)
-	ctx, cancel := context.WithDeadline(context.Background(), deadline)
-	defer cancel()
+func testOneUrl(ctx context.Context, dialer transport.StreamDialer, targetURL string) error {
 	req, err := http.NewRequest("HEAD", targetURL, nil)
 	if err != nil {
 		return err
@@ -120,7 +115,9 @@ func CheckTCPConnectivityWithHTTP(dialer transport.StreamDialer, targetURL strin
 		}
 	}
 	defer conn.Close()
-	conn.SetDeadline(deadline)
+	if deadline, ok := ctx.Deadline(); ok {
+		conn.SetDeadline(deadline)
+	}
 	err = req.Write(conn)
 	if err != nil {
 		return platerrors.PlatformError{
@@ -138,6 +135,33 @@ func CheckTCPConnectivityWithHTTP(dialer transport.StreamDialer, targetURL strin
 		}
 	}
 	return nil
+}
+
+// CheckTCPConnectivityWithHTTP determines whether the proxy is reachable over TCP and validates the
+// client's authentication credentials by performing an HTTP HEAD request to `targetURL`, which must
+// be of the form: http://[host](:[port])(/[path]).
+//
+// Returns nil on success, error on connectivity failure.
+func CheckTCPConnectivityWithHTTP(dialer transport.StreamDialer, urlList []string) error {
+	if len(urlList) == 0 {
+		return errors.New("test url list is empty")
+	}
+
+	deadline := time.Now().Add(tcpTimeout)
+	ctx, cancel := context.WithDeadline(context.Background(), deadline)
+	defer cancel()
+
+	var firstErr error
+	for _, targetURL := range urlList {
+		err := testOneUrl(ctx, dialer, targetURL)
+		if err == nil {
+			return nil
+		}
+		if firstErr == nil {
+			firstErr = err
+		}
+	}
+	return firstErr
 }
 
 func getDNSRequest() []byte {
