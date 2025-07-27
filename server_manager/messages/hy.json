@@ -112,6 +112,7 @@
   "gcp-firewall-create-3": "«Source IP ranges» (աղբյուրի IP հասցեների միջակայքեր) դաշտում մուտքագրեք «0.0.0.0/0»։",
   "gcp-firewall-create-4": "«Protocols and ports» (Հաղորդակարգեր և միացքներ) բաժնում ընտրեք «Allow all» (Թույլատրել բոլորը)։",
   "gcp-name-your-project": "Մուտքագրեք նախագծի անվանումը «Project name» (Նախագծի անվանում) դաշտում։",
+  "gcp-oauth-connect-title": "Մուտք գործեք Google Cloud Platform հաշիվ կամ ստեղծեք նորը։",
   "gcp-project-setup-error": "Google Cloud-ի ձեր նախագիծը կարգավորելիս սխալ առաջացավ",
   "gcp-select-machine-type": "«Machine type» (Մեքենայի տեսակը) բաժնում ընտրեք «f1-micro»",
   "gcp-select-networking": "Սեղմեք «Management, security, disks, networking, sole tenancy» (Կառավարման, անվտանգության, սկավառակների, ցանցի, միանձնյա տիրապետման պարամետրերի կարգավորում), այնուհետև ընտրեք «Networking» (Ցանց)։",

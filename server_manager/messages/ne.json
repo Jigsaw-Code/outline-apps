@@ -112,6 +112,7 @@
   "gcp-firewall-create-3": "'स्रोत IP का दायरा' (Source IP ranges) फिल्डमा '0.0.0.0/0' टाइप गर्नुहोस्।",
   "gcp-firewall-create-4": "'प्रोटोकोल तथा पोर्टहरू' (Protocols and ports) का मुनिपट्टि 'सबैलाई अनुमति दिनुहोस्' (Allow all) चयन गर्नुहोस्।",
   "gcp-name-your-project": "'परियोजनाको नाम' (Project name) फिल्डमा आफ्नो परियोजनाको नाम हाल्नुहोस्।",
+  "gcp-oauth-connect-title": "Google क्लाउड प्लेटफर्म प्रयोग गरी साइन इन गर्नुहोस् वा एउटा खाता बनाउनुहोस्।",
   "gcp-project-setup-error": "तपाईंको Google क्लाउड परियोजना सेटअप गर्ने क्रममा कुनै त्रुटि भयो",
   "gcp-select-machine-type": "'मेसिनको प्रकार' (Machine type) का मुनिपट्टि 'f1-micro' चयन गर्नुहोस्",
   "gcp-select-networking": "'व्यवस्थापन, सुरक्षा, डिस्कहरू, नेटवर्किङ, सोल टेनेन्सी' (Management, security, disks, networking, sole tenancy) मा र त्यसपछि 'नेटवर्किङ' (Networking) मा क्लिक गर्नुहोस्",

@@ -25,8 +25,8 @@ import (
 )
 
 type vpnConfigJSON struct {
-	VPNConfig       vpn.Config `json:"vpn"`
-	TransportConfig string     `json:"transport"`
+	firstHopAndTunnelConfigJSON `json:",inline"`
+	VPNConfig                   vpn.Config `json:"vpn"`
 }
 
 // establishVPN establishes a VPN connection using the given configuration string.
@@ -46,7 +46,7 @@ func establishVPN(configStr string) error {
 
 	tcp := newFWMarkProtectedTCPDialer(conf.VPNConfig.ProtectionMark)
 	udp := newFWMarkProtectedUDPDialer(conf.VPNConfig.ProtectionMark)
-	c, err := NewClientWithBaseDialers(conf.TransportConfig, tcp, udp)
+	c, err := NewClientWithBaseDialers(conf.Client, tcp, udp)
 	if err != nil {
 		return err
 	}

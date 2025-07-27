@@ -90,8 +90,8 @@ export class App {
   // Feature flag to control whether dark mode is enabled
   // When set to true, the theme option will appear in the navigation menu
   // and the app will respect system theme or user theme selection
-  // TODO: remove once appearance translations are ready
-  private appearanceFeatureEnabled = false;
+  // TODO: remove once released and no critical issues found
+  private appearanceFeatureEnabled = true;
 
   constructor(
     private eventQueue: events.EventQueue,
@@ -111,7 +111,6 @@ export class App {
     this.localize = this.rootEl.localize.bind(this.rootEl);
 
     this.syncServersToUI();
-    this.syncConnectivityStateToServerCards();
     rootEl.appVersion = environmentVars.APP_VERSION;
     rootEl.appBuild = environmentVars.APP_BUILD_NUMBER;
     rootEl.errorReporter = this.errorReporter;
@@ -838,7 +837,7 @@ export class App {
     );
   }
 
-  private onServerRenamed(event: events.ServerForgotten) {
+  private onServerRenamed(event: events.ServerRenamed) {
     const server = event.server;
     console.debug('Server renamed');
     this.updateServerListItem(server.id, {name: server.name});
@@ -897,6 +896,7 @@ export class App {
     this.rootEl.servers = this.serverRepo
       .getAll()
       .map(this.makeServerListItem.bind(this));
+    this.syncConnectivityStateToServerCards();
   }
 
   private syncConnectivityStateToServerCards() {

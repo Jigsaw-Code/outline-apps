@@ -45,13 +45,13 @@ Alternatively, you can do it on the command-line:
 1. Install platform and build tools:
 
     ```shell
-    sdkmanager "platforms;android-34" "build-tools;34.0.0" "ndk;25.1.8937393" 
+    sdkmanager "platforms;android-35" "build-tools;35.0.0" "ndk;26.1.10909125" 
     ```
 
 1. Install optional components that help development (source code, emulator and image):
 
     ```shell
-    sdkmanager "sources;android-34" "system-images;android-34;default;arm64-v8a"
+    sdkmanager "sources;android-35" "system-images;android-35;default;arm64-v8a"
     ```
 
   Note: you will need the `system-images;android-35;default;x86_64` image on an Intel computer.
@@ -61,6 +61,7 @@ For development of the OutlineAndroidLib, we recommend installing Android Studio
 You can check your environment with:
 
 ```sh
+npm run action client/src/cordova/setup android
 cd client
 npx cordova requirements android
 ```
@@ -69,12 +70,12 @@ npx cordova requirements android
 
 | Component  | version  | constrained by | set in  |
 |---|---|---|---|
-| Android API Level | 34+ | [Play Store](https://developer.android.com/google/play/requirements/target-sdk) | [config.xml](../../../config.xml), [build.gradle](./OutlineAndroidLib/outline/build.gradle) |
-| cordova-android | 13 | Android API Level | [package.json](../../../package.json) |
+| Android API Level | 35+ | [Play Store](https://developer.android.com/google/play/requirements/target-sdk) | [config.xml](../../../config.xml), [build.gradle](./OutlineAndroidLib/outline/build.gradle) |
+| cordova-android | 14 | Android API Level | [package.json](../../../package.json) |
 | JDK | 17 | [cordova-android](https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html#android-api-level-support) | install instruction |
 | Gradle | 8.7+ | [cordova-android](https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html#android-api-level-support) | [gradle-wrapper.properties](./OutlineAndroidLib/gradle/wrapper/gradle-wrapper.properties) |
-| Android Gradle Plugin (AGP) | 8.3.0 | [cordova-android](https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html#android-api-level-support) | [build.gradle](../android/OutlineAndroidLib/build.gradle) |
-| Android Build Tools | 34.0.0+ | [cordova-android](https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html#android-api-level-support) | install instructions |
+| Android Gradle Plugin (AGP) | 8.7.3 | [cordova-android](https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html#android-api-level-support) | [build.gradle](../android/OutlineAndroidLib/build.gradle) |
+| Android Build Tools | 35.0.0+ | [cordova-android](https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html#android-api-level-support) | install instructions |
 | Android Studio | 2023.2.1  (Iguana) | [AGP](https://developer.android.com/studio/releases#android_gradle_plugin_and_android_studio_compatibility) | |
 
 ## Build the app
@@ -105,6 +106,12 @@ Make sure to rebuild after modifying platform dependent files!
    ```shell
    adb install -r -d client/platforms/android/app/build/outputs/apk/debug/app-debug.apk
    ```
+
+Alternatively, run with:
+
+```sh
+npx cordova run android -- --gradleArg=--include-build=../../src/cordova/android/OutlineAndroidLib
+```
 
 ## Develop code
 

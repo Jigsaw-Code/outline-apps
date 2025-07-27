@@ -18,16 +18,24 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
+	"github.com/Jigsaw-Code/outline-apps/client/go/configyaml"
 )
 
 type FirstSupportedConfig struct {
 	Options []any
 }
 
-func parseFirstSupported[Output any](ctx context.Context, configMap map[string]any, parseE ParseFunc[Output]) (Output, error) {
+func NewFirstSupportedSubParser[Output any](parse configyaml.ParseFunc[Output]) func(ctx context.Context, input map[string]any) (Output, error) {
+	return func(ctx context.Context, input map[string]any) (Output, error) {
+		return parseFirstSupported(ctx, input, parse)
+	}
+}
+
+func parseFirstSupported[Output any](ctx context.Context, configMap map[string]any, parseE configyaml.ParseFunc[Output]) (Output, error) {
 	var zero Output
 	var config FirstSupportedConfig
-	if err := mapToAny(configMap, &config); err != nil {
+	if err := configyaml.MapToAny(configMap, &config); err != nil {
 		return zero, fmt.Errorf("invalid config format: %w", err)
 	}
 
@@ -42,5 +50,5 @@ func parseFirstSupported[Output any](ctx context.Context, configMap map[string]a
 		}
 		return endpoint, err
 	}
-	return zero, fmt.Errorf("no suported option found: %w", errors.ErrUnsupported)
+	return zero, fmt.Errorf("no supported option found: %w", errors.ErrUnsupported)
 }

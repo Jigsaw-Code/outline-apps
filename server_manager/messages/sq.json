@@ -112,6 +112,7 @@
   "gcp-firewall-create-3": "Shkruaj \"0.0.0.0/0\" në fushën \"Intervali i IP-ve të burimit\" (Source IP ranges).",
   "gcp-firewall-create-4": "Zgjidh \"Lejo të gjitha\" (Allow all) nën \"Protokollet dhe portat\" (Protocols and ports).",
   "gcp-name-your-project": "Emërtoje projektin tënd në fushën \"Emri i projektit\" (Project name).",
+  "gcp-oauth-connect-title": "Identifikohu ose krijo një llogari me Google Cloud Platform.",
   "gcp-project-setup-error": "Ndodhi një gabim gjatë konfigurimit të projektit tënd të Google Cloud",
   "gcp-select-machine-type": "Zgjidh \"f1-micro\" nën \"Lloji i pajisjes\" (Machine type)",
   "gcp-select-networking": "Kliko te \"Menaxhimi, siguria, disqet, rrjetet, pronësi unike\" (Management, security, disks, networking, sole tenancy) dhe më pas te \"Rrjetet\" (Networking)",

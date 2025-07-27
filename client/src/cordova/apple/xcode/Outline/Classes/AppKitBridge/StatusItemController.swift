@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import AppKit
+import NetworkExtension
 
 @objc
 public enum ConnectionStatus: Int {
@@ -27,6 +28,9 @@ class StatusItemController: NSObject {
     let connectionStatusMenuItem = NSMenuItem(title: MenuTitle.statusDisconnected,
                                               action: nil,
                                               keyEquivalent: "")
+    let connectDisconnectMenuItem = NSMenuItem(title: MenuTitle.connect,
+                                               action: #selector(toggleVpnConnection),
+                                               keyEquivalent: "c")
 
     private enum AppIconImage {
         static let statusConnected = getImage(name: "status_bar_button_image_connected")
@@ -54,6 +58,16 @@ class StatusItemController: NSObject {
             bundle: Bundle(for: StatusItemController.self),
             comment: "Tray menu entry indicating no server is currently connected."
         )
+        static let connect = NSLocalizedString(
+            "connect",
+            bundle: Bundle(for: StatusItemController.self),
+            comment: "Menu item to connect to VPN."
+        )
+        static let disconnect = NSLocalizedString(
+            "disconnect",
+            bundle: Bundle(for: StatusItemController.self),
+            comment: "Menu item to disconnect from VPN."
+        )
     }
 
     override init() {
@@ -68,6 +82,9 @@ class StatusItemController: NSObject {
         openMenuItem.target = self
         menu.addItem(openMenuItem)
         menu.addItem(connectionStatusMenuItem)
+        menu.addItem(NSMenuItem.separator())
+        connectDisconnectMenuItem.target = self
+        menu.addItem(connectDisconnectMenuItem)
         menu.addItem(NSMenuItem.separator())
         let closeMenuItem = NSMenuItem(title: MenuTitle.quit, action: #selector(closeApplication), keyEquivalent: "q")
         closeMenuItem.target = self
@@ -84,6 +101,10 @@ class StatusItemController: NSObject {
 
         let connectionStatusTitle = isConnected ? MenuTitle.statusConnected : MenuTitle.statusDisconnected
         connectionStatusMenuItem.title = connectionStatusTitle
+        
+        // Update connect/disconnect menu item
+        let connectDisconnectTitle = isConnected ? MenuTitle.disconnect : MenuTitle.connect
+        connectDisconnectMenuItem.title = connectDisconnectTitle
     }
 
     @objc func openApplication(_: AnyObject?) {
@@ -99,6 +120,60 @@ class StatusItemController: NSObject {
         NSLog("[StatusItemController] Closing application")
         NotificationCenter.default.post(name: Notification.Name("appQuit"), object: nil)
         NSApplication.shared.terminate(self)
+    }
+    
+    @objc func toggleVpnConnection(_ sender: NSMenuItem) {
+        NSLog("[StatusItemController] Toggle VPN connection")
+        
+        Task {
+            let managers = try? await NETunnelProviderManager.loadAllFromPreferences()
+            
+            // Early return if no VPN profile exists
+            guard let managers = managers, !managers.isEmpty else {
+                NSLog("[StatusItemController] No VPN profile found, opening app")
+                DispatchQueue.main.async {
+                    self.openApplication(nil)
+                }
+                return
+            }
+            
+            guard let manager = managers.first else {
+                NSLog("[StatusItemController] Failed to get VPN manager")
+                return
+            }
+            
+            // Base action purely on menu item title, not current status
+            let isConnectAction = sender.title == MenuTitle.connect
+            
+            if isConnectAction {
+                // User clicked "Connect" - attempt to connect regardless of current state
+                NSLog("[StatusItemController] Connecting to VPN tunnel")
+                do {
+                    try manager.connection.startVPNTunnel()
+                } catch {
+                    NSLog("[StatusItemController] Failed to connect VPN: \(error.localizedDescription)")
+                    // If connection fails, open the app
+                    DispatchQueue.main.async {
+                        self.openApplication(nil)
+                    }
+                }
+            } else {
+                // User clicked "Disconnect" - attempt to disconnect regardless of current state
+                NSLog("[StatusItemController] Disconnecting VPN")
+                
+                // Disable on-demand rules to prevent automatic reconnection, this automatically gets re-enabled if the user clicks the connect button again (regardless of app or menubar)
+                do {
+                    try await manager.loadFromPreferences()
+                    manager.isOnDemandEnabled = false
+                    try await manager.saveToPreferences()
+                    NSLog("[StatusItemController] Disabled on-demand rules")
+                } catch {
+                    NSLog("[StatusItemController] Failed to disable on-demand rules: \(error.localizedDescription)")
+                }
+                
+                manager.connection.stopVPNTunnel()
+            }
+        }
     }
 }
 
