@@ -117,15 +117,16 @@ func TestCheckTCPConnectivityWithHTTP_Success(t *testing.T) {
 	require.NoError(t, CheckTCPConnectivityWithHTTP(1*time.Second, &transport.TCPDialer{}, []string{server.URL}))
 }
 
-func TestCheckTCPConnectivityWithHTTPS_Success(t *testing.T) {
-	t.Parallel()
-	server := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		w.WriteHeader(204)
-	}))
-	defer server.Close()
-	server.StartTLS()
-	require.NoError(t, CheckTCPConnectivityWithHTTP(1*time.Second, &transport.TCPDialer{}, []string{server.URL}))
-}
+// TODO(fortuna): Support HTTPS urls.
+// func TestCheckTCPConnectivityWithHTTPS_Success(t *testing.T) {
+// 	t.Parallel()
+// 	server := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+// 		w.WriteHeader(204)
+// 	}))
+// 	defer server.Close()
+// 	server.StartTLS()
+// 	require.NoError(t, CheckTCPConnectivityWithHTTP(1*time.Second, &transport.TCPDialer{}, []string{server.URL}))
+// }
 
 func TestCheckTCPConnectivityWithHTTP_Failed(t *testing.T) {
 	t.Parallel()
@@ -135,31 +136,31 @@ func TestCheckTCPConnectivityWithHTTP_Failed(t *testing.T) {
 func TestCheckTCPConnectivityWithHTTP_SuccessfulFallback(t *testing.T) {
 	t.Parallel()
 	dialer := &testStreamDialer{}
-	require.NoError(t, CheckTCPConnectivityWithHTTP(2*time.Second, dialer, []string{"https://dialerror", "https://readerror", "https://readtimeout", "https://example.com"}))
+	require.NoError(t, CheckTCPConnectivityWithHTTP(2*time.Second, dialer, []string{"http://dialerror", "http://readerror", "http://readtimeout", "http://example.com"}))
 }
 
 func TestCheckTCPConnectivityWithHTTP_FailedFallback(t *testing.T) {
 	t.Parallel()
 	dialer := &testStreamDialer{}
-	require.Error(t, CheckTCPConnectivityWithHTTP(2*time.Second, dialer, []string{"https://dialerror", "https://readerror", "https://readtimeout"}))
+	require.Error(t, CheckTCPConnectivityWithHTTP(2*time.Second, dialer, []string{"http://dialerror", "http://readerror", "http://readtimeout"}))
 }
 
 func TestCheckTCPConnectivityWithHTTP_FailedRead(t *testing.T) {
 	t.Parallel()
 	dialer := &testStreamDialer{}
-	require.Error(t, CheckTCPConnectivityWithHTTP(2*time.Second, dialer, []string{"https://readerror"}))
+	require.Error(t, CheckTCPConnectivityWithHTTP(2*time.Second, dialer, []string{"http://readerror"}))
 }
 
 func TestCheckTCPConnectivityWithHTTP_ReadTimeout(t *testing.T) {
 	t.Parallel()
 	dialer := &testStreamDialer{}
-	require.Error(t, CheckTCPConnectivityWithHTTP(2*time.Second, dialer, []string{"https://readtimeout"}))
+	require.Error(t, CheckTCPConnectivityWithHTTP(2*time.Second, dialer, []string{"http://readtimeout"}))
 }
 
 func TestCheckTCPConnectivityWithHTTP_FailReachability(t *testing.T) {
 	t.Parallel()
 	client := &fakeSSClient{failReachability: true}
-	err := CheckTCPConnectivityWithHTTP(2*time.Second, client, []string{""})
+	err := CheckTCPConnectivityWithHTTP(2*time.Second, client, []string{"http://dialerror"})
 	require.Error(t, err)
 	perr := platerrors.ToPlatformError(err)
 	require.Equal(t, platerrors.ProxyServerUnreachable, perr.Code)
@@ -168,7 +169,7 @@ func TestCheckTCPConnectivityWithHTTP_FailReachability(t *testing.T) {
 func TestCheckTCPConnectivityWithHTTP_FailAuthentication(t *testing.T) {
 	t.Parallel()
 	client := &fakeSSClient{failAuthentication: true}
-	err := CheckTCPConnectivityWithHTTP(2*time.Second, client, []string{""})
+	err := CheckTCPConnectivityWithHTTP(2*time.Second, client, []string{"http://readtimeout"})
 	require.Error(t, err)
 	perr := platerrors.ToPlatformError(err)
 	require.Equal(t, platerrors.ProxyServerReadFailed, perr.Code)

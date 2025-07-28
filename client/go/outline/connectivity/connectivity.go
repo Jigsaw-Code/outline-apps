@@ -183,13 +183,13 @@ func testOneURL(ctx context.Context, dialer transport.StreamDialer, targetURL st
 		return err
 	}
 	targetAddr := req.Host
-	if !hasPort(targetAddr) {
-		switch req.URL.Scheme {
-		case "http":
+	switch req.URL.Scheme {
+	case "http":
+		if !hasPort(targetAddr) {
 			targetAddr = net.JoinHostPort(targetAddr, "80")
-		default:
-			return fmt.Errorf("connectivity test currently only supports \"http\" URLs, found \"%v\"", req.URL.Scheme)
 		}
+	default:
+		return fmt.Errorf("connectivity test currently only supports \"http\" URLs, found \"%v\"", req.URL.Scheme)
 	}
 	conn, err := dialer.DialStream(ctx, targetAddr)
 	if err != nil {
