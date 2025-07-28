@@ -21,5 +21,4 @@
 #-renamesourcefileattribute SourceFile
 
 # Make sure R8 won't remove any Outline classes.
-# They are required by old Android (14-)
 -keep class org.outline.** { *; }
