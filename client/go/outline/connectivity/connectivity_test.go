@@ -18,6 +18,8 @@ import (
 	"context"
 	"errors"
 	"net"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -27,7 +29,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// UDP
+
 func TestCheckUDPConnectivityWithDNS_Success(t *testing.T) {
+	t.Parallel()
 	client := &fakeSSClient{}
 	err := CheckUDPConnectivityWithDNS(client, &net.UDPAddr{})
 	if err != nil {
@@ -36,6 +41,7 @@ func TestCheckUDPConnectivityWithDNS_Success(t *testing.T) {
 }
 
 func TestCheckUDPConnectivityWithDNS_Fail(t *testing.T) {
+	t.Parallel()
 	client := &fakeSSClient{failUDP: true}
 	err := CheckUDPConnectivityWithDNS(client, &net.UDPAddr{})
 	if err == nil {
@@ -43,29 +49,132 @@ func TestCheckUDPConnectivityWithDNS_Fail(t *testing.T) {
 	}
 }
 
-func TestCheckTCPConnectivityWithHTTP_Success(t *testing.T) {
-	client := &fakeSSClient{}
-	err := CheckTCPConnectivityWithHTTP(client, []string{""})
+// TCP
+
+type testStreamDialer struct{}
+
+var _ transport.StreamDialer = (*testStreamDialer)(nil)
+
+func (d *testStreamDialer) DialStream(ctx context.Context, address string) (transport.StreamConn, error) {
+	host, _, err := net.SplitHostPort(address)
 	if err != nil {
-		t.Fail()
+		return nil, err
+	}
+	if host == "dialerror" {
+		return nil, errors.New("can't connect")
+	}
+	if host == "dialtimeout" {
+		<-ctx.Done()
+		return nil, context.Cause(ctx)
+	}
+	return &testStreamConn{
+		Ctx:    ctx,
+		Host:   host,
+		Writes: []int{},
+	}, nil
+}
+
+type testStreamConn struct {
+	transport.StreamConn
+	Ctx    context.Context
+	Host   string
+	Writes []int
+}
+
+var _ transport.StreamConn = (*testStreamConn)(nil)
+
+func (c *testStreamConn) Write(b []byte) (int, error) {
+	c.Writes = append(c.Writes, len(b))
+	return len(b), nil
+}
+
+func (c *testStreamConn) Read(b []byte) (int, error) {
+	switch c.Host {
+	case "readtimeout":
+		<-c.Ctx.Done()
+		return 0, context.Cause(c.Ctx)
+	case "readerror":
+		return 0, errors.New("failed to read")
+	default:
+		return len(b), nil
 	}
 }
 
+func (c *testStreamConn) SetDeadline(deadline time.Time) error {
+	return nil
+}
+
+func (c *testStreamConn) Close() error {
+	return nil
+}
+
+func TestCheckTCPConnectivityWithHTTP_Success(t *testing.T) {
+	t.Parallel()
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(204)
+	}))
+	defer server.Close()
+	require.NoError(t, CheckTCPConnectivityWithHTTP(1*time.Second, &transport.TCPDialer{}, []string{server.URL}))
+}
+
+func TestCheckTCPConnectivityWithHTTPS_Success(t *testing.T) {
+	t.Parallel()
+	server := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(204)
+	}))
+	defer server.Close()
+	server.StartTLS()
+	require.NoError(t, CheckTCPConnectivityWithHTTP(1*time.Second, &transport.TCPDialer{}, []string{server.URL}))
+}
+
+func TestCheckTCPConnectivityWithHTTP_Failed(t *testing.T) {
+	t.Parallel()
+	require.Error(t, CheckTCPConnectivityWithHTTP(1*time.Second, &transport.TCPDialer{}, []string{"http://server.invalid"}))
+}
+
+func TestCheckTCPConnectivityWithHTTP_SuccessfulFallback(t *testing.T) {
+	t.Parallel()
+	dialer := &testStreamDialer{}
+	require.NoError(t, CheckTCPConnectivityWithHTTP(2*time.Second, dialer, []string{"https://dialerror", "https://readerror", "https://readtimeout", "https://example.com"}))
+}
+
+func TestCheckTCPConnectivityWithHTTP_FailedFallback(t *testing.T) {
+	t.Parallel()
+	dialer := &testStreamDialer{}
+	require.Error(t, CheckTCPConnectivityWithHTTP(2*time.Second, dialer, []string{"https://dialerror", "https://readerror", "https://readtimeout"}))
+}
+
+func TestCheckTCPConnectivityWithHTTP_FailedRead(t *testing.T) {
+	t.Parallel()
+	dialer := &testStreamDialer{}
+	require.Error(t, CheckTCPConnectivityWithHTTP(2*time.Second, dialer, []string{"https://readerror"}))
+}
+
+func TestCheckTCPConnectivityWithHTTP_ReadTimeout(t *testing.T) {
+	t.Parallel()
+	dialer := &testStreamDialer{}
+	require.Error(t, CheckTCPConnectivityWithHTTP(2*time.Second, dialer, []string{"https://readtimeout"}))
+}
+
 func TestCheckTCPConnectivityWithHTTP_FailReachability(t *testing.T) {
+	t.Parallel()
 	client := &fakeSSClient{failReachability: true}
-	err := CheckTCPConnectivityWithHTTP(client, []string{""})
+	err := CheckTCPConnectivityWithHTTP(2*time.Second, client, []string{""})
 	require.Error(t, err)
 	perr := platerrors.ToPlatformError(err)
 	require.Equal(t, platerrors.ProxyServerUnreachable, perr.Code)
 }
 
 func TestCheckTCPConnectivityWithHTTP_FailAuthentication(t *testing.T) {
+	t.Parallel()
 	client := &fakeSSClient{failAuthentication: true}
-	err := CheckTCPConnectivityWithHTTP(client, []string{""})
+	err := CheckTCPConnectivityWithHTTP(2*time.Second, client, []string{""})
 	require.Error(t, err)
 	perr := platerrors.ToPlatformError(err)
 	require.Equal(t, platerrors.ProxyServerReadFailed, perr.Code)
 }
+
+// Helpers
 
 // Fake shadowsocks.Client that can be configured to return failing UDP and TCP connections.
 type fakeSSClient struct {
