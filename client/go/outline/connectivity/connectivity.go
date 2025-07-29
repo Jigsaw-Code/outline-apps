@@ -121,7 +121,7 @@ func getDNSRequest() []byte {
 	}
 }
 
-// CheckTCPConnectivityWithHTTP determines whether the stream by performing an HTTP HEAD request to
+// CheckTCPConnectivityWithHTTP determines the stream dialer's connectivity by performing an HTTP HEAD request to
 // the URLs in `urlList`, which must use the 'http' scheme.
 // Returns nil on success, error on connectivity failure.
 func CheckTCPConnectivityWithHTTP(timeout time.Duration, dialer transport.StreamDialer, urlList []string) error {
