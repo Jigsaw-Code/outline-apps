@@ -117,16 +117,16 @@ func TestCheckTCPConnectivityWithHTTP_Success(t *testing.T) {
 	require.NoError(t, CheckTCPConnectivityWithHTTP(1*time.Second, &transport.TCPDialer{}, []string{server.URL}))
 }
 
-// TODO(fortuna): Support HTTPS urls.
-// func TestCheckTCPConnectivityWithHTTPS_Success(t *testing.T) {
-// 	t.Parallel()
-// 	server := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-// 		w.WriteHeader(204)
-// 	}))
-// 	defer server.Close()
-// 	server.StartTLS()
-// 	require.NoError(t, CheckTCPConnectivityWithHTTP(1*time.Second, &transport.TCPDialer{}, []string{server.URL}))
-// }
+func TestCheckTCPConnectivityWithHTTPS_Error(t *testing.T) {
+	t.Parallel()
+	server := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(204)
+	}))
+	defer server.Close()
+	server.StartTLS()
+	// TODO(fortuna): Support HTTPS urls.
+	require.Error(t, CheckTCPConnectivityWithHTTP(1*time.Second, &transport.TCPDialer{}, []string{server.URL}))
+}
 
 func TestCheckTCPConnectivityWithHTTP_Failed(t *testing.T) {
 	t.Parallel()
