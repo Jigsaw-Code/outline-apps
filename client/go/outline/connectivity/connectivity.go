@@ -121,21 +121,22 @@ func getDNSRequest() []byte {
 	}
 }
 
-// CheckTCPConnectivityWithHTTP determines whether the proxy is reachable over TCP and validates the
-// client's authentication credentials by performing an HTTP HEAD request to `targetURL`, which must
-// be of the form: http://[host](:[port])(/[path]).
-//
+// CheckTCPConnectivityWithHTTP determines whether the stream by performing an HTTP HEAD request to
+// the URLs in `urlList`, which must use the 'http' scheme.
 // Returns nil on success, error on connectivity failure.
 func CheckTCPConnectivityWithHTTP(timeout time.Duration, dialer transport.StreamDialer, urlList []string) error {
 	if len(urlList) == 0 {
 		return errors.New("test url list is empty")
+	}
+	if timeout == 0 {
+		return context.DeadlineExceeded
 	}
 
 	deadline := time.Now().Add(timeout)
 	ctx, cancel := context.WithDeadline(context.Background(), deadline)
 	defer cancel()
 
-	errCh := make(chan error)
+	errCh := make(chan error, len(urlList))
 	for i, targetURL := range urlList {
 		go func() {
 			// We pre-define the start time of the probes to make their timing independent of each other
@@ -145,14 +146,12 @@ func CheckTCPConnectivityWithHTTP(timeout time.Duration, dialer transport.Stream
 			// The other tests start at a random times, uniformly distributed within [500ms, timeout - 500ms]
 			// (we want the last test to have at least 500ms to complete).
 			if i > 0 {
+				endMs := max(int(timeout/time.Millisecond)-500, 0)
+				beginMs := min(endMs, 500)
 				// We use math/rand here because there's no need for strong encryption.
-				time.Sleep(time.Duration(500+rand.Intn(int(timeout/time.Millisecond-2*500))) * time.Millisecond)
+				time.Sleep(time.Duration(beginMs+rand.Intn(endMs-beginMs+1)) * time.Millisecond)
 			}
-			err := testOneURL(ctx, dialer, targetURL)
-			select {
-			case errCh <- err:
-			case <-ctx.Done():
-			}
+			errCh <- testTCPWithOneURL(ctx, dialer, targetURL)
 		}()
 	}
 	var firstErr error
@@ -174,11 +173,11 @@ func CheckTCPConnectivityWithHTTP(timeout time.Duration, dialer transport.Stream
 	return firstErr
 }
 
-func testOneURL(ctx context.Context, dialer transport.StreamDialer, targetURL string) error {
+func testTCPWithOneURL(ctx context.Context, dialer transport.StreamDialer, targetURL string) error {
 	if ctx.Err() != nil {
 		return context.Cause(ctx)
 	}
-	req, err := http.NewRequest("HEAD", targetURL, nil)
+	req, err := http.NewRequestWithContext(ctx, "HEAD", targetURL, nil)
 	if err != nil {
 		return err
 	}

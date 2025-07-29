@@ -1,4 +1,4 @@
-// Copyright 2023 The Outline Authors
+// Copyright 2025 The Outline Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ func TestCheckTCPConnectivityWithHTTP_ValidURLs(t *testing.T) {
 	for _, url := range testTCPURLs {
 		t.Run(url, func(t *testing.T) {
 			t.Parallel()
-			require.NoError(t, testOneURL(context.Background(), dialer, url))
+			require.NoError(t, testTCPWithOneURL(context.Background(), dialer, url))
 		})
 	}
 }
