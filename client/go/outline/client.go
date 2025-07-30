@@ -49,7 +49,7 @@ func (c *Client) ListenPacket(ctx context.Context) (net.PacketConn, error) {
 // ClientConfig is used to create the Client.
 type ClientConfig struct {
 	Transport       configyaml.ConfigNode
-	ReportingConfig configyaml.ConfigNode `yaml:"reporting_config,omitempty"`
+	ReportingConfig configyaml.ConfigNode `yaml:"report,omitempty"`
 }
 
 // NewClientResult represents the result of [NewClientAndReturnError].
