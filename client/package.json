@@ -43,7 +43,6 @@
     "@sentry/electron": "^4.2.0",
     "@webcomponents/webcomponentsjs": "^2.4.4",
     "auto-launch": "^5.0.5",
-    "cordova-plugin-splashscreen": "^6.0.0",
     "cordova-plugin-statusbar": "^2.2.3",
     "electron-updater": "^5.0.5",
     "element-internals-polyfill": "^1.3.12",
@@ -134,7 +133,6 @@
   "cordova": {
     "plugins": {
       "cordova-plugin-outline": {},
-      "cordova-plugin-splashscreen": {},
       "cordova-plugin-statusbar": {},
       "cordova-plugin-clipboard": {},
       "cordova-webintent": {}
