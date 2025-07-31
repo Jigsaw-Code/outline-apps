@@ -171,7 +171,7 @@ transport:
       $type: shadowsocks
       endpoint: example.com:53
       <<: *cipher
-reporting_config:
+report:
   $type: sessionreport
   url: https://your-callback-server.com/outline_callback
   interval: 10s

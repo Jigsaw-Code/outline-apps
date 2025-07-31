@@ -160,7 +160,7 @@ transport:
 
   udp: *shared
 
-reporting_config:
+report:
   $type: sessionreport
   url: https://your-callback-server.com/outline_callback
   interval: 24h
