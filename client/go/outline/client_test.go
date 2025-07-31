@@ -156,6 +156,35 @@ transport:
 	require.Equal(t, "example.com:53", result.Client.pl.FirstHop)
 }
 
+func Test_UsageReporting(t *testing.T) {
+	config := `
+transport:
+  $type: tcpudp
+  tcp:
+      $type: shadowsocks
+      endpoint: example.com:80
+      <<: &cipher
+        cipher: chacha20-ietf-poly1305
+        secret: SECRET
+      prefix: "POST "
+  udp:
+      $type: shadowsocks
+      endpoint: example.com:53
+      <<: *cipher
+report:
+  $type: sessionreport
+  url: https://your-callback-server.com/outline_callback
+  interval: 10s
+  enable_cookies: true`
+
+	result := NewClient(config)
+	require.Nil(t, result.Error, "Got %v", result.Error)
+	require.Equal(t, "example.com:80", result.Client.sd.FirstHop)
+	require.Equal(t, "example.com:53", result.Client.pl.FirstHop)
+	require.NotNil(t, result.Client.Ur, "UsageReporter is nil")
+	require.Equal(t, "https://your-callback-server.com/outline_callback", result.Client.Ur.Url)
+}
+
 func Test_NewTransport_YAML_Reuse(t *testing.T) {
 	config := `
 transport:
