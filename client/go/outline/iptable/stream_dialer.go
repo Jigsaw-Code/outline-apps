@@ -43,30 +43,36 @@ func lookupInTable[D any](table IPTable[D], address string) (foundDialer D, ok b
 // If a specific route is found in the table, the corresponding dialer is used.
 // Otherwise, the default dialer (if set) is used.
 type StreamDialer struct {
-	table IPTable[transport.StreamDialer]
+	table    IPTable[transport.StreamDialer]
+	fallback transport.StreamDialer
 }
 
 // NewStreamDialer creates a new [StreamDialer].
 // If the provided table is nil, a new empty table will be created internally.
 // It returns the new dialer and a nil error.
-func NewStreamDialer(table IPTable[transport.StreamDialer]) (*StreamDialer, error) {
+func NewStreamDialer(table IPTable[transport.StreamDialer], fallback transport.StreamDialer) (*StreamDialer, error) {
 	if table == nil {
 		table = NewIPTable[transport.StreamDialer]()
 	}
 	return &StreamDialer{
-		table: table,
+		table:    table,
+		fallback: fallback,
 	}, nil
 }
 
 // DialStream dials the given address using the appropriate [transport.StreamDialer]
 // determined by looking up the destination IP in the IP table.
-// If no specific route is found, it uses the default dialer.
-// If no specific route is found and no default dialer is set, or if the
+// If no specific route is found, it uses the fallback dialer.
+// If no specific route is found and no fallback dialer is set, or if the
 // selected dialer fails, it returns an error.
 func (dialer *StreamDialer) DialStream(ctx context.Context, address string) (transport.StreamConn, error) {
 	selectedDialer, ok := lookupInTable(dialer.table, address)
 
-	if !ok || selectedDialer == nil {
+	if selectedDialer == nil && dialer.fallback != nil {
+		return dialer.fallback.DialStream(ctx, address)
+	}
+
+	if selectedDialer == nil || !ok {
 		return nil, fmt.Errorf("no dialer available for address %s", address)
 	}
 

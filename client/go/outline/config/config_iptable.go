@@ -26,11 +26,12 @@ import (
 )
 
 type ipTableRootConfig struct {
-	Table []ipTableEntryConfig `yaml:"table"`
+	Table    []ipTableEntryConfig  `yaml:"table"`
+	Fallback configyaml.ConfigNode `yaml:"fallback,omitempty"`
 }
 
 type ipTableEntryConfig struct {
-	IP     string                `yaml:"ip,omitempty"`
+	IP     string                `yaml:"ip"`
 	Dialer configyaml.ConfigNode `yaml:"dialer"`
 }
 
@@ -48,9 +49,24 @@ func parseIPTableStreamDialer(
 		return nil, errors.New("iptable config 'table' must not be empty for stream dialer")
 	}
 
-	dialerTable := iptable.NewIPTable[transport.StreamDialer]()
 	allConnTunnelled := true
 	allConnDirect := true
+
+	parsedFallbackDialer, err := parseSD(ctx, rootCfg.Fallback)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse nested stream dialer fallback: %w", err)
+	}
+
+	if parsedFallbackDialer.ConnType != ConnTypeTunneled {
+		allConnTunnelled = false
+	}
+
+	if parsedFallbackDialer.ConnType != ConnTypeDirect {
+		allConnDirect = false
+	}
+
+	dialerTable := iptable.NewIPTable[transport.StreamDialer]()
 	for i, entryCfg := range rootCfg.Table {
 		parsedSubDialer, err := parseSD(ctx, entryCfg.Dialer)
 		if err != nil {
@@ -80,7 +96,7 @@ func parseIPTableStreamDialer(
 		dialerTable.AddPrefix(currentPrefix, transport.FuncStreamDialer(parsedSubDialer.Dial))
 	}
 
-	dialer, err := iptable.NewStreamDialer(dialerTable)
+	dialer, err := iptable.NewStreamDialer(dialerTable, transport.FuncStreamDialer(parsedFallbackDialer.Dial))
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to create IPTableStreamDialer: %w", err)

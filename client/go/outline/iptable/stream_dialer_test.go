@@ -153,14 +153,22 @@ func TestNewIPTableStreamDialer(t *testing.T) {
 	table := NewIPTable[transport.StreamDialer]()
 
 	t.Run("Valid Table", func(t *testing.T) {
-		d, err := NewStreamDialer(table)
+		d, err := NewStreamDialer(table, nil)
 		require.NoError(t, err)
 		require.NotNil(t, d)
 		assert.Equal(t, table, d.table)
 	})
 
+	t.Run("Valid Fallback", func(t *testing.T) {
+		defaultDialer := NewMockStreamDialer("default")
+		d, err := NewStreamDialer(nil, defaultDialer)
+		require.NoError(t, err)
+		require.NotNil(t, d)
+		assert.Equal(t, defaultDialer, d.fallback)
+	})
+
 	t.Run("Nil Table", func(t *testing.T) {
-		d, err := NewStreamDialer(nil)
+		d, err := NewStreamDialer(nil, nil)
 		require.NoError(t, err)
 		require.NotNil(t, d)
 		assert.NotNil(t, d.table)
@@ -176,13 +184,13 @@ func TestIPTableStreamDialer_DialStream(t *testing.T) {
 	table.AddPrefix(netip.MustParsePrefix("192.0.2.0/24"), routeV4Dialer)
 	table.AddPrefix(netip.MustParsePrefix("2001:db8:cafe::/48"), routeV6Dialer)
 
-	iptDialerWithDefault, err := NewStreamDialer(table)
+	iptDialerWithFallback, err := NewStreamDialer(table, defaultDialer)
 	require.NoError(t, err)
-	require.NotNil(t, iptDialerWithDefault)
+	require.NotNil(t, iptDialerWithFallback)
 
-	iptDialerNoDefault, err := NewStreamDialer(table)
+	iptDialerNoFallback, err := NewStreamDialer(table, nil)
 	require.NoError(t, err)
-	require.NotNil(t, iptDialerNoDefault)
+	require.NotNil(t, iptDialerNoFallback)
 
 	testCases := []struct {
 		name         string
@@ -194,17 +202,38 @@ func TestIPTableStreamDialer_DialStream(t *testing.T) {
 		expectErrMsg string
 		setupMocks   func()
 	}{
-		// --- Tests using iptDialerWithDefault ---
+		// --- Tests using iptDialerWithFallback ---
 		{
 			name:         "WithDefault_IPv4 in table",
-			dialerToUse:  iptDialerWithDefault,
+			dialerToUse:  iptDialerWithFallback,
 			address:      "192.0.2.100:443",
 			expectDialer: routeV4Dialer,
 			expectConn:   true,
 		},
 		{
+			name:         "WithDefault_IPv4 not in table",
+			dialerToUse:  iptDialerWithFallback,
+			address:      "10.0.0.1:1234",
+			expectDialer: defaultDialer,
+			expectConn:   true,
+		},
+		{
+			name:         "WithDefault_IPv6 in table",
+			dialerToUse:  iptDialerWithFallback,
+			address:      "2001:db8:cafe::100:443",
+			expectDialer: routeV6Dialer,
+			expectConn:   true,
+		},
+		{
+			name:         "WithDefault_IPv6 not in table",
+			dialerToUse:  iptDialerWithFallback,
+			address:      "2001::",
+			expectDialer: defaultDialer,
+			expectConn:   true,
+		},
+		{
 			name:         "WithDefault_Dialer returns error",
-			dialerToUse:  iptDialerWithDefault,
+			dialerToUse:  iptDialerWithFallback,
 			address:      "192.0.2.20:80",
 			expectDialer: routeV4Dialer,
 			expectErr:    true,
@@ -215,14 +244,14 @@ func TestIPTableStreamDialer_DialStream(t *testing.T) {
 		// --- Tests using iptDialerNoDefault ---
 		{
 			name:         "NoDefault_IPv4 in table",
-			dialerToUse:  iptDialerNoDefault,
+			dialerToUse:  iptDialerNoFallback,
 			address:      "192.0.2.100:443",
 			expectDialer: routeV4Dialer, // Specific route still found
 			expectConn:   true,
 		},
 		{
 			name:         "NoDefault_IPv4 not in table",
-			dialerToUse:  iptDialerNoDefault,
+			dialerToUse:  iptDialerNoFallback,
 			address:      "10.0.0.1:1234",
 			expectDialer: nil, // No specific route, no default -> error
 			expectErr:    true,
@@ -230,7 +259,7 @@ func TestIPTableStreamDialer_DialStream(t *testing.T) {
 		},
 		{
 			name:         "NoDefault_Hostname",
-			dialerToUse:  iptDialerNoDefault,
+			dialerToUse:  iptDialerNoFallback,
 			address:      "example.com:443",
 			expectDialer: nil, // No specific route, no default -> error
 			expectErr:    true,
