@@ -29,6 +29,7 @@ import {OutlineErrorReporter} from '../shared/error_reporter';
 import {ServerConnectionState, ServerListItem} from '../views/servers_view';
 import {SERVER_CONNECTION_INDICATOR_DURATION_MS} from '../views/servers_view/server_connection_indicator';
 import { error } from 'console';
+import e from 'express';
 
 enum OUTLINE_ACCESS_KEY_SCHEME {
   STATIC = 'ss',
@@ -323,42 +324,36 @@ export class App {
     } else if (error instanceof errors.InvalidServiceConfiguration) {
       toastMessage = this.localize('error-connection-configuration');
       buttonMessage = this.localize('error-details');
-      buttonHandler = () => {
-        this.showErrorCauseDialog(error);
-      };
       const {found, accessKey, webhookUrl} = this.keyHasWebhook(key);
-      if (found && accessKey && webhookUrl) {
-        sendErrorButtonMessage = this.localize('send-error');
-        sendErrorButtonHandler = () => {
-          this.sendErrorToProvider(error, accessKey, webhookUrl);
-        };
-      }  
+      buttonHandler = () => {
+        if (found) {
+          this.showErrorCauseDialog(error, accessKey, webhookUrl);
+        } else {
+          this.showErrorCauseDialog(error);
+        }
+      };
     } else if (error instanceof errors.SessionConfigFetchFailed) {
       toastMessage = this.localize('error-connection-configuration-fetch');
       buttonMessage = this.localize('error-details');
-      buttonHandler = () => {
-        this.showErrorCauseDialog(error);
-      };
       const {found, accessKey, webhookUrl} = this.keyHasWebhook(key);
-      if (found && accessKey && webhookUrl) {
-        sendErrorButtonMessage = this.localize('send-error');
-        sendErrorButtonHandler = () => {
-          this.sendErrorToProvider(error, accessKey, webhookUrl);
-        };
-      }
+      buttonHandler = () => {
+        if (found) {
+          this.showErrorCauseDialog(error, accessKey, webhookUrl);
+        } else {
+          this.showErrorCauseDialog(error);
+        }
+      };
     } else if (error instanceof errors.ProxyConnectionFailure) {
       toastMessage = this.localize('error-connection-proxy');
       buttonMessage = this.localize('error-details');
-      buttonHandler = () => {
-        this.showErrorCauseDialog(error);
-      };
       const {found, accessKey, webhookUrl} = this.keyHasWebhook(key);
-      if (found && accessKey && webhookUrl) {
-        sendErrorButtonMessage = this.localize('send-error');
-        sendErrorButtonHandler = () => {
-          this.sendErrorToProvider(error, accessKey, webhookUrl);
-        };
-      }
+      buttonHandler = () => {
+        if (found) {
+          this.showErrorCauseDialog(error, accessKey, webhookUrl);
+        } else {
+          this.showErrorCauseDialog(error);
+        }
+      };
     } else if (error instanceof errors.SessionProviderError) {
       toastMessage = error.message;
       console.log(error, error.message, error.details);
@@ -367,13 +362,6 @@ export class App {
         buttonHandler = () => {
           alert(error.details);
         };
-        const {found, accessKey, webhookUrl} = this.keyHasWebhook(key);
-        if (found && accessKey && webhookUrl) {
-          sendErrorButtonMessage = this.localize('send-error');
-          sendErrorButtonHandler = () => {
-            this.sendErrorToProvider(error, accessKey, webhookUrl);
-          };
-        }
       }
     } else {
       const hasErrorDetails = Boolean(error.message || error.cause);
@@ -381,16 +369,14 @@ export class App {
 
       if (hasErrorDetails) {
         buttonMessage = this.localize('error-details');
-        buttonHandler = () => {
-          this.showErrorCauseDialog(error);
-        };
         const {found, accessKey, webhookUrl} = this.keyHasWebhook(key);
-        if (found && accessKey && webhookUrl) {
-          sendErrorButtonMessage = this.localize('send-error');
-          sendErrorButtonHandler = () => {
-            this.sendErrorToProvider(error, accessKey, webhookUrl);
-          };
-        }
+        buttonHandler = () => {
+          if (found) {
+            this.showErrorCauseDialog(error, accessKey, webhookUrl);
+          } else {
+            this.showErrorCauseDialog(error);
+          }
+        };
       }
     }
 
@@ -404,8 +390,6 @@ export class App {
           buttonMessage,
           buttonHandler,
           buttonLink,
-          sendErrorButtonMessage,
-          sendErrorButtonHandler
         );
       }, 500);
     }
@@ -756,49 +740,50 @@ export class App {
   }
 
   private async onServerAdded(event: events.ServerAdded) {
-    let accessKey = (event.server as any).accessKey || (event as any).accessKey;
+    let accessKey: string | undefined = undefined;
+    const serverAny = event.server as any;
+
+    if (serverAny?.serviceConfig?.transportConfigLocation?.href) {
+      accessKey = serverAny.serviceConfig.transportConfigLocation.href;
+    } else if (serverAny?.serviceConfig?.tunnelConfig?.transport) {
+      accessKey = serverAny.serviceConfig.tunnelConfig.transport;
+    }
+    
+    console.debug('Server added:', event.server);
     const id = event.server.id;
     const webhookPattern = /&webhook=([^&#]+)/;
-
+    
     const match = accessKey.match(webhookPattern);
     if (match) {
       const webhookUrl = match[1];
-
-      // remove the webhook from the access key
       accessKey = accessKey.replace(webhookPattern, '');
   
       try {
-          // Save the data locally
-          const dataToSave = {
-            accessKey,
-            id,
-            webhookUrl,
-          };
+        const dataToSave = {
+          accessKey,
+          id,
+          webhookUrl,
+        };
   
-          const existingData = localStorage.getItem('filtered_access_keys');
-          let dataArray = [];
+        const existingData = localStorage.getItem('filtered_access_keys');
+        let dataArray = [];
           
-          if (existingData) {
-            try {
-              dataArray = JSON.parse(existingData);
-            } catch (error) {
-              console.error('Error parsing existing data:', error);
-              // Initialize as empty array if parsing fails
-              dataArray = [];
-            }
+        if (existingData) {
+          try {
+            dataArray = JSON.parse(existingData);
+          } catch (error) {
+            console.error('Error parsing existing data:', error);
+            dataArray = [];
           }
+        }
   
-          // Ensure dataArray is an array
-          if (!Array.isArray(dataArray)) {
-            dataArray = [dataArray];
-          }
+        if (!Array.isArray(dataArray)) {
+          dataArray = [dataArray];
+        }
   
-          // Add new data to the array
-          dataArray.push(dataToSave);
-  
-          // Save the updated array back to localStorage
-          localStorage.setItem('filtered_access_keys', JSON.stringify(dataArray));
-          console.log('Static key saved locally:', accessKey, webhookUrl);
+        dataArray.push(dataToSave);
+        localStorage.setItem('filtered_access_keys', JSON.stringify(dataArray));
+        console.log('Key:', accessKey, '\n& WebhookUrl:', webhookUrl, 'were saved locally.');
   
       } catch (error) {
         console.error('Error processing access key:', error);
@@ -854,7 +839,7 @@ export class App {
     return new Promise<boolean>(resolve => resolve(confirm(message)));
   }
 
-  private showErrorCauseDialog(error: Error) {
+  private showErrorCauseDialog(error: Error, accessKey?: string, webhookUrl?: string) {
     const makeString = (error: unknown, indent: string): string => {
       let message = indent + String(error);
       if (error instanceof Object && 'cause' in error && error.cause) {
@@ -863,8 +848,21 @@ export class App {
       }
       return message;
     };
-    return this.rootEl.showErrorDetails(makeString(error, ''));
+
+    const safeAccessKey = accessKey || '';
+    const safeWebhookUrl = webhookUrl || '';
+    const showSendErrorButton = Boolean(accessKey && webhookUrl);
+
+    window.dispatchEvent(new CustomEvent('show-error-details', {
+      detail: {
+        errorDetails: makeString(error, ''),
+        accessKey: safeAccessKey,
+        webhookUrl: safeWebhookUrl,
+        showSendErrorButton,
+      }
+    }));
   }
+  
   //#endregion UI dialogs
 
   // Helpers:
@@ -997,87 +995,51 @@ export class App {
     this.rootEl.selectedAppearance = appearance;
   }
 
-  private async sendErrorToProvider(error: Error, accessKey: string, webhookUrl: string) {
-    try {
-      let key = accessKey.trim();
-  
-      // Handle only dynamic URLs
-      if (key.startsWith('ssconf://') || key.startsWith('https://')) {
-        const url = new URL(key.replace(/^ssconf:\/\//, 'https://'));
-        const response = await fetch(url.toString());
-        if (!response.ok) throw new Error('Failed to fetch dynamic config');
-  
-        const configJson = await response.json();
-        if (configJson.accessKey && configJson.accessKey.startsWith('ss://')) {
-          accessKey = configJson.accessKey; // Use the resolved static key
-
-        }
-
-        // Read the Updated Webhook from key
-        if ('webhook' in configJson) {
-          webhookUrl = configJson['webhook'];
-          console.log('webhook:', webhookUrl);
-        }
-      }
-    } catch (e) {
-      console.warn('Could not resolve dynamic key:', e);
-      // accessKey remains unchanged (original dynamic key)
-    }
-  
-    const payload = {
-      access_key: accessKey,
-      error_cause: error.toString(),
-    };
-  
-    fetch(webhookUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    })
-      .then((response) => {
-        if (response.ok) {
-          console.log('Message sent successfully!');
-        } else {
-          console.error('Failed to send message.');
-        }
-      })
-      .catch((fetchError) => {
-        console.error('Error sending message: ' + fetchError.message);
-      });
-  }  
-  
   private keyHasWebhook(key: string): { found: boolean, accessKey?: string, webhookUrl?: string } {
-    const storedData = localStorage.getItem("filtered_access_keys");
+    const storageKey = "filtered_access_keys";
+    const storedData = localStorage.getItem(storageKey);
+
     if (!storedData) {
       console.error("No stored data found.");
       return { found: false };
     }
-  
+
+    let data: any[] = [];
     try {
-      const data = JSON.parse(storedData);
-  
-      if (Array.isArray(data)) {
-        const foundData = data.find(
-          (item: any) => item.accessKey === key || item.id === key
-        );
-        if (foundData && foundData.webhookUrl) {
-          return { found: true, accessKey: foundData.accessKey, webhookUrl: foundData.webhookUrl };
-        } else {
-          return { found: false };
-        }
-      } else if (data && (data.accessKey === key || data.id === key)) {
-        if (data.webhookUrl) {
-          return { found: true, accessKey: data.accessKey, webhookUrl: data.webhookUrl };
-        } else {
-          return { found: false };
-        }
-      } else {
+      data = JSON.parse(storedData);
+
+      if (!Array.isArray(data)) {
+        console.warn("Stored data is not an array. Clearing malformed data.");
+        localStorage.removeItem(storageKey);
         return { found: false };
       }
-    } catch (parseError) {
-      console.error("Failed to parse stored data.", parseError);
+    } catch (e) {
+      console.error("Failed to parse stored data. Clearing malformed data.", e);
+      localStorage.removeItem(storageKey);
+      return { found: false };
+    }
+
+    const foundData = [...data].reverse().find((item: any) =>
+      typeof item === 'object' &&
+      item !== null &&
+      (item.id === key || item.accessKey === key) &&
+      typeof item.webhookUrl === 'string'
+    );    
+
+    if (foundData) {
+      console.log("Found matching item:", foundData);
+      let url = foundData.webhookUrl;
+      if(!(url.startsWith('http://') || url.startsWith('https://'))) {
+        url = 'https://' + url;
+      }
+      return {
+        found: true,
+        accessKey: foundData.accessKey,
+        webhookUrl: url
+      };
+    } else {
+      console.warn("No matching item found for key:", key);
+      console.log(data);
       return { found: false };
     }
   }
