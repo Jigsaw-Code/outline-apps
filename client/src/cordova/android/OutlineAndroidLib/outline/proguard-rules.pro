@@ -19,3 +19,6 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Make sure R8 won't remove any Outline classes.
+-keep class org.outline.** { *; }
