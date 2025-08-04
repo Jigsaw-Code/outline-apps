@@ -23,6 +23,7 @@ export enum ServerListItemEvent {
   DISCONNECT = 'DisconnectPressed',
   FORGET = 'ForgetPressed',
   RENAME = 'RenameRequested',
+  SET_ALLOWED_APPS = 'SetAllowedApps', // New event
 }
 
 /**
@@ -35,6 +36,7 @@ export interface ServerListItem {
   id: string;
   name: string;
   connectionState: ServerConnectionState;
+  allowedApps?: string[]; // New optional property
 }
 
 /**
@@ -47,4 +49,5 @@ export interface ServerListItemElement {
   menu: Ref<Menu>;
   menuButton: Ref<HTMLElement>;
   isRenameDialogOpen: boolean;
+  isAppSelectionDialogOpen: boolean; // Added property
 }

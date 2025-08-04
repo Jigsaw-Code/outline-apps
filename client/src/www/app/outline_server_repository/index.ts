@@ -67,6 +67,7 @@ interface OutlineServerJson {
   readonly id: string;
   readonly accessKey: string;
   readonly name: string;
+  readonly allowedApps?: string[]; // Added for split tunneling
 }
 
 type ServerEntry = {accessKey: string; server: Server};
@@ -200,6 +201,22 @@ class OutlineServerRepository implements ServerRepository {
     this.lastForgottenServer = null;
   }
 
+  updateServer(server: Server) {
+    if (!this.serverById.has(server.id)) {
+      console.warn(`Cannot update nonexistent server ${server.id}`);
+      return;
+    }
+    // Assuming the server object passed is the same one held in the map,
+    // or has the updated properties. If it's a different instance,
+    // we might need to update the entry in serverById map explicitly.
+    // For properties like 'allowedApps', direct modification of the object
+    // obtained from getById() is expected to be reflected here when storeServers() is called.
+    this.storeServers();
+    // Optionally, dispatch an event if other parts of the app need to know about a generic update.
+    // For now, specific events like ServerRenamed are used.
+    // this.eventQueue.enqueue(new events.ServerUpdated(server));
+  }
+
   private serverFromAccessKey(accessKey: string): Server | undefined {
     const trimmedAccessKey = accessKey.trim();
     for (const {accessKey, server} of this.serverById.values()) {
@@ -217,6 +234,7 @@ class OutlineServerRepository implements ServerRepository {
         id: server.id,
         accessKey,
         name: server.name,
+        allowedApps: server.allowedApps, // Store allowedApps
       });
     }
     const json = JSON.stringify(servers);
@@ -226,7 +244,8 @@ class OutlineServerRepository implements ServerRepository {
   async internalCreateServer(
     id: string,
     accessKey: string,
-    name?: string
+    name?: string,
+    allowedApps?: string[] // Added allowedApps parameter
   ): Promise<Server> {
     const server = await newOutlineServer(
       this.vpnApi,
@@ -234,7 +253,15 @@ class OutlineServerRepository implements ServerRepository {
       name,
       accessKey,
       this.localize
+      // allowedApps is not directly passed to newOutlineServer,
+      // but newOutlineServer creates an OutlineServer instance.
+      // The OutlineServer constructor itself will need to handle the allowedApps.
+      // Let's ensure the OutlineServer instance within `server` object gets this value.
     );
+    // Explicitly set allowedApps on the created server instance if provided
+    if (allowedApps) {
+      server.allowedApps = allowedApps;
+    }
     this.serverById.set(id, {accessKey, server});
     return server;
   }
@@ -295,7 +322,8 @@ async function loadServersV1(storage: Storage, repo: OutlineServerRepository) {
       await repo.internalCreateServer(
         serverJson.id,
         serverJson.accessKey,
-        serverJson.name
+        serverJson.name,
+        serverJson.allowedApps // Pass loaded allowedApps
       );
     } catch (e) {
       // Don't propagate so other stored servers can be created.
