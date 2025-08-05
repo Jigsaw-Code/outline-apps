@@ -16,6 +16,9 @@ package connectivity
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"math/rand"
 	"net"
 	"net/http"
 	"time"
@@ -26,17 +29,26 @@ import (
 
 // TODO: make these values configurable by exposing a struct with the connectivity methods.
 const (
-	tcpTimeout          = 30 * time.Second
+	tcpTimeout          = 10 * time.Second
 	udpTimeout          = 5 * time.Second
 	udpMaxRetryAttempts = 5
 	bufferLength        = 512
 )
 
 const (
-	testTCPWebsite    = "http://example.com"
 	testDNSServerIP   = "1.1.1.1"
 	testDNSServerPort = 53
 )
+
+var testTCPURLs = []string{
+	// We want a diversity of operators here for resilience.
+	// We need to consider the use case of users tunneling into a censoring country where a provider may be blocked.
+	// If all of these are down at the same time, the Internet is in serious trouble.
+	"http://connectivitycheck.gstatic.com/generate_204",
+	"http://cp.cloudflare.com/generate_204",
+	"http://captive.apple.com/",
+	"http://www.google.com/generate_204",
+}
 
 // CheckTCPAndUDPConnectivity checks whether the given `tcp` and `udp` clients can relay traffic.
 //
@@ -52,7 +64,7 @@ func CheckTCPAndUDPConnectivity(
 		udpErrChan <- CheckUDPConnectivityWithDNS(udp, resolverAddr)
 	}()
 
-	tcpErr = CheckTCPConnectivityWithHTTP(tcp, testTCPWebsite)
+	tcpErr = CheckTCPConnectivityWithHTTP(tcpTimeout, tcp, testTCPURLs)
 	udpErr = <-udpErrChan
 	return
 }
@@ -94,22 +106,89 @@ func CheckUDPConnectivityWithDNS(client transport.PacketListener, resolverAddr n
 	}
 }
 
-// CheckTCPConnectivityWithHTTP determines whether the proxy is reachable over TCP and validates the
-// client's authentication credentials by performing an HTTP HEAD request to `targetURL`, which must
-// be of the form: http://[host](:[port])(/[path]).
-//
+func getDNSRequest() []byte {
+	return []byte{
+		0, 0, // [0-1]   query ID
+		1, 0, // [2-3]   flags; byte[2] = 1 for recursion desired (RD).
+		0, 1, // [4-5]   QDCOUNT (number of queries)
+		0, 0, // [6-7]   ANCOUNT (number of answers)
+		0, 0, // [8-9]   NSCOUNT (number of name server records)
+		0, 0, // [10-11] ARCOUNT (number of additional records)
+		3, 'c', 'o', 'm',
+		0,    // null terminator of FQDN (root TLD)
+		0, 1, // QTYPE, set to A
+		0, 1, // QCLASS, set to 1 = IN (Internet)
+	}
+}
+
+// CheckTCPConnectivityWithHTTP determines the stream dialer's connectivity by performing an HTTP HEAD request to
+// the URLs in `urlList`, which must use the 'http' scheme.
 // Returns nil on success, error on connectivity failure.
-func CheckTCPConnectivityWithHTTP(dialer transport.StreamDialer, targetURL string) error {
-	deadline := time.Now().Add(tcpTimeout)
+func CheckTCPConnectivityWithHTTP(timeout time.Duration, dialer transport.StreamDialer, urlList []string) error {
+	if len(urlList) == 0 {
+		return errors.New("test url list is empty")
+	}
+	if timeout == 0 {
+		return context.DeadlineExceeded
+	}
+
+	deadline := time.Now().Add(timeout)
 	ctx, cancel := context.WithDeadline(context.Background(), deadline)
 	defer cancel()
-	req, err := http.NewRequest("HEAD", targetURL, nil)
+
+	errCh := make(chan error, len(urlList))
+	for i, targetURL := range urlList {
+		go func() {
+			// We pre-define the start time of the probes to make their timing independent of each other
+			// and to randomize their order. This mitigates some fingerprinting attacks.
+			// The first URL is always started immediately, and given at least 500ms of a head start.
+			// The intent is to not trigger the fallback unless needed.
+			// The other tests start at a random times, uniformly distributed within [500ms, timeout - 500ms]
+			// (we want the last test to have at least 500ms to complete).
+			if i > 0 {
+				endMs := max(int(timeout/time.Millisecond)-500, 0)
+				beginMs := min(endMs, 500)
+				// We use math/rand here because there's no need for strong encryption.
+				time.Sleep(time.Duration(beginMs+rand.Intn(endMs-beginMs+1)) * time.Millisecond)
+			}
+			errCh <- testTCPWithOneURL(ctx, dialer, targetURL)
+		}()
+	}
+	var firstErr error
+	pending := len(urlList)
+	for pending > 0 {
+		select {
+		case <-ctx.Done():
+			return context.Cause(ctx)
+		case err := <-errCh:
+			pending -= 1
+			if err == nil {
+				return nil
+			}
+			if firstErr == nil {
+				firstErr = err
+			}
+		}
+	}
+	return firstErr
+}
+
+func testTCPWithOneURL(ctx context.Context, dialer transport.StreamDialer, targetURL string) error {
+	if ctx.Err() != nil {
+		return context.Cause(ctx)
+	}
+	req, err := http.NewRequestWithContext(ctx, "HEAD", targetURL, nil)
 	if err != nil {
 		return err
 	}
 	targetAddr := req.Host
-	if !hasPort(targetAddr) {
-		targetAddr = net.JoinHostPort(targetAddr, "80")
+	switch req.URL.Scheme {
+	case "http":
+		if !hasPort(targetAddr) {
+			targetAddr = net.JoinHostPort(targetAddr, "80")
+		}
+	default:
+		return fmt.Errorf("connectivity test currently only supports \"http\" URLs, found \"%v\"", req.URL.Scheme)
 	}
 	conn, err := dialer.DialStream(ctx, targetAddr)
 	if err != nil {
@@ -120,7 +199,9 @@ func CheckTCPConnectivityWithHTTP(dialer transport.StreamDialer, targetURL strin
 		}
 	}
 	defer conn.Close()
-	conn.SetDeadline(deadline)
+	if deadline, ok := ctx.Deadline(); ok {
+		conn.SetDeadline(deadline)
+	}
 	err = req.Write(conn)
 	if err != nil {
 		return platerrors.PlatformError{
@@ -138,21 +219,6 @@ func CheckTCPConnectivityWithHTTP(dialer transport.StreamDialer, targetURL strin
 		}
 	}
 	return nil
-}
-
-func getDNSRequest() []byte {
-	return []byte{
-		0, 0, // [0-1]   query ID
-		1, 0, // [2-3]   flags; byte[2] = 1 for recursion desired (RD).
-		0, 1, // [4-5]   QDCOUNT (number of queries)
-		0, 0, // [6-7]   ANCOUNT (number of answers)
-		0, 0, // [8-9]   NSCOUNT (number of name server records)
-		0, 0, // [10-11] ARCOUNT (number of additional records)
-		3, 'c', 'o', 'm',
-		0,    // null terminator of FQDN (root TLD)
-		0, 1, // QTYPE, set to A
-		0, 1, // QCLASS, set to 1 = IN (Internet)
-	}
 }
 
 func hasPort(hostPort string) bool {
