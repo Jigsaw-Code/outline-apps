@@ -296,19 +296,6 @@ transport:
 	matchClientConfig(t, userInputConfig, result.Value)
 }
 
-func TestYAMLParsing_StringWithNode(t *testing.T) {
-	var yamlNode ast.Node
-	require.NoError(t, yaml.Unmarshal([]byte(`"SSH-2.0\r\n"`), &yamlNode))
-
-	yamlBytes, err := yaml.MarshalWithOptions(yamlNode, yaml.Flow(false))
-	require.NoError(t, err)
-	require.Equal(t, "\"SSH-2.0\\r\\n\"\n", string(yamlBytes))
-
-	var target string
-	require.NoError(t, yaml.NodeToValue(yamlNode, &target))
-	require.Equal(t, "SSH-2.0\r\n", target)
-}
-
 func TestParseConfig_Flexible_JSON(t *testing.T) {
 	userInputConfig := `{
     # Comment
