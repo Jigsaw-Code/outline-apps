@@ -187,4 +187,21 @@ func TestParseShadowsocksConfig_YAML(t *testing.T) {
 		_, err := parseShadowsocksTransport(context.Background(), config, streamEndpoints.Parse, packetEndpoints.Parse)
 		require.Error(t, err)
 	})
+
+	t.Run("Prefix", func(t *testing.T) {
+		yamlNode, err := configyaml.ParseConfigYAML(`{
+  "server": "123.x.x.x",
+  "server_port": 443,
+  "password": "xxxxx",
+  "method": "chacha20-ietf-poly1305",
+  "prefix": "SSH-2.0\r\n"
+}
+`)
+		require.NoError(t, err)
+		require.NotNil(t, yamlNode)
+		config, err := parseShadowsocksConfig(yamlNode)
+		require.NoError(t, err)
+		require.Equal(t, "123.x.x.x:443", config.Endpoint)
+		require.Equal(t, "SSH-2.0\r\n", config.Prefix)
+	})
 }

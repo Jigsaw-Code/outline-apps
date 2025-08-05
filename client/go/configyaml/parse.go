@@ -17,6 +17,7 @@ package configyaml
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -53,7 +54,9 @@ func MapToAny(in map[string]any, out any) error {
 		}
 		newMap[k] = v
 	}
-	yamlText, err := yaml.Marshal(newMap)
+	// Use use JSON marshaling from the standard library because the YAML library is buggy.
+	// See https://github.com/Jigsaw-Code/outline-apps/issues/2576.
+	yamlText, err := json.Marshal(newMap)
 	if err != nil {
 		return fmt.Errorf("error marshaling to YAML: %w", err)
 	}
