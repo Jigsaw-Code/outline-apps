@@ -112,6 +112,7 @@ func doParseTunnelConfig(input string) *InvokeMethodResult {
 
 	// Use JSON marshaling from the standard library because the YAML library is buggy.
 	// See https://github.com/Jigsaw-Code/outline-apps/issues/2576.
+	// JSON is a subset of YAML, so that's valid YAML.
 	clientConfigBytes, err := json.Marshal(clientConfigMap)
 	if err != nil {
 		return &InvokeMethodResult{
