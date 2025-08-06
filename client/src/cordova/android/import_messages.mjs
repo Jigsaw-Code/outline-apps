@@ -17,15 +17,8 @@ import path from 'path';
 
 import XML from 'xmlbuilder2';
 
-const STRINGS_DIR = [
-  'client',
-  'src',
-  'cordova',
-  'plugin',
-  'android',
-  'resources',
-  'strings',
-];
+// $WORKSPACE/client/src/cordova/plugin/android/res
+const STRINGS_DIR = ['client', 'src', 'cordova', 'plugin', 'android', 'res'];
 const STRINGS_FILENAME = 'strings.xml';
 const XML_STRING_ID_PROPERTY = '@name';
 const XML_TEXT_CONTENT = '#';
