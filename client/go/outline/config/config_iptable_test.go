@@ -74,11 +74,15 @@ func TestParseIPTableStreamDialer(t *testing.T) {
 			name: "Happy Path - valid config",
 			configYAML: `
 table:
-  - ip: 192.168.1.0/24
+  - ips:
+      - 192.168.1.0/24
     dialer: {name: dialerA}
-  - ip: 10.0.0.1
+  - ips:
+      - 10.0.0.1
+      - 10.0.0.5
     dialer: {name: dialerB}
-  - ip: 0.0.0.0/0
+  - ips:
+      - 0.0.0.0/0
     dialer: {name: default}
 `,
 			checkDialer: func(t *testing.T, dialer *Dialer[transport.StreamConn]) {
@@ -87,6 +91,9 @@ table:
 
 				_, err = dialer.Dial(ctx, "10.0.0.1:5678")
 				require.ErrorContains(t, err, "dialer 'dialerB' called for address '10.0.0.1:5678'")
+
+				_, err = dialer.Dial(ctx, "10.0.0.5:53")
+				require.ErrorContains(t, err, "dialer 'dialerB' called for address '10.0.0.5:53'")
 
 				_, err = dialer.Dial(ctx, "8.8.8.8:53")
 				require.ErrorContains(t, err, "dialer 'default' called for address '8.8.8.8:53'")
@@ -97,7 +104,8 @@ table:
 			name: "Happy Path - no default dialer",
 			configYAML: `
 table:
-  - ip: 192.168.1.0/24
+  - ips:
+      - 192.168.1.0/24
     dialer: {name: dialerA}
 `,
 			expectedConnType: ConnTypeTunneled,
@@ -106,9 +114,11 @@ table:
 			name: "Happy Path - direct sub-dialer",
 			configYAML: `
 table:
-  - ip: 192.168.1.0/24
+  - ips:
+      - 192.168.1.0/24
     dialer: {name: direct}
-  - ip: 0.0.0.0/0
+  - ips:
+      - 0.0.0.0/0
     dialer: {name: default}
 `,
 			expectedConnType: ConnTypePartial,
@@ -117,9 +127,11 @@ table:
 			name: "Happy Path - exhaustive IPv4",
 			configYAML: `
 table:
-  - ip: 0.0.0.0/1
+  - ips:
+      - 0.0.0.0/1
     dialer: {name: dialerA}
-  - ip: 128.0.0.0/1
+  - ips:
+      - 128.0.0.0/1
     dialer: {name: dialerB}
 `,
 			expectedConnType: ConnTypeTunneled,
@@ -128,9 +140,11 @@ table:
 			name: "Happy Path - exhaustive IPv6",
 			configYAML: `
 table:
-  - ip: ::/1
+  - ips: 
+      - ::/1
     dialer: {name: dialerA}
-  - ip: 8000::/1
+  - ips: 
+      - 8000::/1
     dialer: {name: dialerB}
 `,
 			expectedConnType: ConnTypeTunneled,
@@ -139,9 +153,11 @@ table:
 			name: "Happy Path - exhaustive IPv4 with direct",
 			configYAML: `
 table:
-  - ip: 0.0.0.0/1
+  - ips:
+      - 0.0.0.0/1
     dialer: {name: direct}
-  - ip: 128.0.0.0/1
+  - ips:
+      - 128.0.0.0/1
     dialer: {name: dialerB}
 `,
 			expectedConnType: ConnTypePartial,
@@ -150,7 +166,8 @@ table:
 			name: "Happy Path - with fallback",
 			configYAML: `
 table:
-  - ip: 192.168.1.0/24
+  - ips:
+      - 192.168.1.0/24
     dialer: {name: dialerA}
 fallback: {name: default}
 `,
@@ -167,7 +184,8 @@ fallback: {name: default}
 			name: "Happy Path - with direct fallback",
 			configYAML: `
 table:
-  - ip: 192.168.1.0/24
+  - ips:
+      - 192.168.1.0/24
     dialer: {name: dialerA}
 fallback: {name: direct}
 `,
@@ -177,7 +195,8 @@ fallback: {name: direct}
 			name: "Happy Path - all direct",
 			configYAML: `
 table:
-  - ip: 192.168.1.0/24
+  - ips: 
+      - 192.168.1.0/24
     dialer: {name: direct}
 fallback: {name: direct}
 `,
@@ -192,8 +211,10 @@ fallback: {name: direct}
 			name: "Error - invalid IP",
 			configYAML: `
 table:
-  - ip: not-an-ip
+  - ips:
+      - not-an-ip
     dialer: {name: dialerA}
+fallback: null
 `,
 			expectErr: "is not a valid IP address or CIDR prefix",
 		},
@@ -229,7 +250,7 @@ table:
 
 		config := map[string]any{
 			"table": []any{
-				map[string]any{"ip": "192.168.1.0/24", "dialer": map[string]any{"name": "dialerA"}},
+				map[string]any{"ips": []string{"192.168.1.0/24"}, "dialer": map[string]any{"name": "dialerA"}},
 			},
 		}
 
@@ -246,7 +267,7 @@ table:
 
 		config := map[string]any{
 			"table": []any{
-				map[string]any{"ip": "192.168.1.0/24", "dialer": map[string]any{"name": "dialerA"}},
+				map[string]any{"ips": []string{"192.168.1.0/24"}, "dialer": map[string]any{"name": "dialerA"}},
 			},
 			"fallback": map[string]any{"name": "dialerB"},
 		}

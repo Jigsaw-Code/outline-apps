@@ -31,7 +31,7 @@ type ipTableRootConfig struct {
 }
 
 type ipTableEntryConfig struct {
-	IP     string                `yaml:"ip"`
+	IPs    []string              `yaml:"ips"`
 	Dialer configyaml.ConfigNode `yaml:"dialer"`
 }
 
@@ -70,7 +70,7 @@ func parseIPTableStreamDialer(
 	for i, entryCfg := range rootCfg.Table {
 		parsedSubDialer, err := parseSD(ctx, entryCfg.Dialer)
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse nested stream dialer for table entry %d (ip: %s): %w", i, entryCfg.IP, err)
+			return nil, fmt.Errorf("failed to parse nested stream dialer for table entry %d: %w", i, err)
 		}
 
 		if parsedSubDialer.ConnType != ConnTypeTunneled {
@@ -81,19 +81,21 @@ func parseIPTableStreamDialer(
 			allConnDirect = false
 		}
 
-		var currentPrefix netip.Prefix
-		parsedPrefix, errPrefix := netip.ParsePrefix(entryCfg.IP)
-		if errPrefix == nil {
-			currentPrefix = parsedPrefix
-		} else {
-			addr, errAddr := netip.ParseAddr(entryCfg.IP)
-			if errAddr != nil {
-				return nil, fmt.Errorf("iptable entry %d IP '%s' is not a valid IP address or CIDR prefix: failed to parse as prefix (%v) and failed to parse as address (%v)", i, entryCfg.IP, errPrefix, errAddr)
+		for _, ip := range entryCfg.IPs {
+			var currentPrefix netip.Prefix
+			parsedPrefix, errPrefix := netip.ParsePrefix(ip)
+			if errPrefix == nil {
+				currentPrefix = parsedPrefix
+			} else {
+				addr, errAddr := netip.ParseAddr(ip)
+				if errAddr != nil {
+					return nil, fmt.Errorf("iptable entry %d IP '%s' is not a valid IP address or CIDR prefix: failed to parse as prefix (%v) and failed to parse as address (%v)", i, ip, errPrefix, errAddr)
+				}
+				currentPrefix = netip.PrefixFrom(addr, addr.BitLen())
 			}
-			currentPrefix = netip.PrefixFrom(addr, addr.BitLen())
-		}
 
-		dialerTable.AddPrefix(currentPrefix, transport.FuncStreamDialer(parsedSubDialer.Dial))
+			dialerTable.AddPrefix(currentPrefix, transport.FuncStreamDialer(parsedSubDialer.Dial))
+		}
 	}
 
 	dialer, err := iptable.NewStreamDialer(dialerTable, transport.FuncStreamDialer(parsedFallbackDialer.Dial))

@@ -23,7 +23,7 @@ import (
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
-func lookupInTable[D any](table IPTable[D], address string) (foundDialer D, ok bool) {
+func lookupInTable[D any](table IPTable[D], address string) D {
 	host := address
 	if _host, _, err := net.SplitHostPort(address); err == nil {
 		host = _host
@@ -35,7 +35,7 @@ func lookupInTable[D any](table IPTable[D], address string) (foundDialer D, ok b
 	}
 
 	var zeroD D
-	return zeroD, false
+	return zeroD
 }
 
 // StreamDialer is a [transport.StreamDialer] that routes connections
@@ -66,13 +66,13 @@ func NewStreamDialer(table IPTable[transport.StreamDialer], fallback transport.S
 // If no specific route is found and no fallback dialer is set, or if the
 // selected dialer fails, it returns an error.
 func (dialer *StreamDialer) DialStream(ctx context.Context, address string) (transport.StreamConn, error) {
-	selectedDialer, ok := lookupInTable(dialer.table, address)
+	selectedDialer := lookupInTable(dialer.table, address)
 
 	if selectedDialer == nil && dialer.fallback != nil {
 		return dialer.fallback.DialStream(ctx, address)
 	}
 
-	if selectedDialer == nil || !ok {
+	if selectedDialer == nil {
 		return nil, fmt.Errorf("no dialer available for address %s", address)
 	}
 
