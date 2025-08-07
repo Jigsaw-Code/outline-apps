@@ -41,7 +41,7 @@ func TestIPRoutingTable_Empty(t *testing.T) {
 	ip := mustParseAddr("192.0.2.1")
 
 	val := table.Lookup(ip)
-	if val == "" {
+	if val != "" {
 		t.Errorf("Lookup(%v) on empty table unexpectedly found a value", ip)
 	}
 }
