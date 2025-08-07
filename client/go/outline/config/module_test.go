@@ -107,17 +107,21 @@ func TestParseIPTableTCP(t *testing.T) {
 tcp:
   $type: iptable
   table:
-    - ip: 192.168.1.128
+    - ips:
+        - 192.168.1.128
       dialer: &shared
         $type: shadowsocks
         endpoint: example.com:1234
         cipher: chacha20-ietf-poly1305
         secret: SECRET
-    - ip: 2001:db8:1:1::/64
+    - ip:
+        - 2001:db8:1:1::/64
       dialer: *shared
-    - ip: 0.0.0.0/0
+    - ip:
+        - 0.0.0.0/0
       dialer: null
-    - ip: ::/0
+    - ip:
+        - ::/0
       dialer: null
 udp: null`
 
