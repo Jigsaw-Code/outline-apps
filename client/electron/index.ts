@@ -140,8 +140,8 @@ function setupTray(): void {
 function setupWindow(): void {
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    width: 360,
-    height: 680,
+    width: 432,
+    height: 768,
     resizable: false,
     webPreferences: {
       nodeIntegration: false,

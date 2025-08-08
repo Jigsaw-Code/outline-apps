@@ -55,17 +55,16 @@ func hasKey[K comparable, V any](m map[K]V, key K) bool {
 }
 
 func doParseTunnelConfig(input string) *InvokeMethodResult {
-	var clientConfig ClientConfig
-
 	input = strings.TrimSpace(input)
 	// Input may be one of:
 	// - ss:// link
 	// - Legacy Shadowsocks JSON (parsed as YAML)
 	// - Advanced YAML format
 	var stringValue string
+	var clientConfigMap map[string]any
 	if err := yaml.Unmarshal([]byte(input), &stringValue); err == nil {
 		// Legacy URL format. Input is the transport config.
-		clientConfig.Transport = stringValue
+		clientConfigMap = map[string]any{"transport": stringValue}
 	} else {
 		var yamlValue map[string]any
 		if err := yaml.Unmarshal([]byte(input), &yamlValue); err != nil {
@@ -104,14 +103,17 @@ func doParseTunnelConfig(input string) *InvokeMethodResult {
 			}
 
 			// Extract client config.
-			clientConfig = providerConfig.ClientConfig
+			clientConfigMap = yamlValue
 		} else {
 			// Legacy JSON format. Input is the transport config.
-			clientConfig.Transport = yamlValue
+			clientConfigMap = map[string]any{"transport": yamlValue}
 		}
 	}
 
-	clientConfigBytes, err := yaml.MarshalWithOptions(clientConfig, yaml.Flow(true))
+	// Use JSON marshaling from the standard library because the YAML library is buggy.
+	// See https://github.com/Jigsaw-Code/outline-apps/issues/2576.
+	// JSON is a subset of YAML, so that's valid YAML.
+	clientConfigBytes, err := json.Marshal(clientConfigMap)
 	if err != nil {
 		return &InvokeMethodResult{
 			Error: &platerrors.PlatformError{

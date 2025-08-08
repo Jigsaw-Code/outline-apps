@@ -19,6 +19,8 @@ import (
 	"testing"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
+	"github.com/goccy/go-yaml"
+	"github.com/goccy/go-yaml/ast"
 	"github.com/stretchr/testify/require"
 )
 
@@ -36,37 +38,75 @@ func parseFirstHopAndTunnelConfigJSON(t *testing.T, jsonStr string) parsedTunnel
 	return parsed
 }
 
+// matchClientConfig is a helper to match the clientConfigString against the `client` field in the firstHopAndTunnelConfigString JSON.
+func matchClientConfig(t *testing.T, clientConfigString string, firstHopAndTunnelConfigString string) {
+	t.Helper()
+
+	var firstHopAndTunnelConfigValue map[string]any
+	require.NoError(t, json.Unmarshal([]byte(firstHopAndTunnelConfigString), &firstHopAndTunnelConfigValue))
+
+	var expected, actual map[string]any
+	require.NoError(t, yaml.Unmarshal([]byte(clientConfigString), &expected))
+	require.NoError(t, yaml.Unmarshal([]byte(firstHopAndTunnelConfigValue["client"].(string)), &actual))
+	require.Equal(t, expected, actual)
+}
+
+// matchTransportConfig is a helper to match the transportConfigString against the `client.transport` field in the firstHopAndTunnelConfigString JSON.
+func matchTransportConfig(t *testing.T, transportConfigString string, firstHopAndTunnelConfigString string) {
+	t.Helper()
+
+	var expected any
+	require.NoError(t, yaml.Unmarshal([]byte(transportConfigString), &expected))
+
+	var actual map[string]any
+	var firstHopAndTunnelConfigValue map[string]any
+	require.NoError(t, json.Unmarshal([]byte(firstHopAndTunnelConfigString), &firstHopAndTunnelConfigValue))
+	require.NoError(t, yaml.Unmarshal([]byte(firstHopAndTunnelConfigValue["client"].(string)), &actual))
+
+	require.Equal(t, expected, actual["transport"])
+}
+
 func Test_doParseTunnel_SSURL(t *testing.T) {
-	result := doParseTunnelConfig("ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@example.com:4321/")
+	transportConfig := "ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@example.com:4321/"
+	result := doParseTunnelConfig(transportConfig)
 	require.Nil(t, result.Error)
 	require.Equal(t,
-		"{\"client\":\"{transport: \\\"ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@example.com:4321/\\\"}\\n\",\"firstHop\":\"example.com:4321\"}",
+		`{"client":"{\"transport\":\"ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@example.com:4321/\"}","firstHop":"example.com:4321"}`,
 		result.Value)
+
+	matchTransportConfig(t, transportConfig, result.Value)
 }
 
 func Test_doParseTunnel_SSURL_With_Comment(t *testing.T) {
-	result := doParseTunnelConfig("# Comment\nss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@example.com:4321/")
+	transportConfig := "# Comment\nss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@example.com:4321/"
+	result := doParseTunnelConfig(transportConfig)
 	require.Nil(t, result.Error)
 	require.Equal(t,
-		"{\"client\":\"{transport: \\\"ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@example.com:4321/\\\"}\\n\",\"firstHop\":\"example.com:4321\"}",
+		`{"client":"{\"transport\":\"ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@example.com:4321/\"}","firstHop":"example.com:4321"}`,
 		result.Value)
+
+	matchTransportConfig(t, transportConfig, result.Value)
 }
 
 func Test_doParseTunnel_LegacyJSON(t *testing.T) {
-	result := doParseTunnelConfig(`{
+	transportConfig := `{
     "server": "example.com",
     "server_port": 4321,
     "method": "chacha20-ietf-poly1305",
-    "password": "SECRET"
-}`)
+    "password": "SECRET",
+	"prefix": "SSH-2.0\r\n"
+}`
+	result := doParseTunnelConfig(transportConfig)
 	require.Nil(t, result.Error)
 	require.Equal(t,
-		"{\"client\":\"{transport: {method: chacha20-ietf-poly1305, password: SECRET, server: example.com, server_port: 4321}}\\n\",\"firstHop\":\"example.com:4321\"}",
+		`{"client":"{\"transport\":{\"method\":\"chacha20-ietf-poly1305\",\"password\":\"SECRET\",\"prefix\":\"SSH-2.0\\r\\n\",\"server\":\"example.com\",\"server_port\":4321}}","firstHop":"example.com:4321"}`,
 		result.Value)
+
+	matchTransportConfig(t, transportConfig, result.Value)
 }
 
 func Test_doParseTunnelConfig(t *testing.T) {
-	result := doParseTunnelConfig(`
+	clientConfig := `
 transport:
   $type: tcpudp
   tcp: &shared
@@ -74,12 +114,16 @@ transport:
     endpoint: example.com:80
     cipher: chacha20-ietf-poly1305
     secret: SECRET
-  udp: *shared`)
+  udp: *shared`
+
+	result := doParseTunnelConfig(clientConfig)
 
 	require.Nil(t, result.Error)
 	require.Equal(t,
-		"{\"client\":\"{transport: {$type: tcpudp, tcp: {$type: shadowsocks, cipher: chacha20-ietf-poly1305, endpoint: \\\"example.com:80\\\", secret: SECRET}, udp: {$type: shadowsocks, cipher: chacha20-ietf-poly1305, endpoint: \\\"example.com:80\\\", secret: SECRET}}}\\n\",\"firstHop\":\"example.com:80\"}",
+		`{"client":"{\"transport\":{\"$type\":\"tcpudp\",\"tcp\":{\"$type\":\"shadowsocks\",\"cipher\":\"chacha20-ietf-poly1305\",\"endpoint\":\"example.com:80\",\"secret\":\"SECRET\"},\"udp\":{\"$type\":\"shadowsocks\",\"cipher\":\"chacha20-ietf-poly1305\",\"endpoint\":\"example.com:80\",\"secret\":\"SECRET\"}}}","firstHop":"example.com:80"}`,
 		result.Value)
+
+	matchClientConfig(t, clientConfig, result.Value)
 }
 
 func Test_doParseTunnelConfig_SessionReport(t *testing.T) {
@@ -153,6 +197,8 @@ func TestParseConfig_SS_URL(t *testing.T) {
 	require.NotNil(t, clientResult.Client)
 	require.Equal(t, expectedFirstHop, clientResult.Client.sd.FirstHop)
 	require.Equal(t, expectedFirstHop, clientResult.Client.pl.FirstHop)
+
+	matchTransportConfig(t, userInputConfig, result.Value)
 }
 
 func TestParseConfig_Legacy_JSON(t *testing.T) {
@@ -175,15 +221,17 @@ func TestParseConfig_Legacy_JSON(t *testing.T) {
 	require.NotNil(t, clientResult.Client)
 	require.Equal(t, expectedFirstHop, clientResult.Client.sd.FirstHop)
 	require.Equal(t, expectedFirstHop, clientResult.Client.pl.FirstHop)
+
+	matchTransportConfig(t, userInputConfig, result.Value)
 }
 
-func TestParseConfig_Flexible_JSON(t *testing.T) {
+func TestParseConfig_Legacy_JSON_WithPrefix(t *testing.T) {
 	userInputConfig := `{
-    # Comment
-    server: example.com,
-    server_port: 4321,
-    method: chacha20-ietf-poly1305,
-    password: SECRET
+    "server": "example.com",
+    "server_port": 4321,
+    "method": "chacha20-ietf-poly1305",
+    "password": "SECRET",
+    "prefix": "SSH-2.0\r\n"
 }`
 	expectedFirstHop := "example.com:4321"
 
@@ -198,6 +246,102 @@ func TestParseConfig_Flexible_JSON(t *testing.T) {
 	require.NotNil(t, clientResult.Client)
 	require.Equal(t, expectedFirstHop, clientResult.Client.sd.FirstHop)
 	require.Equal(t, expectedFirstHop, clientResult.Client.pl.FirstHop)
+
+	matchTransportConfig(t, userInputConfig, result.Value)
+}
+
+func TestParseConfig_Legacy_JSONFlow_WithPrefix(t *testing.T) {
+	userInputConfig := `{server: "example.com", server_port: 4321, method: "chacha20-ietf-poly1305", password: "SECRET", prefix: "SSH-2.0\r\n"}`
+
+	expectedFirstHop := "example.com:4321"
+
+	result := doParseTunnelConfig(userInputConfig)
+	require.Nil(t, result.Error, "doParseTunnelConfig failed: %v", result.Error)
+
+	parsedOutput := parseFirstHopAndTunnelConfigJSON(t, result.Value)
+	require.Equal(t, expectedFirstHop, parsedOutput.FirstHop)
+
+	clientResult := NewClient(parsedOutput.Client)
+	require.Nil(t, clientResult.Error, "NewClient failed with parsed client config: %v", clientResult.Error)
+	require.NotNil(t, clientResult.Client)
+	require.Equal(t, expectedFirstHop, clientResult.Client.sd.FirstHop)
+	require.Equal(t, expectedFirstHop, clientResult.Client.pl.FirstHop)
+
+	matchTransportConfig(t, userInputConfig, result.Value)
+}
+
+func TestParseConfig_Transport_JSON_WithPrefix(t *testing.T) {
+	userInputConfig := `transport: {
+    "server": "example.com",
+    "server_port": 4321,
+    "method": "chacha20-ietf-poly1305",
+    "password": "SECRET",
+    "prefix": "SSH-2.0\r\n"
+}`
+	expectedFirstHop := "example.com:4321"
+
+	result := doParseTunnelConfig(userInputConfig)
+	require.Nil(t, result.Error, "doParseTunnelConfig failed: %v", result.Error)
+
+	parsedOutput := parseFirstHopAndTunnelConfigJSON(t, result.Value)
+	require.Equal(t, expectedFirstHop, parsedOutput.FirstHop)
+
+	clientResult := NewClient(parsedOutput.Client)
+	require.Nil(t, clientResult.Error, "NewClient failed with parsed client config: %v", clientResult.Error)
+	require.NotNil(t, clientResult.Client)
+	require.Equal(t, expectedFirstHop, clientResult.Client.sd.FirstHop)
+	require.Equal(t, expectedFirstHop, clientResult.Client.pl.FirstHop)
+
+	matchClientConfig(t, userInputConfig, result.Value)
+}
+
+func TestParseConfig_Transport_Explicit_Full(t *testing.T) {
+	userInputConfig := `
+transport:
+  $type: tcpudp
+  tcp:
+      $type: shadowsocks
+      endpoint: example.com:80
+      cipher: chacha20-ietf-poly1305
+      secret: SECRET
+      prefix: "POST "
+  udp:
+      $type: shadowsocks
+      endpoint: example.com:53
+      cipher: chacha20-ietf-poly1305
+      secret: SECRET
+      prefix: "SSH-2.0\r\n"`
+
+	result := doParseTunnelConfig(userInputConfig)
+	require.Nil(t, result.Error, "doParseTunnelConfig failed: %v", result.Error)
+
+	matchClientConfig(t, userInputConfig, result.Value)
+}
+
+func TestParseConfig_Flexible_JSON(t *testing.T) {
+	userInputConfig := `{
+    # Comment
+    server: example.com,
+    server_port: 4321,
+    method: chacha20-ietf-poly1305,
+    password: SECRET,
+	prefix: "SSH-2.0\r\n"
+}`
+	expectedFirstHop := "example.com:4321"
+
+	result := doParseTunnelConfig(userInputConfig)
+	require.Nil(t, result.Error, "doParseTunnelConfig failed: %v", result.Error)
+
+	parsedOutput := parseFirstHopAndTunnelConfigJSON(t, result.Value)
+	require.Equal(t, expectedFirstHop, parsedOutput.FirstHop)
+
+	clientResult := NewClient(parsedOutput.Client)
+	require.Nil(t, clientResult.Error, "NewClient failed with parsed client config: %v", clientResult.Error)
+	require.NotNil(t, clientResult.Client)
+	require.Equal(t, expectedFirstHop, clientResult.Client.sd.FirstHop)
+	require.Equal(t, expectedFirstHop, clientResult.Client.pl.FirstHop)
+
+	matchTransportConfig(t, userInputConfig, result.Value)
 }
 
 func TestParseConfig_Transport_YAML(t *testing.T) {
@@ -207,7 +351,8 @@ func TestParseConfig_Transport_YAML(t *testing.T) {
 server: example.com
 server_port: 4321
 method: chacha20-ietf-poly1305
-password: SECRET`
+password: SECRET
+prefix: "SSH-2.0\r\n"`
 	expectedFirstHop := "example.com:4321"
 
 	result := doParseTunnelConfig(userInputConfig)
@@ -221,6 +366,8 @@ password: SECRET`
 	require.NotNil(t, clientResult.Client)
 	require.Equal(t, expectedFirstHop, clientResult.Client.sd.FirstHop)
 	require.Equal(t, expectedFirstHop, clientResult.Client.pl.FirstHop)
+
+	matchTransportConfig(t, userInputConfig, result.Value)
 }
 
 func TestParseConfig_Transport_Explicit_Endpoint(t *testing.T) {
@@ -229,7 +376,8 @@ endpoint:
     $type: dial
     address: example.com:4321
 cipher: chacha20-ietf-poly1305
-secret: SECRET`
+secret: SECRET
+prefix: "SSH-2.0\r\n"`
 	expectedFirstHop := "example.com:4321"
 
 	result := doParseTunnelConfig(userInputConfig)
@@ -243,6 +391,8 @@ secret: SECRET`
 	require.NotNil(t, clientResult.Client)
 	require.Equal(t, expectedFirstHop, clientResult.Client.sd.FirstHop)
 	require.Equal(t, expectedFirstHop, clientResult.Client.pl.FirstHop)
+
+	matchTransportConfig(t, userInputConfig, result.Value)
 }
 
 func TestParseConfig_Transport_Multihop_URL(t *testing.T) {
@@ -252,7 +402,8 @@ endpoint:
     address: exit.example.com:4321
     dialer: ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@entry.example.com:4321/
 cipher: chacha20-ietf-poly1305
-secret: SECRET`
+secret: SECRET
+prefix: "SSH-2.0\r\n"`
 	expectedFirstHop := "entry.example.com:4321"
 
 	result := doParseTunnelConfig(userInputConfig)
@@ -266,6 +417,8 @@ secret: SECRET`
 	require.NotNil(t, clientResult.Client)
 	require.Equal(t, expectedFirstHop, clientResult.Client.sd.FirstHop)
 	require.Equal(t, expectedFirstHop, clientResult.Client.pl.FirstHop)
+
+	matchTransportConfig(t, userInputConfig, result.Value)
 }
 
 func TestParseConfig_Transport_Multihop_Explicit(t *testing.T) {
@@ -279,7 +432,8 @@ endpoint:
       cipher: chacha20-ietf-poly1305
       secret: ENTRY_SECRET
 cipher: chacha20-ietf-poly1305
-secret: EXIT_SECRET`
+secret: EXIT_SECRET
+prefix: "SSH-2.0\r\n"`
 	expectedFirstHop := "entry.example.com:4321"
 
 	result := doParseTunnelConfig(userInputConfig)
@@ -293,6 +447,8 @@ secret: EXIT_SECRET`
 	require.NotNil(t, clientResult.Client)
 	require.Equal(t, expectedFirstHop, clientResult.Client.sd.FirstHop)
 	require.Equal(t, expectedFirstHop, clientResult.Client.pl.FirstHop)
+
+	matchTransportConfig(t, userInputConfig, result.Value)
 }
 
 func TestParseConfig_Transport_Explicit_TCPUDP(t *testing.T) {
@@ -308,7 +464,8 @@ udp:
     $type: shadowsocks
     endpoint: example.com:53
     cipher: chacha20-ietf-poly1305
-    secret: SECRET`
+    secret: SECRET
+    prefix: "SSH-2.0\r\n"`
 	expectedSdFirstHop := "example.com:80"
 	expectedPlFirstHop := "example.com:53"
 
@@ -324,6 +481,8 @@ udp:
 	require.NotNil(t, clientResult.Client)
 	require.Equal(t, expectedSdFirstHop, clientResult.Client.sd.FirstHop)
 	require.Equal(t, expectedPlFirstHop, clientResult.Client.pl.FirstHop)
+
+	matchTransportConfig(t, userInputConfig, result.Value)
 }
 
 func TestParseConfig_Transport_Unsupported(t *testing.T) {
@@ -343,7 +502,8 @@ udp:
     $type: shadowsocks
     endpoint: example.com:53
     cipher: chacha20-ietf-poly1305
-    secret: SECRET`
+    secret: SECRET
+    prefix: "SSH-2.0\r\n"`
 	result := doParseTunnelConfig(userInputConfig)
 	require.NotNil(t, result.Error, "Expected an error for proxyless TCP")
 	require.Equal(t, platerrors.InvalidConfig, result.Error.Code)
@@ -393,4 +553,28 @@ error:
 			"details": "⚠ Details / Key ကိုပြန်လည်စစ်ဆေးပေးပါ။",
 		},
 	}, result.Error)
+}
+
+// The tests below are to record broken usage of github.com/goccy/go-yaml.
+// See https://github.com/Jigsaw-Code/outline-apps/issues/2576.
+// We can go back to using those functions if they get fixed.
+
+func Test_Demonstrate_YAMLMarshal_IsBroken(t *testing.T) {
+	// https://github.com/goccy/go-yaml/issues/781
+	t.Skip("yaml.Marshal is broken")
+	yamlBytes, err := yaml.Marshal("SSH-2.0\r\n")
+	require.NoError(t, err)
+	var target string
+	require.NoError(t, yaml.Unmarshal(yamlBytes, &target))
+	require.Equal(t, "SSH-2.0\r\n", target)
+}
+
+func Test_Demonstrate_ValueToNode_IsBroken(t *testing.T) {
+	// https://github.com/goccy/go-yaml/issues/782
+	t.Skip("yaml.ValueToNode is broken")
+	yamlNode, err := yaml.ValueToNode("SECRET/!@#")
+	require.NoError(t, err)
+	stringNode, ok := yamlNode.(*ast.StringNode)
+	require.True(t, ok)
+	require.Equal(t, "SECRET/!@#", string(stringNode.Value))
 }

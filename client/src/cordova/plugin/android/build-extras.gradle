@@ -1,0 +1,17 @@
+repositories {
+  maven {
+    // This is relative to $WORKSPACE/client/platforms/android/
+    url = uri(layout.settingsDirectory.dir("../../../output/client/android"))
+  }
+}
+
+dependencies {
+  // From --include-build.
+  implementation 'org.outline:outline:0.0'
+  // From local Maven directory.
+  implementation 'org.getoutline.client:tun2socks:0.0.1'
+
+  // From public Maven.
+  implementation 'com.android.support:appcompat-v7:23.4.0'
+  implementation 'io.sentry:sentry-android:2.0.2'
+}

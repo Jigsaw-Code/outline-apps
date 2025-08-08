@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package config
+package configyaml
 
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -42,9 +43,9 @@ func ParseConfigYAML(configText string) (ConfigNode, error) {
 	return node, nil
 }
 
-// mapToAny marshalls a map into a struct. It's a helper for parsers that want to
+// MapToAny marshalls a map into a struct. It's a helper for parsers that want to
 // map config maps into their config structures.
-func mapToAny(in map[string]any, out any) error {
+func MapToAny(in map[string]any, out any) error {
 	newMap := make(map[string]any)
 	for k, v := range in {
 		if len(k) > 0 && k[0] == '$' {
@@ -53,7 +54,10 @@ func mapToAny(in map[string]any, out any) error {
 		}
 		newMap[k] = v
 	}
-	yamlText, err := yaml.Marshal(newMap)
+	// Use JSON marshaling from the standard library because the YAML library is buggy.
+	// See https://github.com/Jigsaw-Code/outline-apps/issues/2576.
+	// JSON is a subset of YAML, so that's valid YAML.
+	yamlText, err := json.Marshal(newMap)
 	if err != nil {
 		return fmt.Errorf("error marshaling to YAML: %w", err)
 	}
@@ -132,7 +136,7 @@ func (p *TypeParser[T]) Parse(ctx context.Context, config ConfigNode) (T, error)
 }
 
 // RegisterSubParser registers the given subparser function with the given name for the type T.
-// Note that a subparser always take a map[string]any, not ConfigNode, since we must have a map[string]any in
+// Note that a subparser always take a map[string]any, not [ConfigNode], since we must have a map[string]any in
 // order to set the value for the ConfigParserKey.
 func (p *TypeParser[T]) RegisterSubParser(name string, function func(context.Context, map[string]any) (T, error)) {
 	p.subparsers[name] = function

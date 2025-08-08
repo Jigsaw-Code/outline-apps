@@ -187,6 +187,12 @@ export class ContactView extends LitElement {
         font-weight: normal;
         padding: 8px 0;
       }
+
+      /* Style links for better visibility in dark mode */
+      a {
+        color: var(--outline-primary);
+        text-decoration: none;
+      }
     `,
   ];
 
