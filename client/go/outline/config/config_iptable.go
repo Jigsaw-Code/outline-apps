@@ -104,8 +104,6 @@ func parseIPTableStreamDialer(
 		}
 
 		fallbackDialer = transport.FuncStreamDialer(parsedFallbackDialer.Dial)
-	} else {
-		fallbackDialer = nil
 	}
 
 	dialer, err := iptable.NewStreamDialer(dialerTable, fallbackDialer)
