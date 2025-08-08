@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import * as methodChannel from '@outline/client/src/www/app/method_channel';
 import {Localizer} from '@outline/infrastructure/i18n';
 import {makeConfig, SIP002_URI} from 'ShadowsocksConfig';
 import uuidv4 from 'uuidv4';
@@ -164,7 +165,16 @@ class OutlineServerRepository implements ServerRepository {
     this.eventQueue.enqueue(new events.ServerRenamed(server));
   }
 
-  forget(serverId: string) {
+  /**
+   * Removes the cookie associated with the given key ID (server ID).
+   */
+  async removeCookieByKeyID(keyID: string) {
+    await methodChannel
+      .getDefaultMethodChannel()
+      .invokeMethod('RemoveCookieByKeyID', keyID);
+  }
+
+  async forget(serverId: string) {
     const entry = this.serverById.get(serverId);
     if (!entry) {
       console.warn(`Cannot remove nonexistent server ${serverId}`);
@@ -174,6 +184,8 @@ class OutlineServerRepository implements ServerRepository {
     this.lastForgottenServer = entry;
     this.storeServers();
     this.eventQueue.enqueue(new events.ServerForgotten(entry.server));
+    // Call removeCookiesByKeyID in reporting_client.go with serverId
+    await this.removeCookieByKeyID(serverId);
   }
 
   undoForget(serverId: string) {

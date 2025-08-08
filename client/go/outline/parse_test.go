@@ -126,6 +126,28 @@ transport:
 	matchClientConfig(t, clientConfig, result.Value)
 }
 
+func Test_doParseTunnelConfig_SessionReport(t *testing.T) {
+	result := doParseTunnelConfig(`
+transport:
+  $type: tcpudp
+  tcp: &shared
+    $type: shadowsocks
+    endpoint: example.com:80
+    cipher: chacha20-ietf-poly1305
+    secret: SECRET
+  udp: *shared
+report:
+  $type: sessionreport
+  url: https://your-callback-server.com/outline_callback
+  interval: 24h
+  enable_cookies: true`)
+
+	require.Nil(t, result.Error)
+	require.Equal(t,
+		"{\"client\":\"{transport: {$type: tcpudp, tcp: {$type: shadowsocks, cipher: chacha20-ietf-poly1305, endpoint: \\\"example.com:80\\\", secret: SECRET}, udp: {$type: shadowsocks, cipher: chacha20-ietf-poly1305, endpoint: \\\"example.com:80\\\", secret: SECRET}}, report: {$type: sessionreport, enable_cookies: true, interval: 24h, url: https://your-callback-server.com/outline_callback}}\\n\",\"firstHop\":\"example.com:80\"}",
+		result.Value)
+}
+
 func Test_doParseTunnelConfig_ProviderError(t *testing.T) {
 	result := doParseTunnelConfig(`
 error:
