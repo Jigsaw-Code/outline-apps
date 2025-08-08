@@ -52,20 +52,6 @@ func parseIPTableStreamDialer(
 	allConnTunnelled := true
 	allConnDirect := true
 
-	parsedFallbackDialer, err := parseSD(ctx, rootCfg.Fallback)
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse nested stream dialer fallback: %w", err)
-	}
-
-	if parsedFallbackDialer.ConnType != ConnTypeTunneled {
-		allConnTunnelled = false
-	}
-
-	if parsedFallbackDialer.ConnType != ConnTypeDirect {
-		allConnDirect = false
-	}
-
 	dialerTable := iptable.NewIPTable[transport.StreamDialer]()
 	for i, entryCfg := range rootCfg.Table {
 		parsedSubDialer, err := parseSD(ctx, entryCfg.Dialer)
@@ -81,6 +67,8 @@ func parseIPTableStreamDialer(
 			allConnDirect = false
 		}
 
+		ipsDialer := transport.FuncStreamDialer(parsedSubDialer.Dial)
+
 		for _, ip := range entryCfg.IPs {
 			var currentPrefix netip.Prefix
 			parsedPrefix, errPrefix := netip.ParsePrefix(ip)
@@ -94,11 +82,33 @@ func parseIPTableStreamDialer(
 				currentPrefix = netip.PrefixFrom(addr, addr.BitLen())
 			}
 
-			dialerTable.AddPrefix(currentPrefix, transport.FuncStreamDialer(parsedSubDialer.Dial))
+			dialerTable.AddPrefix(currentPrefix, ipsDialer)
 		}
 	}
 
-	dialer, err := iptable.NewStreamDialer(dialerTable, transport.FuncStreamDialer(parsedFallbackDialer.Dial))
+	var fallbackDialer transport.StreamDialer
+
+	if rootCfg.Fallback != nil {
+		parsedFallbackDialer, err := parseSD(ctx, rootCfg.Fallback)
+
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse nested stream dialer fallback: %w", err)
+		}
+
+		if parsedFallbackDialer.ConnType != ConnTypeTunneled {
+			allConnTunnelled = false
+		}
+
+		if parsedFallbackDialer.ConnType != ConnTypeDirect {
+			allConnDirect = false
+		}
+
+		fallbackDialer = transport.FuncStreamDialer(parsedFallbackDialer.Dial)
+	} else {
+		fallbackDialer = nil
+	}
+
+	dialer, err := iptable.NewStreamDialer(dialerTable, fallbackDialer)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to create IPTableStreamDialer: %w", err)

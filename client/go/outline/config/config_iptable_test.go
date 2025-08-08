@@ -101,7 +101,7 @@ table:
 			expectedConnType: ConnTypeTunneled,
 		},
 		{
-			name: "Happy Path - no default dialer",
+			name: "Happy Path - no fallback dialer",
 			configYAML: `
 table:
   - ips:
@@ -261,8 +261,15 @@ fallback: null
 	})
 
 	t.Run("Error - fallback parser fails", func(t *testing.T) {
-		errorParser := func(ctx context.Context, configMap configyaml.ConfigNode) (*Dialer[transport.StreamConn], error) {
-			return nil, errors.New("fallback sub-parser failed")
+		fallbackErrorParser := func(ctx context.Context, config configyaml.ConfigNode) (*Dialer[transport.StreamConn], error) {
+			configMap := config.(map[string]any)
+
+			// Fail only for dialerB in this mock
+			if name, _ := configMap["name"].(string); name == "dialerB" {
+				return nil, errors.New("fallback sub-parser failed")
+			}
+
+			return parseSE(ctx, config)
 		}
 
 		config := map[string]any{
@@ -272,7 +279,7 @@ fallback: null
 			"fallback": map[string]any{"name": "dialerB"},
 		}
 
-		_, err := parseIPTableStreamDialer(ctx, config, errorParser)
+		_, err := parseIPTableStreamDialer(ctx, config, fallbackErrorParser)
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "failed to parse nested stream dialer fallback")
 		require.Contains(t, err.Error(), "fallback sub-parser failed")

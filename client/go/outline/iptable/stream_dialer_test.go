@@ -204,35 +204,35 @@ func TestIPTableStreamDialer_DialStream(t *testing.T) {
 	}{
 		// --- Tests using iptDialerWithFallback ---
 		{
-			name:         "WithDefault_IPv4 in table",
+			name:         "WithFallback_IPv4 in table",
 			dialerToUse:  iptDialerWithFallback,
 			address:      "192.0.2.100:443",
 			expectDialer: routeV4Dialer,
 			expectConn:   true,
 		},
 		{
-			name:         "WithDefault_IPv4 not in table",
+			name:         "WithFallback_IPv4 not in table",
 			dialerToUse:  iptDialerWithFallback,
 			address:      "10.0.0.1:1234",
 			expectDialer: defaultDialer,
 			expectConn:   true,
 		},
 		{
-			name:         "WithDefault_IPv6 in table",
+			name:         "WithFallback_IPv6 in table",
 			dialerToUse:  iptDialerWithFallback,
 			address:      "2001:db8:cafe::100:443",
 			expectDialer: routeV6Dialer,
 			expectConn:   true,
 		},
 		{
-			name:         "WithDefault_IPv6 not in table",
+			name:         "WithFallback_IPv6 not in table",
 			dialerToUse:  iptDialerWithFallback,
 			address:      "2001::",
 			expectDialer: defaultDialer,
 			expectConn:   true,
 		},
 		{
-			name:         "WithDefault_Dialer returns error",
+			name:         "WithFallback_Dialer returns error",
 			dialerToUse:  iptDialerWithFallback,
 			address:      "192.0.2.20:80",
 			expectDialer: routeV4Dialer,
@@ -241,27 +241,42 @@ func TestIPTableStreamDialer_DialStream(t *testing.T) {
 				routeV4Dialer.ReturnError = errors.New("mock dial failed")
 			},
 		},
-		// --- Tests using iptDialerNoDefault ---
+		// --- Tests using iptDialerNoFallback ---
 		{
-			name:         "NoDefault_IPv4 in table",
+			name:         "NoFallback_IPv4 in table",
 			dialerToUse:  iptDialerNoFallback,
 			address:      "192.0.2.100:443",
 			expectDialer: routeV4Dialer, // Specific route still found
 			expectConn:   true,
 		},
 		{
-			name:         "NoDefault_IPv4 not in table",
+			name:         "NoFallback_IPv4 not in table",
 			dialerToUse:  iptDialerNoFallback,
 			address:      "10.0.0.1:1234",
-			expectDialer: nil, // No specific route, no default -> error
+			expectDialer: nil, // No specific route, no fallback -> error
 			expectErr:    true,
 			expectErrMsg: "no dialer available for address 10.0.0.1:1234",
 		},
 		{
-			name:         "NoDefault_Hostname",
+			name:         "NoFallback_IPv6 in table",
+			dialerToUse:  iptDialerNoFallback,
+			address:      "2001:db8:cafe::100:443",
+			expectDialer: routeV6Dialer, // Specific route still found
+			expectConn:   true,
+		},
+		{
+			name:         "NoFallback_IPv6 not in table",
+			dialerToUse:  iptDialerNoFallback,
+			address:      "2001::",
+			expectDialer: nil, // No specific route, no fallback -> error
+			expectErr:    true,
+			expectErrMsg: "no dialer available for address 2001::",
+		},
+		{
+			name:         "NoFallback_Hostname",
 			dialerToUse:  iptDialerNoFallback,
 			address:      "example.com:443",
-			expectDialer: nil, // No specific route, no default -> error
+			expectDialer: nil, // No specific route, no fallback -> error
 			expectErr:    true,
 			expectErrMsg: "no dialer available for address example.com:443",
 		},
