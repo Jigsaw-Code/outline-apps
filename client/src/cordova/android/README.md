@@ -76,7 +76,7 @@ npx cordova requirements android
 | Gradle | 8.7+ | [cordova-android](https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html#android-api-level-support) | [gradle-wrapper.properties](./OutlineAndroidLib/gradle/wrapper/gradle-wrapper.properties) |
 | Android Gradle Plugin (AGP) | 8.7.3 | [cordova-android](https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html#android-api-level-support) | [build.gradle](../android/OutlineAndroidLib/build.gradle) |
 | Android Build Tools | 35.0.0+ | [cordova-android](https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html#android-api-level-support) | install instructions |
-| Android Studio | 2023.2.1  (Iguana) | [AGP](https://developer.android.com/studio/releases#android_gradle_plugin_and_android_studio_compatibility) | |
+| Android Studio | 2024.2.2 (Ladybug Feature Drop) | [AGP](https://developer.android.com/studio/releases#android_gradle_plugin_and_android_studio_compatibility) | |
 
 ## Build the app
 
@@ -110,6 +110,7 @@ Make sure to rebuild after modifying platform dependent files!
 Alternatively, run with:
 
 ```sh
+cd client
 npx cordova run android -- --gradleArg=--include-build=../../src/cordova/android/OutlineAndroidLib
 ```
 
