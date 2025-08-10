@@ -401,10 +401,7 @@ export class AppRoot extends mixinBehaviors(
           id="toastButton"
           on-tap="_callToastHandler"
         ></paper-button>
-        <paper-button
-          id="sendErrorButton"
-          on-tap="_callSendErrorHandler"
-        >[[localize('send-error')]]</paper-button>
+        
         <a hidden="" id="toastUrl" href="[[toastUrl]]"></a>
       </paper-toast>
     `;
@@ -681,7 +678,7 @@ export class AppRoot extends mixinBehaviors(
     this.$.drawer.open = false;
   }
 
-  showToast(text, duration, buttonText, buttonHandler, buttonUrl, sendErrorButtonText, sendErrorButtonHandler) {
+  showToast(text, duration, buttonText, buttonHandler, buttonUrl) {
     // If the toast is already open, first close it. We then always wait a
     // little before calling open in a this.async call. This ensures that:
     // 1. we are compliant with the material design spec
@@ -717,19 +714,6 @@ export class AppRoot extends mixinBehaviors(
       } else {
         button.hidden = true;
       }
-
-      const sendErrorButton = this.$.sendErrorButton;
-      if (sendErrorButtonText) {
-        sendErrorButton.hidden = false;
-        sendErrorButton.innerText = sendErrorButtonText;
-
-        if (sendErrorButtonHandler) {
-          sendErrorButton._handler = sendErrorButtonHandler;
-        }
-      } else {
-        sendErrorButton.hidden = true;
-      }
-
       this.$.toast.open();
     }, 350);
   }
@@ -768,12 +752,6 @@ export class AppRoot extends mixinBehaviors(
     this.$.toast.close();
     delete toastButton._handler;
     handler();
-  }
-
-  _callSendErrorHandler() {
-    if (this.$.sendErrorButton._handler) {
-      this.$.sendErrorButton._handler();
-    }
   }
   
   promptAddServer() {
