@@ -25,8 +25,8 @@ async function sendErrorToProvider(error: string, accessKey: string, webhookUrl:
       if (!response.ok) throw new Error('Failed to fetch dynamic config');
   
       const configJson = await response.json();
-      if (configJson.accessKey && configJson.accessKey.startsWith('ss://')) {
-        accessKey = configJson.accessKey; // Use the resolved static key
+      if (configJson) { 
+        accessKey = configJson;
       }
 
       // Read the Updated Webhook from key
