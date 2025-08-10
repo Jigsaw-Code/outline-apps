@@ -16,7 +16,7 @@ import {css, html, LitElement} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 
 import '../server_list_item/server_card';
-import {ServerListItem} from '../server_list_item';
+import {ServerListItem, ServerListItemEvent} from '../server_list_item'; // Added ServerListItemEvent
 
 @customElement('server-list')
 export class ServerList extends LitElement {
@@ -54,6 +54,7 @@ export class ServerList extends LitElement {
         ?darkMode=${this.darkMode}
         .localize=${this.localize}
         .server=${this.servers[0]}
+        @${ServerListItemEvent.SET_ALLOWED_APPS}=${this._handleSetAllowedApps}
       ></server-hero-card>`;
     } else {
       return html`
@@ -63,10 +64,23 @@ export class ServerList extends LitElement {
               ?darkMode=${this.darkMode}
               .localize=${this.localize}
               .server=${server}
+              @${ServerListItemEvent.SET_ALLOWED_APPS}=${this._handleSetAllowedApps}
             ></server-row-card>`
         )}
       `;
     }
+  }
+
+  private _handleSetAllowedApps(event: CustomEvent<{serverId: string; allowedApps: string[]}>) {
+    // Re-dispatch an event that a higher-level component can handle.
+    // This component doesn't have direct access to the server repository.
+    this.dispatchEvent(
+      new CustomEvent('set-server-allowed-apps', {
+        bubbles: true,
+        composed: true,
+        detail: event.detail,
+      })
+    );
   }
 
   private get hasSingleServer() {

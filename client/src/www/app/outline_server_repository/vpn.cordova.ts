@@ -28,7 +28,8 @@ export class CordovaVpnApi implements VpnApi {
       // TODO(fortuna): Make the Cordova plugin take a StartRequestJson.
       request.id,
       request.name,
-      request.config.client
+      request.config.client,
+      request.allowedApplications || [] // Pass allowedApplications or empty array
     );
   }
 
