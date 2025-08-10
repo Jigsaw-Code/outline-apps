@@ -28,7 +28,7 @@ import {Server, ServerRepository} from '../model/server';
 import {OutlineErrorReporter} from '../shared/error_reporter';
 import {ServerConnectionState, ServerListItem} from '../views/servers_view';
 import {SERVER_CONNECTION_INDICATOR_DURATION_MS} from '../views/servers_view/server_connection_indicator';
-import { error } from 'console';
+import {error} from 'console';
 import e from 'express';
 
 enum OUTLINE_ACCESS_KEY_SCHEME {
@@ -260,7 +260,7 @@ export class App {
     }
   }
 
-  showLocalizedError(key?: string, error?: Error, toastDuration = 10000) {	
+  showLocalizedError(key?: string, error?: Error, toastDuration = 10000) {
     let toastMessage: string;
     let buttonMessage: string;
     let buttonHandler: () => void;
@@ -786,10 +786,10 @@ export class App {
         console.log('Key:', accessKey, '\n& WebhookUrl:', webhookUrl, 'were saved locally.');
   
       } catch (error) {
-        console.error('Error processing access key:', error);
+        console.error('Error retrieving the webhook information:', error);
       }
     } else {
-      console.log('Webhook not found, no need to process access key:', accessKey);
+      console.log('Found no webhook in access key:', accessKey);
     }
     
     const server = event.server;

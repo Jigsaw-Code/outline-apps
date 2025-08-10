@@ -509,7 +509,7 @@
     "message": "Dismiss"
   },
   "error_details_dialog_send": {
-  "description": "Button for reporting an error to the provider via webhook.",
+  "description": "The button for reporting an error to the provider via webhook.",
   "message": "Send Error"
   },
   "error_details_dialog_sent": {
