@@ -88,7 +88,7 @@ func parseIPTableStreamDialer(
 
 	var fallbackDialer transport.StreamDialer
 
-	if rootCfg.Fallback != nil {
+	if _, fallbackExists := configMap["fallback"]; fallbackExists {
 		parsedFallbackDialer, err := parseSD(ctx, rootCfg.Fallback)
 
 		if err != nil {
