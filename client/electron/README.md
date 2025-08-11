@@ -49,3 +49,24 @@ If you see an error about `node-gyp` not finding Visual Studio, try one of the f
 To build the _release_ version of Windows installer, you'll also need:
 
 - [Java 8+ Runtime](https://www.java.com/en/download/). This is required for the cross-platform Windows executable signing tool [Jsign](https://ebourg.github.io/jsign/). If you don't need to sign the executables, feel free to skip this.
+
+## Electron Builder
+
+The [Electron Builder config](./electron-builder.json) uses an `asarUnpack` entry. This entry
+lists files for resources that must be extracted from the ASAR archive. This is necessary for files that the operating system needs to access directly, such as executable binaries that your application runs or other native modules.
+
+To find where unpacked files are used, look for calls to `unpackedAppPath()` ([example](./app_paths.ts)).
+
+It's helpful to list the ASAR contents to understand what's in there and what patterns to use.
+
+For the Linux client:
+
+```sh
+npx asar list 'output/client/electron/build/linux-unpacked/resources/app.asar'
+```
+
+For the Windows client:
+
+```sh
+npx asar list 'output/client/electron/build/win-ia32-unpacked/resources/app.asar'
+```

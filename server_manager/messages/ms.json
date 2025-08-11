@@ -112,6 +112,7 @@
   "gcp-firewall-create-3": "Taip '0.0.0.0/0' dalam medan 'Julat IP Sumber'.",
   "gcp-firewall-create-4": "Pilih 'Benarkan semua' di bawah 'Protokol dan port (Protocols and ports)'.",
   "gcp-name-your-project": "Namakan projek anda dalam medan 'Nama projek (Project name)'.",
+  "gcp-oauth-connect-title": "Log masuk atau buat akaun dengan Google Cloud Platform.",
   "gcp-project-setup-error": "Ralat telah berlaku sewaktu menyediakan projek Google Cloud anda",
   "gcp-select-machine-type": "Pilih 'f1-micro' di bawah 'Jenis mesin (Machine type)'",
   "gcp-select-networking": "Klik 'Pengurusan (Management), keselamatan (security), cakera (disks), perangkaian (networking), penyewaan tunggal (sole tenancy)', kemudian 'Perangkaian (Networking)'",

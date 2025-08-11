@@ -112,6 +112,7 @@
   "gcp-firewall-create-3": "Ketik '0.0.0.0/0' di kolom 'Rentang IP sumber (Source IP ranges)'.",
   "gcp-firewall-create-4": "Pilih 'Izinkan semua (Allow all)' di bagian 'Protokol dan port (Protocols and ports)'.",
   "gcp-name-your-project": "Beri nama project Anda di kolom 'Nama project (Project name)'.",
+  "gcp-oauth-connect-title": "Login atau buat akun dengan Google Cloud Platform.",
   "gcp-project-setup-error": "Terjadi error saat menyiapkan project Google Cloud Anda",
   "gcp-select-machine-type": "Pilih 'f1-micro' di bagian 'Jenis mesin (Machine type)'",
   "gcp-select-networking": "Klik 'Pengelolaan (Management), keamanan (security), disk (disk), jaringan (network), tenant tunggal' (sole tenancy), lalu 'Jaringan (Networking)'",

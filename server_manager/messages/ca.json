@@ -112,6 +112,7 @@
   "gcp-firewall-create-3": "Escriu \"0.0.0.0/0\"·al camp Source IP ranges (Intervals d'IP d'origen).",
   "gcp-firewall-create-4": "Selecciona Allow all (Permet-ho tot ) a Protocols and ports (Protocols i ports).",
   "gcp-name-your-project": "Proporciona un nom per al projecte al camp Project name (Nom del projecte).",
+  "gcp-oauth-connect-title": "Inicia la sessió o crea un compte amb Google Cloud Platform.",
   "gcp-project-setup-error": "Hi ha hagut un error en configurar el teu projecte de Google Cloud",
   "gcp-select-machine-type": "Selecciona f1-micro a Machine type (Tipus de màquina)",
   "gcp-select-networking": "Fes clic a Management, security, disks, networking, sole tenancy (Gestió, seguretat, discs, xarxes, client únic) i, després, a Networking (Xarxes)",

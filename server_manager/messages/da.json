@@ -112,6 +112,7 @@
   "gcp-firewall-create-3": "Skriv \"0.0.0.0/0\" i feltet \"Source IP ranges\" (Kildens IP-områder).",
   "gcp-firewall-create-4": "Vælg \"Allow all\" (Tillad alle) under \"Protocols and ports\" (Protokoller og porte).",
   "gcp-name-your-project": "Giv dit projekt et navn i feltet \"Projektnavn\" (Project name).",
+  "gcp-oauth-connect-title": "Log ind på eller opret en konto på Google Cloud Platform.",
   "gcp-project-setup-error": "Der opstod en fejl, da Google Cloud-projektet skulle konfigureres",
   "gcp-select-machine-type": "Vælg \"f1-micro\" under \"Maskintype\" (Machine type)",
   "gcp-select-networking": "Klik på \"Administration, sikkerhed, diske, netværk, eksklusiv adgang\" (Management, security, disks, networking, sole tenancy) og så på \"Netværk\" (Networking)",

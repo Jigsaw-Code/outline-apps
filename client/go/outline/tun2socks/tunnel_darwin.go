@@ -54,7 +54,7 @@ func ConnectOutlineTunnel(tunWriter TunWriter, client *outline.Client, isUDPEnab
 		}}
 	}
 
-	t, err := newTunnel(client, client, isUDPEnabled, tunWriter)
+	t, err := newTunnel(client, isUDPEnabled, tunWriter)
 	if err != nil {
 		return &ConnectOutlineTunnelResult{Error: &platerrors.PlatformError{
 			Code:    platerrors.SetupTrafficHandlerFailed,

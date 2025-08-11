@@ -112,6 +112,7 @@
   "gcp-firewall-create-3": "[ソース IP の範囲（Source IP ranges）] 欄に「0.0.0.0/0」と入力します。",
   "gcp-firewall-create-4": "[プロトコルとポート（Protocols and ports）] で [すべて許可（Allow all）] を選択します。",
   "gcp-name-your-project": "[プロジェクト名（Project name）] にプロジェクトの名前を入力します。",
+  "gcp-oauth-connect-title": "Google Cloud Platform にログインするか、アカウントを作成します。",
   "gcp-project-setup-error": "Google Cloud プロジェクトのセットアップ中にエラーが発生しました",
   "gcp-select-machine-type": "[マシンタイプ（Machine type）] で [f1-micro] を選択します",
   "gcp-select-networking": "[管理、セキュリティ、ディスク、ネットワーク、単一テナント（Management, security, disks, networking, sole tenancy）]、[ネットワーク（Networking）] の順にクリックします。",

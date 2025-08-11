@@ -112,6 +112,7 @@
   "gcp-firewall-create-3": "Nhập \"0.0.0.0/0\" vào trường \"Phạm vi IP nguồn\" (Source IP ranges).",
   "gcp-firewall-create-4": "Chọn phần \"Cho phép tất cả\" (Allow all) trong phần \"Giao thức và cổng\" (Protocols and ports).",
   "gcp-name-your-project": "Đặt tên cho dự án của bạn trong trường 'Tên dự án' (Project name).",
+  "gcp-oauth-connect-title": "Đăng nhập hoặc tạo tài khoản trên Google Cloud Platform.",
   "gcp-project-setup-error": "Đã xảy ra lỗi khi thiết lập dự án Google Cloud của bạn",
   "gcp-select-machine-type": "Chọn 'f1-micro' trong phần 'Loại máy' (Machine type)",
   "gcp-select-networking": "Nhấp vào phần 'Quản lý, bảo mật, ổ đĩa, kết nối mạng, miền thuê duy nhất' (Management, security, disks, networking, sole tenancy), sau đó chọn phần 'Kết nối mạng' (Networking)",

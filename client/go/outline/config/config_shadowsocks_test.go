@@ -22,12 +22,13 @@ import (
 	"net/url"
 	"testing"
 
+	"github.com/Jigsaw-Code/outline-apps/client/go/configyaml"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 	"github.com/stretchr/testify/require"
 )
 
 func parseFromYAMLText(configText string) (*ShadowsocksConfig, error) {
-	node, err := ParseConfigYAML(configText)
+	node, err := configyaml.ParseConfigYAML(configText)
 	if err != nil {
 		return nil, err
 	}
@@ -143,11 +144,11 @@ func TestParseShadowsocksConfig_LegacyJSON(t *testing.T) {
 }
 
 func TestParseShadowsocksConfig_YAML(t *testing.T) {
-	streamEndpoints := NewTypeParser(func(ctx context.Context, config ConfigNode) (*Endpoint[transport.StreamConn], error) {
+	streamEndpoints := configyaml.NewTypeParser(func(ctx context.Context, config configyaml.ConfigNode) (*Endpoint[transport.StreamConn], error) {
 		require.Equal(t, "example.com:1234", config)
 		return &Endpoint[transport.StreamConn]{}, nil
 	})
-	packetEndpoints := NewTypeParser(func(ctx context.Context, config ConfigNode) (*Endpoint[net.Conn], error) {
+	packetEndpoints := configyaml.NewTypeParser(func(ctx context.Context, config configyaml.ConfigNode) (*Endpoint[net.Conn], error) {
 		require.Equal(t, "example.com:1234", config)
 		return &Endpoint[net.Conn]{}, nil
 	})
@@ -185,5 +186,22 @@ func TestParseShadowsocksConfig_YAML(t *testing.T) {
 		}
 		_, err := parseShadowsocksTransport(context.Background(), config, streamEndpoints.Parse, packetEndpoints.Parse)
 		require.Error(t, err)
+	})
+
+	t.Run("Prefix", func(t *testing.T) {
+		yamlNode, err := configyaml.ParseConfigYAML(`{
+  "server": "123.x.x.x",
+  "server_port": 443,
+  "password": "xxxxx",
+  "method": "chacha20-ietf-poly1305",
+  "prefix": "SSH-2.0\r\n"
+}
+`)
+		require.NoError(t, err)
+		require.NotNil(t, yamlNode)
+		config, err := parseShadowsocksConfig(yamlNode)
+		require.NoError(t, err)
+		require.Equal(t, "123.x.x.x:443", config.Endpoint)
+		require.Equal(t, "SSH-2.0\r\n", config.Prefix)
 	})
 }
