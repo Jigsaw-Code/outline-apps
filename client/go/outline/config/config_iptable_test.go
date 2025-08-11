@@ -31,7 +31,7 @@ func TestParseIPTableStreamDialer(t *testing.T) {
 	// Define a set of mock dialers for our tests to use.
 	parseSE := func(ctx context.Context, config configyaml.ConfigNode) (*Dialer[transport.StreamConn], error) {
 		if config == nil {
-			return &Dialer[transport.StreamConn]{Dial: (&errorStreamDialer{name: "default"}).DialStream, ConnectionProviderInfo: ConnectionProviderInfo{ConnType: ConnTypeTunneled}}, nil
+			return &Dialer[transport.StreamConn]{Dial: (&errorStreamDialer{name: "direct"}).DialStream, ConnectionProviderInfo: ConnectionProviderInfo{ConnType: ConnTypeDirect}}, nil
 		}
 
 		configMap, ok := config.(map[string]any)
@@ -189,6 +189,24 @@ table:
     dialer: {name: dialerA}
 fallback: {name: direct}
 `,
+			expectedConnType: ConnTypePartial,
+		},
+		{
+			name: "Happy Path - null fallback is direct",
+			configYAML: `
+table:
+  - ips:
+      - 192.168.1.0/24
+    dialer: {name: dialerA}
+fallback: null
+`,
+			checkDialer: func(t *testing.T, dialer *Dialer[transport.StreamConn]) {
+				_, err := dialer.Dial(ctx, "192.168.1.100:1234")
+				require.ErrorContains(t, err, "dialer 'dialerA' called for address '192.168.1.100:1234'")
+
+				_, err = dialer.Dial(ctx, "8.8.8.8:53")
+				require.ErrorContains(t, err, "dialer 'direct' called for address '8.8.8.8:53'")
+			},
 			expectedConnType: ConnTypePartial,
 		},
 		{
