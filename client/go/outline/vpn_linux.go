@@ -24,7 +24,7 @@ import (
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/vpn"
 )
 
-// establishVpnRequestJSON must match Typescript's EstablishVpnRequestJson.
+// establishVpnRequestJSON must match TypeScript's EstablishVpnRequestJson.
 type establishVpnRequestJSON struct {
 	Client string     `json:"client"`
 	VPN    vpn.Config `json:"vpn"`
