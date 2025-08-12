@@ -96,7 +96,8 @@ class OutlineServer implements Server {
       const request: StartRequestJson = {
         id: this.id,
         name: this.name,
-        config: this.tunnelConfig,
+        firstHop: this.tunnelConfig.firstHop,
+        client: this.tunnelConfig.client
       };
       await this.vpnApi.start(request);
     } catch (cause) {
