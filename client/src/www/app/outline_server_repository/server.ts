@@ -97,7 +97,7 @@ class OutlineServer implements Server {
         id: this.id,
         name: this.name,
         firstHop: this.tunnelConfig.firstHop,
-        client: this.tunnelConfig.client
+        client: this.tunnelConfig.client,
       };
       await this.vpnApi.start(request);
     } catch (cause) {
