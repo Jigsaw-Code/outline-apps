@@ -24,7 +24,7 @@ describe('parseAccessKey', () => {
       if (params.indexOf('invalid') > -1) {
         throw Error('fake invalid config');
       }
-      return `{"transport": ${JSON.stringify(params)}, "firstHop": "first-hop:4321"}`;
+      return `{"client": ${JSON.stringify(params)}, "firstHop": "first-hop:4321"}`;
     },
   });
 
@@ -34,10 +34,7 @@ describe('parseAccessKey', () => {
     )}@example.com:4321`;
     const accessKey = `${clientConfig}#My%20Server`;
     expect(await config.parseAccessKey(accessKey)).toEqual(
-      new config.StaticServiceConfig('My Server', {
-        firstHop: 'first-hop:4321',
-        client: clientConfig,
-      })
+      new config.StaticServiceConfig('My Server', 'first-hop:4321', clientConfig)
     );
   });
 
@@ -56,10 +53,7 @@ describe('parseAccessKey', () => {
     const clientConfig = 'ss://anything';
     const accessKey = `${clientConfig}#foo=bar&My%20Server&baz=boo`;
     expect(await config.parseAccessKey(accessKey)).toEqual(
-      new config.StaticServiceConfig('My Server', {
-        firstHop: 'first-hop:4321',
-        client: clientConfig,
-      })
+      new config.StaticServiceConfig('My Server', 'first-hop:4321', clientConfig)
     );
   });
 });
