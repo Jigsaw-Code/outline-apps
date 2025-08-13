@@ -49,12 +49,12 @@ func (c *Client) ListenPacket(ctx context.Context) (net.PacketConn, error) {
 }
 
 func (c *Client) StartSession() error {
-	slog.Info("Starting session")
+	slog.Debug("Starting session")
 	return nil
 }
 
 func (c *Client) EndSession() error {
-	slog.Info("Ending session")
+	slog.Debug("Ending session")
 	return nil
 }
 
