@@ -20,6 +20,7 @@ import (
 	"errors"
 	"log/slog"
 	"strconv"
+	"sync"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/callback"
 	perrs "github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
@@ -33,7 +34,8 @@ type establishVpnRequestJSON struct {
 }
 
 type vpnAPI struct {
-	client *Client
+	client   *Client
+	clientMu sync.Mutex
 }
 
 var vpnSingleton vpnAPI
@@ -48,9 +50,6 @@ func getSingletonVPNAPI() *vpnAPI {
 //
 // The function returns a non-nil error if the connection fails.
 func (api *vpnAPI) Establish(configStr string) (err error) {
-	if api.client != nil {
-		api.Close()
-	}
 	var conf establishVpnRequestJSON
 	if err := json.Unmarshal([]byte(configStr), &conf); err != nil {
 		return perrs.PlatformError{
@@ -62,12 +61,12 @@ func (api *vpnAPI) Establish(configStr string) (err error) {
 
 	tcp := newFWMarkProtectedTCPDialer(conf.VPN.ProtectionMark)
 	udp := newFWMarkProtectedUDPDialer(conf.VPN.ProtectionMark)
-	api.client, err = NewClientWithBaseDialers(conf.Client, tcp, udp)
+	client, err := NewClientWithBaseDialers(conf.Client, tcp, udp)
 	if err != nil {
 		return err
 	}
 
-	if err := api.client.StartSession(); err != nil {
+	if err := client.StartSession(); err != nil {
 		return perrs.PlatformError{
 			Code:    perrs.SetupTrafficHandlerFailed,
 			Message: "failed to start backend client",
@@ -76,23 +75,36 @@ func (api *vpnAPI) Establish(configStr string) (err error) {
 	}
 	defer func() {
 		if err != nil {
-			if err := api.client.EndSession(); err != nil {
+			if err := client.EndSession(); err != nil {
 				slog.Warn("failed to end backend client session", "err", err)
 			}
 		}
 	}()
-	_, err = vpn.EstablishVPN(context.Background(), &conf.VPN, api.client, api.client)
+	_, err = vpn.EstablishVPN(context.Background(), &conf.VPN, client, client)
+
+	api.clientMu.Lock()
+	if api.client != nil {
+		api.client.EndSession()
+	}
+	api.client = client
+	api.clientMu.Unlock()
+
 	return err
 }
 
 // closeVPN closes the currently active VPN connection.
 func (api *vpnAPI) Close() error {
+	api.clientMu.Lock()
+	defer api.clientMu.Unlock()
+
 	vpnErr := vpn.CloseVPN()
+
 	var sessionErr error
 	if api.client != nil {
 		sessionErr = api.client.EndSession()
 		api.client = nil
 	}
+
 	return errors.Join(vpnErr, sessionErr)
 }
 
