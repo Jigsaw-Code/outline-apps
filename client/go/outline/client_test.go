@@ -16,8 +16,10 @@ package outline
 
 import (
 	"testing"
+	"time"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/reporting"
 	"github.com/stretchr/testify/require"
 )
 
@@ -302,4 +304,33 @@ func Test_NewClientFromJSON_Errors(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_UsageReporting(t *testing.T) {
+	config := `
+transport:
+  $type: tcpudp
+  tcp:
+      $type: shadowsocks
+      endpoint: example.com:80
+      <<: &cipher
+        cipher: chacha20-ietf-poly1305
+        secret: SECRET
+      prefix: "POST "
+  udp:
+      $type: shadowsocks
+      endpoint: example.com:53
+      <<: *cipher
+reporter:
+  $type: http
+  url: https://your-callback-server.com/outline_callback
+  interval: 10s`
+
+	result := NewClient(config)
+	require.Nil(t, result.Error, "Got %v", result.Error)
+	require.Equal(t, "example.com:80", result.Client.sd.FirstHop)
+	require.Equal(t, "example.com:53", result.Client.pl.FirstHop)
+	require.NotNil(t, result.Client.reporter, "Reporter is nil")
+	require.Equal(t, "https://your-callback-server.com/outline_callback", result.Client.reporter.(*reporting.HTTPReporter).URL.String())
+	require.Equal(t, 10*time.Second, result.Client.reporter.(*reporting.HTTPReporter).Interval)
 }

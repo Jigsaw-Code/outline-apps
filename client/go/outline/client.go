@@ -17,12 +17,16 @@ package outline
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net"
+	"net/http"
+	"strings"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/configyaml"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/config"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/reporting"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 	"github.com/goccy/go-yaml"
 )
@@ -36,8 +40,10 @@ import (
 //     to handle that.
 //   - Refactor so that StartSession returns a Client
 type Client struct {
-	sd *config.Dialer[transport.StreamConn]
-	pl *config.PacketListener
+	sd            *config.Dialer[transport.StreamConn]
+	pl            *config.PacketListener
+	reporter      reporting.Reporter
+	sessionCancel context.CancelFunc
 }
 
 func (c *Client) DialStream(ctx context.Context, address string) (transport.StreamConn, error) {
@@ -50,17 +56,22 @@ func (c *Client) ListenPacket(ctx context.Context) (net.PacketConn, error) {
 
 func (c *Client) StartSession() error {
 	slog.Debug("Starting session")
+	var sessionCtx context.Context
+	sessionCtx, c.sessionCancel = context.WithCancel(context.Background())
+	go c.reporter.Run(sessionCtx)
 	return nil
 }
 
 func (c *Client) EndSession() error {
 	slog.Debug("Ending session")
+	c.sessionCancel()
 	return nil
 }
 
 // ClientConfig is used to create the Client.
 type ClientConfig struct {
 	Transport configyaml.ConfigNode
+	Reporter  configyaml.ConfigNode
 }
 
 // NewClientResult represents the result of [NewClientAndReturnError].
@@ -124,5 +135,38 @@ func NewClientWithBaseDialers(clientConfigText string, tcpDialer transport.Strea
 		}
 	}
 
-	return &Client{sd: transportPair.StreamDialer, pl: transportPair.PacketListener}, nil
+	client := &Client{sd: transportPair.StreamDialer, pl: transportPair.PacketListener}
+	if clientConfig.Reporter != nil {
+		httpClient := &http.Client{
+			Transport: &http.Transport{
+				DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+					if strings.HasPrefix(network, "tcp") {
+						return client.DialStream(ctx, addr)
+					} else {
+						return nil, fmt.Errorf("protocol not supported: %v", network)
+					}
+				},
+			},
+		}
+		reporter, err := NewReporterParser(httpClient).Parse(context.Background(), clientConfig.Reporter)
+		if err != nil {
+			return nil, &platerrors.PlatformError{
+				Code:    platerrors.InvalidConfig,
+				Message: "invalid reporter config",
+				Cause:   platerrors.ToPlatformError(err),
+			}
+		}
+		client.reporter = reporter
+	}
+
+	return client, nil
+}
+
+func NewReporterParser(httpClient *http.Client) *configyaml.TypeParser[reporting.Reporter] {
+	parser := configyaml.NewTypeParser(func(ctx context.Context, input configyaml.ConfigNode) (reporting.Reporter, error) {
+		return nil, errors.New("parser not specified")
+	})
+	parser.RegisterSubParser("first-supported", config.NewFirstSupportedSubParser(parser.Parse))
+	parser.RegisterSubParser("http", reporting.NewHTTPReporterSubParser(httpClient))
+	return parser
 }
