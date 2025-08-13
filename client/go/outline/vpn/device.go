@@ -17,44 +17,45 @@ package vpn
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"log/slog"
 
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/connectivity"
 	perrs "github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/Jigsaw-Code/outline-sdk/network"
 	"github.com/Jigsaw-Code/outline-sdk/network/dnstruncate"
 	"github.com/Jigsaw-Code/outline-sdk/network/lwip2transport"
-	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
 // RemoteDevice is an IO device that connects to a remote Outline server.
 type RemoteDevice struct {
 	io.ReadWriteCloser
-
-	sd transport.StreamDialer
-	pl transport.PacketListener
-
+	client           *outline.Client
 	pkt              network.DelegatePacketProxy
 	remote, fallback network.PacketProxy
 }
 
-func ConnectRemoteDevice(
-	ctx context.Context, sd transport.StreamDialer, pl transport.PacketListener,
-) (_ *RemoteDevice, err error) {
-	if sd == nil {
-		return nil, errors.New("StreamDialer must be provided")
-	}
-	if pl == nil {
-		return nil, errors.New("PacketListener must be provided")
+func ConnectRemoteDevice(ctx context.Context, client *outline.Client) (_ *RemoteDevice, err error) {
+	if client == nil {
+		return nil, errors.New("backend client must be provided")
 	}
 	if ctx.Err() != nil {
 		return nil, errCancelled(ctx.Err())
 	}
+	if err := client.StartSession(); err != nil {
+		return nil, fmt.Errorf("failed to start backend client session: %w", err)
+	}
+	defer func() {
+		if err != nil {
+			client.EndSession()
+		}
+	}()
 
-	dev := &RemoteDevice{sd: sd, pl: pl}
+	dev := &RemoteDevice{client: client}
 
-	dev.remote, err = network.NewPacketProxyFromPacketListener(pl)
+	dev.remote, err = network.NewPacketProxyFromPacketListener(client)
 	if err != nil {
 		return nil, errSetupHandler("failed to create remote UDP handler", err)
 	}
@@ -65,11 +66,12 @@ func ConnectRemoteDevice(
 	}
 	slog.Debug("remote device local DNS-fallback UDP handler created")
 
+	// TODO(fortuna): Move connectivity test to Client.Start().
 	if err = dev.RefreshConnectivity(ctx); err != nil {
 		return
 	}
 
-	dev.ReadWriteCloser, err = lwip2transport.ConfigureDevice(sd, dev.pkt)
+	dev.ReadWriteCloser, err = lwip2transport.ConfigureDevice(client, dev.pkt)
 	if err != nil {
 		return nil, errSetupHandler("remote device failed to configure network stack", err)
 	}
@@ -83,17 +85,21 @@ func (dev *RemoteDevice) Close() (err error) {
 	if dev.ReadWriteCloser != nil {
 		err = dev.ReadWriteCloser.Close()
 	}
+	if dev.client != nil {
+		err = dev.client.EndSession()
+	}
 	return
 }
 
 // RefreshConnectivity refreshes the connectivity to the Outline server.
 func (d *RemoteDevice) RefreshConnectivity(ctx context.Context) (err error) {
+	// TODO(fortuna): Create and call Client.NotifyNetworkChange().
 	if ctx.Err() != nil {
 		return errCancelled(ctx.Err())
 	}
 
 	slog.Debug("remote device is testing connectivity of server...")
-	tcpErr, udpErr := connectivity.CheckTCPAndUDPConnectivity(d.sd, d.pl)
+	tcpErr, udpErr := connectivity.CheckTCPAndUDPConnectivity(d.client, d.client)
 	if tcpErr != nil {
 		slog.Warn("remote device server connectivity test failed", "err", tcpErr)
 		return tcpErr
