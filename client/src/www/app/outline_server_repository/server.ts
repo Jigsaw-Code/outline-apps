@@ -68,7 +68,7 @@ export async function newOutlineServer(
 
 class OutlineServer implements Server {
   errorMessageId?: string;
-  private tunnelConfig?: FirstHopAndTunnelConfigJson;
+  private startRequest: StartRequestJson;
 
   constructor(
     private vpnApi: VpnApi,
@@ -77,28 +77,34 @@ class OutlineServer implements Server {
     private serviceConfig: ServiceConfig
   ) {
     if (serviceConfig instanceof StaticServiceConfig) {
-      this.tunnelConfig = serviceConfig.tunnelConfig;
+      this.startRequest = {
+        id,
+        name,
+        firstHop: serviceConfig.firstHop,
+        client: serviceConfig.client,
+      };
     }
   }
 
   get address() {
-    return this.tunnelConfig?.firstHop || '';
+    return this.startRequest?.firstHop || '';
   }
 
   async connect() {
     if (this.serviceConfig instanceof DynamicServiceConfig) {
-      this.tunnelConfig = await fetchTunnelConfig(
+      const {firstHop, client} = await fetchTunnelConfig(
         this.serviceConfig.transportConfigLocation
       );
+      this.startRequest = {
+        id: this.id,
+        name: this.name,
+        firstHop,
+        client,
+      };
     }
 
     try {
-      const request: StartRequestJson = {
-        id: this.id,
-        name: this.name,
-        config: this.tunnelConfig,
-      };
-      await this.vpnApi.start(request);
+      await this.vpnApi.start(this.startRequest);
     } catch (cause) {
       // TODO(junyi): Remove the catch above once all platforms are migrated to PlatformError
       if (cause instanceof PlatformError) {
@@ -123,7 +129,7 @@ class OutlineServer implements Server {
       await this.vpnApi.stop(this.id);
 
       if (this.serviceConfig instanceof DynamicServiceConfig) {
-        this.tunnelConfig = undefined;
+        this.startRequest = undefined;
       }
     } catch {
       // All the plugins treat disconnection errors as ErrorCode.UNEXPECTED.

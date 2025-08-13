@@ -24,9 +24,10 @@ import (
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/vpn"
 )
 
-type vpnConfigJSON struct {
-	firstHopAndTunnelConfigJSON `json:",inline"`
-	VPNConfig                   vpn.Config `json:"vpn"`
+// establishVpnRequestJSON must match TypeScript's EstablishVpnRequestJson.
+type establishVpnRequestJSON struct {
+	Client string     `json:"client"`
+	VPN    vpn.Config `json:"vpn"`
 }
 
 // establishVPN establishes a VPN connection using the given configuration string.
@@ -35,7 +36,7 @@ type vpnConfigJSON struct {
 //
 // The function returns a non-nil error if the connection fails.
 func establishVPN(configStr string) error {
-	var conf vpnConfigJSON
+	var conf establishVpnRequestJSON
 	if err := json.Unmarshal([]byte(configStr), &conf); err != nil {
 		return perrs.PlatformError{
 			Code:    perrs.InvalidConfig,
@@ -44,14 +45,14 @@ func establishVPN(configStr string) error {
 		}
 	}
 
-	tcp := newFWMarkProtectedTCPDialer(conf.VPNConfig.ProtectionMark)
-	udp := newFWMarkProtectedUDPDialer(conf.VPNConfig.ProtectionMark)
+	tcp := newFWMarkProtectedTCPDialer(conf.VPN.ProtectionMark)
+	udp := newFWMarkProtectedUDPDialer(conf.VPN.ProtectionMark)
 	c, err := NewClientWithBaseDialers(conf.Client, tcp, udp)
 	if err != nil {
 		return err
 	}
 
-	_, err = vpn.EstablishVPN(context.Background(), &conf.VPNConfig, c, c)
+	_, err = vpn.EstablishVPN(context.Background(), &conf.VPN, c, c)
 	return err
 }
 
