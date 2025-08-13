@@ -21,6 +21,8 @@ import (
 	"net/http"
 	"net/url"
 	"time"
+
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/useragent"
 )
 
 // Reporter is used to register reports.
@@ -66,6 +68,8 @@ func (r *HTTPReporter) Report() error {
 		return fmt.Errorf("failed to create report HTTP request: %w", err)
 	}
 	req.Close = true
+	// TODO: Add Outline Client version.
+	req.Header.Add("User-Agent", useragent.GetOutlineUserAgent())
 
 	resp, err := r.HttpClient.Do(req)
 	if err != nil {
