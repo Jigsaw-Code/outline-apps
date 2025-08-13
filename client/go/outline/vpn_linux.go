@@ -48,6 +48,9 @@ func getSingletonVPNAPI() *vpnAPI {
 //
 // The function returns a non-nil error if the connection fails.
 func (api *vpnAPI) Establish(configStr string) (err error) {
+	if api.client != nil {
+		api.Close()
+	}
 	var conf establishVpnRequestJSON
 	if err := json.Unmarshal([]byte(configStr), &conf); err != nil {
 		return perrs.PlatformError{
@@ -88,6 +91,7 @@ func (api *vpnAPI) Close() error {
 	var sessionErr error
 	if api.client != nil {
 		sessionErr = api.client.EndSession()
+		api.client = nil
 	}
 	return errors.Join(vpnErr, sessionErr)
 }
