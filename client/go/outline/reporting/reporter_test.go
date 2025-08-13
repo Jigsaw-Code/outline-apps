@@ -34,19 +34,37 @@ func TestHTTPReporter_Report(t *testing.T) {
 	defer server.Close()
 
 	serverURL, err := url.Parse(server.URL)
-	if err != nil {
-		t.Fatalf("Failed to parse server URL: %v", err)
-	}
+	require.NoError(t, err)
 
 	reporter := &HTTPReporter{
 		URL:        *serverURL,
 		HttpClient: server.Client(),
 	}
 
-	reporter.Report()
-
+	require.NoError(t, reporter.Report())
 	require.NotNil(t, receivedRequest, "Server did not receive the request")
 	require.Equal(t, "POST", receivedRequest.Method)
+}
+
+func TestHTTPReporter_Report404(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/report" {
+			w.WriteHeader(http.StatusOK)
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+		}
+	}))
+	defer server.Close()
+
+	serverURL, err := url.Parse(server.URL)
+	require.NoError(t, err)
+
+	reporter := &HTTPReporter{
+		URL:        *serverURL,
+		HttpClient: server.Client(),
+	}
+
+	require.Error(t, reporter.Report())
 }
 
 func TestHTTPReporter_ReportInterval(t *testing.T) {

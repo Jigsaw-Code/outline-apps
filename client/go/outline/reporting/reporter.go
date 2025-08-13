@@ -16,6 +16,7 @@ package reporting
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"net/url"
@@ -35,7 +36,7 @@ type HTTPReporter struct {
 }
 
 func (r *HTTPReporter) Run(sessionCtx context.Context) {
-	r.Report()
+	r.reportAndLogError()
 	ticker := time.NewTicker(r.Interval)
 	defer ticker.Stop()
 	for {
@@ -46,25 +47,33 @@ func (r *HTTPReporter) Run(sessionCtx context.Context) {
 			if !ok {
 				return
 			}
-			r.Report()
+			r.reportAndLogError()
 		}
 	}
 }
 
-func (r *HTTPReporter) Report() {
+func (r *HTTPReporter) reportAndLogError() {
 	slog.Debug("Sending report", "url", r.URL.String())
+	err := r.Report()
+	if err != nil {
+		slog.Warn("Failed to report", "err", err)
+	}
+}
 
+func (r *HTTPReporter) Report() error {
 	req, err := http.NewRequest("POST", r.URL.String(), nil)
 	if err != nil {
-		slog.Warn("Failed to create report HTTP request", "err", err)
-		return
+		return fmt.Errorf("failed to create report HTTP request: %w", err)
 	}
 	req.Close = true
 
 	resp, err := r.HttpClient.Do(req)
 	if err != nil {
-		slog.Warn("Failed to send report", "err", err)
-		return
+		return fmt.Errorf("failed to send report: %w", err)
 	}
 	resp.Body.Close()
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return fmt.Errorf("report failed with status code %d", resp.StatusCode)
+	}
+	return nil
 }
