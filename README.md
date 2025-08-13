@@ -8,6 +8,16 @@ Outline makes it easy for anyone to create a VPN server, allowing you to share a
 
 &nbsp;&nbsp;&nbsp;&nbsp;<img alt="Outline Client Logo" src="docs/resources/logo_client.png" title="Outline Client" width="14">&nbsp;&nbsp;**Outline Client** ([`/client`](client)): A cross-platform proxy client for Windows, macOS, iOS, Android, and Linux. The Outline Client is designed for use with the server deployed with the Outline Manager, but it is also fully compatible with any [Shadowsocks](https://shadowsocks.org/) server. [You can install the client here](https://getoutline.org/get-started/#step-3).
 
+On Outline Client for Linux make sure to disable IPv6, as otherwise your IP will be leaking outside:
+```bash
+sudo su -
+cat <<EOF >> /etc/sysctl.d/99-no_ipv6.conf
+net.ipv6.conf.all.disable_ipv6 = 1
+net.ipv6.conf.default.disable_ipv6 = 1
+EOF
+service procps force-reload
+```
+
 ## Community and Support
 
 Interested in **contributing to Outline?** See our [Contributing Guide](CONTRIBUTING.md) for more information.
