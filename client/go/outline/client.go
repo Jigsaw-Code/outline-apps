@@ -32,7 +32,7 @@ import (
 // It's used by the connectivity test and the tun2socks handlers.
 // TODO(fortuna):
 //   - Add connectivity test to StartSession()
-//   - Add NotifyNetworkChange() method. Needs to hold a network.PacketProxy insted of config.PacketListener
+//   - Add NotifyNetworkChange() method. Needs to hold a network.PacketProxy instead of config.PacketListener
 //     to handle that.
 //   - Refactor so that StartSession returns a Client
 type Client struct {

@@ -17,6 +17,8 @@ package outline
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"log/slog"
 	"strconv"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/callback"
@@ -30,12 +32,22 @@ type establishVpnRequestJSON struct {
 	VPN    vpn.Config `json:"vpn"`
 }
 
-// establishVPN establishes a VPN connection using the given configuration string.
+type vpnAPI struct {
+	client *Client
+}
+
+var vpnSingleton vpnAPI
+
+func getSingletonVPNAPI() *vpnAPI {
+	return &vpnSingleton
+}
+
+// Establish establishes a VPN connection using the given configuration string.
 // The configuration string should be a JSON object containing the VPN configuration
 // and the transport configuration.
 //
 // The function returns a non-nil error if the connection fails.
-func establishVPN(configStr string) error {
+func (api *vpnAPI) Establish(configStr string) (err error) {
 	var conf establishVpnRequestJSON
 	if err := json.Unmarshal([]byte(configStr), &conf); err != nil {
 		return perrs.PlatformError{
@@ -47,18 +59,37 @@ func establishVPN(configStr string) error {
 
 	tcp := newFWMarkProtectedTCPDialer(conf.VPN.ProtectionMark)
 	udp := newFWMarkProtectedUDPDialer(conf.VPN.ProtectionMark)
-	client, err := NewClientWithBaseDialers(conf.Client, tcp, udp)
+	api.client, err = NewClientWithBaseDialers(conf.Client, tcp, udp)
 	if err != nil {
 		return err
 	}
 
-	_, err = vpn.EstablishVPN(context.Background(), &conf.VPN, client)
+	if err := api.client.StartSession(); err != nil {
+		return perrs.PlatformError{
+			Code:    perrs.SetupTrafficHandlerFailed,
+			Message: "failed to start backend client",
+			Cause:   perrs.ToPlatformError(err),
+		}
+	}
+	defer func() {
+		if err != nil {
+			if err := api.client.EndSession(); err != nil {
+				slog.Warn("failed to end backend client session", "err", err)
+			}
+		}
+	}()
+	_, err = vpn.EstablishVPN(context.Background(), &conf.VPN, api.client, api.client)
 	return err
 }
 
 // closeVPN closes the currently active VPN connection.
-func closeVPN() error {
-	return vpn.CloseVPN()
+func (api *vpnAPI) Close() error {
+	vpnErr := vpn.CloseVPN()
+	var sessionErr error
+	if api.client != nil {
+		sessionErr = api.client.EndSession()
+	}
+	return errors.Join(vpnErr, sessionErr)
 }
 
 func setVPNStateChangeListener(cbTokenStr string) error {
