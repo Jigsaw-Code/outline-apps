@@ -34,7 +34,11 @@ describe('parseAccessKey', () => {
     )}@example.com:4321`;
     const accessKey = `${clientConfig}#My%20Server`;
     expect(await config.parseAccessKey(accessKey)).toEqual(
-      new config.StaticServiceConfig('My Server', 'first-hop:4321', clientConfig)
+      new config.StaticServiceConfig(
+        'My Server',
+        'first-hop:4321',
+        clientConfig
+      )
     );
   });
 
@@ -53,7 +57,11 @@ describe('parseAccessKey', () => {
     const clientConfig = 'ss://anything';
     const accessKey = `${clientConfig}#foo=bar&My%20Server&baz=boo`;
     expect(await config.parseAccessKey(accessKey)).toEqual(
-      new config.StaticServiceConfig('My Server', 'first-hop:4321', clientConfig)
+      new config.StaticServiceConfig(
+        'My Server',
+        'first-hop:4321',
+        clientConfig
+      )
     );
   });
 });
