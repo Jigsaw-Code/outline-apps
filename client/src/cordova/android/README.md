@@ -125,7 +125,6 @@ To make the entire application load properly on Android Studio, you need to edit
 includeBuild "../../src/cordova/android/OutlineAndroidLib"
 ```
 
-
 ### To debug the web app
 
 Run Outline on your phone with [USB debugging enabled](https://developer.android.com/studio/debug/dev-options.html#enable), then on Chrome:
