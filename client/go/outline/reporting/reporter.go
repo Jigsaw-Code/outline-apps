@@ -59,7 +59,7 @@ func (r *HTTPReporter) Run(sessionCtx context.Context) {
 }
 
 func (r *HTTPReporter) reportAndLogError() {
-	slog.Debug("Sending report", "url", r.URL.String())
+	slog.Debug("Sending report", "url", r.URL)
 	err := r.Report()
 	if err != nil {
 		slog.Warn("Failed to report", "err", err)
