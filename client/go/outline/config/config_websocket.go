@@ -20,9 +20,9 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"runtime"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/configyaml"
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/useragent"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 	"github.com/Jigsaw-Code/outline-sdk/x/websocket"
 )
@@ -77,7 +77,7 @@ func parseWebsocketEndpoint[ConnType any](ctx context.Context, configMap map[str
 	}
 
 	headers := http.Header(map[string][]string{
-		"User-Agent": {fmt.Sprintf("Outline (%s; %s; %s)", runtime.GOOS, runtime.GOARCH, runtime.Version())},
+		"User-Agent": {useragent.GetOutlineUserAgent()},
 	})
 	connect, err := newWE(url.String(), transport.FuncStreamEndpoint(se.Connect), websocket.WithHTTPHeaders(headers))
 	if err != nil {

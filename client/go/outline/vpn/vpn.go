@@ -81,8 +81,8 @@ var mu sync.Mutex
 var conn *VPNConnection
 var stateChangeCb callback.Token
 
-// SetStatus sets the [VPNConnection] Status and calls the stateChangeCb callback.
-func (c *VPNConnection) SetStatus(status ConnectionStatus) {
+// setStatus sets the [VPNConnection] Status and calls the stateChangeCb callback.
+func (c *VPNConnection) setStatus(status ConnectionStatus) {
 	c.Status = status
 	if connJson, err := json.Marshal(c); err == nil {
 		callback.DefaultManager().Call(stateChangeCb, string(connJson))
@@ -132,12 +132,12 @@ func EstablishVPN(
 	}
 
 	slog.Debug("establishing vpn connection ...", "id", c.ID)
-	c.SetStatus(ConnectionConnecting)
+	c.setStatus(ConnectionConnecting)
 	defer func() {
 		if err == nil {
-			c.SetStatus(ConnectionConnected)
+			c.setStatus(ConnectionConnected)
 		} else {
-			c.SetStatus(ConnectionDisconnected)
+			c.setStatus(ConnectionDisconnected)
 		}
 	}()
 
@@ -198,11 +198,11 @@ func closeVPNNoLock() (err error) {
 	}
 
 	slog.Debug("terminating the global vpn connection...", "id", conn.ID)
-	conn.SetStatus(ConnectionDisconnecting)
+	conn.setStatus(ConnectionDisconnecting)
 	defer func() {
 		if err == nil {
 			slog.Info("vpn connection terminated", "id", conn.ID)
-			conn.SetStatus(ConnectionDisconnected)
+			conn.setStatus(ConnectionDisconnected)
 			conn = nil
 		}
 	}()

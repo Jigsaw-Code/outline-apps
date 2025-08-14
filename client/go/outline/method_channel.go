@@ -68,13 +68,13 @@ type InvokeMethodResult struct {
 func InvokeMethod(method string, input string) *InvokeMethodResult {
 	switch method {
 	case MethodCloseVPN:
-		err := closeVPN()
+		err := getSingletonVPNAPI().Close()
 		return &InvokeMethodResult{
 			Error: platerrors.ToPlatformError(err),
 		}
 
 	case MethodEstablishVPN:
-		err := establishVPN(input)
+		err := getSingletonVPNAPI().Establish(input)
 		return &InvokeMethodResult{
 			Error: platerrors.ToPlatformError(err),
 		}
