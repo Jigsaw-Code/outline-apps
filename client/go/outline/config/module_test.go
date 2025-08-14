@@ -18,6 +18,7 @@ import (
 	"context"
 	"net"
 	"testing"
+	"time"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/configyaml"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
@@ -28,6 +29,10 @@ func newTestTransportProvider() *configyaml.TypeParser[*TransportPair] {
 	tcpDialer := &transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
 	udpDialer := &transport.UDPDialer{}
 	return NewDefaultTransportProvider(tcpDialer, udpDialer)
+}
+
+func newTestUsageReportProvider() *configyaml.TypeParser[*UsageReporter] {
+	return NewUsageReportProvider()
 }
 
 func TestRegisterDefaultProviders(t *testing.T) {
@@ -86,4 +91,21 @@ func TestRegisterParseURLInQuotes(t *testing.T) {
 	require.Equal(t, ConnTypeTunneled, d.StreamDialer.ConnType)
 	require.Equal(t, "example.com:4321", d.PacketListener.FirstHop)
 	require.Equal(t, ConnTypeTunneled, d.PacketListener.ConnType)
+}
+
+func TestRegisterUsageReporting(t *testing.T) {
+	provider := newTestUsageReportProvider()
+
+	node, err := configyaml.ParseConfigYAML(`
+  $type: sessionreport
+  interval: 1h
+  url: https://example.com/report`)
+	require.NoError(t, err)
+
+	d, err := provider.Parse(context.Background(), node)
+	require.NoError(t, err)
+
+	require.NotNil(t, d)
+	require.Equal(t, d.Interval, 1*time.Hour)
+	require.Equal(t, d.Url, "https://example.com/report")
 }
