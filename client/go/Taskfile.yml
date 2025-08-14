@@ -84,6 +84,9 @@ tasks:
       TARGET_DIR: "{{.OUT_DIR}}/android/org/getoutline/client/tun2socks/0.0.1"
       # ANDROID_API must match the minSdkVersion that the Android client supports.
       ANDROID_API: 26
+    env:
+      # Bug workaround as per https://github.com/golang/go/issues/71827#issuecomment-2669425491
+      GODEBUG: gotypesalias=0
     preconditions:
       - sh: '[[ -d "$ANDROID_HOME" ]]'
         msg: "Must set ANDROID_HOME"
@@ -104,6 +107,9 @@ tasks:
       MACOSX_DEPLOYMENT_TARGET: 12.0
       # TARGET_IOS_VERSION must be at least 13.1 for macCatalyst and match the version set in the XCode project.
       TARGET_IOS_VERSION: 15.5
+    env:
+      # Bug workaround as per https://github.com/golang/go/issues/71827#issuecomment-2669425491
+      GODEBUG: gotypesalias=0
     cmds:
       - rm -rf "{{.TARGET_DIR}}" && mkdir -p "{{.TARGET_DIR}}"
       - export MACOSX_DEPLOYMENT_TARGET={{.MACOSX_DEPLOYMENT_TARGET}}; {{.GOMOBILE_BIND_CMD}} -target=ios,iossimulator,maccatalyst -iosversion={{.TARGET_IOS_VERSION}} -bundleid org.outline.tun2socks -o '{{.TARGET_DIR}}/Tun2socks.xcframework' '{{.TASKFILE_DIR}}/outline/platerrors' '{{.TASKFILE_DIR}}/outline/tun2socks' '{{.TASKFILE_DIR}}/outline'
