@@ -16,15 +16,15 @@ package tun2socks
 
 import (
 	"errors"
+	"fmt"
 	"io"
+	"log/slog"
 	"net"
 	"sync/atomic"
 	"time"
 
 	"github.com/eycorsican/go-tun2socks/core"
 	"github.com/eycorsican/go-tun2socks/proxy/dnsfallback"
-
-	"github.com/Jigsaw-Code/outline-sdk/transport"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/connectivity"
@@ -55,11 +55,11 @@ type ConnectOutlineTunnelResult struct {
 }
 
 type outlinetunnel struct {
-	tunWriter    io.WriteCloser
-	lwipStack    core.LWIPStack
-	isConnected  bool
-	packetDialer transport.PacketListener
-	udpHandler   *toggleUDPConnHandler
+	tunWriter   io.WriteCloser
+	lwipStack   core.LWIPStack
+	isConnected bool
+	udpHandler  *toggleUDPConnHandler
+	client      *outline.Client
 }
 
 var _ Tunnel = (*outlinetunnel)(nil)
@@ -69,10 +69,18 @@ var _ Tunnel = (*outlinetunnel)(nil)
 // `client` is the StreamDialer to proxy TCP traffic and the PacketListener to proxy UDP traffic.
 // `isUDPEnabled` indicates if the Outline proxy and the network support proxying UDP traffic.
 // `tunWriter` is used to output packets back to the TUN device.  OutlineTunnel.Disconnect() will close `tunWriter`.
-func newTunnel(client *outline.Client, isUDPEnabled bool, tunWriter io.WriteCloser) (Tunnel, error) {
+func newTunnel(client *outline.Client, isUDPEnabled bool, tunWriter io.WriteCloser) (tunnel Tunnel, err error) {
 	if tunWriter == nil {
 		return nil, errors.New("must provide a TUN writer")
 	}
+	if err := client.StartSession(); err != nil {
+		return nil, fmt.Errorf("failed to start backend Client session: %w", err)
+	}
+	defer func() {
+		if err != nil {
+			client.EndSession()
+		}
+	}()
 	core.RegisterOutputFn(func(data []byte) (int, error) {
 		return tunWriter.Write(data)
 	})
@@ -82,7 +90,7 @@ func newTunnel(client *outline.Client, isUDPEnabled bool, tunWriter io.WriteClos
 		FallbackHandler: dnsfallback.NewUDPHandler(),
 	}
 	udpHandler.UseFallback.Store(!isUDPEnabled)
-	t := &outlinetunnel{tunWriter, lwipStack, true, client, udpHandler}
+	t := &outlinetunnel{tunWriter, lwipStack, true, udpHandler, client}
 	core.RegisterTCPConnHandler(NewTCPHandler(client))
 	core.RegisterUDPConnHandler(udpHandler)
 	return t, nil
@@ -99,6 +107,12 @@ func (t *outlinetunnel) Disconnect() {
 	t.isConnected = false
 	t.lwipStack.Close()
 	t.tunWriter.Close()
+	if t.client != nil {
+		if err := t.client.EndSession(); err != nil {
+			slog.Error("failed to end backend Client session", "err", err)
+		}
+		t.client = nil
+	}
 }
 
 func (t *outlinetunnel) Write(data []byte) (int, error) {
@@ -110,7 +124,7 @@ func (t *outlinetunnel) Write(data []byte) (int, error) {
 
 func (t *outlinetunnel) UpdateUDPSupport() bool {
 	resolverAddr := &net.UDPAddr{IP: net.ParseIP("1.1.1.1"), Port: 53}
-	isUDPEnabled := connectivity.CheckUDPConnectivityWithDNS(t.packetDialer, resolverAddr) == nil
+	isUDPEnabled := connectivity.CheckUDPConnectivityWithDNS(t.client, resolverAddr) == nil
 	t.udpHandler.UseFallback.Store(!isUDPEnabled)
 	return isUDPEnabled
 }

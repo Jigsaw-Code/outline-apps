@@ -17,6 +17,7 @@ package outline
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"net"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/configyaml"
@@ -29,7 +30,11 @@ import (
 // Client provides a transparent container for [transport.StreamDialer] and [transport.PacketListener]
 // that is exportable (as an opaque object) via gobind.
 // It's used by the connectivity test and the tun2socks handlers.
-// TODO: Rename to Transport. Needs to update per-platform code.
+// TODO(fortuna):
+//   - Add connectivity test to StartSession()
+//   - Add NotifyNetworkChange() method. Needs to hold a network.PacketProxy instead of config.PacketListener
+//     to handle that.
+//   - Refactor so that StartSession returns a Client
 type Client struct {
 	sd *config.Dialer[transport.StreamConn]
 	pl *config.PacketListener
@@ -41,6 +46,16 @@ func (c *Client) DialStream(ctx context.Context, address string) (transport.Stre
 
 func (c *Client) ListenPacket(ctx context.Context) (net.PacketConn, error) {
 	return c.pl.ListenPacket(ctx)
+}
+
+func (c *Client) StartSession() error {
+	slog.Debug("Starting session")
+	return nil
+}
+
+func (c *Client) EndSession() error {
+	slog.Debug("Ending session")
+	return nil
 }
 
 // ClientConfig is used to create the Client.

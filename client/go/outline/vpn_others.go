@@ -16,8 +16,22 @@
 
 package outline
 
-import "errors"
+import (
+	"errors"
+)
 
-func establishVPN(configStr string) error               { return errors.ErrUnsupported }
-func closeVPN() error                                   { return errors.ErrUnsupported }
-func setVPNStateChangeListener(cbTokenStr string) error { return errors.ErrUnsupported }
+type vpnAPI struct{}
+
+func getSingletonVPNAPI() *vpnAPI {
+	return nil
+}
+
+func (api *vpnAPI) Establish(configStr string) (err error) {
+	return errors.ErrUnsupported
+}
+
+func (api *vpnAPI) Close() error {
+	return errors.ErrUnsupported
+}
+
+func setVPNStateChangeListener(_ string) error { return errors.ErrUnsupported }
