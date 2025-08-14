@@ -20,6 +20,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"testing"
+	"testing/synctest"
 	"time"
 
 	"github.com/stretchr/testify/require"
@@ -88,10 +89,11 @@ func TestHTTPReporter_ReportInterval(t *testing.T) {
 
 	sessionCtx, cancelSession := context.WithCancel(context.Background())
 
-	go reporter.Run(sessionCtx)
-
-	time.Sleep(450 * time.Millisecond)
-	cancelSession()
+	synctest.Test(t, func(t *testing.T) {
+		go reporter.Run(sessionCtx)
+		time.Sleep(450 * time.Millisecond)
+		cancelSession()
+	})
 
 	require.Equal(t, 5, requestCount)
 }
