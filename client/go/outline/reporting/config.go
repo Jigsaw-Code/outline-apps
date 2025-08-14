@@ -39,7 +39,7 @@ func NewHTTPReporterSubParser(httpClient *http.Client) func(ctx context.Context,
 
 		collectorURL, err := url.Parse(config.URL)
 		if err != nil {
-			return nil, fmt.Errorf("failed to report collector URL: %w", err)
+			return nil, fmt.Errorf("failed to parse the report collector URL: %w", err)
 		}
 		reporter := &HTTPReporter{URL: *collectorURL, HttpClient: httpClient}
 
