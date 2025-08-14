@@ -39,6 +39,10 @@ type HTTPReporter struct {
 
 func (r *HTTPReporter) Run(sessionCtx context.Context) {
 	r.reportAndLogError()
+	if r.Interval == 0 {
+		return
+	}
+	// Only run the loop if we specified an interval.
 	ticker := time.NewTicker(r.Interval)
 	defer ticker.Stop()
 	for {

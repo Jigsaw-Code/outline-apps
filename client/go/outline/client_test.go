@@ -15,9 +15,12 @@
 package outline
 
 import (
+	"context"
+	"net/http"
 	"testing"
 	"time"
 
+	"github.com/Jigsaw-Code/outline-apps/client/go/configyaml"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/reporting"
 	"github.com/stretchr/testify/require"
@@ -324,7 +327,7 @@ transport:
 reporter:
   $type: http
   url: https://your-callback-server.com/outline_callback
-  interval: 10s`
+  interval: 24h`
 
 	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
@@ -332,5 +335,34 @@ reporter:
 	require.Equal(t, "example.com:53", result.Client.pl.FirstHop)
 	require.NotNil(t, result.Client.reporter, "Reporter is nil")
 	require.Equal(t, "https://your-callback-server.com/outline_callback", result.Client.reporter.(*reporting.HTTPReporter).URL.String())
-	require.Equal(t, 10*time.Second, result.Client.reporter.(*reporting.HTTPReporter).Interval)
+	require.Equal(t, 24*time.Hour, result.Client.reporter.(*reporting.HTTPReporter).Interval)
+}
+
+func Test_ParseReporter(t *testing.T) {
+	config := `
+$type: http
+url: https://your-callback-server.com/outline_callback
+interval: 24h`
+	yamlNode, err := configyaml.ParseConfigYAML(config)
+	require.NoError(t, err)
+	httpClient := &http.Client{}
+	reporter, err := NewReporterParser(httpClient).Parse(context.Background(), yamlNode)
+	require.NoError(t, err)
+	require.NotNil(t, reporter)
+	require.Equal(t, "https://your-callback-server.com/outline_callback", reporter.(*reporting.HTTPReporter).URL.String())
+	require.Equal(t, 24*time.Hour, reporter.(*reporting.HTTPReporter).Interval)
+	require.Equal(t, httpClient, reporter.(*reporting.HTTPReporter).HttpClient)
+}
+
+func Test_ParseReporter_NoInterval(t *testing.T) {
+	config := `
+$type: http
+url: https://your-callback-server.com/outline_callback`
+	yamlNode, err := configyaml.ParseConfigYAML(config)
+	require.NoError(t, err)
+	reporter, err := NewReporterParser(http.DefaultClient).Parse(context.Background(), yamlNode)
+	require.NoError(t, err)
+	require.NotNil(t, reporter)
+	require.Equal(t, "https://your-callback-server.com/outline_callback", reporter.(*reporting.HTTPReporter).URL.String())
+	require.Equal(t, time.Duration(0), reporter.(*reporting.HTTPReporter).Interval)
 }
