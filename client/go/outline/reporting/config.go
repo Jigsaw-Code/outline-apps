@@ -49,7 +49,7 @@ func NewHTTPReporterSubParser(httpClient *http.Client) func(ctx context.Context,
 				return nil, fmt.Errorf("failed to parse interval: %w", err)
 			}
 			if interval <= 0 {
-				return nil, fmt.Errorf("tunnel usage interval must be greater than 0")
+				return nil, fmt.Errorf("http report interval must be greater than 0")
 			}
 			reporter.Interval = interval
 		}
