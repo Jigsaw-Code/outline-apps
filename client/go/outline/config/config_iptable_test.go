@@ -192,24 +192,6 @@ fallback: {name: direct}
 			expectedConnType: ConnTypePartial,
 		},
 		{
-			name: "Happy Path - null fallback is direct",
-			configYAML: `
-table:
-  - ips:
-      - 192.168.1.0/24
-    dialer: {name: dialerA}
-fallback: null
-`,
-			checkDialer: func(t *testing.T, dialer *Dialer[transport.StreamConn]) {
-				_, err := dialer.Dial(ctx, "192.168.1.100:1234")
-				require.ErrorContains(t, err, "dialer 'dialerA' called for address '192.168.1.100:1234'")
-
-				_, err = dialer.Dial(ctx, "8.8.8.8:53")
-				require.ErrorContains(t, err, "dialer 'direct' called for address '8.8.8.8:53'")
-			},
-			expectedConnType: ConnTypePartial,
-		},
-		{
 			name: "Happy Path - all direct",
 			configYAML: `
 table:
@@ -226,6 +208,14 @@ fallback: {name: direct}
 			expectErr:  "iptable config 'table' must not be empty for stream dialer",
 		},
 		{
+			name: "Error - missing dialer",
+			configYAML: `
+table:
+  - ips:
+      - 192.168.1.0/24`,
+			expectErr: "iptable entry 0 has no dialer specified",
+		},
+		{
 			name: "Error - invalid IP",
 			configYAML: `
 table:
@@ -235,6 +225,18 @@ table:
 fallback: null
 `,
 			expectErr: "is not a valid IP address or CIDR prefix",
+		},
+		{
+			name: "Error - no fallback",
+			configYAML: `
+table:
+  - ips: 
+      - 192.168.1.0/24
+    dialer: {name: direct}`,
+			checkDialer: func(t *testing.T, dialer *Dialer[transport.StreamConn]) {
+				_, err := dialer.Dial(ctx, "8.8.8.8:53")
+				require.ErrorContains(t, err, "no dialer available for address 8.8.8.8:53")
+			},
 		},
 	}
 

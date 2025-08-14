@@ -54,7 +54,12 @@ func parseIPTableStreamDialer(
 
 	dialerTable := iptable.NewIPTable[transport.StreamDialer]()
 	for i, entryCfg := range rootCfg.Table {
+		if entryCfg.Dialer == nil {
+			return nil, fmt.Errorf("iptable entry %d has no dialer specified", i)
+		}
+
 		parsedSubDialer, err := parseSD(ctx, entryCfg.Dialer)
+
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse nested stream dialer for table entry %d: %w", i, err)
 		}
@@ -88,7 +93,7 @@ func parseIPTableStreamDialer(
 
 	var fallbackDialer transport.StreamDialer
 
-	if _, fallbackExists := configMap["fallback"]; fallbackExists {
+	if rootCfg.Fallback != nil {
 		parsedFallbackDialer, err := parseSD(ctx, rootCfg.Fallback)
 
 		if err != nil {
