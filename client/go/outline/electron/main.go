@@ -22,6 +22,7 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
+	"path"
 	"strings"
 	"syscall"
 	"time"
@@ -132,7 +133,16 @@ func main() {
 			printErrorAndExit(err, exitCodeFailure)
 		}
 	} else {
-		result := outline.NewClient(*args.clientConfig)
+		userDir, err := os.UserConfigDir()
+		if err != nil {
+			printErrorAndExit(platerrors.PlatformError{
+				Code:    platerrors.InternalError,
+				Message: "failed to get user config directory",
+				Cause:   platerrors.ToPlatformError(err),
+			}, exitCodeFailure)
+		}
+		dataDir := path.Join(userDir, "org.getoutline.client")
+		result := outline.NewClient("TODO", dataDir, *args.clientConfig)
 		if result.Error != nil {
 			printErrorAndExit(result.Error, exitCodeFailure)
 		}

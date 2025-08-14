@@ -21,6 +21,7 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/configyaml"
@@ -83,20 +84,37 @@ type NewClientResult struct {
 }
 
 // NewClient creates a new Outline client from a configuration string.
-func NewClient(clientConfig string) *NewClientResult {
+func NewClient(keyID string, dataDir string, clientConfig string) *NewClientResult {
 	tcpDialer := transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
 	udpDialer := transport.UDPDialer{}
-	client, err := NewClientWithBaseDialers(clientConfig, &tcpDialer, &udpDialer)
+	client, err := NewClientWithBaseDialers(keyID, dataDir, clientConfig, &tcpDialer, &udpDialer)
 	if err != nil {
 		return &NewClientResult{Error: platerrors.ToPlatformError(err)}
 	}
 	return &NewClientResult{Client: client}
 }
 
-func NewClientWithBaseDialers(clientConfigText string, tcpDialer transport.StreamDialer, udpDialer transport.PacketDialer) (*Client, error) {
-	var clientConfig ClientConfig
-	err := yaml.Unmarshal([]byte(clientConfigText), &clientConfig)
+// TODO(fortuna): Refactor into a ClientOptions.New(configText) (*Client, error).
+func NewClientWithBaseDialers(keyID string, dataDir string, clientConfigText string, tcpDialer transport.StreamDialer, udpDialer transport.PacketDialer) (*Client, error) {
+	if dataDir == "" {
+		return nil, &platerrors.PlatformError{
+			Code:    platerrors.InternalError,
+			Message: "data directory missing",
+		}
+	}
+
+	dataRoot, err := os.OpenRoot(dataDir)
 	if err != nil {
+		return nil, &platerrors.PlatformError{
+			Code:    platerrors.InternalError,
+			Message: "invalid data directory",
+			Cause:   platerrors.ToPlatformError(err),
+		}
+	}
+	defer dataRoot.Close()
+
+	var clientConfig ClientConfig
+	if err = yaml.Unmarshal([]byte(clientConfigText), &clientConfig); err != nil {
 		return nil, &platerrors.PlatformError{
 			Code:    platerrors.InvalidConfig,
 			Message: "config is not valid YAML",
@@ -137,6 +155,7 @@ func NewClientWithBaseDialers(clientConfigText string, tcpDialer transport.Strea
 
 	client := &Client{sd: transportPair.StreamDialer, pl: transportPair.PacketListener}
 	if clientConfig.Reporter != nil {
+		// TODO: load CookieJar and pass to httpClient.
 		httpClient := &http.Client{
 			Transport: &http.Transport{
 				DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
@@ -147,6 +166,8 @@ func NewClientWithBaseDialers(clientConfigText string, tcpDialer transport.Strea
 					}
 				},
 			},
+			// TODO: set this.
+			Jar: nil,
 		}
 		reporter, err := NewReporterParser(httpClient).Parse(context.Background(), clientConfig.Reporter)
 		if err != nil {

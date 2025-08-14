@@ -34,6 +34,7 @@ NSString *const kDefaultPathKey = @"defaultPath";
 @property (nonatomic, copy) void (^startCompletion)(NSNumber *);
 @property (nonatomic, copy) void (^stopCompletion)(NSNumber *);
 @property (nonatomic) DDFileLogger *fileLogger;
+@property (nonatomic, nullable) NSString *tunnelId;
 @property (nonatomic, nullable) NSString *transportConfig;
 @property (nonatomic) dispatch_queue_t packetQueue;
 @property (nonatomic) BOOL isUdpSupported;
@@ -86,6 +87,7 @@ NSString *const kDefaultPathKey = @"defaultPath";
     DDLogError(@"Failed to retrieve the transport configuration.");
     return startDone([SwiftBridge newInvalidConfigOutlineErrorWithMessage:@"config is not a String"]);
   }
+  self.tunnelId = tunnelId;
   self.transportConfig = transportConfig;
 
   // startTunnel has 3 cases:
@@ -104,7 +106,7 @@ NSString *const kDefaultPathKey = @"defaultPath";
   // culprit and can explicitly disconnect.
   PlaterrorsPlatformError *udpConnectionError = nil;
   if (!isOnDemand) {
-    OutlineNewClientResult* clientResult = [SwiftBridge newClientWithTransportConfig:self.transportConfig];
+      OutlineNewClientResult* clientResult = [SwiftBridge newClientWithId:tunnelId transportConfig:transportConfig];
     if (clientResult.error != nil) {
       return startDone([SwiftBridge newOutlineErrorFromPlatformError:clientResult.error]);
     }
@@ -291,7 +293,7 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
     [self.tunnel disconnect];
   }
   __weak PacketTunnelProvider *weakSelf = self;
-  OutlineNewClientResult* clientResult = [SwiftBridge newClientWithTransportConfig:self.transportConfig];
+    OutlineNewClientResult* clientResult = [SwiftBridge newClientWithId: self.tunnelId transportConfig:self.transportConfig];
   if (clientResult.error != nil) {
     return clientResult.error;
   }
