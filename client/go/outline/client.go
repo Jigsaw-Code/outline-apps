@@ -63,7 +63,9 @@ func (c *Client) StartSession() error {
 	slog.Debug("Starting session")
 	var sessionCtx context.Context
 	sessionCtx, c.sessionCancel = context.WithCancel(context.Background())
-	go c.reporter.Run(sessionCtx)
+	if c.reporter != nil {
+		go c.reporter.Run(sessionCtx)
+	}
 	return nil
 }
 
