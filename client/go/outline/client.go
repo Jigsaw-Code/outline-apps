@@ -1,5 +1,5 @@
 // Copyright 2023 The Outline Authors
-//
+//https://github.com/Jigsaw-Code/outline-apps/tree/master/client/go/outline
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -58,7 +58,9 @@ func (c *Client) StartSession() error {
 	slog.Debug("Starting session")
 	var sessionCtx context.Context
 	sessionCtx, c.sessionCancel = context.WithCancel(context.Background())
-	go c.reporter.Run(sessionCtx)
+	if c.reporter != nil {
+		go c.reporter.Run(sessionCtx)
+	}
 	return nil
 }
 
