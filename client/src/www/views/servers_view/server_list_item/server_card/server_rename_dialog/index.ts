@@ -49,14 +49,15 @@ export class ServerRenameDialog extends LitElement {
     }
 
     mwc-textfield {
-      --mdc-text-field-fill-color: var(--outline-input-bg);
+      --mdc-text-field-fill-color: transparent;
       --mdc-text-field-ink-color: var(--outline-input-text);
       --mdc-text-field-label-ink-color: var(--outline-label-color);
       --mdc-text-field-outlined-idle-border-color: var(--outline-input-border);
       --mdc-theme-primary: var(--outline-primary);
-      background-color: var(--outline-input-bg);
       color: var(--outline-input-text);
       border-radius: 4px;
+      display: block;
+      margin: 0 auto;
     }
   `;
 
