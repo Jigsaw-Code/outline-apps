@@ -29,7 +29,8 @@ export type ServiceConfig = StaticServiceConfig | DynamicServiceConfig;
 export class StaticServiceConfig {
   constructor(
     readonly name: string,
-    readonly tunnelConfig: FirstHopAndTunnelConfigJson
+    readonly firstHop: string,
+    readonly client: string
   ) {}
 }
 
@@ -90,10 +91,8 @@ export async function parseAccessKey(
 
     // Static ss:// keys. It encodes the full service config.
     if (noHashAccessKey.protocol === 'ss:') {
-      return new StaticServiceConfig(
-        name,
-        await parseTunnelConfig(noHashAccessKey.toString())
-      );
+      const parsed = await parseTunnelConfig(noHashAccessKey.toString());
+      return new StaticServiceConfig(name, parsed.firstHop, parsed.client);
     }
 
     // Dynamic ssconf:// keys. It encodes the location of the service config.

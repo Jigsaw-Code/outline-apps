@@ -14,8 +14,17 @@
     "rootDir": "../",
     "skipLibCheck": true,
     "target": "es2017",
-    "lib": ["es2022"]
+    "lib": [
+      "es2022"
+    ]
   },
-  "exclude": ["*.cjs", "*.js", "*.mjs", "**/*.spec.ts"],
-  "include": ["src", "electron"]
+  "exclude": [
+    "*.cjs",
+    "*.js",
+    "*.mjs"
+  ],
+  "include": [
+    "src",
+    "electron"
+  ]
 }

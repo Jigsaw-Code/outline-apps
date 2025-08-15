@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {FirstHopAndTunnelConfigJson} from './config';
-
 export const enum TunnelStatus {
   CONNECTED,
   DISCONNECTED,
@@ -25,7 +23,10 @@ export const enum TunnelStatus {
 export interface StartRequestJson {
   id: string;
   name: string;
-  config: FirstHopAndTunnelConfigJson;
+  // Client config, ultimately passed to NewClient in Go.
+  client: string;
+  // First hop used by the legacy Electron code.
+  firstHop: string;
 }
 
 /** VpnApi is how we talk to the platform-specific VPN API. */

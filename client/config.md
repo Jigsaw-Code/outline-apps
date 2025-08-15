@@ -145,6 +145,26 @@ transport:
     secret: SS_SECRET
 ```
 
+In case the count of users is needed to have an exact estimate of the sessions, a reporting server can be used for that. This feature is currently experimental.
+
+```yaml
+transport:
+  $type: tcpudp
+  tcp:
+    <<: &shared
+      $type: shadowsocks
+      endpoint: ss.example.com:4321
+      cipher: chacha20-ietf-poly1305
+      secret: SECRET
+    prefix: "POST "
+  udp: *shared
+
+reporter:
+  $type: http
+  url: https://your-callback-server.com/outline_callback
+  interval: 24h
+```
+
 ## Tunnels
 
 ### <a id=TunnelConfig></a>TunnelConfig

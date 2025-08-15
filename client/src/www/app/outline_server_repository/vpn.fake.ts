@@ -39,7 +39,7 @@ export class FakeVpnApi implements VpnApi {
       return;
     }
 
-    const address = request.config.firstHop;
+    const address = request.firstHop;
     if (this.playUnreachable(address)) {
       throw new errors.OutlinePluginError(errors.ErrorCode.SERVER_UNREACHABLE);
     } else if (this.playBroken(address)) {
