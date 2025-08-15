@@ -99,6 +99,8 @@ func NewDefaultTransportProvider(tcpDialer transport.StreamDialer, udpDialer tra
 
 	// Stream dialers.
 	streamDialers.RegisterSubParser("shadowsocks", NewShadowsocksStreamDialerSubParser(streamEndpoints.Parse))
+	streamDialers.RegisterSubParser("direct", NewDirectStreamDialerSubParser(streamEndpoints.Parse))
+	streamDialers.RegisterSubParser("blocked", NewBlockStreamDialerSubParser(streamEndpoints.Parse))
 
 	// Packet dialers.
 	packetDialers.RegisterSubParser("shadowsocks", NewShadowsocksPacketDialerSubParser(packetEndpoints.Parse))
