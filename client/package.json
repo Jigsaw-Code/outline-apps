@@ -60,6 +60,8 @@
     "@babel/core": "^7.12.10",
     "@babel/polyfill": "^7.12.1",
     "@babel/preset-env": "^7.12.11",
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^7.4.2",
     "@commitlint/config-conventional": "^16.2.4",
     "@jsdevtools/coverage-istanbul-loader": "^3.0.5",
     "@open-wc/testing": "^3.2.0",
