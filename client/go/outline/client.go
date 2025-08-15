@@ -21,8 +21,12 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
+	"path"
 	"strings"
+
+	cookiejar "github.com/juju/persistent-cookiejar"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/configyaml"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/config"
@@ -96,25 +100,16 @@ func NewClient(keyID string, dataDir string, clientConfig string) *NewClientResu
 
 // TODO(fortuna): Refactor into a ClientOptions.New(configText) (*Client, error).
 func NewClientWithBaseDialers(keyID string, dataDir string, clientConfigText string, tcpDialer transport.StreamDialer, udpDialer transport.PacketDialer) (*Client, error) {
-	if dataDir == "" {
-		return nil, &platerrors.PlatformError{
-			Code:    platerrors.InternalError,
-			Message: "data directory missing",
-		}
-	}
-
-	dataRoot, err := os.OpenRoot(dataDir)
-	if err != nil {
-		return nil, &platerrors.PlatformError{
-			Code:    platerrors.InternalError,
-			Message: "invalid data directory",
-			Cause:   platerrors.ToPlatformError(err),
-		}
-	}
-	defer dataRoot.Close()
+	slog.Info("New Client", "keyID", keyID, "dataDir", dataDir)
+	// if dataDir == "" {
+	// 	return nil, &platerrors.PlatformError{
+	// 		Code:    platerrors.InternalError,
+	// 		Message: "data directory missing",
+	// 	}
+	// }
 
 	var clientConfig ClientConfig
-	if err = yaml.Unmarshal([]byte(clientConfigText), &clientConfig); err != nil {
+	if err := yaml.Unmarshal([]byte(clientConfigText), &clientConfig); err != nil {
 		return nil, &platerrors.PlatformError{
 			Code:    platerrors.InvalidConfig,
 			Message: "config is not valid YAML",
@@ -154,8 +149,20 @@ func NewClientWithBaseDialers(keyID string, dataDir string, clientConfigText str
 	}
 
 	client := &Client{sd: transportPair.StreamDialer, pl: transportPair.PacketListener}
-	if clientConfig.Reporter != nil {
-		// TODO: load CookieJar and pass to httpClient.
+	// TODO: figure out a better way to handle parse calls.
+	if dataDir != "" && clientConfig.Reporter != nil {
+		serviceDir := path.Join(dataDir, "services", keyID)
+		// Create serviceDir
+		if err := os.MkdirAll(serviceDir, 0700); err != nil {
+			return nil, fmt.Errorf("failed to create service data directory: %v", err)
+		}
+		cookieFilename := path.Join(serviceDir, "cookies.json")
+		cookieJar, err := cookiejar.New(&cookiejar.Options{
+			Filename: cookieFilename,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("failed to create cookie jar: %v", err)
+		}
 		httpClient := &http.Client{
 			Transport: &http.Transport{
 				DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
@@ -166,8 +173,7 @@ func NewClientWithBaseDialers(keyID string, dataDir string, clientConfigText str
 					}
 				},
 			},
-			// TODO: set this.
-			Jar: nil,
+			Jar: &logCookieJar{cookieJar},
 		}
 		reporter, err := NewReporterParser(httpClient).Parse(context.Background(), clientConfig.Reporter)
 		if err != nil {
@@ -190,4 +196,38 @@ func NewReporterParser(httpClient *http.Client) *configyaml.TypeParser[reporting
 	parser.RegisterSubParser("first-supported", config.NewFirstSupportedSubParser(parser.Parse))
 	parser.RegisterSubParser("http", reporting.NewHTTPReporterSubParser(httpClient))
 	return parser
+}
+
+// type cookieRoundTripper struct {
+// 	http.RoundTripper
+// 	jar *cookiejar.Jar
+// }
+
+// func (c *cookieRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+// 	defer func() {
+// 		if err := c.jar.Save(); err != nil {
+// 			slog.Info("Failed to save cookies", "err", err)
+// 		} else {
+// 			slog.Info("Cookied saved successfully")
+// 		}
+// 	}()
+// 	return c.RoundTripper.RoundTrip(req)
+// }
+
+// TODO: Remove
+type logCookieJar struct {
+	*cookiejar.Jar
+}
+
+func (c *logCookieJar) SetCookies(u *url.URL, cookies []*http.Cookie) {
+	slog.Info("SetCookies", "url", u.String(), "cookies", cookies)
+	c.Jar.SetCookies(u, cookies)
+	c.Jar.Save()
+	slog.Info("GetCookies after SetCookies", "url", u.String(), "cookies", c.Jar.Cookies(u))
+}
+
+func (c *logCookieJar) Cookies(u *url.URL) []*http.Cookie {
+	cookies := c.Jar.Cookies(u)
+	slog.Info("GetCookies", "url", u.String(), "cookies", cookies)
+	return cookies
 }
