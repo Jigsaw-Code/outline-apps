@@ -13,7 +13,6 @@
 // limitations under the License.
 
 import {invokeGoMethod, registerCallback} from './go_plugin';
-import {FirstHopAndTunnelConfigJson} from '../src/www/app/outline_server_repository/config';
 import {
   StartRequestJson,
   TunnelStatus,
@@ -31,12 +30,13 @@ interface VpnConfig {
   protectionMark: number;
 }
 
-interface EstablishVpnRequest extends FirstHopAndTunnelConfigJson {
+interface EstablishVpnRequestJson {
   vpn: VpnConfig;
+  client: string;
 }
 
 export async function establishVpn(tsRequest: StartRequestJson) {
-  const goRequest: EstablishVpnRequest = {
+  const goRequest: EstablishVpnRequestJson = {
     // The following VPN configuration ensures that the new routing can co-exist with any legacy Outline routings (e.g. AppImage).
     vpn: {
       id: tsRequest.id,
@@ -63,8 +63,8 @@ export async function establishVpn(tsRequest: StartRequestJson) {
       protectionMark: 0x711e,
     },
 
-    // The actual tunnel config
-    ...tsRequest.config,
+    // The actual client config
+    client: tsRequest.client,
   };
 
   // The request looks like:
