@@ -44,14 +44,27 @@ public class SwiftBridge: NSObject {
     return settings
   }
 
-  /** Creates a new Outline Client based on the given transportConfig. */
-  public static func newClient(transportConfig: String) -> OutlineNewClientResult {
-    let result = OutlineNewClient(transportConfig)
-    if result?.error != nil {
-      DDLogInfo("Failed to construct client: \(String(describing: result?.error)).")
+    /** Creates a new Outline Client based on the given transportConfig. */
+    public static func newClient(id: String, transportConfig: String) -> OutlineNewClientResult {
+        var dataDir = ""
+        do {
+            dataDir = try FileManager.default.url(
+                for: .applicationSupportDirectory,
+                in: .userDomainMask,
+                appropriateFor: nil,
+                create: true
+            ).path
+        } catch {
+            print("Error finding Application Support directory: \(error)")
+        }
+        let result = OutlineNewClient(id, dataDir, transportConfig)
+        if result?.error != nil {
+            DDLogInfo(
+                "Failed to construct client: \(String(describing: result?.error))."
+            )
+        }
+        return result!
     }
-    return result!
-  }
 
   /**
    Creates a NSError (of `OutlineError.errorDomain`) from the `OutlineError.internalError`.

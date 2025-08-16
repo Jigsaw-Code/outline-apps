@@ -228,7 +228,8 @@ public class VpnTunnelService extends VpnService {
       this.tunFd = null;
     }
 
-    final NewClientResult clientResult = Outline.newClient(config.transportConfig);
+    String dataDir = this.getFilesDir().getAbsolutePath();
+    final NewClientResult clientResult = Outline.newClient(config.id, dataDir, config.transportConfig);
     if (clientResult.getError() != null) {
       LOG.log(Level.WARNING, "Failed to create Outline Client", clientResult.getError());
       tearDownActiveTunnel();

@@ -19,6 +19,8 @@ import (
 	"encoding/json"
 	"errors"
 	"log/slog"
+	"os"
+	"path"
 	"strconv"
 	"sync"
 
@@ -61,7 +63,16 @@ func (api *vpnAPI) Establish(configStr string) (err error) {
 
 	tcp := newFWMarkProtectedTCPDialer(conf.VPN.ProtectionMark)
 	udp := newFWMarkProtectedUDPDialer(conf.VPN.ProtectionMark)
-	client, err := NewClientWithBaseDialers(conf.Client, tcp, udp)
+	userDir, err := os.UserConfigDir()
+	if err != nil {
+		return perrs.PlatformError{
+			Code:    perrs.InternalError,
+			Message: "failed to get user config directory",
+			Cause:   perrs.ToPlatformError(err),
+		}
+	}
+	dataDir := path.Join(userDir, "org.getoutline.client")
+	client, err := NewClientWithBaseDialers(conf.VPN.ID, dataDir, conf.Client, tcp, udp)
 	if err != nil {
 		return err
 	}
