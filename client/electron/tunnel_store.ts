@@ -83,5 +83,5 @@ export class TunnelStore {
 
 // Returns whether `tunnel` and its configuration contain all the required fields.
 function isRequestValid(request: StartRequestJson) {
-  return request.id && request.config;
+  return request.id && request.client;
 }

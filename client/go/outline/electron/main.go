@@ -153,6 +153,15 @@ func main() {
 		os.Exit(exitCodeSuccess)
 	}
 
+	if err := client.StartSession(); err != nil {
+		printErrorAndExit(platerrors.PlatformError{
+			Code:    platerrors.SetupSystemVPNFailed,
+			Message: "failed start backend client",
+			Cause:   platerrors.ToPlatformError(err),
+		}, exitCodeFailure)
+	}
+	defer client.EndSession()
+
 	// Open TUN device
 	dnsResolvers := strings.Split(*args.tunDNS, ",")
 	tunDevice, err := tun.OpenTunDevice(*args.tunName, *args.tunAddr, *args.tunGw, *args.tunMask, dnsResolvers, persistTun)

@@ -20,7 +20,7 @@ export class CordovaVpnApi implements VpnApi {
   constructor() {}
 
   start(request: StartRequestJson) {
-    if (!request.config) {
+    if (!request.client) {
       throw new errors.IllegalServerConfiguration();
     }
     return pluginExec<void>(
@@ -28,7 +28,7 @@ export class CordovaVpnApi implements VpnApi {
       // TODO(fortuna): Make the Cordova plugin take a StartRequestJson.
       request.id,
       request.name,
-      request.config.client
+      request.client
     );
   }
 
