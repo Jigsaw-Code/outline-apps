@@ -41,7 +41,6 @@ import {installRoutingServices, RoutingDaemon} from './routing_service';
 import {TunnelStore} from './tunnel_store';
 import {closeVpn, establishVpn, onVpnStateChanged} from './vpn_service';
 import {VpnTunnel} from './vpn_tunnel';
-import * as config from '../src/www/app/outline_server_repository/config';
 import {
   StartRequestJson,
   TunnelStatus,
@@ -347,20 +346,21 @@ async function tearDownAutoLaunch() {
 // Factory function to create a VPNTunnel instance backed by a network stack
 // specified at build time.
 async function createVpnTunnel(
-  tunnelConfig: config.FirstHopAndTunnelConfigJson,
+  firstHop: string,
+  clientConfig: string,
   isAutoConnect: boolean
 ): Promise<VpnTunnel> {
   // We must convert the host from a potential "hostname" to an "IP" address
   // because startVpn will add a routing table entry that prefixed with this
   // host (e.g. "<host>/32"), therefore <host> must be an IP address.
   // TODO: make sure we resolve it in the native code
-  const {host} = net.splitHostPort(tunnelConfig.firstHop);
+  const {host} = net.splitHostPort(firstHop);
   if (!host) {
     throw new errors.IllegalServerConfiguration('host is missing');
   }
   const hostIp = await lookupIp(host);
   const routing = new RoutingDaemon(hostIp || '', isAutoConnect);
-  const tunnel = new GoVpnTunnel(routing, tunnelConfig.client);
+  const tunnel = new GoVpnTunnel(routing, clientConfig);
   routing.onNetworkChange = tunnel.networkChanged.bind(tunnel);
   return tunnel;
 }
@@ -378,7 +378,11 @@ async function startVpn(request: StartRequestJson, isAutoConnect: boolean) {
     throw new Error('already connected');
   }
 
-  currentTunnel = await createVpnTunnel(request.config, isAutoConnect);
+  currentTunnel = await createVpnTunnel(
+    request.firstHop,
+    request.client,
+    isAutoConnect
+  );
   if (debugMode) {
     currentTunnel.enableDebugMode();
   }

@@ -1,4 +1,4 @@
-// Copyright 2024 The Outline Authors
+// Copyright 2025 The Outline Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,26 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//go:build !linux
-
-package outline
+package useragent
 
 import (
-	"errors"
+	"fmt"
+	"runtime"
 )
 
-type vpnAPI struct{}
-
-func getSingletonVPNAPI() *vpnAPI {
-	return nil
+func GetOutlineUserAgent() string {
+	// TODO: Add Outline Client version.
+	return fmt.Sprintf("Outline (%s; %s; %s)", runtime.GOOS, runtime.GOARCH, runtime.Version())
 }
-
-func (api *vpnAPI) Establish(configStr string) (err error) {
-	return errors.ErrUnsupported
-}
-
-func (api *vpnAPI) Close() error {
-	return errors.ErrUnsupported
-}
-
-func setVPNStateChangeListener(_ string) error { return errors.ErrUnsupported }
