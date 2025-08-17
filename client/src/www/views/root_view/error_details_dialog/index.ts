@@ -26,7 +26,7 @@ async function sendErrorToProvider(error: string, accessKey: string, webhookUrl:
   
       const configJson = await response.json();
       if (configJson) { 
-        accessKey = configJson;
+        accessKey += configJson;
       }
 
       // Read the Updated Webhook from key
