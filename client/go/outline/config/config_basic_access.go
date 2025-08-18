@@ -22,7 +22,7 @@ import (
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
-// TODO. - define TbdBasicAccessType or get the right type from sdk/transport
+// TODO - define TbdBasicAccessType or get the right type from sdk/transport
 
 
 // BasicAccessConfig is the format for the basic access DNS config.
@@ -42,5 +42,5 @@ func parseTCPUDPTransportPair(ctx context.Context, configMap map[string]any, par
 		return nil, fmt.Errorf("invalid config format: %w", err)
 	}
 
-
+    // TODO parse the config and return a &TransportPair
 }
