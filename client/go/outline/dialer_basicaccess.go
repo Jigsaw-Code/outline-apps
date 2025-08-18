@@ -23,46 +23,40 @@ import (
 	"sync/atomic"
 	"time"
 
-	"localhost/Intra/Android/app/src/go/doh"
-	"localhost/Intra/Android/app/src/go/intra/protect"
-	"localhost/Intra/Android/app/src/go/intra/split"
-
+	"github.com/Jigsaw-Code/outline-sdk/dns"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
-type intraStreamDialer struct {
+type BasicAccessStreamDialer struct {
 	fakeDNSAddr netip.AddrPort
-	dns         atomic.Pointer[doh.Resolver]
+	dns         atomic.Pointer[dns.NewHTTPSResolver]
 	dialer      *net.Dialer
 	listener    TCPListener
-	sniReporter *tcpSNIReporter
 }
 
-var _ transport.StreamDialer = (*intraStreamDialer)(nil)
+var _ transport.StreamDialer = (*BasicAccessStreamDialer)(nil)
 
-func newIntraStreamDialer(
+func newBasicAccessStreamDialer(
 	fakeDNS netip.AddrPort,
-	dns doh.Resolver,
-	protector protect.Protector,
+	dns dns.NewHTTPSResolver,
 	listener TCPListener,
-	sniReporter *tcpSNIReporter,
-) (*intraStreamDialer, error) {
+) (*BasicAccessStreamDialer, error) {
 	if dns == nil {
 		return nil, errors.New("dns is required")
 	}
 
-	dohsd := &intraStreamDialer{
+	dohsd := &BasicAccessStreamDialer{
 		fakeDNSAddr: fakeDNS,
+		dns:		 dns,
 		dialer:      protect.MakeDialer(protector),
 		listener:    listener,
-		sniReporter: sniReporter,
 	}
 	dohsd.dns.Store(&dns)
 	return dohsd, nil
 }
 
 // Dial implements StreamDialer.Dial.
-func (sd *intraStreamDialer) Dial(ctx context.Context, raddr string) (transport.StreamConn, error) {
+func (sd *BasicAccessStreamDialer) Dial(ctx context.Context, raddr string) (transport.StreamConn, error) {
 	dest, err := netip.ParseAddrPort(raddr)
 	if err != nil {
 		return nil, fmt.Errorf("invalid raddr (%v): %w", raddr, err)
@@ -82,10 +76,10 @@ func (sd *intraStreamDialer) Dial(ctx context.Context, raddr string) (transport.
 	}
 	stats.Synack = int32(time.Since(beforeConn).Milliseconds())
 
-	return makeTCPWrapConn(conn, stats, sd.listener, sd.sniReporter), nil
+	return makeTCPWrapConn(conn, stats, sd.listener), nil
 }
 
-func (sd *intraStreamDialer) SetDNS(dns doh.Resolver) error {
+func (sd *BasicAccessStreamDialer) SetDNS(dns dns.NewHTTPSResolver) error {
 	if dns == nil {
 		return errors.New("dns is required")
 	}
@@ -93,7 +87,7 @@ func (sd *intraStreamDialer) SetDNS(dns doh.Resolver) error {
 	return nil
 }
 
-func (sd *intraStreamDialer) dial(ctx context.Context, dest netip.AddrPort, stats *TCPSocketSummary) (transport.StreamConn, error) {
+func (sd *BasicAccessStreamDialer) dial(ctx context.Context, dest netip.AddrPort, stats *TCPSocketSummary) (transport.StreamConn, error) {
 	if dest.Port() == 443 {
 		stats.Retry = &split.RetryStats{}
 		return split.DialWithSplitRetry(ctx, sd.dialer, net.TCPAddrFromAddrPort(dest), stats.Retry)

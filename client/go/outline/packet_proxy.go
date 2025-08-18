@@ -23,16 +23,14 @@ import (
 	"sync/atomic"
 	"time"
 
-	"localhost/Intra/Android/app/src/go/doh"
-	"localhost/Intra/Android/app/src/go/intra/protect"
-
+	"github.com/Jigsaw-Code/outline-sdk/dns"
 	"github.com/Jigsaw-Code/outline-sdk/network"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
 type intraPacketProxy struct {
 	fakeDNSAddr netip.AddrPort
-	dns         atomic.Pointer[doh.Resolver]
+	dns         atomic.Pointer[dns.NewHTTPSResolver]
 	proxy       network.PacketProxy
 	listener    UDPListener
 	ctx         context.Context
@@ -41,14 +39,14 @@ type intraPacketProxy struct {
 var _ network.PacketProxy = (*intraPacketProxy)(nil)
 
 func newIntraPacketProxy(
-	ctx context.Context, fakeDNS netip.AddrPort, dns doh.Resolver, protector protect.Protector, listener UDPListener,
+	ctx context.Context, fakeDNS netip.AddrPort, dns dns.NewHTTPSResolver, listener UDPListener,
 ) (*intraPacketProxy, error) {
 	if dns == nil {
 		return nil, errors.New("dns is required")
 	}
 
 	pl := &transport.UDPPacketListener{
-		ListenConfig: *protect.MakeListenConfig(protector),
+		ListenConfig: &net.ListenConfig{},
 	}
 
 	// RFC 4787 REQ-5 requires a timeout no shorter than 5 minutes.
@@ -88,7 +86,7 @@ func (p *intraPacketProxy) NewSession(resp network.PacketResponseReceiver) (netw
 	}, nil
 }
 
-func (p *intraPacketProxy) SetDNS(dns doh.Resolver) error {
+func (p *intraPacketProxy) SetDNS(dns.NewHTTPSResolver) error {
 	if dns == nil {
 		return errors.New("dns is required")
 	}
