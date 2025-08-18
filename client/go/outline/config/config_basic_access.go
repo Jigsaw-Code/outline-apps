@@ -22,25 +22,30 @@ import (
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
-// TODO - define TbdBasicAccessType or get the right type from sdk/transport
-
 
 // BasicAccessConfig is the format for the basic access DNS config.
 type BasicAccessConfig struct {
 	DnsResolvers configyaml.ConfigNode // list
 }
 
-func NewBasicAccessDNSResolverParser(parsePL configyaml.ParseFunc[*PacketListener]) func(ctx context.Context, input map[string]any) (*TbdBasicAccessType, error) {
-	return func(ctx context.Context, input map[string]any) (*TbdBasicAccessType, error) {
-		return parseBasicAccessDNSResolvers(ctx, input, parseSD, parsePL)
+func NewBasicAccessDNSResolverParser() func(ctx context.Context, input map[string]any) (*TransportPair, error) {
+	return func(ctx context.Context, input map[string]any) (*TransportPair, error) {
+		return parseBasicAccessDNSResolvers(ctx, input)
 	}
 }
 
-func parseTCPUDPTransportPair(ctx context.Context, configMap map[string]any, parsePL configyaml.ParseFunc[*PacketListener]) (*TbdBasicAccessType, error) {
+func parseBasicAccessDNSResolvers(ctx context.Context, configMap map[string]any) (*TransportPair, error) {
 	var config BasicAccessConfig
 	if err := configyaml.MapToAny(configMap, &config); err != nil {
 		return nil, fmt.Errorf("invalid config format: %w", err)
 	}
 
-    // TODO parse the config and return a &TransportPair
+    // TODO parse the config and return a *TransportPair
+	// with the default streamdialer/packetdialer, but DNS intercepted and rerouted.
+	// to the given DNS resolvers selected at runtime in a race.
+
+	return &TransportPair{
+		StreamDialer:   sd,
+		PacketListener: pl,
+	}, nil
 }
