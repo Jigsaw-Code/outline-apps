@@ -18,6 +18,12 @@ import {
   TunnelStatus,
 } from '../src/www/app/outline_server_repository/vpn';
 
+const TUN2SOCKS_FAKE_DNS = '10.111.222.2';
+
+// Cloudflare, Quad9 and FAKE_DNS resolvers.
+const DNS_RESOLVERS = ['1.1.1.1', '9.9.9.9', TUN2SOCKS_FAKE_DNS];
+
+
 // TODO: Separate this config into LinuxVpnConfig and WindowsVpnConfig. Some fields may share.
 interface VpnConfig {
   id: string;
@@ -53,9 +59,8 @@ export async function establishVpn(tsRequest: StartRequestJson) {
       // https://github.com/Jigsaw-Code/outline-apps/blob/client/linux/v1.14.0/client/electron/linux_proxy_controller/outline_proxy_controller.h#L204
       ipAddress: '10.0.85.5',
 
-      // DNS server list, being compatible with old code:
-      // https://github.com/Jigsaw-Code/outline-apps/blob/client/linux/v1.14.0/client/electron/linux_proxy_controller/outline_proxy_controller.h#L207
-      dnsServers: ['9.9.9.9'],
+      // DNS server list
+      dnsServers: DNS_RESOLVERS,
 
       // Outline magic numbers, 7113 and 0x711E visually resembles "T L I E" in "ouTLInE"
       routingTableId: 7113,

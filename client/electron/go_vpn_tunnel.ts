@@ -30,9 +30,10 @@ const TUN2SOCKS_TAP_DEVICE_NAME = IS_LINUX ? 'outline-tun0' : 'outline-tap0';
 const TUN2SOCKS_TAP_DEVICE_IP = '10.0.85.2';
 const TUN2SOCKS_VIRTUAL_ROUTER_IP = '10.0.85.1';
 const TUN2SOCKS_VIRTUAL_ROUTER_NETMASK = '255.255.255.0';
+const TUN2SOCKS_FAKE_DNS = '10.111.222.2';
 
-// Cloudflare and Quad9 resolvers.
-const DNS_RESOLVERS = ['1.1.1.1', '9.9.9.9'];
+// Cloudflare, Quad9 and FAKE_DNS resolvers.
+const DNS_RESOLVERS = ['1.1.1.1', '9.9.9.9', TUN2SOCKS_FAKE_DNS];
 
 // Establishes a full-system VPN with the help of Outline's routing daemon and child process
 // outline-go-tun2socks. The routing service modifies the routing table so that the TAP device
@@ -301,7 +302,7 @@ class GoTun2socks {
     args: string[]
   ): Promise<void> {
     // ./tun2socks.exe \
-    //   -tunName outline-tap0 -tunDNS 1.1.1.1,9.9.9.9 \
+    //   -tunName outline-tap0 -tunDNS 1.1.1.1,9.9.9.9,10.111.222.2 \
     //   -tunAddr 10.0.85.2 -tunGw 10.0.85.1 -tunMask 255.255.255.0 \
     //   -client '{ "transport:" {"host": "127.0.0.1", "port": 1080, "password": "mypassword", "cipher": "chacha20-ietf-poly1035"} }' \
     //   [-dnsFallback] [-checkConnectivity] [-proxyPrefix]

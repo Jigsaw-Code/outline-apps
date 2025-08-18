@@ -38,8 +38,8 @@ public class SwiftBridge: NSObject {
     ipv4Settings.excludedRoutes = getExcludedIpv4Routes()
     settings.ipv4Settings = ipv4Settings
 
-    // Configure with Cloudflare, Quad9, and OpenDNS resolver addresses.
-    settings.dnsSettings = NEDNSSettings(servers: ["1.1.1.1", "9.9.9.9", "208.67.222.222", "208.67.220.220"])
+    // Configure with Cloudflare, Quad9, OpenDNS, and our FakeDNS resolver addresses.
+    settings.dnsSettings = NEDNSSettings(servers: ["1.1.1.1", "9.9.9.9", "208.67.222.222", "208.67.220.220", "10.111.222.2"])
 
     return settings
   }
