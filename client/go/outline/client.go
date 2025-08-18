@@ -17,16 +17,9 @@ package outline
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log/slog"
 	"net"
-	"net/http"
-	"net/url"
-	"os"
 	"path"
-	"strings"
-
-	cookiejar "github.com/juju/persistent-cookiejar"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/configyaml"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/config"
@@ -75,8 +68,8 @@ func (c *Client) EndSession() error {
 	return nil
 }
 
-// ClientConfig is used to create the Client.
-type ClientConfig struct {
+// ProviderClientConfig is the session config from the service provider.
+type ProviderClientConfig struct {
 	Transport configyaml.ConfigNode
 	Reporter  configyaml.ConfigNode
 }
@@ -89,29 +82,34 @@ type NewClientResult struct {
 	Error  *platerrors.PlatformError
 }
 
-// NewClient creates a new Outline client from a configuration string.
-func NewClient(keyID string, dataDir string, clientConfig string) *NewClientResult {
-	tcpDialer := transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
-	udpDialer := transport.UDPDialer{}
-	client, err := NewClientWithBaseDialers(keyID, dataDir, clientConfig, &tcpDialer, &udpDialer)
+// ClientConfig is used to create a session Client.
+type ClientConfig struct {
+	KeyID           string
+	DataDir         string
+	TransportParser *configyaml.TypeParser[*config.TransportPair]
+}
+
+// NewClient creates a new session client. It's used by the native code, so it returns a NewClientResult.
+func (c *ClientConfig) NewClient(keyID string, providerClientConfigText string) *NewClientResult {
+	client, err := c.NewClientGo(keyID, providerClientConfigText)
 	if err != nil {
 		return &NewClientResult{Error: platerrors.ToPlatformError(err)}
 	}
 	return &NewClientResult{Client: client}
 }
 
-// TODO(fortuna): Refactor into a ClientOptions.New(configText) (*Client, error).
-func NewClientWithBaseDialers(keyID string, dataDir string, clientConfigText string, tcpDialer transport.StreamDialer, udpDialer transport.PacketDialer) (*Client, error) {
-	slog.Info("New Client", "keyID", keyID, "dataDir", dataDir)
-	// if dataDir == "" {
-	// 	return nil, &platerrors.PlatformError{
-	// 		Code:    platerrors.InternalError,
-	// 		Message: "data directory missing",
-	// 	}
-	// }
+// NewClientGo creates a new session client. Intended to be used instead of NewClient in Go code.
+func (c *ClientConfig) NewClientGo(keyID string, providerClientConfigText string) (*Client, error) {
+	// Make a copy of the config so we can change it.
+	sessionConfig := *c
+	if sessionConfig.TransportParser == nil {
+		tcpDialer := &transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
+		udpDialer := &transport.UDPDialer{}
+		sessionConfig.TransportParser = config.NewDefaultTransportProvider(tcpDialer, udpDialer)
+	}
 
-	var clientConfig ClientConfig
-	if err := yaml.Unmarshal([]byte(clientConfigText), &clientConfig); err != nil {
+	var providerClientConfig ProviderClientConfig
+	if err := yaml.Unmarshal([]byte(providerClientConfigText), &providerClientConfig); err != nil {
 		return nil, &platerrors.PlatformError{
 			Code:    platerrors.InvalidConfig,
 			Message: "config is not valid YAML",
@@ -119,7 +117,7 @@ func NewClientWithBaseDialers(keyID string, dataDir string, clientConfigText str
 		}
 	}
 
-	transportPair, err := config.NewDefaultTransportProvider(tcpDialer, udpDialer).Parse(context.Background(), clientConfig.Transport)
+	transportPair, err := sessionConfig.TransportParser.Parse(context.Background(), providerClientConfig.Transport)
 	if err != nil {
 		if errors.Is(err, errors.ErrUnsupported) {
 			return nil, &platerrors.PlatformError{
@@ -152,32 +150,12 @@ func NewClientWithBaseDialers(keyID string, dataDir string, clientConfigText str
 
 	client := &Client{sd: transportPair.StreamDialer, pl: transportPair.PacketListener}
 	// TODO: figure out a better way to handle parse calls.
-	if dataDir != "" && clientConfig.Reporter != nil {
-		serviceDir := path.Join(dataDir, "services", keyID)
-		// Create serviceDir
-		if err := os.MkdirAll(serviceDir, 0700); err != nil {
-			return nil, fmt.Errorf("failed to create service data directory: %v", err)
-		}
+	if providerClientConfig.Reporter != nil {
+		// TODO(fortuna): encapsulate service storage.
+		serviceDir := path.Join(c.DataDir, "services", c.KeyID)
 		cookieFilename := path.Join(serviceDir, "cookies.json")
-		cookieJar, err := cookiejar.New(&cookiejar.Options{
-			Filename: cookieFilename,
-		})
-		if err != nil {
-			return nil, fmt.Errorf("failed to create cookie jar: %v", err)
-		}
-		httpClient := &http.Client{
-			Transport: &http.Transport{
-				DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
-					if strings.HasPrefix(network, "tcp") {
-						return client.DialStream(ctx, addr)
-					} else {
-						return nil, fmt.Errorf("protocol not supported: %v", network)
-					}
-				},
-			},
-			Jar: &logCookieJar{cookieJar},
-		}
-		reporter, err := NewReporterParser(httpClient).Parse(context.Background(), clientConfig.Reporter)
+
+		reporter, err := NewReporterParser(cookieFilename, client).Parse(context.Background(), providerClientConfig.Reporter)
 		if err != nil {
 			return nil, &platerrors.PlatformError{
 				Code:    platerrors.InvalidConfig,
@@ -191,45 +169,11 @@ func NewClientWithBaseDialers(keyID string, dataDir string, clientConfigText str
 	return client, nil
 }
 
-func NewReporterParser(httpClient *http.Client) *configyaml.TypeParser[reporting.Reporter] {
+func NewReporterParser(cookiesFilename string, streamDialer transport.StreamDialer) *configyaml.TypeParser[reporting.Reporter] {
 	parser := configyaml.NewTypeParser(func(ctx context.Context, input configyaml.ConfigNode) (reporting.Reporter, error) {
 		return nil, errors.New("parser not specified")
 	})
 	parser.RegisterSubParser("first-supported", config.NewFirstSupportedSubParser(parser.Parse))
-	parser.RegisterSubParser("http", reporting.NewHTTPReporterSubParser(httpClient))
+	parser.RegisterSubParser("http", reporting.NewHTTPReporterConfigParser(cookiesFilename, streamDialer))
 	return parser
-}
-
-// type cookieRoundTripper struct {
-// 	http.RoundTripper
-// 	jar *cookiejar.Jar
-// }
-
-// func (c *cookieRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-// 	defer func() {
-// 		if err := c.jar.Save(); err != nil {
-// 			slog.Info("Failed to save cookies", "err", err)
-// 		} else {
-// 			slog.Info("Cookied saved successfully")
-// 		}
-// 	}()
-// 	return c.RoundTripper.RoundTrip(req)
-// }
-
-// TODO: Remove
-type logCookieJar struct {
-	*cookiejar.Jar
-}
-
-func (c *logCookieJar) SetCookies(u *url.URL, cookies []*http.Cookie) {
-	slog.Info("SetCookies", "url", u.String(), "cookies", cookies)
-	c.Jar.SetCookies(u, cookies)
-	c.Jar.Save()
-	slog.Info("GetCookies after SetCookies", "url", u.String(), "cookies", c.Jar.Cookies(u))
-}
-
-func (c *logCookieJar) Cookies(u *url.URL) []*http.Cookie {
-	cookies := c.Jar.Cookies(u)
-	slog.Info("GetCookies", "url", u.String(), "cookies", cookies)
-	return cookies
 }

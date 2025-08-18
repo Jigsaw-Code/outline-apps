@@ -40,7 +40,7 @@ type ProviderErrorConfig struct {
 
 // ProviderTunnelConfig is the config to fully configure the VPN.
 type ProviderTunnelConfig struct {
-	ClientConfig `yaml:",inline"`
+	ProviderClientConfig `yaml:",inline"`
 }
 
 // firstHopAndTunnelConfigJSON must match FirstHopAndTunnelConfigJson in config.ts.
