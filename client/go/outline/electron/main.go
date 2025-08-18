@@ -28,6 +28,7 @@ import (
 	"time"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline"
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/config"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/tun2socks"
 	_ "github.com/eycorsican/go-tun2socks/common/log/simple" // Register a simple logger.
@@ -66,6 +67,7 @@ var args struct {
 
 	adapterIndex *int
 
+	keyID        *string
 	clientConfig *string
 
 	logLevel          *string
@@ -100,6 +102,7 @@ func main() {
 	args.adapterIndex = flag.Int("adapterIndex", -1, "Windows network adapter index for proxy connection")
 
 	// Proxy client config
+	args.keyID = flag.String("keyID", "", "The ID of the key being used")
 	args.clientConfig = flag.String("client", "", "A JSON object containing the client config, UTF8-encoded")
 
 	// Check connectivity of clientConfig and exit
@@ -122,32 +125,29 @@ func main() {
 		printErrorAndExit(platerrors.PlatformError{Code: platerrors.InvalidConfig, Message: "client config missing"}, exitCodeFailure)
 	}
 
-	var client *outline.Client
+	userDir, err := os.UserConfigDir()
+	if err != nil {
+		printErrorAndExit(platerrors.PlatformError{
+			Code:    platerrors.InternalError,
+			Message: "failed to get user config directory",
+			Cause:   platerrors.ToPlatformError(err),
+		}, exitCodeFailure)
+	}
+	clientConfig := &outline.ClientConfig{
+		DataDir: path.Join(userDir, "org.getoutline.client"),
+	}
 	if *args.adapterIndex >= 0 {
 		tcp, udp, err := newBaseDialersWithAdapter(*args.adapterIndex)
 		if err != nil {
 			printErrorAndExit(err, exitCodeFailure)
 		}
-		client, err = outline.NewClientWithBaseDialers(*args.clientConfig, tcp, udp)
-		if err != nil {
-			printErrorAndExit(err, exitCodeFailure)
-		}
-	} else {
-		userDir, err := os.UserConfigDir()
-		if err != nil {
-			printErrorAndExit(platerrors.PlatformError{
-				Code:    platerrors.InternalError,
-				Message: "failed to get user config directory",
-				Cause:   platerrors.ToPlatformError(err),
-			}, exitCodeFailure)
-		}
-		dataDir := path.Join(userDir, "org.getoutline.client")
-		result := outline.NewClient("TODO", dataDir, *args.clientConfig)
-		if result.Error != nil {
-			printErrorAndExit(result.Error, exitCodeFailure)
-		}
-		client = result.Client
+		clientConfig.TransportParser = config.NewDefaultTransportProvider(tcp, udp)
 	}
+	result := clientConfig.New(*args.keyID, *args.clientConfig)
+	if result.Error != nil {
+		printErrorAndExit(result.Error, exitCodeFailure)
+	}
+	client := result.Client
 
 	if *args.checkConnectivity {
 		result := outline.CheckTCPAndUDPConnectivity(client)

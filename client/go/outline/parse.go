@@ -123,7 +123,7 @@ func doParseTunnelConfig(input string) *InvokeMethodResult {
 		}
 	}
 
-	result := NewClient("", "", string(clientConfigBytes))
+	result := (&ClientConfig{}).New("", string(clientConfigBytes))
 	if result.Error != nil {
 		return &InvokeMethodResult{
 			Error: result.Error,

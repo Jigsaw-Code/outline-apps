@@ -84,14 +84,13 @@ type NewClientResult struct {
 
 // ClientConfig is used to create a session Client.
 type ClientConfig struct {
-	KeyID           string
 	DataDir         string
 	TransportParser *configyaml.TypeParser[*config.TransportPair]
 }
 
 // NewClient creates a new session client. It's used by the native code, so it returns a NewClientResult.
-func (c *ClientConfig) NewClient(keyID string, providerClientConfigText string) *NewClientResult {
-	client, err := c.NewClientGo(keyID, providerClientConfigText)
+func (c *ClientConfig) New(keyID string, providerClientConfigText string) *NewClientResult {
+	client, err := c.NewGo(keyID, providerClientConfigText)
 	if err != nil {
 		return &NewClientResult{Error: platerrors.ToPlatformError(err)}
 	}
@@ -99,7 +98,7 @@ func (c *ClientConfig) NewClient(keyID string, providerClientConfigText string) 
 }
 
 // NewClientGo creates a new session client. Intended to be used instead of NewClient in Go code.
-func (c *ClientConfig) NewClientGo(keyID string, providerClientConfigText string) (*Client, error) {
+func (c *ClientConfig) NewGo(keyID string, providerClientConfigText string) (*Client, error) {
 	// Make a copy of the config so we can change it.
 	sessionConfig := *c
 	if sessionConfig.TransportParser == nil {
@@ -152,7 +151,7 @@ func (c *ClientConfig) NewClientGo(keyID string, providerClientConfigText string
 	// TODO: figure out a better way to handle parse calls.
 	if providerClientConfig.Reporter != nil {
 		// TODO(fortuna): encapsulate service storage.
-		serviceDir := path.Join(c.DataDir, "services", c.KeyID)
+		serviceDir := path.Join(c.DataDir, "services", keyID)
 		cookieFilename := path.Join(serviceDir, "cookies.json")
 
 		reporter, err := NewReporterParser(cookieFilename, client).Parse(context.Background(), providerClientConfig.Reporter)
