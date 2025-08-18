@@ -38,7 +38,7 @@ func NewDialEndpointSubParser[ConnType any](parse configyaml.ParseFunc[*Dialer[C
 	}
 }
 
-func parseDirectDialerEndpoint[ConnType any](ctx context.Context, config any, newDialer configyaml.ParseFunc[*Dialer[ConnType]]) (*Endpoint[ConnType], error) {
+func parseDirectDialerEndpoint[ConnType any](ctx context.Context, config configyaml.ConfigNode, newDialer configyaml.ParseFunc[*Dialer[ConnType]]) (*Endpoint[ConnType], error) {
 	if config == nil {
 		return nil, errors.New("endpoint config cannot be nil")
 	}
@@ -103,14 +103,16 @@ func parseEndpointConfig(node configyaml.ConfigNode) (*DialEndpointConfig, error
 }
 
 func toDialEndpointConfig(node configyaml.ConfigNode) (*DialEndpointConfig, error) {
-	switch typed := node.(type) {
+	var configValue any
+	node.ToValue(configValue)
+	switch typed := configValue.(type) {
 	case string:
 		return &DialEndpointConfig{Address: typed}, nil
 
 	case map[string]any:
 		// TODO: Make it type-based
 		var config DialEndpointConfig
-		if err := configyaml.MapToAny(typed, &config); err != nil {
+		if err := node.ToValue(&config); err != nil {
 			return nil, err
 		}
 		return &config, nil

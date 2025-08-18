@@ -26,20 +26,20 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func parseShadowsocksString(config string) (transport.StreamDialer, error) {
+func parseFakeShadowsocksString(config string) (transport.StreamDialer, error) {
 	return transport.FuncStreamDialer(func(ctx context.Context, addr string) (transport.StreamConn, error) {
 		return nil, nil
 	}), nil
 }
 
-type shadowsocksConfig[EndpointType any] struct {
+type fakeShadowsocksConfig[EndpointType any] struct {
 	Endpoint EndpointType
 	Cipher   string
 	Secret   string
 }
 
 func TestParse(t *testing.T) {
-	newShadowsocksStreamDialer := func(ctx context.Context, config shadowsocksConfig[transport.StreamEndpoint]) (transport.StreamDialer, error) {
+	newShadowsocksStreamDialer := func(ctx context.Context, config fakeShadowsocksConfig[transport.StreamEndpoint]) (transport.StreamDialer, error) {
 		require.NotNil(t, config.Endpoint)
 		require.IsType(t, (*transport.StreamDialerEndpoint)(nil), config.Endpoint)
 		require.Equal(t, "chacha20-poly1305", config.Cipher)
@@ -77,7 +77,7 @@ func TestParse(t *testing.T) {
 		}
 		switch typed := node.(type) {
 		case *ast.StringNode:
-			return parseShadowsocksString(typed.Value)
+			return parseFakeShadowsocksString(typed.Value)
 
 		case *ast.MappingNode:
 			subType := ""
@@ -99,7 +99,7 @@ func TestParse(t *testing.T) {
 					return nil, fmt.Errorf("%v missing and failed to parse as shadowsocks: %w", ConfigTypeKey, err)
 				}
 				return sd, nil
-			case "shadowsocks":
+			case "fake-shadowsocks":
 				// TODO: use registration and hide ParseWithConfig.
 				// Something like:
 				// sdParser.RegisterType("shadowsocks", newShadowsocksStreamDialer, WithTypeParser(seParser))
@@ -116,7 +116,7 @@ func TestParse(t *testing.T) {
 	// TODO: register ssParser with sdParser as subtype "shadowsocks"
 	// sdParser.RegisterSubtype("shadowsocks", ssParser)
 	config := []byte(`
-$type: shadowsocks
+$type: fake-shadowsocks
 endpoint: example.com:443
 cipher: chacha20-poly1305
 secret: SECRET`)
@@ -145,7 +145,7 @@ func TestParse2(t *testing.T) {
 	// Replace with NewInterfaceParser()
 	parseSE := NewConfigParser(newStreamEndpointFromConfig)
 
-	newShadowsocksStreamDialerFromConfig := func(ctx context.Context, input shadowsocksConfig[transport.StreamEndpoint]) (transport.StreamDialer, error) {
+	newShadowsocksStreamDialerFromConfig := func(ctx context.Context, input fakeShadowsocksConfig[transport.StreamEndpoint]) (transport.StreamDialer, error) {
 		require.Equal(t, "chacha20-poly1305", input.Cipher)
 		require.Equal(t, "SECRET", input.Secret)
 		return fakeDialer, nil
@@ -166,7 +166,8 @@ func TestParse2(t *testing.T) {
 			}
 		}
 		switch input.Type {
-		case "shadowsocks":
+		case "fake-shadowsocks":
+			// TODO: This fails because InterfaceConfig doesn't have field "endpoint".
 			return parseShadowsocksStreamDialer(ctx, valueYaml)
 
 		default:
@@ -176,7 +177,7 @@ func TestParse2(t *testing.T) {
 	parseSD := NewConfigParser(newStreamDialerFromConfig)
 
 	streamDialer, err := parseSD(context.Background(), []byte(`
-$type: shadowsocks
+$type: fake-shadowsocks
 endpoint: example.com:443
 cipher: chacha20-poly1305
 secret: SECRET`))

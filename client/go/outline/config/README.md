@@ -74,3 +74,30 @@ packetEndpoints.RegisterSubParser("websocket", NewWebsocketPacketEndpointSubPars
 
 Notice how the dependencies between the subparsers and the parsers they depend on are explicit
 and will cause compile-time errors if not provided.
+
+# Parsing
+
+bytes --[auto Unmarshall]--> config struct --[special logic]--> object
+
+parser.Parse(config, object)
+
+parser.Register(typeParser)
+
+func typeParser[ShadowsocksStreamDialer].Parse(bytes, *T) {
+  var config ShadowsocksConfig
+  parser.Parse(bytes, &shadowsocksConfig)
+  return shadowsocks.NewStreamDialer(config)
+}
+
+func typeParser[StreamDialer].Parse(bytes, target *T) {
+  var value ast.Node
+  parser.Parse(bytes, &value)
+  if map {
+    parser = lookup $type
+    parser.Parse(value, target)
+  }
+  return NewT(config)
+}
+
+org.getoutline.config.stream_dialer
+org.getoutline.config.packet_dialer

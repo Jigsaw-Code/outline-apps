@@ -29,7 +29,7 @@ import (
 
 type WebsocketEndpointConfig struct {
 	URL      string
-	Endpoint any
+	Endpoint configyaml.ConfigNode
 }
 
 func NewWebsocketStreamEndpointSubParser(parseSE configyaml.ParseFunc[*Endpoint[transport.StreamConn]]) func(ctx context.Context, input map[string]any) (*Endpoint[transport.StreamConn], error) {
