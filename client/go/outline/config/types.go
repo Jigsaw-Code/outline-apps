@@ -19,6 +19,7 @@ import (
 	"net"
 
 	"github.com/Jigsaw-Code/outline-sdk/transport"
+	"github.com/eycorsican/go-tun2socks/core"
 )
 
 // ConnType is the type of the connections returned by Dialers and Endpoints.
@@ -64,19 +65,20 @@ type Endpoint[ConnType any] struct {
 	Connect ConnectFunc[ConnType]
 }
 
-// TransportPair provides a StreamDialer and PacketListener, to use as the transport in a Tun2Socks VPN.
+// TransportPair provides a StreamDialer and UDPConnHandler, to use as the transport in a Tun2Socks VPN.
 type TransportPair struct {
-	StreamDialer   *Dialer[transport.StreamConn]
-	PacketListener *PacketListener
+	StreamDialer	*Dialer[transport.StreamConn]
+	UDPHandler 		*core.UDPConnHandler
 }
 
 var _ transport.StreamDialer = (*TransportPair)(nil)
-var _ transport.PacketListener = (*TransportPair)(nil)
+var _ transport.UDPHandler = (*TransportPair)(nil)
 
 func (t *TransportPair) DialStream(ctx context.Context, address string) (transport.StreamConn, error) {
 	return t.StreamDialer.Dial(ctx, address)
 }
 
 func (t *TransportPair) ListenPacket(ctx context.Context) (net.PacketConn, error) {
-	return t.PacketListener.ListenPacket(ctx)
+	// TODO change listenPacket call
+	return t.UDPHandler.ListenPacket(ctx)
 }
