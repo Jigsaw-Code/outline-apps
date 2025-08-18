@@ -76,7 +76,9 @@ public class VpnTunnelService extends VpnService {
     // Cloudflare
     "1.1.1.1",
     // Quad9
-    "9.9.9.9"
+    "9.9.9.9",
+    // Fake DNS Interception IP
+    "10.111.222.2"
   };
 
   public static final String STATUS_BROADCAST_KEY = "onStatusChange";
