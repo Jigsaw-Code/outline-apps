@@ -120,13 +120,30 @@ function resolveWebDirAbs(cfg) {
   return path.resolve(path.dirname(cfg.path), rel);
 }
 
-// Make sure webDir has index.html (Capacitor requires this for sync). 
-// Docs: webDir in config + CLI workflow. 
-// https://capacitorjs.com/docs/config  https://capacitorjs.com/docs/cli
+// Make sure webDir has index.html (Capacitor requires this for sync).
+// CHANGE #1: if the *folder* doesn't exist, run `npm run action client/src/www/build` (from repo root)
+// CHANGE #2: if index.html is missing but index_cordova.html exists, duplicate it as index.html
 async function ensureWebAssets(webDirAbs) {
   const indexHtml = path.join(webDirAbs, 'index.html');
+  const indexCordova = path.join(webDirAbs, 'index_cordova.html');
+
+  // If webDir folder doesn't exist at all, run the requested bootstrap build
+  if (!(await exists(webDirAbs))) {
+    log('build', `webDir folder not found at ${webDirAbs}. Running npm run action client/src/www/build ...`);
+    await run('build', 'npm', ['run', 'action', 'client/src/www/build'], { cwd: repoRoot, env: process.env });
+  }
+
+  // Re-check after bootstrap; if index.html exists, we're good
   if (await exists(indexHtml)) return;
 
+  // If only index_cordova.html exists, duplicate it to index.html
+  if (await exists(indexCordova)) {
+    await fs.copyFile(indexCordova, indexHtml);
+    log('build', `index.html was missing; duplicated index_cordova.html → index.html`);
+    return;
+  }
+
+  // Fall back to original build flow if allowed
   const clientPkgPath = path.join(clientRoot, 'package.json');
   const hasBuild = (await exists(clientPkgPath))
     ? !!(JSON.parse(await fs.readFile(clientPkgPath, 'utf8')).scripts || {}).build
@@ -149,14 +166,19 @@ async function ensureWebAssets(webDirAbs) {
     } else { throw e; }
   }
 
+  // After build, if index.html still missing but index_cordova.html exists, copy it
+  if (!(await exists(indexHtml)) && (await exists(indexCordova))) {
+    await fs.copyFile(indexCordova, indexHtml);
+    log('build', `Build finished but index.html still missing; duplicated index_cordova.html → index.html`);
+  }
+
   if (!(await exists(indexHtml))) {
     throw new Error(`Build finished but ${indexHtml} is still missing. Ensure your frontend outputs to ${webDirAbs}.`);
   }
 }
 
-// Figure out resources dir for @capacitor/assets (skip if none). 
-// CLI supports --assetPath and defaults to checking "assets" then "resources". 
-// https://github.com/ionic-team/capacitor-assets
+// Figure out resources dir for @capacitor/assets (skip if none).
+// CLI supports --assetPath and defaults to checking "assets" then "resources".
 async function resolveAssetsPath(cfg) {
   if (flagAssetPath && flagAssetPath !== true) {
     return path.isAbsolute(flagAssetPath)
@@ -182,7 +204,7 @@ async function main() {
     const webDirAbs = resolveWebDirAbs(cfg); // e.g. ../www → client/www
     log('sync', `Resolved webDir (from ${path.basename(cfg.path)}): ${webDirAbs}`);
 
-    await ensureWebAssets(webDirAbs); // Capacitor requires index.html in webDir. :contentReference[oaicite:1]{index=1}
+    await ensureWebAssets(webDirAbs); // Capacitor requires index.html in webDir.
 
     const assetsPath = await resolveAssetsPath(cfg);
     if (assetsPath) {
