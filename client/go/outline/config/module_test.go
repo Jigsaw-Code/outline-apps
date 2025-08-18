@@ -87,3 +87,26 @@ func TestRegisterParseURLInQuotes(t *testing.T) {
 	require.Equal(t, "example.com:4321", d.PacketListener.FirstHop)
 	require.Equal(t, ConnTypeTunneled, d.PacketListener.ConnType)
 }
+
+func TestRegisterBasicAccessProviders(t *testing.T) {
+	provider := newTestTransportProvider()
+
+	node, err := configyaml.ParseConfigYAML(`
+$type: basic-access
+dns_resolvers:
+- $type: https
+  address: https://dns.google/dns-query
+- $type: https
+  address: https://dns.quad9.net/dns-query`)
+	require.NoError(t, err)
+
+	d, err := provider.Parse(context.Background(), node)
+	require.NoError(t, err)
+
+	require.NotNil(t, d.StreamDialer)
+	require.NotNil(t, d.PacketListener)
+	require.Equal(t, "example.com:1234", d.StreamDialer.FirstHop)
+	require.Equal(t, ConnTypeTunneled, d.StreamDialer.ConnType)
+	require.Equal(t, "example.com:1234", d.PacketListener.FirstHop)
+	require.Equal(t, ConnTypeTunneled, d.PacketListener.ConnType)
+}
