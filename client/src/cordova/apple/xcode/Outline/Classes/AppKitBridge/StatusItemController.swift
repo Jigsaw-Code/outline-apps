@@ -25,9 +25,6 @@ public enum ConnectionStatus: Int {
 var StatusItem = NSStatusItem()
 
 class StatusItemController: NSObject {
-    let connectionStatusMenuItem = NSMenuItem(title: MenuTitle.statusDisconnected,
-                                              action: nil,
-                                              keyEquivalent: "")
     let connectDisconnectMenuItem = NSMenuItem(title: MenuTitle.connect,
                                                action: #selector(toggleVpnConnection),
                                                keyEquivalent: "c")
@@ -47,16 +44,6 @@ class StatusItemController: NSObject {
             "quit",
             bundle: Bundle(for: StatusItemController.self),
             comment: "Tray menu entry to quit the application."
-        )
-        static let statusConnected = NSLocalizedString(
-            "connected_server_state",
-            bundle: Bundle(for: StatusItemController.self),
-            comment: "Tray menu entry indicating a server is currently connected and in use."
-        )
-        static let statusDisconnected = NSLocalizedString(
-            "disconnected_server_state",
-            bundle: Bundle(for: StatusItemController.self),
-            comment: "Tray menu entry indicating no server is currently connected."
         )
         static let connect = NSLocalizedString(
             "connect",
@@ -81,7 +68,6 @@ class StatusItemController: NSObject {
         let openMenuItem = NSMenuItem(title: MenuTitle.open, action: #selector(openApplication), keyEquivalent: "o")
         openMenuItem.target = self
         menu.addItem(openMenuItem)
-        menu.addItem(connectionStatusMenuItem)
         menu.addItem(NSMenuItem.separator())
         connectDisconnectMenuItem.target = self
         menu.addItem(connectDisconnectMenuItem)
@@ -99,9 +85,6 @@ class StatusItemController: NSObject {
         appIconImage.isTemplate = true
         StatusItem.button?.image = appIconImage
 
-        let connectionStatusTitle = isConnected ? MenuTitle.statusConnected : MenuTitle.statusDisconnected
-        connectionStatusMenuItem.title = connectionStatusTitle
-        
         // Update connect/disconnect menu item
         let connectDisconnectTitle = isConnected ? MenuTitle.disconnect : MenuTitle.connect
         connectDisconnectMenuItem.title = connectDisconnectTitle
