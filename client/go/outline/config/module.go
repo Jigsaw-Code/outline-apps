@@ -109,5 +109,8 @@ func NewDefaultTransportProvider(tcpDialer transport.StreamDialer, udpDialer tra
 	// Transport pairs.
 	transports.RegisterSubParser("tcpudp", NewTCPUDPTransportPairSubParser(streamDialers.Parse, packetListeners.Parse))
 
+	// Basic Access DNS
+	transports.RegisterSubParser("basic-access", NewBasicAccessDNSResolverParser(streamDialers.Parse, packetListeners.Parse))
+
 	return transports
 }
