@@ -64,9 +64,10 @@ export class GoVpnTunnel implements VpnTunnel {
 
   constructor(
     private readonly routing: RoutingDaemon,
+    readonly keyId: string,
     readonly clientConfig: string
   ) {
-    this.tun2socks = new GoTun2socks();
+    this.tun2socks = new GoTun2socks(keyId);
 
     // This promise, tied to both helper process' exits, is key to the instance's
     // lifecycle:
@@ -266,7 +267,7 @@ class GoTun2socks {
   private stopRequested = false;
   private readonly process: ChildProcessHelper;
 
-  constructor() {
+  constructor(readonly keyId: string) {
     this.process = new ChildProcessHelper(pathToEmbeddedTun2socksBinary());
   }
 
@@ -306,6 +307,7 @@ class GoTun2socks {
     //   -client '{ "transport:" {"host": "127.0.0.1", "port": 1080, "password": "mypassword", "cipher": "chacha20-ietf-poly1035"} }' \
     //   [-dnsFallback] [-checkConnectivity] [-proxyPrefix]
 
+    args.push('-keyID', this.keyId);
     args.push('-tunName', TUN2SOCKS_TAP_DEVICE_NAME);
     args.push('-tunAddr', TUN2SOCKS_TAP_DEVICE_IP);
     args.push('-tunGw', TUN2SOCKS_VIRTUAL_ROUTER_IP);

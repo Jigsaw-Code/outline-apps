@@ -346,21 +346,20 @@ async function tearDownAutoLaunch() {
 // Factory function to create a VPNTunnel instance backed by a network stack
 // specified at build time.
 async function createVpnTunnel(
-  firstHop: string,
-  clientConfig: string,
+  request: StartRequestJson,
   isAutoConnect: boolean
 ): Promise<VpnTunnel> {
   // We must convert the host from a potential "hostname" to an "IP" address
   // because startVpn will add a routing table entry that prefixed with this
   // host (e.g. "<host>/32"), therefore <host> must be an IP address.
   // TODO: make sure we resolve it in the native code
-  const {host} = net.splitHostPort(firstHop);
+  const {host} = net.splitHostPort(request.firstHop);
   if (!host) {
     throw new errors.IllegalServerConfiguration('host is missing');
   }
   const hostIp = await lookupIp(host);
   const routing = new RoutingDaemon(hostIp || '', isAutoConnect);
-  const tunnel = new GoVpnTunnel(routing, clientConfig);
+  const tunnel = new GoVpnTunnel(routing, request.id, request.client);
   routing.onNetworkChange = tunnel.networkChanged.bind(tunnel);
   return tunnel;
 }
@@ -378,11 +377,7 @@ async function startVpn(request: StartRequestJson, isAutoConnect: boolean) {
     throw new Error('already connected');
   }
 
-  currentTunnel = await createVpnTunnel(
-    request.firstHop,
-    request.client,
-    isAutoConnect
-  );
+  currentTunnel = await createVpnTunnel(request, isAutoConnect);
   if (debugMode) {
     currentTunnel.enableDebugMode();
   }
