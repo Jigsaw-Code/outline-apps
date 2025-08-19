@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
@@ -31,9 +32,16 @@ import (
 	persistentcookiejar "go.nhat.io/cookiejar"
 )
 
+type HTTPRequestConfig struct {
+	URL     string
+	Method  string
+	Headers map[string][]string
+	Body    string
+}
+
 // HTTPReporterConfig is the format for the HTTPReporter config.
 type HTTPReporterConfig struct {
-	URL            string
+	Request        HTTPRequestConfig
 	Interval       string
 	Enable_Cookies bool
 }
@@ -45,10 +53,12 @@ func NewHTTPReporterConfigParser(cookiesFilename string, streamDialer transport.
 			return nil, fmt.Errorf("invalid config format: %w", err)
 		}
 
-		collectorURL, err := url.Parse(config.URL)
+		_, err := url.Parse(config.Request.URL)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse the report collector URL: %w", err)
 		}
+
+		// Create HTTP Client.
 
 		httpClient := &http.Client{
 			Transport: &http.Transport{
@@ -76,7 +86,28 @@ func NewHTTPReporterConfigParser(cookiesFilename string, streamDialer transport.
 			httpClient.Jar = cookieJar
 		}
 
-		reporter := &HTTPReporter{URL: *collectorURL, HttpClient: httpClient}
+		// Create request factory.
+
+		newRequest := func() *http.Request {
+			method := config.Request.Method
+			if method == "" {
+				method = "POST"
+			}
+			var body io.Reader
+			if config.Request.Body != "" {
+				body = strings.NewReader(config.Request.Body)
+			}
+			req, err := http.NewRequest(method, config.Request.URL, body)
+			if err != nil {
+				return nil
+			}
+			for k, v := range config.Request.Headers {
+				req.Header[k] = v
+			}
+			return req
+		}
+
+		reporter := &HTTPReporter{NewRequest: newRequest, HttpClient: httpClient}
 
 		if config.Interval != "" {
 			interval, err := time.ParseDuration(config.Interval)

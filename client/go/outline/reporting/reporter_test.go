@@ -18,7 +18,6 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"testing"
 	"testing/synctest"
 	"time"
@@ -48,24 +47,25 @@ func TestHTTPReporter_CookiePersistence(t *testing.T) {
 	}))
 	defer server.Close()
 
-	serverURL, err := url.Parse(server.URL)
-	require.NoError(t, err)
+	newRequest := func() *http.Request {
+		req, err := http.NewRequest("POST", server.URL, nil)
+		require.NoError(t, err)
+		return req
+	}
 
 	jar1 := persistentcookiejar.NewPersistentJar(persistentcookiejar.WithFilePath(cookieJarFile), persistentcookiejar.WithAutoSync(true))
-
 	client1 := &http.Client{Jar: jar1}
 	reporter1 := &HTTPReporter{
-		URL:        *serverURL,
+		NewRequest: newRequest,
 		HttpClient: client1,
 	}
 	require.NoError(t, reporter1.Report())
 	require.Empty(t, receivedCookies)
 
 	jar2 := persistentcookiejar.NewPersistentJar(persistentcookiejar.WithFilePath(cookieJarFile), persistentcookiejar.WithAutoSync(true))
-
 	client2 := &http.Client{Jar: jar2}
 	reporter2 := &HTTPReporter{
-		URL:        *serverURL,
+		NewRequest: newRequest,
 		HttpClient: client2,
 	}
 	require.NoError(t, reporter2.Report())
@@ -82,11 +82,14 @@ func TestHTTPReporter_Report(t *testing.T) {
 	}))
 	defer server.Close()
 
-	serverURL, err := url.Parse(server.URL)
-	require.NoError(t, err)
+	newRequest := func() *http.Request {
+		req, err := http.NewRequest("POST", server.URL, nil)
+		require.NoError(t, err)
+		return req
+	}
 
 	reporter := &HTTPReporter{
-		URL:        *serverURL,
+		NewRequest: newRequest,
 		HttpClient: server.Client(),
 	}
 
@@ -97,19 +100,18 @@ func TestHTTPReporter_Report(t *testing.T) {
 
 func TestHTTPReporter_Report404(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/report" {
-			w.WriteHeader(http.StatusOK)
-		} else {
-			w.WriteHeader(http.StatusNotFound)
-		}
+		w.WriteHeader(http.StatusNotFound)
 	}))
 	defer server.Close()
 
-	serverURL, err := url.Parse(server.URL)
-	require.NoError(t, err)
+	newRequest := func() *http.Request {
+		req, err := http.NewRequest("POST", server.URL, nil)
+		require.NoError(t, err)
+		return req
+	}
 
 	reporter := &HTTPReporter{
-		URL:        *serverURL,
+		NewRequest: newRequest,
 		HttpClient: server.Client(),
 	}
 
@@ -124,13 +126,14 @@ func TestHTTPReporter_ReportInterval(t *testing.T) {
 	}))
 	defer server.Close()
 
-	serverURL, err := url.Parse(server.URL)
-	if err != nil {
-		t.Fatalf("Failed to parse server URL: %v", err)
+	newRequest := func() *http.Request {
+		req, err := http.NewRequest("POST", server.URL, nil)
+		require.NoError(t, err)
+		return req
 	}
 
 	reporter := &HTTPReporter{
-		URL:        *serverURL,
+		NewRequest: newRequest,
 		HttpClient: server.Client(),
 		Interval:   100 * time.Millisecond,
 	}

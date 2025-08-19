@@ -16,6 +16,7 @@ package outline
 
 import (
 	"context"
+	"io"
 	"os"
 	"path"
 	"testing"
@@ -327,7 +328,8 @@ transport:
       <<: *cipher
 reporter:
   $type: http
-  url: https://your-callback-server.com/outline_callback
+  request:
+    url: https://your-callback-server.com/outline_callback
   interval: 24h`
 
 	result := (&ClientConfig{}).New("", config)
@@ -335,7 +337,8 @@ reporter:
 	require.Equal(t, "example.com:80", result.Client.sd.FirstHop)
 	require.Equal(t, "example.com:53", result.Client.pl.FirstHop)
 	require.NotNil(t, result.Client.reporter, "Reporter is nil")
-	require.Equal(t, "https://your-callback-server.com/outline_callback", result.Client.reporter.(*reporting.HTTPReporter).URL.String())
+	request := result.Client.reporter.(*reporting.HTTPReporter).NewRequest()
+	require.Equal(t, "https://your-callback-server.com/outline_callback", request.URL.String())
 	require.Equal(t, 24*time.Hour, result.Client.reporter.(*reporting.HTTPReporter).Interval)
 }
 
@@ -344,28 +347,43 @@ reporter:
 func Test_ParseReporter(t *testing.T) {
 	config := `
 $type: http
-url: https://your-callback-server.com/outline_callback
+request:
+  url: https://your-callback-server.com/outline_callback
+  method: CUSTOM
+  headers:
+    Content-Type: [application/json]
+    Authorization: [Bearer SECRET]
+  body: '{"foo": "bar"}'
 interval: 24h`
 	yamlNode, err := configyaml.ParseConfigYAML(config)
 	require.NoError(t, err)
 	reporter, err := NewReporterParser("", nil).Parse(context.Background(), yamlNode)
 	require.NoError(t, err)
 	require.NotNil(t, reporter)
-	require.Equal(t, "https://your-callback-server.com/outline_callback", reporter.(*reporting.HTTPReporter).URL.String())
+	request := reporter.(*reporting.HTTPReporter).NewRequest()
+	require.Equal(t, "https://your-callback-server.com/outline_callback", request.URL.String())
+	require.Equal(t, "CUSTOM", request.Method)
 	require.Equal(t, 24*time.Hour, reporter.(*reporting.HTTPReporter).Interval)
+	require.Equal(t, []string{"application/json"}, request.Header.Values("Content-Type"))
+	require.Equal(t, []string{"Bearer SECRET"}, request.Header.Values("Authorization"))
+	bodyText, err := io.ReadAll(request.Body)
+	require.NoError(t, err)
+	require.Equal(t, `{"foo": "bar"}`, string(bodyText))
 	require.Nil(t, reporter.(*reporting.HTTPReporter).HttpClient.Jar)
 }
 
 func Test_ParseReporter_NoInterval(t *testing.T) {
 	config := `
 $type: http
-url: https://your-callback-server.com/outline_callback`
+request:
+  url: https://your-callback-server.com/outline_callback`
 	yamlNode, err := configyaml.ParseConfigYAML(config)
 	require.NoError(t, err)
 	reporter, err := NewReporterParser("", nil).Parse(context.Background(), yamlNode)
 	require.NoError(t, err)
 	require.NotNil(t, reporter)
-	require.Equal(t, "https://your-callback-server.com/outline_callback", reporter.(*reporting.HTTPReporter).URL.String())
+	request := reporter.(*reporting.HTTPReporter).NewRequest()
+	require.Equal(t, "https://your-callback-server.com/outline_callback", request.URL.String())
 	require.Equal(t, time.Duration(0), reporter.(*reporting.HTTPReporter).Interval)
 	require.Nil(t, reporter.(*reporting.HTTPReporter).HttpClient.Jar)
 }
@@ -373,7 +391,8 @@ url: https://your-callback-server.com/outline_callback`
 func Test_ParseReporter_CookieEnabled(t *testing.T) {
 	config := `
 $type: http
-url: https://your-callback-server.com/outline_callback
+request:
+  url: https://your-callback-server.com/outline_callback
 enable_cookies: true
 interval: 24h`
 	yamlNode, err := configyaml.ParseConfigYAML(config)
@@ -384,14 +403,16 @@ interval: 24h`
 	reporter, err := NewReporterParser(path.Join(tempDir, "cookies.txt"), nil).Parse(context.Background(), yamlNode)
 	require.NoError(t, err)
 	require.NotNil(t, reporter)
-	require.Equal(t, "https://your-callback-server.com/outline_callback", reporter.(*reporting.HTTPReporter).URL.String())
+	request := reporter.(*reporting.HTTPReporter).NewRequest()
+	require.Equal(t, "https://your-callback-server.com/outline_callback", request.URL.String())
 	require.Equal(t, 24*time.Hour, reporter.(*reporting.HTTPReporter).Interval)
 }
 
 func Test_ParseReporter_CookieEnabled_FileMissing(t *testing.T) {
 	config := `
 $type: http
-url: https://your-callback-server.com/outline_callback
+request:
+  url: https://your-callback-server.com/outline_callback
 enable_cookies: true
 interval: 24h`
 	yamlNode, err := configyaml.ParseConfigYAML(config)
