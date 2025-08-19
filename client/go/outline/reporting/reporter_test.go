@@ -23,8 +23,56 @@ import (
 	"testing/synctest"
 	"time"
 
+	"os"
+	"path"
+
+	persistentcookiejar "go.nhat.io/cookiejar"
+
 	"github.com/stretchr/testify/require"
 )
+
+func TestHTTPReporter_CookiePersistence(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "reporting_test")
+	require.NoError(t, err)
+	defer os.RemoveAll(tempDir)
+
+	cookieJarFile := path.Join(tempDir, "cookies")
+	var receivedCookies []*http.Cookie
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if len(r.Cookies()) > 0 {
+			receivedCookies = r.Cookies()
+		} else {
+			http.SetCookie(w, &http.Cookie{Name: "test_cookie", Value: "test_value"})
+		}
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer server.Close()
+
+	serverURL, err := url.Parse(server.URL)
+	require.NoError(t, err)
+
+	jar1 := persistentcookiejar.NewPersistentJar(persistentcookiejar.WithFilePath(cookieJarFile), persistentcookiejar.WithAutoSync(true))
+
+	client1 := &http.Client{Jar: jar1}
+	reporter1 := &HTTPReporter{
+		URL:        *serverURL,
+		HttpClient: client1,
+	}
+	require.NoError(t, reporter1.Report())
+	require.Empty(t, receivedCookies)
+
+	jar2 := persistentcookiejar.NewPersistentJar(persistentcookiejar.WithFilePath(cookieJarFile), persistentcookiejar.WithAutoSync(true))
+
+	client2 := &http.Client{Jar: jar2}
+	reporter2 := &HTTPReporter{
+		URL:        *serverURL,
+		HttpClient: client2,
+	}
+	require.NoError(t, reporter2.Report())
+	require.NotEmpty(t, receivedCookies)
+	require.Equal(t, "test_cookie", receivedCookies[0].Name)
+	require.Equal(t, "test_value", receivedCookies[0].Value)
+}
 
 func TestHTTPReporter_Report(t *testing.T) {
 	var receivedRequest *http.Request
