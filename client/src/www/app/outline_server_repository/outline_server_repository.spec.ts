@@ -109,7 +109,7 @@ describe('OutlineServerRepository', () => {
     );
     const repo = await newTestRepo(new EventQueue(), storage);
     // Trigger storage change.
-    repo.forget('server-1');
+    await repo.forget('server-1');
     repo.undoForget('server-1');
 
     const item = storage.getItem(TEST_ONLY.SERVERS_STORAGE_KEY) ?? '';
@@ -238,7 +238,7 @@ describe('OutlineServerRepository', () => {
     await repo.add(serversStorageV0ConfigToAccessKey(CONFIG_0_V0));
     await repo.add(serversStorageV0ConfigToAccessKey(CONFIG_1_V0));
     const forgottenServerId = repo.getAll()[0].id;
-    repo.forget(forgottenServerId);
+    await repo.forget(forgottenServerId);
     expect(repo.getById(forgottenServerId)).toBeUndefined();
     const serverIds = repo.getAll().map(s => s.id);
     expect(serverIds.length).toEqual(1);
@@ -257,7 +257,7 @@ describe('OutlineServerRepository', () => {
     await repo.add(serversStorageV0ConfigToAccessKey(CONFIG_0_V0));
     await repo.add(serversStorageV0ConfigToAccessKey(CONFIG_1_V0));
     const forgottenServerId = repo.getAll()[0].id;
-    repo.forget(forgottenServerId);
+    await repo.forget(forgottenServerId);
     let didEmitServerForgottenEvent = false;
     eventQueue.subscribe(ServerForgotten, (event: ServerForgotten) => {
       expect(event.server.id).toEqual(forgottenServerId);
@@ -273,7 +273,7 @@ describe('OutlineServerRepository', () => {
     await repo.add(serversStorageV0ConfigToAccessKey(CONFIG_0_V0));
     await repo.add(serversStorageV0ConfigToAccessKey(CONFIG_1_V0));
     const forgottenServerId = repo.getAll()[0].id;
-    repo.forget(forgottenServerId);
+    await repo.forget(forgottenServerId);
     repo.undoForget(forgottenServerId);
     const forgottenServer = repo.getById(forgottenServerId);
     expect(forgottenServer?.id).toEqual(forgottenServerId);
@@ -296,7 +296,7 @@ describe('OutlineServerRepository', () => {
     await repo.add(serversStorageV0ConfigToAccessKey(CONFIG_0_V0));
     await repo.add(serversStorageV0ConfigToAccessKey(CONFIG_1_V0));
     const forgottenServerId = repo.getAll()[0].id;
-    repo.forget(forgottenServerId);
+    await repo.forget(forgottenServerId);
     repo.undoForget(forgottenServerId);
     let didEmitServerForgetUndoneEvent = false;
     eventQueue.subscribe(ServerForgetUndone, (event: ServerForgetUndone) => {
