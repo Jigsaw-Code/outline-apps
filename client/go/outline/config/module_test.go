@@ -117,12 +117,6 @@ tcp:
     - ips:
         - 2001:db8:1:1::/64
       dialer: *shared
-    - ips:
-        - 0.0.0.0/0
-      dialer: null
-    - ips:
-        - ::/0
-      dialer: null
 udp: null`
 
 	node, err := configyaml.ParseConfigYAML(yamlConfig)
@@ -142,5 +136,5 @@ udp: null`
 
 	_, err = transportPair.DialStream(context.Background(), "8.8.8.8:53")
 	require.Error(t, err)
-	require.Contains(t, err.Error(), "dialer 'default-tcp' called for address '8.8.8.8:53'")
+	require.Contains(t, err.Error(), "no dialer available for address 8.8.8.8:53")
 }
