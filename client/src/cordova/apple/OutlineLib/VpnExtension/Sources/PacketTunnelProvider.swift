@@ -12,16 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import NetworkExtension
-
 import CocoaLumberjackSwift
-
+import NetworkExtension
 import OutlineError
 import Tun2socks
 
-/**
-  SwiftBridge is a transitional class to allow the incremental migration of our PacketTunnelProvider from Objective-C to Swift.
- */
+/// SwiftBridge is a transitional class to allow the incremental migration of our PacketTunnelProvider from Objective-C to Swift.
 @objcMembers
 public class SwiftBridge: NSObject {
 
@@ -39,32 +35,34 @@ public class SwiftBridge: NSObject {
     settings.ipv4Settings = ipv4Settings
 
     // Configure with Cloudflare, Quad9, and OpenDNS resolver addresses.
-    settings.dnsSettings = NEDNSSettings(servers: ["1.1.1.1", "9.9.9.9", "208.67.222.222", "208.67.220.220"])
+    settings.dnsSettings = NEDNSSettings(servers: [
+      "1.1.1.1", "9.9.9.9", "208.67.222.222", "208.67.220.220",
+    ])
 
     return settings
   }
 
-    /** Creates a new Outline Client based on the given transportConfig. */
-    public static func newClient(id: String, transportConfig: String) -> OutlineNewClientResult {
-        var dataDir = ""
-        do {
-            dataDir = try FileManager.default.url(
-                for: .applicationSupportDirectory,
-                in: .userDomainMask,
-                appropriateFor: nil,
-                create: true
-            ).path
-        } catch {
-            print("Error finding Application Support directory: \(error)")
-        }
-        let result = OutlineNewClient(id, dataDir, transportConfig)
-        if result?.error != nil {
-            DDLogInfo(
-                "Failed to construct client: \(String(describing: result?.error))."
-            )
-        }
-        return result!
+  /** Creates a new Outline Client based on the given transportConfig. */
+  public static func newClient(id: String, transportConfig: String) -> OutlineNewClientResult {
+    let clientConfig = OutlineClientConfig()
+    do {
+      clientConfig.dataDir = try FileManager.default.url(
+        for: .applicationSupportDirectory,
+        in: .userDomainMask,
+        appropriateFor: nil,
+        create: true
+      ).path
+    } catch {
+      DDLogWarn("Error finding Application Support directory: \(error)")
     }
+    let result = clientConfig.new(id, providerClientConfigText: transportConfig)
+    if result?.error != nil {
+      DDLogInfo(
+        "Failed to construct client: \(String(describing: result?.error))."
+      )
+    }
+    return result!
+  }
 
   /**
    Creates a NSError (of `OutlineError.errorDomain`) from the `OutlineError.internalError`.
@@ -136,7 +134,7 @@ class Subnet: NSObject {
   public init(address: String, prefix: UInt16) {
     self.address = address
     self.prefix = prefix
-    let mask = (0xffffffff as UInt32) << (32 - prefix);
+    let mask = (0xffff_ffff as UInt32) << (32 - prefix)
     self.mask = mask.IPv4String()
   }
 }
@@ -145,9 +143,9 @@ extension UInt32 {
   // Returns string representation of the integer as an IP address.
   public func IPv4String() -> String {
     let ip = self
-    let a = UInt8((ip>>24) & 0xff)
-    let b = UInt8((ip>>16) & 0xff)
-    let c = UInt8((ip>>8) & 0xff)
+    let a = UInt8((ip >> 24) & 0xff)
+    let b = UInt8((ip >> 16) & 0xff)
+    let c = UInt8((ip >> 8) & 0xff)
     let d = UInt8(ip & 0xff)
     return "\(a).\(b).\(c).\(d)"
   }
@@ -157,26 +155,28 @@ extension UInt32 {
 func getNetworkInterfaceAddresses() -> [String] {
   var interfaces: UnsafeMutablePointer<ifaddrs>?
   var addresses = [String]()
-  
+
   guard getifaddrs(&interfaces) == 0 else {
     DDLogError("Failed to retrieve network interface addresses")
     return addresses
   }
-  
+
   var interface = interfaces
   while interface != nil {
     // Only consider IPv4 interfaces.
     if interface!.pointee.ifa_addr.pointee.sa_family == UInt8(AF_INET) {
-      let addr = interface!.pointee.ifa_addr!.withMemoryRebound(to: sockaddr_in.self, capacity: 1) { $0.pointee.sin_addr }
+      let addr = interface!.pointee.ifa_addr!.withMemoryRebound(to: sockaddr_in.self, capacity: 1) {
+        $0.pointee.sin_addr
+      }
       if let ip = String(cString: inet_ntoa(addr), encoding: .utf8) {
         addresses.append(ip)
       }
     }
     interface = interface!.pointee.ifa_next
   }
-  
+
   freeifaddrs(interfaces)
-  
+
   return addresses
 }
 
@@ -184,13 +184,13 @@ let kVpnSubnetCandidates: [String: String] = [
   "10": "10.111.222.0",
   "172": "172.16.9.1",
   "192": "192.168.20.1",
-  "169": "169.254.19.0"
+  "169": "169.254.19.0",
 ]
 
 // Given the list of known interface addresses, returns a local network IP address to use for the VPN.
 func selectVpnAddress(interfaceAddresses: [String]) -> String {
   var candidates = kVpnSubnetCandidates
-  
+
   for address in interfaceAddresses {
     for subnetPrefix in kVpnSubnetCandidates.keys {
       if address.hasPrefix(subnetPrefix) {
@@ -223,7 +223,7 @@ let kExcludedSubnets = [
   "198.18.0.0/15",
   "198.51.100.0/24",
   "203.0.113.0/24",
-  "240.0.0.0/4"
+  "240.0.0.0/4",
 ]
 
 func getExcludedIpv4Routes() -> [NEIPv4Route] {
@@ -236,7 +236,6 @@ func getExcludedIpv4Routes() -> [NEIPv4Route] {
   }
   return excludedIpv4Routes
 }
-
 
 // MARK: - fetch last disconnect error
 
@@ -269,7 +268,8 @@ func saveLastDisconnectErrorDetails(error: Error?) {
     return UserDefaults.standard.removeObject(forKey: lastDisconnectErrorPersistenceKey)
   }
   let outlineErr = toOutlineError(error: err)
-  let persistObj = LastErrorIPCData(errorCode: outlineErr.code, errorJson: marshalErrorJson(error: err))
+  let persistObj = LastErrorIPCData(
+    errorCode: outlineErr.code, errorJson: marshalErrorJson(error: err))
   do {
     let encodedObj = try PropertyListEncoder().encode(persistObj)
     UserDefaults.standard.setValue(encodedObj, forKey: lastDisconnectErrorPersistenceKey)

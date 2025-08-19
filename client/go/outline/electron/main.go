@@ -22,7 +22,6 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
-	"path"
 	"strings"
 	"syscall"
 	"time"
@@ -125,17 +124,7 @@ func main() {
 		printErrorAndExit(platerrors.PlatformError{Code: platerrors.InvalidConfig, Message: "client config missing"}, exitCodeFailure)
 	}
 
-	userDir, err := os.UserConfigDir()
-	if err != nil {
-		printErrorAndExit(platerrors.PlatformError{
-			Code:    platerrors.InternalError,
-			Message: "failed to get user config directory",
-			Cause:   platerrors.ToPlatformError(err),
-		}, exitCodeFailure)
-	}
-	clientConfig := &outline.ClientConfig{
-		DataDir: path.Join(userDir, "org.getoutline.client"),
-	}
+	clientConfig := outline.ClientConfig{}
 	if *args.adapterIndex >= 0 {
 		tcp, udp, err := newBaseDialersWithAdapter(*args.adapterIndex)
 		if err != nil {

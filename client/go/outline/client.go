@@ -19,7 +19,9 @@ import (
 	"errors"
 	"log/slog"
 	"net"
+	"os"
 	"path"
+	"runtime"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/configyaml"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/config"
@@ -88,23 +90,33 @@ type ClientConfig struct {
 	TransportParser *configyaml.TypeParser[*config.TransportPair]
 }
 
-// NewClient creates a new session client. It's used by the native code, so it returns a NewClientResult.
+// New creates a new session client. It's used by the native code, so it returns a NewClientResult.
 func (c *ClientConfig) New(keyID string, providerClientConfigText string) *NewClientResult {
-	client, err := c.NewGo(keyID, providerClientConfigText)
+	client, err := c.new(keyID, providerClientConfigText)
 	if err != nil {
 		return &NewClientResult{Error: platerrors.ToPlatformError(err)}
 	}
 	return &NewClientResult{Client: client}
 }
 
-// NewClientGo creates a new session client. Intended to be used instead of NewClient in Go code.
-func (c *ClientConfig) NewGo(keyID string, providerClientConfigText string) (*Client, error) {
+// new creates a new session client.
+func (c *ClientConfig) new(keyID string, providerClientConfigText string) (*Client, error) {
 	// Make a copy of the config so we can change it.
-	sessionConfig := *c
-	if sessionConfig.TransportParser == nil {
+	clientConfig := *c
+	if clientConfig.TransportParser == nil {
 		tcpDialer := &transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
 		udpDialer := &transport.UDPDialer{}
-		sessionConfig.TransportParser = config.NewDefaultTransportProvider(tcpDialer, udpDialer)
+		clientConfig.TransportParser = config.NewDefaultTransportProvider(tcpDialer, udpDialer)
+	}
+	if clientConfig.DataDir == "" {
+		if runtime.GOOS != "android" && runtime.GOOS != "ios" {
+			userDir, err := os.UserConfigDir()
+			if err != nil {
+				slog.Error("failed to get user config dir", "err", err)
+			} else {
+				clientConfig.DataDir = path.Join(userDir, "org.getoutline.client")
+			}
+		}
 	}
 
 	var providerClientConfig ProviderClientConfig
@@ -116,7 +128,7 @@ func (c *ClientConfig) NewGo(keyID string, providerClientConfigText string) (*Cl
 		}
 	}
 
-	transportPair, err := sessionConfig.TransportParser.Parse(context.Background(), providerClientConfig.Transport)
+	transportPair, err := clientConfig.TransportParser.Parse(context.Background(), providerClientConfig.Transport)
 	if err != nil {
 		if errors.Is(err, errors.ErrUnsupported) {
 			return nil, &platerrors.PlatformError{
