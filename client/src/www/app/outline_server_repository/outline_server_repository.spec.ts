@@ -113,7 +113,7 @@ describe('OutlineServerRepository', () => {
     repo.undoForget('server-1');
 
     const item = storage.getItem(TEST_ONLY.SERVERS_STORAGE_KEY) ?? '';
-    expect(item).toBeTruthy;
+    expect(item).toBeTruthy();
     const serversJson = JSON.parse(item);
     expect(serversJson).toContain({
       id: 'server-0',
@@ -135,7 +135,7 @@ describe('OutlineServerRepository', () => {
     await repo.add(accessKey0);
     await repo.add(accessKey1);
     const item = storage.getItem(TEST_ONLY.SERVERS_STORAGE_KEY) ?? '';
-    expect(item).toBeTruthy;
+    expect(item).toBeTruthy();
     const servers: ServersStorageV1 = JSON.parse(item);
     expect(servers.length).toEqual(2);
     expect(servers[0].accessKey).toEqual(accessKey0);
@@ -208,7 +208,7 @@ describe('OutlineServerRepository', () => {
     repo.rename(server.id, NEW_SERVER_NAME);
     expect(server.name).toEqual(NEW_SERVER_NAME);
     const item = storage.getItem(TEST_ONLY.SERVERS_STORAGE_KEY) ?? '';
-    expect(item).toBeTruthy;
+    expect(item).toBeTruthy();
     const serversStorage: ServersStorageV1 = JSON.parse(item);
     const serverNames = serversStorage.map(s => s.name);
     expect(serverNames).toContain(NEW_SERVER_NAME);
@@ -244,7 +244,7 @@ describe('OutlineServerRepository', () => {
     expect(serverIds.length).toEqual(1);
     expect(serverIds).not.toContain(forgottenServerId);
     const item = storage.getItem(TEST_ONLY.SERVERS_STORAGE_KEY) ?? '';
-    expect(item).toBeTruthy;
+    expect(item).toBeTruthy();
     const serversStorage: ServersStorageV1 = JSON.parse(item);
     const serverIdsStorage = serversStorage.map(s => s.id);
     expect(serverIdsStorage).not.toContain(forgottenServerId);
@@ -281,7 +281,7 @@ describe('OutlineServerRepository', () => {
     expect(serverIds.length).toEqual(2);
     expect(serverIds).toContain(forgottenServerId);
     const item = storage.getItem(TEST_ONLY.SERVERS_STORAGE_KEY) ?? '';
-    expect(item).toBeTruthy;
+    expect(item).toBeTruthy();
     const serversStorage: ServersStorageV1 = JSON.parse(item);
     const serverIdsStorage = serversStorage.map(s => s.id);
     expect(serverIdsStorage).toContain(forgottenServerId);
