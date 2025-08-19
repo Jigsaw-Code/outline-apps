@@ -70,7 +70,9 @@ func NewHTTPReporterConfigParser(cookiesFilename string, streamDialer transport.
 			if err := os.MkdirAll(path.Dir(cookiesFilename), 0700); err != nil {
 				return nil, fmt.Errorf("failed to create service data directory: %v", err)
 			}
-			cookieJar := persistentcookiejar.NewPersistentJar(persistentcookiejar.WithFilePath(cookiesFilename), persistentcookiejar.WithAutoSync(true))
+			cookieJar := persistentcookiejar.NewPersistentJar(
+				persistentcookiejar.WithFilePath(cookiesFilename),
+				persistentcookiejar.WithAutoSync(true))
 			httpClient.Jar = cookieJar
 		}
 
@@ -90,4 +92,3 @@ func NewHTTPReporterConfigParser(cookiesFilename string, streamDialer transport.
 		return reporter, nil
 	}
 }
-
