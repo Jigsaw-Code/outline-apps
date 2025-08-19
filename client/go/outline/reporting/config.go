@@ -24,12 +24,11 @@ import (
 	"os"
 	"path"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/configyaml"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
-	cookiejar "github.com/juju/persistent-cookiejar"
+	persistentcookiejar "go.nhat.io/cookiejar"
 )
 
 // HTTPReporterConfig is the format for the HTTPReporter config.
@@ -71,13 +70,8 @@ func NewHTTPReporterConfigParser(cookiesFilename string, streamDialer transport.
 			if err := os.MkdirAll(path.Dir(cookiesFilename), 0700); err != nil {
 				return nil, fmt.Errorf("failed to create service data directory: %v", err)
 			}
-			cookieJar, err := cookiejar.New(&cookiejar.Options{
-				Filename: cookiesFilename,
-			})
-			if err != nil {
-				return nil, fmt.Errorf("failed to create cookie jar: %v", err)
-			}
-			httpClient.Jar = &persistentCookieJar{Jar: cookieJar}
+			cookieJar := persistentcookiejar.NewPersistentJar(persistentcookiejar.WithFilePath(cookiesFilename))
+			httpClient.Jar = cookieJar
 		}
 
 		reporter := &HTTPReporter{URL: *collectorURL, HttpClient: httpClient}
@@ -97,15 +91,3 @@ func NewHTTPReporterConfigParser(cookiesFilename string, streamDialer transport.
 	}
 }
 
-// persistentCookieJar persists the cookies whenever one is set.
-type persistentCookieJar struct {
-	*cookiejar.Jar
-	mu sync.Mutex
-}
-
-func (c *persistentCookieJar) SetCookies(u *url.URL, cookies []*http.Cookie) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	c.Jar.SetCookies(u, cookies)
-	c.Jar.Save()
-}
