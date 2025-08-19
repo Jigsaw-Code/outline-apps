@@ -12,14 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//go:build !maccatalyst
+
 package useragent
 
-import (
-	"fmt"
-	"runtime"
-)
+import "runtime"
 
-func GetOutlineUserAgent() string {
-	// TODO: Add Outline Client version.
-	return fmt.Sprintf("Outline (%s; %s; %s)", fixedGOOS, runtime.GOARCH, runtime.Version())
-}
+const fixedGOOS = runtime.GOOS

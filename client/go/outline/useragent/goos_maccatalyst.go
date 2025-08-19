@@ -12,14 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//go:build maccatalyst
+
 package useragent
 
-import (
-	"fmt"
-	"runtime"
-)
-
-func GetOutlineUserAgent() string {
-	// TODO: Add Outline Client version.
-	return fmt.Sprintf("Outline (%s; %s; %s)", fixedGOOS, runtime.GOARCH, runtime.Version())
-}
+// Fixes GOOS for when using maccatalyst because it's set to "ios".
+// See https://github.com/golang/mobile/blob/f12310a0cfd915e168e0cced7198eb3cd73aba76/cmd/gomobile/env.go#L73
+const fixedGOOS = "darwin"
