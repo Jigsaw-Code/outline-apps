@@ -24,7 +24,7 @@ dependencyResolutionManagement {
     repositories {
         maven {
             // This is relative to $WORKSPACE/client/android/OutlineAndroidLib/
-            url = uri(layout.settingsDirectory.dir("../../../../../output/client/android"))
+            url = uri(layout.settingsDirectory.dir("../../../output/client/android"))
         }
         google()
         mavenCentral()
