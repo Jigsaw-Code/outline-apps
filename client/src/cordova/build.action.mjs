@@ -165,7 +165,7 @@ async function androidDebug(verbose) {
         // Path is relative to $WORKSPACE/client/platforms/android/.
         // See https://docs.gradle.org/current/userguide/composite_builds.html#command_line_composite
         // TODO(fortuna): Can we embed this in the gradle settings instead?
-        '--gradleArg=--include-build=../../src/cordova/android/OutlineAndroidLib',
+        '--gradleArg=--include-build=../../android/OutlineAndroidLib',
         verbose ? '--gradleArg=--info' : '--gradleArg=--quiet',
       ],
     },
@@ -194,7 +194,7 @@ async function androidRelease(ksPassword, ksContents, javaPath, verbose) {
       argv: [
         // Path is relative to /platforms/android/.
         // See https://docs.gradle.org/current/userguide/composite_builds.html#command_line_composite
-        '--gradleArg=--include-build=../../src/cordova/android/OutlineAndroidLib',
+        '--gradleArg=--include-build=../../android/OutlineAndroidLib',
         verbose ? '--gradleArg=--info' : '--gradleArg=--quiet',
         `--keystore=${keystorePath}`,
         '--alias=privatekey',
