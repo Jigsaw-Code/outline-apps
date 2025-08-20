@@ -23,6 +23,7 @@ import (
 	"sync"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/callback"
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/config"
 	perrs "github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/vpn"
 )
@@ -59,12 +60,15 @@ func (api *vpnAPI) Establish(configStr string) (err error) {
 		}
 	}
 
+	clientConfig := ClientConfig{}
 	tcp := newFWMarkProtectedTCPDialer(conf.VPN.ProtectionMark)
 	udp := newFWMarkProtectedUDPDialer(conf.VPN.ProtectionMark)
-	client, err := NewClientWithBaseDialers(conf.Client, tcp, udp)
-	if err != nil {
-		return err
+	clientConfig.TransportParser = config.NewDefaultTransportProvider(tcp, udp)
+	result := clientConfig.New(conf.VPN.ID, conf.Client)
+	if result.Error != nil {
+		return result.Error
 	}
+	client := result.Client
 
 	if err := client.StartSession(); err != nil {
 		return perrs.PlatformError{

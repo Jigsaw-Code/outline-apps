@@ -16,7 +16,9 @@ package outline
 
 import (
 	"context"
-	"net/http"
+	"io"
+	"os"
+	"path"
 	"testing"
 	"time"
 
@@ -30,7 +32,7 @@ func Test_NewTransport_SS_URL(t *testing.T) {
 	config := "transport: ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@example.com:4321/"
 	firstHop := "example.com:4321"
 
-	result := NewClient(config)
+	result := (&ClientConfig{}).New("", config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
 	require.Equal(t, firstHop, result.Client.pl.FirstHop)
@@ -46,7 +48,7 @@ transport: {
 }`
 	firstHop := "example.com:4321"
 
-	result := NewClient(config)
+	result := (&ClientConfig{}).New("", config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
 	require.Equal(t, firstHop, result.Client.pl.FirstHop)
@@ -63,7 +65,7 @@ transport: {
 }`
 	firstHop := "example.com:4321"
 
-	result := NewClient(config)
+	result := (&ClientConfig{}).New("", config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
 	require.Equal(t, firstHop, result.Client.pl.FirstHop)
@@ -79,7 +81,7 @@ transport:
   password: SECRET`
 	firstHop := "example.com:4321"
 
-	result := NewClient(config)
+	result := (&ClientConfig{}).New("", config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
 	require.Equal(t, firstHop, result.Client.pl.FirstHop)
@@ -95,7 +97,7 @@ transport:
   secret: SECRET`
 	firstHop := "example.com:4321"
 
-	result := NewClient(config)
+	result := (&ClientConfig{}).New("", config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
 	require.Equal(t, firstHop, result.Client.pl.FirstHop)
@@ -112,7 +114,7 @@ transport:
   secret: SECRET`
 	firstHop := "entry.example.com:4321"
 
-	result := NewClient(config)
+	result := (&ClientConfig{}).New("", config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
 	require.Equal(t, firstHop, result.Client.pl.FirstHop)
@@ -133,7 +135,7 @@ transport:
   secret: EXIT_SECRET`
 	firstHop := "entry.example.com:4321"
 
-	result := NewClient(config)
+	result := (&ClientConfig{}).New("", config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
 	require.Equal(t, firstHop, result.Client.pl.FirstHop)
@@ -155,7 +157,7 @@ transport:
       cipher: chacha20-ietf-poly1305
       secret: SECRET`
 
-	result := NewClient(config)
+	result := (&ClientConfig{}).New("", config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, "example.com:80", result.Client.sd.FirstHop)
 	require.Equal(t, "example.com:53", result.Client.pl.FirstHop)
@@ -175,7 +177,7 @@ transport:
       prefix: "POST "`
 	firstHop := "example.com:4321"
 
-	result := NewClient(config)
+	result := (&ClientConfig{}).New("", config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
 	require.Equal(t, firstHop, result.Client.pl.FirstHop)
@@ -197,7 +199,7 @@ transport:
       endpoint: example.com:53
       <<: *cipher`
 
-	result := NewClient(config)
+	result := (&ClientConfig{}).New("", config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, "example.com:80", result.Client.sd.FirstHop)
 	require.Equal(t, "example.com:53", result.Client.pl.FirstHop)
@@ -205,7 +207,7 @@ transport:
 
 func Test_NewTransport_Unsupported(t *testing.T) {
 	config := `transport: {$type: unsupported}`
-	result := NewClient(config)
+	result := (&ClientConfig{}).New("", config)
 	require.Error(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, "unsupported config", result.Error.Message)
 }
@@ -228,7 +230,7 @@ transport:
           url: https://entrypoint.cdn.example.com/udp`
 	firstHop := "entrypoint.cdn.example.com:443"
 
-	result := NewClient(config)
+	result := (&ClientConfig{}).New("", config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
 	require.Equal(t, firstHop, result.Client.pl.FirstHop)
@@ -240,7 +242,7 @@ transport:
   $type: tcpudp
   tcp:
   udp:`
-	result := NewClient(config)
+	result := (&ClientConfig{}).New("", config)
 	require.Error(t, result.Error, "Got %v", result.Error)
 	perr := &platerrors.PlatformError{}
 	require.ErrorAs(t, result.Error, &perr)
@@ -300,7 +302,7 @@ func Test_NewClientFromJSON_Errors(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewClient(tt.input)
+			got := (&ClientConfig{}).New("", tt.input)
 			if got.Error == nil || got.Client != nil {
 				t.Errorf("NewClientFromJSON() expects an error, got = %v", got.Client)
 				return
@@ -326,43 +328,99 @@ transport:
       <<: *cipher
 reporter:
   $type: http
-  url: https://your-callback-server.com/outline_callback
+  request:
+    url: https://your-callback-server.com/outline_callback
   interval: 24h`
 
-	result := NewClient(config)
+	result := (&ClientConfig{}).New("", config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, "example.com:80", result.Client.sd.FirstHop)
 	require.Equal(t, "example.com:53", result.Client.pl.FirstHop)
 	require.NotNil(t, result.Client.reporter, "Reporter is nil")
-	require.Equal(t, "https://your-callback-server.com/outline_callback", result.Client.reporter.(*reporting.HTTPReporter).URL.String())
+	request, err := result.Client.reporter.(*reporting.HTTPReporter).NewRequest()
+	require.NoError(t, err)
+	require.Equal(t, "https://your-callback-server.com/outline_callback", request.URL.String())
 	require.Equal(t, 24*time.Hour, result.Client.reporter.(*reporting.HTTPReporter).Interval)
 }
+
+// TODO(fortuna): TEST enable_cookies
 
 func Test_ParseReporter(t *testing.T) {
 	config := `
 $type: http
-url: https://your-callback-server.com/outline_callback
+request:
+  url: https://your-callback-server.com/outline_callback
+  method: CUSTOM
+  headers:
+    Content-Type: [application/json]
+    Authorization: [Bearer SECRET]
+  body: '{"foo": "bar"}'
 interval: 24h`
 	yamlNode, err := configyaml.ParseConfigYAML(config)
 	require.NoError(t, err)
-	httpClient := &http.Client{}
-	reporter, err := NewReporterParser(httpClient).Parse(context.Background(), yamlNode)
+	reporter, err := NewReporterParser("", nil).Parse(context.Background(), yamlNode)
 	require.NoError(t, err)
 	require.NotNil(t, reporter)
-	require.Equal(t, "https://your-callback-server.com/outline_callback", reporter.(*reporting.HTTPReporter).URL.String())
+	request, err := reporter.(*reporting.HTTPReporter).NewRequest()
+	require.NoError(t, err)
+	require.Equal(t, "https://your-callback-server.com/outline_callback", request.URL.String())
+	require.Equal(t, "CUSTOM", request.Method)
 	require.Equal(t, 24*time.Hour, reporter.(*reporting.HTTPReporter).Interval)
-	require.Equal(t, httpClient, reporter.(*reporting.HTTPReporter).HttpClient)
+	require.Equal(t, []string{"application/json"}, request.Header.Values("Content-Type"))
+	require.Equal(t, []string{"Bearer SECRET"}, request.Header.Values("Authorization"))
+	bodyText, err := io.ReadAll(request.Body)
+	require.NoError(t, err)
+	require.Equal(t, `{"foo": "bar"}`, string(bodyText))
+	require.Nil(t, reporter.(*reporting.HTTPReporter).HttpClient.Jar)
 }
 
 func Test_ParseReporter_NoInterval(t *testing.T) {
 	config := `
 $type: http
-url: https://your-callback-server.com/outline_callback`
+request:
+  url: https://your-callback-server.com/outline_callback`
 	yamlNode, err := configyaml.ParseConfigYAML(config)
 	require.NoError(t, err)
-	reporter, err := NewReporterParser(http.DefaultClient).Parse(context.Background(), yamlNode)
+	reporter, err := NewReporterParser("", nil).Parse(context.Background(), yamlNode)
 	require.NoError(t, err)
 	require.NotNil(t, reporter)
-	require.Equal(t, "https://your-callback-server.com/outline_callback", reporter.(*reporting.HTTPReporter).URL.String())
+	request, err := reporter.(*reporting.HTTPReporter).NewRequest()
+	require.NoError(t, err)
+	require.Equal(t, "https://your-callback-server.com/outline_callback", request.URL.String())
 	require.Equal(t, time.Duration(0), reporter.(*reporting.HTTPReporter).Interval)
+	require.Nil(t, reporter.(*reporting.HTTPReporter).HttpClient.Jar)
+}
+
+func Test_ParseReporter_CookieEnabled(t *testing.T) {
+	config := `
+$type: http
+request:
+  url: https://your-callback-server.com/outline_callback
+enable_cookies: true
+interval: 24h`
+	yamlNode, err := configyaml.ParseConfigYAML(config)
+	require.NoError(t, err)
+	tempDir, err := os.MkdirTemp("", "")
+	require.NoError(t, err)
+	defer os.RemoveAll(tempDir)
+	reporter, err := NewReporterParser(path.Join(tempDir, "cookies.txt"), nil).Parse(context.Background(), yamlNode)
+	require.NoError(t, err)
+	require.NotNil(t, reporter)
+	request, err := reporter.(*reporting.HTTPReporter).NewRequest()
+	require.NoError(t, err)
+	require.Equal(t, "https://your-callback-server.com/outline_callback", request.URL.String())
+	require.Equal(t, 24*time.Hour, reporter.(*reporting.HTTPReporter).Interval)
+}
+
+func Test_ParseReporter_CookieEnabled_FileMissing(t *testing.T) {
+	config := `
+$type: http
+request:
+  url: https://your-callback-server.com/outline_callback
+enable_cookies: true
+interval: 24h`
+	yamlNode, err := configyaml.ParseConfigYAML(config)
+	require.NoError(t, err)
+	_, err = NewReporterParser("", nil).Parse(context.Background(), yamlNode)
+	require.Error(t, err)
 }

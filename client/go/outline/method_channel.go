@@ -15,7 +15,12 @@
 package outline
 
 import (
+	"errors"
 	"fmt"
+	"log/slog"
+	"os"
+	"path"
+	"runtime"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 )
@@ -24,10 +29,14 @@ import (
 const (
 	// CloseVPN closes an existing VPN connection and restores network traffic to the default
 	// network interface.
-	//
 	//  - Input: null
 	//  - Output: null
 	MethodCloseVPN = "CloseVPN"
+
+	// EraseServiceStorage erases all file storage for the given service.
+	//  - Input: the key ID of the service
+	//  - Output: null
+	MethodEraseServiceStorage = "EraseServiceStorage"
 
 	// EstablishVPN initiates a VPN connection and directs all network traffic through Outline.
 	//
@@ -73,6 +82,12 @@ func InvokeMethod(method string, input string) *InvokeMethodResult {
 			Error: platerrors.ToPlatformError(err),
 		}
 
+	case MethodEraseServiceStorage:
+		err := handleEraseServiceStorage(input)
+		return &InvokeMethodResult{
+			Error: platerrors.ToPlatformError(err),
+		}
+
 	case MethodEstablishVPN:
 		err := getSingletonVPNAPI().Establish(input)
 		return &InvokeMethodResult{
@@ -102,4 +117,34 @@ func InvokeMethod(method string, input string) *InvokeMethodResult {
 			Message: fmt.Sprintf("unsupported Go method: %s", method),
 		}}
 	}
+}
+
+func handleEraseServiceStorage(keyID string) error {
+	// TODO(fortuna): Deduplicate service storage logic.
+	dataDir := goConfig.DataDir
+	if dataDir == "" {
+		// Note that GOOS=ios includes maccatalyst.
+		if runtime.GOOS == "android" || runtime.GOOS == "ios" {
+			return errors.New("application data directory not set in the Go backend")
+		}
+		userDir, err := os.UserConfigDir()
+		if err != nil {
+			return fmt.Errorf("failed to get user config dir: %w", err)
+		} else {
+			dataDir = path.Join(userDir, "org.getoutline.client")
+		}
+	}
+	serviceDir := path.Join(dataDir, "services", keyID)
+	slog.Debug("Removing service storage", "dir", serviceDir)
+	return os.RemoveAll(serviceDir)
+}
+
+type GoBackendConfig struct {
+	DataDir string
+}
+
+var goConfig GoBackendConfig
+
+func GetBackendConfig() *GoBackendConfig {
+	return &goConfig
 }
