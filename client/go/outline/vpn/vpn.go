@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/callback"
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/config"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
@@ -104,7 +105,7 @@ func SetStateChangeListener(token callback.Token) {
 // newly created [VPNConnection] as the currently active connection.
 // It returns the new [VPNConnection], or an error if the connection fails.
 func EstablishVPN(
-	ctx context.Context, conf *Config, sd transport.StreamDialer, pl transport.PacketListener,
+	ctx context.Context, conf *Config, sd transport.StreamDialer, proxy *config.PacketProxyWrapper,
 ) (_ *VPNConnection, err error) {
 	if conf == nil {
 		panic("a VPN config must be provided")
@@ -112,8 +113,8 @@ func EstablishVPN(
 	if sd == nil {
 		panic("a StreamDialer must be provided")
 	}
-	if pl == nil {
-		panic("a PacketListener must be provided")
+	if proxy == nil {
+		panic("a PacketProxy must be provided")
 	}
 
 	c := &VPNConnection{ID: conf.ID, Status: ConnectionDisconnected}
@@ -141,7 +142,7 @@ func EstablishVPN(
 		}
 	}()
 
-	if c.proxy, err = ConnectRemoteDevice(ctx, sd, pl); err != nil {
+	if c.proxy, err = ConnectRemoteDevice(ctx, sd, proxy); err != nil {
 		slog.Error("failed to connect to the remote device", "err", err)
 		return
 	}
