@@ -55,7 +55,7 @@ type Dialer[ConnType any] struct {
 	Dial DialFunc[ConnType]
 }
 
-// ConnectFunc is a generic connect function that can return any type of connction given a context.
+// ConnectFunc is a generic connect function that can return any type of connection given a context.
 type ConnectFunc[ConnType any] func(ctx context.Context) (ConnType, error)
 
 // Endpoint has a generic Connect function and embedded ConnectionProviderInfo.
@@ -72,13 +72,13 @@ type TransportPair struct {
 }
 
 var _ transport.StreamDialer = (*TransportPair)(nil)
-var _ transport.UDPHandler = (*TransportPair)(nil)
+var _ core.UDPConnHandler = (*TransportPair)(nil)
 
 func (t *TransportPair) DialStream(ctx context.Context, address string) (transport.StreamConn, error) {
 	return t.StreamDialer.Dial(ctx, address)
 }
 
-func (t *TransportPair) ListenPacket(ctx context.Context) (net.PacketConn, error) {
+func (t *TransportPair) Connect(conn UDPConn, target *net.UDPAddr) error {
 	// TODO change listenPacket call
-	return t.UDPHandler.ListenPacket(ctx)
+	return t.UDPHandler.Connect(conn, target)
 }
