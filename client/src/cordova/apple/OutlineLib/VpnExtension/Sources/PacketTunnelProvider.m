@@ -106,7 +106,7 @@ NSString *const kDefaultPathKey = @"defaultPath";
   // culprit and can explicitly disconnect.
   PlaterrorsPlatformError *udpConnectionError = nil;
   if (!isOnDemand) {
-      OutlineNewClientResult* clientResult = [SwiftBridge newClientWithId:tunnelId transportConfig:transportConfig];
+    OutlineNewClientResult* clientResult = [SwiftBridge newClientWithId:tunnelId transportConfig:transportConfig];
     if (clientResult.error != nil) {
       return startDone([SwiftBridge newOutlineErrorFromPlatformError:clientResult.error]);
     }
@@ -293,7 +293,7 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
     [self.tunnel disconnect];
   }
   __weak PacketTunnelProvider *weakSelf = self;
-    OutlineNewClientResult* clientResult = [SwiftBridge newClientWithId: self.tunnelId transportConfig:self.transportConfig];
+  OutlineNewClientResult* clientResult = [SwiftBridge newClientWithId: self.tunnelId transportConfig:self.transportConfig];
   if (clientResult.error != nil) {
     return clientResult.error;
   }
