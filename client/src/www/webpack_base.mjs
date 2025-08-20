@@ -37,6 +37,9 @@ export const TS_LOADER = {
 
 export const baseConfig = {
   devtool: 'inline-source-map',
+  resolveLoader: {
+    modules: [path.resolve(getRootDir(), 'node_modules')],
+  },
   resolve: {
     extensions: ['.ts', '.js', '.mts', '.mjs'],
     fallback: {url: require.resolve('url/')},

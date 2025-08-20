@@ -67,7 +67,7 @@ SENTRY_DSN=<your sentry dsn> npm run action client/src/cordova/setup macos -- --
 
 Each platform is handled differently:
 
-1. [Developing for Apple **(MacOS and iOS)**](src/cordova/apple)
+1. [Developing for Apple **(MacOS and iOS)**](apple)
 2. [Developing for **Android**](src/cordova/android)
 3. [Developing for Electron **(Windows and Linux)**](electron)
 

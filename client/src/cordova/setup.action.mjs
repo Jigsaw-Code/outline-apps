@@ -150,7 +150,7 @@ async function appleDebug(verbose) {
   await spawnStream(
     'rsync',
     '-avc',
-    'src/cordova/apple/xcode/',
+    '../apple/xcode/',
     'platforms/ios/'
   );
 }
@@ -187,7 +187,7 @@ async function appleRelease(version, buildNumber, verbose) {
   await spawnStream(
     'rsync',
     '-avc',
-    'src/cordova/apple/xcode/',
+    '../apple/xcode/',
     'platforms/ios/'
   );
 

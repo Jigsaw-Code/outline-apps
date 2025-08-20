@@ -17,14 +17,14 @@ The XCode project is assembled by Cordova. To initialize and open the **iOS** pr
 
 ```sh
 npm run action client/src/cordova/setup ios
-open ./client/src/cordova/apple/client.xcworkspace
+open ./client/apple/client.xcworkspace
 ```
 
 For **macOS**:
 
 ```sh
 npm run action client/src/cordova/setup macos 
-open ./client/src/cordova/apple/client.xcworkspace
+open ./client/apple/client.xcworkspace
 ```
 
 > [!NOTE] 
@@ -90,7 +90,7 @@ For the **macOS** client, you can simply select your macOS computer: **Product >
 
 ## Development
 
-Most of the Apple-specific development can happen directly on XCode. However, if you edit files in the generated `platforms/ios`, you will need to copy your changes to the appropriate version-controlled location at [`src/cordova/apple/xcode`](./xcode) or [`src/cordova/plugin/apple`](../plugin/apple).
+Most of the Apple-specific development can happen directly on XCode. However, if you edit files in the generated `platforms/ios`, you will need to copy your changes to the appropriate version-controlled location at [`xcode`](./xcode) or [`../src/cordova/plugin/apple`](../src/cordova/plugin/apple).
 
 Changes to the [OutlineAppleLib](./OutlineAppleLib) package don't need to be copied, since the package is linked by the XCode workspace and the changes happen in the original location.
 
