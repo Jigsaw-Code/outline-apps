@@ -12,7 +12,8 @@ require (
 	github.com/google/addlicense v1.1.1
 	github.com/google/go-licenses v1.6.0
 	github.com/songgao/water v0.0.0-20200317203138-2b4b6d7c09d8
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
+	go.nhat.io/cookiejar v0.3.0
 	golang.org/x/mobile v0.0.0-20250813145510-f12310a0cfd9
 	golang.org/x/sys v0.35.0
 )
@@ -20,6 +21,7 @@ require (
 require (
 	github.com/Masterminds/semver/v3 v3.2.1 // indirect
 	github.com/bmatcuk/doublestar/v4 v4.0.2 // indirect
+	github.com/bool64/ctxd v1.2.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/emirpasic/gods v1.12.0 // indirect
 	github.com/fatih/color v1.16.0 // indirect
@@ -43,8 +45,9 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/radovskyb/watcher v1.0.7 // indirect
 	github.com/sajari/fuzzy v1.0.0 // indirect
-	github.com/sergi/go-diff v1.2.0 // indirect
+	github.com/sergi/go-diff v1.3.1 // indirect
 	github.com/shadowsocks/go-shadowsocks2 v0.1.5 // indirect
+	github.com/spf13/afero v1.14.0 // indirect
 	github.com/spf13/cobra v1.6.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/src-d/gcfg v1.4.0 // indirect
