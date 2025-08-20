@@ -163,9 +163,11 @@ func (c *ClientConfig) new(keyID string, providerClientConfigText string) (*Clie
 	// TODO: figure out a better way to handle parse calls.
 	if providerClientConfig.Reporter != nil {
 		// TODO(fortuna): encapsulate service storage.
-		serviceDir := path.Join(c.DataDir, "services", keyID)
-		cookieFilename := path.Join(serviceDir, "cookies.json")
-
+		cookieFilename := ""
+		if c.DataDir != "" {
+			serviceDir := path.Join(c.DataDir, "services", keyID)
+			cookieFilename = path.Join(serviceDir, "cookies.json")
+		}
 		reporter, err := NewReporterParser(cookieFilename, client).Parse(context.Background(), providerClientConfig.Reporter)
 		if err != nil {
 			return nil, &platerrors.PlatformError{

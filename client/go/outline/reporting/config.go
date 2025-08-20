@@ -74,7 +74,7 @@ func NewHTTPReporterConfigParser(cookiesFilename string, streamDialer transport.
 
 		if config.Enable_Cookies {
 			if cookiesFilename == "" {
-				return nil, errors.New("cookies filename is required for cookies")
+				return nil, fmt.Errorf("cookies filename is required for cookies: %w", errors.ErrUnsupported)
 			}
 			// Make sure the cookies directory exists.
 			if err := os.MkdirAll(path.Dir(cookiesFilename), 0700); err != nil {
