@@ -59,6 +59,8 @@ func parseDirectDialerEndpoint[ConnType any](ctx context.Context, config any, ne
 	ipPortStr := dialParams.Address
 	if dialer.ConnType == ConnTypeDirect && (runtime.GOOS == "linux" || runtime.GOOS == "windows") && !testing.Testing() {
 		ipPort, err := net.ResolveTCPAddr("tcp", ipPortStr)
+		// We ignore the resolved name in case of failures and use the original hostname instead
+		// so that parsing doesn't fail and to allow for recovery if the server becomes resolvable again.
 		if err == nil {
 			ipPortStr = ipPort.String()
 		}
