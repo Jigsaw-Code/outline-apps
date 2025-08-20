@@ -22,6 +22,6 @@ Native platforms consume [outline-go-tun2socks](https://github.com/Jigsaw-Code/o
 
 We use [Swift Packages](https://developer.apple.com/documentation/xcode/swift-packages) for third party dependencies: sentry-cocoa and CocoaLumberjack.
 
-To upgrade the Swift Package dependencies, update the `version` field for the corresponding package under the `XCRemoteSwiftPackageReference` section in the [Outline.pbxproj](https://github.com/Jigsaw-Code/outline-apps/blob/master/client/src/cordova/apple/xcode/Outline.xcodeproj/project.pbxproj) file.
+To upgrade the Swift Package dependencies, update the `version` field for the corresponding package under the `XCRemoteSwiftPackageReference` section in the [Outline.pbxproj](https://github.com/Jigsaw-Code/outline-apps/blob/master/client/apple/xcode/Outline.xcodeproj/project.pbxproj) file.
 
 Alternatively, open the xcworkspace file for the curresponding OS, and update the packages via the XCode UI.

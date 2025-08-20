@@ -107,14 +107,7 @@ function getXcodeBuildArgs(platform) {
   }
   return [
     '-workspace',
-    path.join(
-      getRootDir(),
-      'client',
-      'src',
-      'cordova',
-      'apple',
-      workspaceFilename
-    ),
+    path.join(getRootDir(), 'client', 'apple', workspaceFilename),
     '-scheme',
     'Outline',
     '-destination',

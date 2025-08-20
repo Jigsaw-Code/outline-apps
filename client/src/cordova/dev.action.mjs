@@ -127,7 +127,7 @@ export async function main(...givenParameters) {
       '-scheme',
       'Outline',
       '-workspace',
-      path.join(getRootDir(), 'client/src/cordova/apple/client.xcworkspace'),
+      path.join(getRootDir(), 'client/apple/client.xcworkspace'),
       `SYMROOT=${path.join(getRootDir(), OUTPUT_PATH)}`
     );
 

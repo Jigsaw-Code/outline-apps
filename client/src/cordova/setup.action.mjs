@@ -147,12 +147,7 @@ async function appleDebug(verbose) {
   });
 
   // TODO(daniellacosse): move this to a cordova hook
-  await spawnStream(
-    'rsync',
-    '-avc',
-    'src/cordova/apple/xcode/',
-    'platforms/ios/'
-  );
+  await spawnStream('rsync', '-avc', 'apple/xcode/', 'platforms/ios/');
 }
 
 async function setAppleVersion(platform, versionName, buildNumber) {
@@ -184,12 +179,7 @@ async function appleRelease(version, buildNumber, verbose) {
   });
 
   // TODO(daniellacosse): move this to a cordova hook
-  await spawnStream(
-    'rsync',
-    '-avc',
-    'src/cordova/apple/xcode/',
-    'platforms/ios/'
-  );
+  await spawnStream('rsync', '-avc', 'apple/xcode/', 'platforms/ios/');
 
   await setAppleVersion('ios', version, buildNumber);
 }
