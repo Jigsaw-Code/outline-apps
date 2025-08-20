@@ -42,6 +42,8 @@ import org.outline.log.SentryErrorReporter;
 import org.outline.vpn.Errors;
 import org.outline.vpn.VpnServiceStarter;
 import org.outline.vpn.VpnTunnelService;
+
+import outline.GoBackendConfig;
 import outline.Outline;
 import outline.InvokeMethodResult;
 import platerrors.Platerrors;
@@ -135,6 +137,10 @@ public class OutlinePlugin extends CordovaPlugin {
   protected void pluginInitialize() {
     OutlineLogger.registerLogHandler(SentryErrorReporter.BREADCRUMB_LOG_HANDLER);
     Context context = getBaseContext();
+
+    final GoBackendConfig goConfig = Outline.getBackendConfig();
+    goConfig.setDataDir(context.getFilesDir().getAbsolutePath());
+
     IntentFilter broadcastFilter = new IntentFilter();
     broadcastFilter.addAction(VpnTunnelService.STATUS_BROADCAST_KEY);
     broadcastFilter.addCategory(context.getPackageName());

@@ -161,8 +161,18 @@ transport:
 
 reporter:
   $type: http
-  url: https://your-callback-server.com/outline_callback
+  request:
+    # URL is the only required field.
+    url: https://your-callback-server.com/outline_callback
+    method: POST  # This is the default, no need to specify
+    headers:
+      Content-Type: [application/json]
+      Authorization: [Bearer SECRET]
+    body: '{"foo": "bar"}'
+  # Optional. If not specified reporting happens once at the start of the session.
   interval: 24h
+  # Optional. If enabled, the HTTP client will remember cookies across sessions.
+  enable_cookies: true
 ```
 
 ## Tunnels

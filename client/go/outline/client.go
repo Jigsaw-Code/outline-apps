@@ -17,11 +17,11 @@ package outline
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log/slog"
 	"net"
-	"net/http"
-	"strings"
+	"os"
+	"path"
+	"runtime"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/configyaml"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/config"
@@ -70,8 +70,8 @@ func (c *Client) EndSession() error {
 	return nil
 }
 
-// ClientConfig is used to create the Client.
-type ClientConfig struct {
+// ProviderClientConfig is the session config from the service provider.
+type ProviderClientConfig struct {
 	Transport configyaml.ConfigNode
 	Reporter  configyaml.ConfigNode
 }
@@ -84,21 +84,43 @@ type NewClientResult struct {
 	Error  *platerrors.PlatformError
 }
 
-// NewClient creates a new Outline client from a configuration string.
-func NewClient(clientConfig string) *NewClientResult {
-	tcpDialer := transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
-	udpDialer := transport.UDPDialer{}
-	client, err := NewClientWithBaseDialers(clientConfig, &tcpDialer, &udpDialer)
+// ClientConfig is used to create a session Client.
+type ClientConfig struct {
+	DataDir         string
+	TransportParser *configyaml.TypeParser[*config.TransportPair]
+}
+
+// New creates a new session client. It's used by the native code, so it returns a NewClientResult.
+func (c *ClientConfig) New(keyID string, providerClientConfigText string) *NewClientResult {
+	client, err := c.new(keyID, providerClientConfigText)
 	if err != nil {
 		return &NewClientResult{Error: platerrors.ToPlatformError(err)}
 	}
 	return &NewClientResult{Client: client}
 }
 
-func NewClientWithBaseDialers(clientConfigText string, tcpDialer transport.StreamDialer, udpDialer transport.PacketDialer) (*Client, error) {
-	var clientConfig ClientConfig
-	err := yaml.Unmarshal([]byte(clientConfigText), &clientConfig)
-	if err != nil {
+// new creates a new session client.
+func (c *ClientConfig) new(keyID string, providerClientConfigText string) (*Client, error) {
+	// Make a copy of the config so we can change it.
+	clientConfig := *c
+	if clientConfig.TransportParser == nil {
+		tcpDialer := &transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
+		udpDialer := &transport.UDPDialer{}
+		clientConfig.TransportParser = config.NewDefaultTransportProvider(tcpDialer, udpDialer)
+	}
+	if clientConfig.DataDir == "" {
+		if runtime.GOOS != "android" && runtime.GOOS != "ios" {
+			userDir, err := os.UserConfigDir()
+			if err != nil {
+				slog.Error("failed to get user config dir", "err", err)
+			} else {
+				clientConfig.DataDir = path.Join(userDir, "org.getoutline.client")
+			}
+		}
+	}
+
+	var providerClientConfig ProviderClientConfig
+	if err := yaml.Unmarshal([]byte(providerClientConfigText), &providerClientConfig); err != nil {
 		return nil, &platerrors.PlatformError{
 			Code:    platerrors.InvalidConfig,
 			Message: "config is not valid YAML",
@@ -106,7 +128,7 @@ func NewClientWithBaseDialers(clientConfigText string, tcpDialer transport.Strea
 		}
 	}
 
-	transportPair, err := config.NewDefaultTransportProvider(tcpDialer, udpDialer).Parse(context.Background(), clientConfig.Transport)
+	transportPair, err := clientConfig.TransportParser.Parse(context.Background(), providerClientConfig.Transport)
 	if err != nil {
 		if errors.Is(err, errors.ErrUnsupported) {
 			return nil, &platerrors.PlatformError{
@@ -138,19 +160,15 @@ func NewClientWithBaseDialers(clientConfigText string, tcpDialer transport.Strea
 	}
 
 	client := &Client{sd: transportPair.StreamDialer, pl: transportPair.PacketListener}
-	if clientConfig.Reporter != nil {
-		httpClient := &http.Client{
-			Transport: &http.Transport{
-				DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
-					if strings.HasPrefix(network, "tcp") {
-						return client.DialStream(ctx, addr)
-					} else {
-						return nil, fmt.Errorf("protocol not supported: %v", network)
-					}
-				},
-			},
+	// TODO: figure out a better way to handle parse calls.
+	if providerClientConfig.Reporter != nil {
+		// TODO(fortuna): encapsulate service storage.
+		cookieFilename := ""
+		if c.DataDir != "" {
+			serviceDir := path.Join(c.DataDir, "services", keyID)
+			cookieFilename = path.Join(serviceDir, "cookies.json")
 		}
-		reporter, err := NewReporterParser(httpClient).Parse(context.Background(), clientConfig.Reporter)
+		reporter, err := NewReporterParser(cookieFilename, client).Parse(context.Background(), providerClientConfig.Reporter)
 		if err != nil {
 			return nil, &platerrors.PlatformError{
 				Code:    platerrors.InvalidConfig,
@@ -164,11 +182,11 @@ func NewClientWithBaseDialers(clientConfigText string, tcpDialer transport.Strea
 	return client, nil
 }
 
-func NewReporterParser(httpClient *http.Client) *configyaml.TypeParser[reporting.Reporter] {
+func NewReporterParser(cookiesFilename string, streamDialer transport.StreamDialer) *configyaml.TypeParser[reporting.Reporter] {
 	parser := configyaml.NewTypeParser(func(ctx context.Context, input configyaml.ConfigNode) (reporting.Reporter, error) {
 		return nil, errors.New("parser not specified")
 	})
 	parser.RegisterSubParser("first-supported", config.NewFirstSupportedSubParser(parser.Parse))
-	parser.RegisterSubParser("http", reporting.NewHTTPReporterSubParser(httpClient))
+	parser.RegisterSubParser("http", reporting.NewHTTPReporterConfigParser(cookiesFilename, streamDialer))
 	return parser
 }

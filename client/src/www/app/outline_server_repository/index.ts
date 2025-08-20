@@ -22,6 +22,7 @@ import * as errors from '../../model/errors';
 import * as events from '../../model/events';
 import {ServerRepository} from '../../model/server';
 import {Server} from '../../model/server';
+import * as methodChannel from '../method_channel';
 
 // Name by which servers are saved to storage.
 const SERVERS_STORAGE_KEY_V0 = 'servers';
@@ -164,7 +165,7 @@ class OutlineServerRepository implements ServerRepository {
     this.eventQueue.enqueue(new events.ServerRenamed(server));
   }
 
-  forget(serverId: string) {
+  async forget(serverId: string) {
     const entry = this.serverById.get(serverId);
     if (!entry) {
       console.warn(`Cannot remove nonexistent server ${serverId}`);
@@ -173,6 +174,9 @@ class OutlineServerRepository implements ServerRepository {
     this.serverById.delete(serverId);
     this.lastForgottenServer = entry;
     this.storeServers();
+    await methodChannel
+      .getDefaultMethodChannel()
+      .invokeMethod('EraseServiceStorage', serverId);
     this.eventQueue.enqueue(new events.ServerForgotten(entry.server));
   }
 
