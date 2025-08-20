@@ -88,7 +88,7 @@ func NewHTTPReporterConfigParser(cookiesFilename string, streamDialer transport.
 
 		// Create request factory.
 
-		newRequest := func() *http.Request {
+		newRequest := func() (*http.Request, error) {
 			method := config.Request.Method
 			if method == "" {
 				method = "POST"
@@ -99,12 +99,12 @@ func NewHTTPReporterConfigParser(cookiesFilename string, streamDialer transport.
 			}
 			req, err := http.NewRequest(method, config.Request.URL, body)
 			if err != nil {
-				return nil
+				return nil, err
 			}
 			for k, v := range config.Request.Headers {
 				req.Header[k] = v
 			}
-			return req
+			return req, nil
 		}
 
 		reporter := &HTTPReporter{NewRequest: newRequest, HttpClient: httpClient}

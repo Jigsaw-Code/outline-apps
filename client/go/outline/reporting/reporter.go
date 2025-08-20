@@ -31,7 +31,7 @@ type Reporter interface {
 }
 
 type HTTPReporter struct {
-	NewRequest func() *http.Request
+	NewRequest func() (*http.Request, error)
 	Interval   time.Duration
 	HttpClient *http.Client
 }
@@ -65,7 +65,10 @@ func (r *HTTPReporter) reportAndLogError() {
 }
 
 func (r *HTTPReporter) Report() error {
-	req := r.NewRequest()
+	req, err := r.NewRequest()
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
 	req.Close = true
 	req.Header.Add("User-Agent", useragent.GetOutlineUserAgent())
 

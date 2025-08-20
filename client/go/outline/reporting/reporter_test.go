@@ -47,10 +47,8 @@ func TestHTTPReporter_CookiePersistence(t *testing.T) {
 	}))
 	defer server.Close()
 
-	newRequest := func() *http.Request {
-		req, err := http.NewRequest("POST", server.URL, nil)
-		require.NoError(t, err)
-		return req
+	newRequest := func() (*http.Request, error) {
+		return http.NewRequest("POST", server.URL, nil)
 	}
 
 	jar1 := persistentcookiejar.NewPersistentJar(persistentcookiejar.WithFilePath(cookieJarFile), persistentcookiejar.WithAutoSync(true))
@@ -82,10 +80,10 @@ func TestHTTPReporter_Report(t *testing.T) {
 	}))
 	defer server.Close()
 
-	newRequest := func() *http.Request {
+	newRequest := func() (*http.Request, error) {
 		req, err := http.NewRequest("POST", server.URL, nil)
 		require.NoError(t, err)
-		return req
+		return req, nil
 	}
 
 	reporter := &HTTPReporter{
@@ -104,10 +102,8 @@ func TestHTTPReporter_Report404(t *testing.T) {
 	}))
 	defer server.Close()
 
-	newRequest := func() *http.Request {
-		req, err := http.NewRequest("POST", server.URL, nil)
-		require.NoError(t, err)
-		return req
+	newRequest := func() (*http.Request, error) {
+		return http.NewRequest("POST", server.URL, nil)
 	}
 
 	reporter := &HTTPReporter{
@@ -126,10 +122,8 @@ func TestHTTPReporter_ReportInterval(t *testing.T) {
 	}))
 	defer server.Close()
 
-	newRequest := func() *http.Request {
-		req, err := http.NewRequest("POST", server.URL, nil)
-		require.NoError(t, err)
-		return req
+	newRequest := func() (*http.Request, error) {
+		return http.NewRequest("POST", server.URL, nil)
 	}
 
 	reporter := &HTTPReporter{
