@@ -76,7 +76,7 @@ func NewHTTPReporterConfigParser(cookiesFilename string, streamDialer transport.
 			if cookiesFilename == "" {
 				return nil, errors.New("cookies filename is required for cookies")
 			}
-			// Make sure the  cookies directory exists.
+			// Make sure the cookies directory exists.
 			if err := os.MkdirAll(path.Dir(cookiesFilename), 0700); err != nil {
 				return nil, fmt.Errorf("failed to create service data directory: %v", err)
 			}
