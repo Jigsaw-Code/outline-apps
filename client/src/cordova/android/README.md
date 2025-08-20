@@ -110,6 +110,7 @@ Make sure to rebuild after modifying platform dependent files!
 Alternatively, run with:
 
 ```sh
+cd client
 npx cordova run android -- --gradleArg=--include-build=../../src/cordova/android/OutlineAndroidLib
 ```
 
