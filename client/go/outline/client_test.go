@@ -32,8 +32,8 @@ func Test_NewTransport_SS_URL(t *testing.T) {
 
 	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
-	require.Equal(t, firstHop, result.Client.sd.FirstHop)
-	require.Equal(t, firstHop, result.Client.pl.FirstHop)
+	require.Equal(t, firstHop, result.Client.transportPair.StreamDialer.FirstHop)
+	require.Equal(t, firstHop, result.Client.transportPair.PacketProxy.FirstHop)
 }
 
 func Test_NewTransport_Legacy_JSON(t *testing.T) {
@@ -48,8 +48,8 @@ transport: {
 
 	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
-	require.Equal(t, firstHop, result.Client.sd.FirstHop)
-	require.Equal(t, firstHop, result.Client.pl.FirstHop)
+	require.Equal(t, firstHop, result.Client.transportPair.StreamDialer.FirstHop)
+	require.Equal(t, firstHop, result.Client.transportPair.PacketProxy.FirstHop)
 }
 
 func Test_NewTransport_Flexible_JSON(t *testing.T) {
@@ -65,8 +65,8 @@ transport: {
 
 	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
-	require.Equal(t, firstHop, result.Client.sd.FirstHop)
-	require.Equal(t, firstHop, result.Client.pl.FirstHop)
+	require.Equal(t, firstHop, result.Client.transportPair.StreamDialer.FirstHop)
+	require.Equal(t, firstHop, result.Client.transportPair.PacketProxy.FirstHop)
 }
 
 func Test_NewTransport_YAML(t *testing.T) {
@@ -81,8 +81,8 @@ transport:
 
 	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
-	require.Equal(t, firstHop, result.Client.sd.FirstHop)
-	require.Equal(t, firstHop, result.Client.pl.FirstHop)
+	require.Equal(t, firstHop, result.Client.transportPair.StreamDialer.FirstHop)
+	require.Equal(t, firstHop, result.Client.transportPair.PacketProxy.FirstHop)
 }
 
 func Test_NewTransport_Explicit_endpoint(t *testing.T) {
@@ -97,8 +97,8 @@ transport:
 
 	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
-	require.Equal(t, firstHop, result.Client.sd.FirstHop)
-	require.Equal(t, firstHop, result.Client.pl.FirstHop)
+	require.Equal(t, firstHop, result.Client.transportPair.StreamDialer.FirstHop)
+	require.Equal(t, firstHop, result.Client.transportPair.PacketProxy.FirstHop)
 }
 
 func Test_NewTransport_Multihop_URL(t *testing.T) {
@@ -114,8 +114,8 @@ transport:
 
 	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
-	require.Equal(t, firstHop, result.Client.sd.FirstHop)
-	require.Equal(t, firstHop, result.Client.pl.FirstHop)
+	require.Equal(t, firstHop, result.Client.transportPair.StreamDialer.FirstHop)
+	require.Equal(t, firstHop, result.Client.transportPair.PacketProxy.FirstHop)
 }
 
 func Test_NewTransport_Multihop_Explicit(t *testing.T) {
@@ -135,8 +135,8 @@ transport:
 
 	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
-	require.Equal(t, firstHop, result.Client.sd.FirstHop)
-	require.Equal(t, firstHop, result.Client.pl.FirstHop)
+	require.Equal(t, firstHop, result.Client.transportPair.StreamDialer.FirstHop)
+	require.Equal(t, firstHop, result.Client.transportPair.PacketProxy.FirstHop)
 }
 
 func Test_NewTransport_Explicit_TCPUDP(t *testing.T) {
@@ -157,8 +157,8 @@ transport:
 
 	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
-	require.Equal(t, "example.com:80", result.Client.sd.FirstHop)
-	require.Equal(t, "example.com:53", result.Client.pl.FirstHop)
+	require.Equal(t, "example.com:80", result.Client.transportPair.StreamDialer.FirstHop)
+	require.Equal(t, "example.com:53", result.Client.transportPair.PacketProxy.FirstHop)
 }
 
 func Test_NewTransport_YAML_Reuse(t *testing.T) {
@@ -177,8 +177,8 @@ transport:
 
 	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
-	require.Equal(t, firstHop, result.Client.sd.FirstHop)
-	require.Equal(t, firstHop, result.Client.pl.FirstHop)
+	require.Equal(t, firstHop, result.Client.transportPair.StreamDialer.FirstHop)
+	require.Equal(t, firstHop, result.Client.transportPair.PacketProxy.FirstHop)
 }
 
 func Test_NewTransport_YAML_Partial_Reuse(t *testing.T) {
@@ -199,8 +199,8 @@ transport:
 
 	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
-	require.Equal(t, "example.com:80", result.Client.sd.FirstHop)
-	require.Equal(t, "example.com:53", result.Client.pl.FirstHop)
+	require.Equal(t, "example.com:80", result.Client.transportPair.StreamDialer.FirstHop)
+	require.Equal(t, "example.com:53", result.Client.transportPair.PacketProxy.FirstHop)
 }
 
 func Test_NewTransport_Unsupported(t *testing.T) {
@@ -230,8 +230,8 @@ transport:
 
 	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
-	require.Equal(t, firstHop, result.Client.sd.FirstHop)
-	require.Equal(t, firstHop, result.Client.pl.FirstHop)
+	require.Equal(t, firstHop, result.Client.transportPair.StreamDialer.FirstHop)
+	require.Equal(t, firstHop, result.Client.transportPair.PacketProxy.FirstHop)
 }
 
 func Test_NewTransport_DisallowProxyless(t *testing.T) {
@@ -331,8 +331,8 @@ reporter:
 
 	result := NewClient(config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
-	require.Equal(t, "example.com:80", result.Client.sd.FirstHop)
-	require.Equal(t, "example.com:53", result.Client.pl.FirstHop)
+	require.Equal(t, "example.com:80", result.Client.transportPair.StreamDialer.FirstHop)
+	require.Equal(t, "example.com:53", result.Client.transportPair.PacketProxy.FirstHop)
 	require.NotNil(t, result.Client.reporter, "Reporter is nil")
 	require.Equal(t, "https://your-callback-server.com/outline_callback", result.Client.reporter.(*reporting.HTTPReporter).URL.String())
 	require.Equal(t, 24*time.Hour, result.Client.reporter.(*reporting.HTTPReporter).Interval)

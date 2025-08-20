@@ -18,6 +18,7 @@ import (
 	"context"
 	"net"
 
+	"github.com/Jigsaw-Code/outline-sdk/network"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
@@ -38,10 +39,10 @@ type ConnectionProviderInfo struct {
 	FirstHop string
 }
 
-// PacketListener is a [transport.PacketListener] with embedded ConnectionProviderInfo.
-type PacketListener struct {
+// PacketProxyWrapper is a [network.PacketProxy] with embedded ConnectionProviderInfo.
+type PacketProxyWrapper struct {
 	ConnectionProviderInfo
-	transport.PacketListener
+	network.PacketProxy
 }
 
 // DialFunc is a generic dialing function that can return any type of connction given a context and address.
@@ -64,10 +65,10 @@ type Endpoint[ConnType any] struct {
 	Connect ConnectFunc[ConnType]
 }
 
-// TransportPair provides a StreamDialer and PacketListener, to use as the transport in a Tun2Socks VPN.
+// TransportPair provides a StreamDialer and PacketProxy, to use as the transport in a Tun2Socks VPN.
 type TransportPair struct {
-	StreamDialer   *Dialer[transport.StreamConn]
-	PacketListener *PacketListener
+	StreamDialer *Dialer[transport.StreamConn]
+	PacketProxy  *PacketProxyWrapper
 }
 
 var _ transport.StreamDialer = (*TransportPair)(nil)
@@ -78,5 +79,17 @@ func (t *TransportPair) DialStream(ctx context.Context, address string) (transpo
 }
 
 func (t *TransportPair) ListenPacket(ctx context.Context) (net.PacketConn, error) {
-	return t.PacketListener.ListenPacket(ctx)
+	// The local address is not well defined in this context.
+	// tun2socks will handle the routing, so we can probably use a dummy address.
+	// Let's use a zero UDP address.
+	return newPacketConn(ctx, t.PacketProxy, &net.UDPAddr{IP: net.IPv4zero, Port: 0})
+}
+
+// PacketProxyListener is a [transport.PacketListener] that creates connections from a [network.PacketProxy].
+type PacketProxyListener struct {
+	Proxy network.PacketProxy
+}
+
+func (l *PacketProxyListener) ListenPacket(ctx context.Context) (net.PacketConn, error) {
+	return newPacketConn(ctx, l.Proxy, &net.UDPAddr{IP: net.IPv4zero, Port: 0})
 }

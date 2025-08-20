@@ -20,6 +20,7 @@ import (
 	"io"
 	"log/slog"
 
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/config"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/connectivity"
 	perrs "github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/Jigsaw-Code/outline-sdk/network"
@@ -33,31 +34,27 @@ type RemoteDevice struct {
 	io.ReadWriteCloser
 
 	sd transport.StreamDialer
-	pl transport.PacketListener
 
 	pkt              network.DelegatePacketProxy
-	remote, fallback network.PacketProxy
+	remote           *config.PacketProxyWrapper
+	fallback         network.PacketProxy
 }
 
 func ConnectRemoteDevice(
-	ctx context.Context, sd transport.StreamDialer, pl transport.PacketListener,
+	ctx context.Context, sd transport.StreamDialer, proxy *config.PacketProxyWrapper,
 ) (_ *RemoteDevice, err error) {
 	if sd == nil {
 		return nil, errors.New("StreamDialer must be provided")
 	}
-	if pl == nil {
-		return nil, errors.New("PacketListener must be provided")
+	if proxy == nil {
+		return nil, errors.New("PacketProxy must be provided")
 	}
 	if ctx.Err() != nil {
 		return nil, errCancelled(ctx.Err())
 	}
 
-	dev := &RemoteDevice{sd: sd, pl: pl}
+	dev := &RemoteDevice{sd: sd, remote: proxy}
 
-	dev.remote, err = network.NewPacketProxyFromPacketListener(pl)
-	if err != nil {
-		return nil, errSetupHandler("failed to create remote UDP handler", err)
-	}
 	slog.Debug("remote device remote UDP handler created")
 
 	if dev.fallback, err = dnstruncate.NewPacketProxy(); err != nil {
@@ -93,7 +90,10 @@ func (d *RemoteDevice) RefreshConnectivity(ctx context.Context) (err error) {
 	}
 
 	slog.Debug("remote device is testing connectivity of server...")
-	tcpErr, udpErr := connectivity.CheckTCPAndUDPConnectivity(d.sd, d.pl)
+	// We need a PacketListener for the connectivity check.
+	// We can create one from the PacketProxy.
+	listener := &config.PacketProxyListener{Proxy: d.remote}
+	tcpErr, udpErr := connectivity.CheckTCPAndUDPConnectivity(d.sd, listener)
 	if tcpErr != nil {
 		slog.Warn("remote device server connectivity test failed", "err", tcpErr)
 		return tcpErr

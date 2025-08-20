@@ -26,6 +26,7 @@ import (
 	"strings"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/configyaml"
+	"github.com/Jigsaw-Code/outline-sdk/network"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 	"github.com/Jigsaw-Code/outline-sdk/transport/shadowsocks"
 )
@@ -59,8 +60,8 @@ func NewShadowsocksPacketDialerSubParser(parsePE configyaml.ParseFunc[*Endpoint[
 	}
 }
 
-func NewShadowsocksPacketListenerSubParser(parsePE configyaml.ParseFunc[*Endpoint[net.Conn]]) func(ctx context.Context, input map[string]any) (*PacketListener, error) {
-	return func(ctx context.Context, input map[string]any) (*PacketListener, error) {
+func NewShadowsocksPacketListenerSubParser(parsePE configyaml.ParseFunc[*Endpoint[net.Conn]]) func(ctx context.Context, input map[string]any) (*PacketProxyWrapper, error) {
+	return func(ctx context.Context, input map[string]any) (*PacketProxyWrapper, error) {
 		return parseShadowsocksPacketListener(ctx, input, parsePE)
 	}
 }
@@ -83,19 +84,15 @@ func parseShadowsocksTransport(ctx context.Context, config configyaml.ConfigNode
 		sd.SaltGenerator = params.SaltGenerator
 	}
 
-	pe, err := parsePE(ctx, params.Endpoint)
+	ppw, err := parseShadowsocksPacketListener(ctx, config, parsePE)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create PacketEndpoint: %w", err)
-	}
-	pl, err := shadowsocks.NewPacketListener(transport.FuncPacketEndpoint(pe.Connect), params.Key)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create PacketListener: %w", err)
+		return nil, fmt.Errorf("failed to create PacketProxyWrapper: %w", err)
 	}
 	// For the Shadowsocks transport, the prefix only applies to TCP. To use a prefix with UDP, one needs to
 	// specify it in the PacketListener config explicitly. This is to ensure backwards-compatibility.
 	return &TransportPair{
-		&Dialer[transport.StreamConn]{ConnectionProviderInfo{ConnTypeTunneled, se.FirstHop}, sd.DialStream},
-		&PacketListener{ConnectionProviderInfo{ConnTypeTunneled, pe.FirstHop}, pl},
+		StreamDialer: &Dialer[transport.StreamConn]{ConnectionProviderInfo{ConnTypeTunneled, se.FirstHop}, sd.DialStream},
+		PacketProxy:  ppw,
 	}, nil
 }
 
@@ -121,15 +118,18 @@ func parseShadowsocksStreamDialer(ctx context.Context, config configyaml.ConfigN
 }
 
 func parseShadowsocksPacketDialer(ctx context.Context, config configyaml.ConfigNode, parsePE configyaml.ParseFunc[*Endpoint[net.Conn]]) (*Dialer[net.Conn], error) {
-	pl, err := parseShadowsocksPacketListener(ctx, config, parsePE)
+	ppw, err := parseShadowsocksPacketListener(ctx, config, parsePE)
 	if err != nil {
 		return nil, err
 	}
-	pd := transport.PacketListenerDialer{Listener: pl}
-	return &Dialer[net.Conn]{ConnectionProviderInfo{ConnTypeTunneled, pl.FirstHop}, pd.DialPacket}, nil
+	// We need a PacketListener to create a PacketListenerDialer.
+	// We can create one from the PacketProxy.
+	listener := &PacketProxyListener{Proxy: ppw.PacketProxy}
+	pd := transport.PacketListenerDialer{Listener: listener}
+	return &Dialer[net.Conn]{ConnectionProviderInfo{ConnTypeTunneled, ppw.FirstHop}, pd.DialPacket}, nil
 }
 
-func parseShadowsocksPacketListener(ctx context.Context, config configyaml.ConfigNode, parsePE configyaml.ParseFunc[*Endpoint[net.Conn]]) (*PacketListener, error) {
+func parseShadowsocksPacketListener(ctx context.Context, config configyaml.ConfigNode, parsePE configyaml.ParseFunc[*Endpoint[net.Conn]]) (*PacketProxyWrapper, error) {
 	params, err := parseShadowsocksParams(config)
 	if err != nil {
 		return nil, err
@@ -145,7 +145,11 @@ func parseShadowsocksPacketListener(ctx context.Context, config configyaml.Confi
 	if params.SaltGenerator != nil {
 		pl.SetSaltGenerator(params.SaltGenerator)
 	}
-	return &PacketListener{ConnectionProviderInfo{ConnTypeTunneled, pe.FirstHop}, pl}, nil
+	proxy, err := network.NewPacketProxyFromPacketListener(pl)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create PacketProxy from PacketListener: %w", err)
+	}
+	return &PacketProxyWrapper{ConnectionProviderInfo{ConnTypeTunneled, pe.FirstHop}, proxy}, nil
 }
 
 type shadowsocksParams struct {

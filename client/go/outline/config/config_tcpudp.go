@@ -31,13 +31,13 @@ type TCPUDPConfig struct {
 
 func NewTCPUDPTransportPairSubParser(
 	parseSD configyaml.ParseFunc[*Dialer[transport.StreamConn]],
-	parsePL configyaml.ParseFunc[*PacketListener]) func(ctx context.Context, input map[string]any) (*TransportPair, error) {
+	parsePPW configyaml.ParseFunc[*PacketProxyWrapper]) func(ctx context.Context, input map[string]any) (*TransportPair, error) {
 	return func(ctx context.Context, input map[string]any) (*TransportPair, error) {
-		return parseTCPUDPTransportPair(ctx, input, parseSD, parsePL)
+		return parseTCPUDPTransportPair(ctx, input, parseSD, parsePPW)
 	}
 }
 
-func parseTCPUDPTransportPair(ctx context.Context, configMap map[string]any, parseSD configyaml.ParseFunc[*Dialer[transport.StreamConn]], parsePL configyaml.ParseFunc[*PacketListener]) (*TransportPair, error) {
+func parseTCPUDPTransportPair(ctx context.Context, configMap map[string]any, parseSD configyaml.ParseFunc[*Dialer[transport.StreamConn]], parsePPW configyaml.ParseFunc[*PacketProxyWrapper]) (*TransportPair, error) {
 	var config TCPUDPConfig
 	if err := configyaml.MapToAny(configMap, &config); err != nil {
 		return nil, fmt.Errorf("invalid config format: %w", err)
@@ -48,13 +48,13 @@ func parseTCPUDPTransportPair(ctx context.Context, configMap map[string]any, par
 		return nil, fmt.Errorf("failed to parse StreamDialer: %w", err)
 	}
 
-	pl, err := parsePL(ctx, config.UDP)
+	ppw, err := parsePPW(ctx, config.UDP)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse PacketListener: %w", err)
+		return nil, fmt.Errorf("failed to parse PacketProxyWrapper: %w", err)
 	}
 
 	return &TransportPair{
-		StreamDialer:   sd,
-		PacketListener: pl,
+		StreamDialer: sd,
+		PacketProxy:  ppw,
 	}, nil
 }

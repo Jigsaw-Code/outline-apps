@@ -40,18 +40,21 @@ import (
 //     to handle that.
 //   - Refactor so that StartSession returns a Client
 type Client struct {
-	sd            *config.Dialer[transport.StreamConn]
-	pl            *config.PacketListener
+	transportPair *config.TransportPair
 	reporter      reporting.Reporter
 	sessionCancel context.CancelFunc
 }
 
 func (c *Client) DialStream(ctx context.Context, address string) (transport.StreamConn, error) {
-	return c.sd.Dial(ctx, address)
+	return c.transportPair.DialStream(ctx, address)
 }
 
 func (c *Client) ListenPacket(ctx context.Context) (net.PacketConn, error) {
-	return c.pl.ListenPacket(ctx)
+	return c.transportPair.ListenPacket(ctx)
+}
+
+func (c *Client) PacketProxy() *config.PacketProxyWrapper {
+	return c.transportPair.PacketProxy
 }
 
 func (c *Client) StartSession() error {
@@ -130,14 +133,14 @@ func NewClientWithBaseDialers(clientConfigText string, tcpDialer transport.Strea
 			Message: "transport must tunnel TCP traffic",
 		}
 	}
-	if transportPair.PacketListener.ConnType == config.ConnTypeDirect {
+	if transportPair.PacketProxy.ConnType == config.ConnTypeDirect {
 		return nil, &platerrors.PlatformError{
 			Code:    platerrors.InvalidConfig,
 			Message: "transport must tunnel UDP traffic",
 		}
 	}
 
-	client := &Client{sd: transportPair.StreamDialer, pl: transportPair.PacketListener}
+	client := &Client{transportPair: transportPair}
 	if clientConfig.Reporter != nil {
 		httpClient := &http.Client{
 			Transport: &http.Transport{

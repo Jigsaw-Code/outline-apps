@@ -80,7 +80,7 @@ func (api *vpnAPI) Establish(configStr string) (err error) {
 			}
 		}
 	}()
-	_, err = vpn.EstablishVPN(context.Background(), &conf.VPN, client, client)
+	_, err = vpn.EstablishVPN(context.Background(), &conf.VPN, client, client.PacketProxy())
 
 	api.clientMu.Lock()
 	if api.client != nil {

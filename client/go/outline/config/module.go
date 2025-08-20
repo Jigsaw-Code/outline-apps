@@ -20,6 +20,7 @@ import (
 	"net"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/configyaml"
+	"github.com/Jigsaw-Code/outline-sdk/network"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
@@ -65,11 +66,16 @@ func NewDefaultTransportProvider(tcpDialer transport.StreamDialer, udpDialer tra
 		}
 	})
 
-	packetListeners := newTypeParser(func(ctx context.Context, input configyaml.ConfigNode) (*PacketListener, error) {
+	packetProxies := newTypeParser(func(ctx context.Context, input configyaml.ConfigNode) (*PacketProxyWrapper, error) {
 		switch input.(type) {
 		case nil:
 			// An absent config implicitly means UDP.
-			return &PacketListener{ConnectionProviderInfo{ConnTypeDirect, ""}, &transport.UDPListener{}}, nil
+			listener := &transport.UDPListener{}
+			proxy, err := network.NewPacketProxyFromPacketListener(listener)
+			if err != nil {
+				return nil, err
+			}
+			return &PacketProxyWrapper{ConnectionProviderInfo{ConnTypeDirect, ""}, proxy}, nil
 		default:
 			return nil, errors.New("parser not specified")
 		}
@@ -103,11 +109,11 @@ func NewDefaultTransportProvider(tcpDialer transport.StreamDialer, udpDialer tra
 	// Packet dialers.
 	packetDialers.RegisterSubParser("shadowsocks", NewShadowsocksPacketDialerSubParser(packetEndpoints.Parse))
 
-	// Packet listeners.
-	packetListeners.RegisterSubParser("shadowsocks", NewShadowsocksPacketListenerSubParser(packetEndpoints.Parse))
+	// Packet proxies.
+	packetProxies.RegisterSubParser("shadowsocks", NewShadowsocksPacketListenerSubParser(packetEndpoints.Parse))
 
 	// Transport pairs.
-	transports.RegisterSubParser("tcpudp", NewTCPUDPTransportPairSubParser(streamDialers.Parse, packetListeners.Parse))
+	transports.RegisterSubParser("tcpudp", NewTCPUDPTransportPairSubParser(streamDialers.Parse, packetProxies.Parse))
 
 	return transports
 }
