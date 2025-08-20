@@ -143,7 +143,7 @@
 		3047A5111AB8059700498E2A /* build.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = build.xcconfig; path = cordova/build.xcconfig; sourceTree = SOURCE_ROOT; };
 		32CA4F630368D1EE00C91783 /* Outline-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Outline-Prefix.pch"; sourceTree = "<group>"; };
 		3B0347431F212E6500C8EF1F /* Outline.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = Outline.entitlements; path = Outline/Outline.entitlements; sourceTree = "<group>"; };
-		5260B0572C4F09FB00CDF289 /* OutlineLib.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OutlineLib.xcodeproj; path = ../../OutlineLib/OutlineLib.xcodeproj; sourceTree = "<group>"; };
+		5260B0572C4F09FB00CDF289 /* OutlineLib.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OutlineLib.xcodeproj; path = ../../apple/OutlineLib/OutlineLib.xcodeproj; sourceTree = "<group>"; };
 		65A9AC9B2BEC091700C5899F /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		6AFF5BF81D6E424B00AB3073 /* CDVLaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = CDVLaunchScreen.storyboard; path = Outline/CDVLaunchScreen.storyboard; sourceTree = SOURCE_ROOT; };
 		8D1107310486CEB800E47090 /* Outline-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "Outline-Info.plist"; path = "Outline/Outline-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = SOURCE_ROOT; };
@@ -227,7 +227,7 @@
 		EB87FDF31871DA8E0020F90C /* www */ = {isa = PBXFileReference; lastKnownFileType = folder; name = www; path = ../../www; sourceTree = "<group>"; };
 		EB87FDF41871DAF40020F90C /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = config.xml; path = ../../config.xml; sourceTree = "<group>"; };
 		ED33DF2A687741AEAF9F8254 /* Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
-		F63DC2162970AFE600D92E0A /* OutlineAppleLib */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = OutlineAppleLib; path = ../../OutlineAppleLib; sourceTree = "<group>"; };
+		F63DC2162970AFE600D92E0A /* OutlineAppleLib */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = OutlineAppleLib; path = ../../apple/OutlineAppleLib; sourceTree = "<group>"; };
 		F840E1F0165FE0F500CFE078 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = config.xml; path = Outline/config.xml; sourceTree = "<group>"; };
 		FC8C310A1FAA814A004262BE /* NetworkExtension.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NetworkExtension.framework; path = System/Library/Frameworks/NetworkExtension.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
