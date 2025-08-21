@@ -4,10 +4,10 @@ This document provides a guide for AI agents working with the Outline infrastruc
 
 ## Directory Structure
 
-The `/infrastructure` directory contains the build system, deployment scripts, and other infrastructure-related code for the Outline project.
+The `/infrastructure` directory contains the build system, deployment scripts, and other application-independent code for the Outline project.
 
 *   `/build`: Contains the core scripts for the `npm run action` command.
-*   `*.ts`: Various TypeScript files providing utility functions for the build system, such as network requests, cryptography, and internationalization.
+*   `*.ts`: Various TypeScript files providing utility functions for the build system and applications, similar to third-party dependencies.
 
 ## The `npm run action` Build System
 

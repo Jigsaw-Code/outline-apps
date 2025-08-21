@@ -1,14 +1,14 @@
 # Welcome to the Outline Monorepo!
 
-This document provides a guide for AI agents working with the Outline codebase.
+This document provides a guide for AI and human agents working with the Outline codebase.
 
 ## Repository Structure
 
 The Outline monorepo is organized into three main components:
 
-*   `/client`: Contains the source code for the Outline client applications, available on all major platforms.
-*   `/server_manager`: Includes the web-based management console for Outline servers.
-*   `/infrastructure`: Houses the build system, deployment scripts, and other infrastructure-related code.
+*   `/client`: Contains the source code for the Outline Client application, available on all major platforms.
+*   `/server_manager`: Includes a graphical application to create and manage Outline Servers.
+*   `/infrastructure`: Houses the build system, and other infrastructure-related code.
 
 ## The `npm run action` Command
 
@@ -31,6 +31,5 @@ For a full list of actions, run `npm run action list`.
 *   **Shadowbox**: The core proxy component of Outline, responsible for handling network traffic.
 *   **Electron**: The framework used to build the desktop versions of the Outline Client and Server Manager.
 *   **Cordova**: The framework used to build the mobile versions of the Outline Client.
-*   **Svelte**: The UI framework used for the web-based components of the Server Manager.
 *   **Polymer**: The UI framework used for some of the older web-based components of the client.
 *   **OutlineAction**: A custom build script located in the `/infrastructure` directory that defines a specific action that can be run with `npm run action`.

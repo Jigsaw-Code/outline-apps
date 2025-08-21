@@ -1,23 +1,24 @@
 # <img alt="Outline Client Logo" src="../docs/resources/logo_client.png" title="Outline Client" width="32">&nbsp;&nbsp;Outline Client
 
-This document provides a guide for AI agents working on the Outline Client.
+This document provides a guide for AI and human agents working on the Outline Client.
 
 ## Directory Structure
 
 The `/client` directory contains the source code for all Outline client applications. Here's a breakdown of the key subdirectories:
 
 *   `/electron`: Contains the Electron-specific code for the desktop client, including the main process, preload scripts, and build configurations.
-*   `/go`: Contains the Go source code for the client-side VPN tunnel.
-*   `/src/cordova`: Contains the Cordova-specific code for the mobile clients (iOS and Android).
-*   `/src/www`: Contains the shared web-based UI components, built with Polymer and TypeScript. This code is used by both the Electron and Cordova applications.
+*   `/go`: Contains shared Go source code that is used across platforms for networking and other functionality that cannot be done on the browser.
+*   `/src/cordova`: Contains the Cordova-specific code for the mobile (iOS and Android) and macOS (via Mac Catalyst) clients.
+*   `/src/www`: Contains the shared web-based UI components, built with TypeScript. This code is used by both the Electron and Cordova applications.
 
 ## Key Technologies
 
-*   **Electron**: Used to build the desktop client for Windows, macOS, and Linux.
-*   **Cordova**: Used to build the mobile clients for iOS and Android.
-*   **Polymer**: The primary UI framework for the client's web-based components.
+*   **Electron**: Used to build the desktop client for Windows and Linux.
+*   **Cordova**: Used to build the clients for macOS, iOS, Android.
+*   **[Lit](https://lit.dev/)**: a simple library for building fast, lightweight web components, core to the client's web-based components.
+*   **Polymer**: The legacy UI framework used before Lit.
 *   **TypeScript**: Used for all web-based code.
-*   **Go**: Used to implement the client-side VPN tunnel.
+*   **Go**: Used to implement the networking and other shared code.
 
 ## Building and Running the Client
 
@@ -41,16 +42,12 @@ npm run action storybook
 
 *   **Build (Linux)**: `npm run action client/electron/build linux`
 *   **Build (Windows)**: `npm run action client/electron/build windows`
-*   **Build (macOS)**: `npm run action client/electron/build macos`
-*   **Run**: `npm run action client/electron/start`
 
-### Cordova Clients (Mobile)
+### Cordova Clients
 
-*   **Setup**: `npm run action client/src/cordova/setup` (run once before building)
 *   **Build (Android)**: `npm run action client/src/cordova/build android`
 *   **Build (iOS)**: `npm run action client/src/cordova/build ios`
-*   **Run (Android)**: `npm run action client/src/cordova/run android`
-*   **Run (iOS)**: `npm run action client/src/cordova/run ios`
+*   **Build (macOS)**: `npm run action client/src/cordova/build macos`
 
 ### Configuration Flags
 
@@ -70,7 +67,6 @@ SENTRY_DSN=<your sentry dsn> npm run action client/src/cordova/setup macos -- --
 ## Additional Resources
 
 *   [Life of a Packet](/docs/life_of_a_packet.md): Learn how the Outline Client works.
-*   [Accepting a server invite](/docs/invitation_instructions.md): Instructions on how to accept a server invite.
 *   [Developing for Apple (macOS and iOS)](src/cordova/apple)
 *   [Developing for Android](src/cordova/android)
 *   [Developing for Electron (Windows and Linux)](electron)
