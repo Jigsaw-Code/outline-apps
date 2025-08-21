@@ -45,7 +45,7 @@ export interface Server {
 export interface ServerRepository {
   add(accessKey: string): Promise<void>;
   rename(serverId: string, name: string): void;
-  forget(serverId: string): void;
+  forget(serverId: string): Promise<void>;
   undoForget(serverId: string): void;
   getAll(): Server[];
   getById(serverId: string): Server | undefined;

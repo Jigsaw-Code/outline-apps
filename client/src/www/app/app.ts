@@ -520,7 +520,7 @@ export class App {
     } catch (e) {
       console.warn(`failed to disconnect from server to forget: ${e}`);
     }
-    this.serverRepo.forget(serverId);
+    await this.serverRepo.forget(serverId);
   }
 
   private renameServer(event: CustomEvent) {

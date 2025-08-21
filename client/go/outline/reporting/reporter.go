@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"net/url"
 	"time"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/useragent"
@@ -32,7 +31,7 @@ type Reporter interface {
 }
 
 type HTTPReporter struct {
-	URL        url.URL
+	NewRequest func() (*http.Request, error)
 	Interval   time.Duration
 	HttpClient *http.Client
 }
@@ -59,7 +58,6 @@ func (r *HTTPReporter) Run(sessionCtx context.Context) {
 }
 
 func (r *HTTPReporter) reportAndLogError() {
-	slog.Debug("Sending report", "url", r.URL)
 	err := r.Report()
 	if err != nil {
 		slog.Warn("Failed to report", "err", err)
@@ -67,19 +65,20 @@ func (r *HTTPReporter) reportAndLogError() {
 }
 
 func (r *HTTPReporter) Report() error {
-	req, err := http.NewRequest("POST", r.URL.String(), nil)
+	req, err := r.NewRequest()
 	if err != nil {
-		return fmt.Errorf("failed to create report HTTP request: %w", err)
+		return fmt.Errorf("failed to create request: %w", err)
 	}
 	req.Close = true
-	// TODO: Add Outline Client version.
 	req.Header.Add("User-Agent", useragent.GetOutlineUserAgent())
 
+	slog.Debug("Sending report", "url", req.URL)
 	resp, err := r.HttpClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("failed to send report: %w", err)
 	}
 	resp.Body.Close()
+
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return fmt.Errorf("report failed with status code %d", resp.StatusCode)
 	}
