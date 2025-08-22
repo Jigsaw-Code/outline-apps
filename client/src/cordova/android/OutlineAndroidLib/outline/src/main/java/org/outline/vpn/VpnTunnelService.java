@@ -49,6 +49,8 @@ import org.outline.IVpnTunnelService;
 import org.outline.TunnelConfig;
 import org.outline.DetailedJsonError;
 import org.outline.log.SentryErrorReporter;
+
+import outline.ClientConfig;
 import outline.NewClientResult;
 import outline.Outline;
 import outline.TCPAndUDPConnectivityResult;
@@ -228,7 +230,9 @@ public class VpnTunnelService extends VpnService {
       this.tunFd = null;
     }
 
-    final NewClientResult clientResult = Outline.newClient(config.transportConfig);
+    final ClientConfig clientConfig = new ClientConfig();
+    clientConfig.setDataDir(this.getFilesDir().getAbsolutePath());
+    final NewClientResult clientResult = clientConfig.new_(config.id, config.transportConfig);
     if (clientResult.getError() != null) {
       LOG.log(Level.WARNING, "Failed to create Outline Client", clientResult.getError());
       tearDownActiveTunnel();
