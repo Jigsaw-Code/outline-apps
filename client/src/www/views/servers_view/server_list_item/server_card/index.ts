@@ -23,6 +23,8 @@ import './server_rename_dialog';
 import {ServerListItem, ServerListItemElement, ServerListItemEvent} from '..';
 import {ServerConnectionState} from '../../server_connection_indicator';
 
+export { ServerCard } from "./main";
+
 const sharedCSS = css`
   /* TODO(daniellacosse): reset via postcss */
   h2,
