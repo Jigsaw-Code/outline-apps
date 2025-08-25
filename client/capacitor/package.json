@@ -12,9 +12,5 @@
     "start": "webpack",
     "build": "webpack",
     "preview": "webpack serve"
-  },
-  "devDependencies": {
-    "@capacitor/cli": "^7.2.0",
-    "@capacitor/assets": "^3.0.0"
   }
 }
