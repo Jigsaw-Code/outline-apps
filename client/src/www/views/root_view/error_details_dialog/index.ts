@@ -14,16 +14,73 @@
 import {LitElement, html, css} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 
+async function sendErrorToProvider(error: string, accessKey: string, webhookUrl: string): Promise<void> {
+  try {
+    let key = accessKey.trim();
+  
+    // Handle only dynamic URLs
+    if (key.startsWith('ssconf://') || key.startsWith('https://')) {
+      const url = new URL(key.replace(/^ssconf:\/\//, 'https://'));
+      const response = await fetch(url.toString());
+      if (!response.ok) throw new Error('Failed to fetch dynamic config');
+  
+      const configJson = await response.json();
+      if (configJson) { 
+        accessKey += configJson;
+      }
+
+      // Read the Updated Webhook from key
+      if ('webhook' in configJson) {
+        webhookUrl = configJson['webhook'];
+        console.log('webhook:', webhookUrl);
+      }
+    }
+  } catch (e) {
+    console.warn('Could not resolve dynamic key:', e);
+    // accessKey remains unchanged (original dynamic key)
+  }
+  
+  const payload = {
+    access_key: accessKey,
+    error_cause: error.toString(),
+  };
+  
+  console.log('Webhook URL:', webhookUrl);  
+  fetch(webhookUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  })
+  .then((response) => {
+    if (response.ok) {
+      console.log('Message sent successfully!');
+    } else {
+      console.error('Failed to send message.');
+    }
+  })
+  .catch((fetchError) => {
+    console.error('Error sending message: ' + fetchError.message);
+  });
+} 
+
 @customElement('error-details-dialog')
 export class ErrorDetailsDialog extends LitElement {
-  @property({type: String}) errorDetails: string | null = null;
-  @property({type: Object}) localize!: (
+  @property({type: String}) errorDetails: string = '';
+  @property({type: Object}) localize: (
     key: string,
     ...args: string[]
-  ) => string;
+  ) => string = (k) => k;
+
   @property({type: Boolean}) open: boolean;
 
+  @property({type: String}) accessKey: string = '';
+  @property({type: String}) webhookUrl: string = '';
+  @property({type: Boolean}) showSendErrorButton: boolean = false;
+  
   @state() copied: boolean = false;
+  @state() sent: boolean = false;
 
   static styles = css`
     :host {
@@ -61,6 +118,31 @@ export class ErrorDetailsDialog extends LitElement {
     }
   `;
 
+  private _onShowErrorDetails = (event: Event) => {
+    const {errorDetails, accessKey, webhookUrl, showSendErrorButton} = (event as CustomEvent).detail;
+    this.openWithDetails(errorDetails, accessKey, webhookUrl, showSendErrorButton);
+  };
+  
+  connectedCallback() {
+    super.connectedCallback();
+    window.addEventListener('show-error-details', this._onShowErrorDetails);
+  }
+  
+  disconnectedCallback() {
+    window.removeEventListener('show-error-details', this._onShowErrorDetails);
+    super.disconnectedCallback();
+  }
+  
+
+  openWithDetails(errorDetails: string, accessKey: string, webhookUrl: string, showSendErrorButton: boolean) {
+    this.errorDetails = errorDetails;
+    this.accessKey = accessKey;
+    this.webhookUrl = webhookUrl;
+    this.showSendErrorButton = showSendErrorButton;
+    this.open = true;
+  }
+  
+
   render() {
     return html`<md-dialog .open="${this.open}" quick @closed="${this.cleanup}">
       <header slot="headline">
@@ -82,15 +164,35 @@ export class ErrorDetailsDialog extends LitElement {
               : 'error-details-dialog-copy'
           )}
         </md-text-button>
+
+        ${this.showSendErrorButton
+          ? html`
+            <md-text-button
+              @click="${() => {
+                console.log('Webhook in dialog: ', this.webhookUrl);
+                sendErrorToProvider(this.errorDetails, this.accessKey, this.webhookUrl);
+                this.sent = true;
+              }}"
+            >
+            ${this.localize(
+              this.sent
+                ? 'error-details-dialog-sent'
+                : 'error-details-dialog-send'
+              )}
+            </md-text-button>
+          `
+        : null}
+
         <md-filled-button @click="${this.cleanup}"
           >${this.localize('error-details-dialog-dismiss')}</md-filled-button
         >
       </fieldset>
     </md-dialog>`;
   }
-
+  
   cleanup() {
     this.open = false;
     this.copied = false;
+    this.sent = false;
   }
 }

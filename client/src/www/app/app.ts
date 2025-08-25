@@ -28,6 +28,8 @@ import {Server, ServerRepository} from '../model/server';
 import {OutlineErrorReporter} from '../shared/error_reporter';
 import {ServerConnectionState, ServerListItem} from '../views/servers_view';
 import {SERVER_CONNECTION_INDICATOR_DURATION_MS} from '../views/servers_view/server_connection_indicator';
+import {error} from 'console';
+import e from 'express';
 
 enum OUTLINE_ACCESS_KEY_SCHEME {
   STATIC = 'ss',
@@ -257,11 +259,13 @@ export class App {
     }
   }
 
-  showLocalizedError(error?: Error, toastDuration = 10000) {
+  showLocalizedError(key?: string, error?: Error, toastDuration = 10000) {
     let toastMessage: string;
     let buttonMessage: string;
     let buttonHandler: () => void;
     let buttonLink: string;
+    let sendErrorButtonMessage: string;
+    let sendErrorButtonHandler: () => void;
 
     if (error instanceof errors.VpnPermissionNotGranted) {
       toastMessage = this.localize(
@@ -319,20 +323,35 @@ export class App {
     } else if (error instanceof errors.InvalidServiceConfiguration) {
       toastMessage = this.localize('error-connection-configuration');
       buttonMessage = this.localize('error-details');
+      const {found, accessKey, webhookUrl} = this.keyHasWebhook(key);
       buttonHandler = () => {
-        this.showErrorCauseDialog(error);
+        if (found) {
+          this.showErrorCauseDialog(error, accessKey, webhookUrl);
+        } else {
+          this.showErrorCauseDialog(error);
+        }
       };
     } else if (error instanceof errors.SessionConfigFetchFailed) {
       toastMessage = this.localize('error-connection-configuration-fetch');
       buttonMessage = this.localize('error-details');
+      const {found, accessKey, webhookUrl} = this.keyHasWebhook(key);
       buttonHandler = () => {
-        this.showErrorCauseDialog(error);
+        if (found) {
+          this.showErrorCauseDialog(error, accessKey, webhookUrl);
+        } else {
+          this.showErrorCauseDialog(error);
+        }
       };
     } else if (error instanceof errors.ProxyConnectionFailure) {
       toastMessage = this.localize('error-connection-proxy');
       buttonMessage = this.localize('error-details');
+      const {found, accessKey, webhookUrl} = this.keyHasWebhook(key);
       buttonHandler = () => {
-        this.showErrorCauseDialog(error);
+        if (found) {
+          this.showErrorCauseDialog(error, accessKey, webhookUrl);
+        } else {
+          this.showErrorCauseDialog(error);
+        }
       };
     } else if (error instanceof errors.SessionProviderError) {
       toastMessage = error.message;
@@ -349,8 +368,13 @@ export class App {
 
       if (hasErrorDetails) {
         buttonMessage = this.localize('error-details');
+        const {found, accessKey, webhookUrl} = this.keyHasWebhook(key);
         buttonHandler = () => {
-          this.showErrorCauseDialog(error);
+          if (found) {
+            this.showErrorCauseDialog(error, accessKey, webhookUrl);
+          } else {
+            this.showErrorCauseDialog(error);
+          }
         };
       }
     }
@@ -364,7 +388,7 @@ export class App {
           toastDuration,
           buttonMessage,
           buttonHandler,
-          buttonLink
+          buttonLink,
         );
       }, 500);
     }
@@ -458,7 +482,7 @@ export class App {
       .add(event.detail.accessKey)
       .catch(err => {
         this.changeToDefaultPage();
-        this.showLocalizedError(err);
+        this.showLocalizedError(event.detail.accessKey, err);
       })
       .finally(() => {
         this.rootEl.$.addServerView.open = false;
@@ -472,7 +496,7 @@ export class App {
       await this.confirmAddServer(accessKey);
     } catch (err) {
       console.error('Failed to confirm add sever.', err);
-      this.showLocalizedError(err);
+      this.showLocalizedError(accessKey, err);
     }
   }
 
@@ -496,7 +520,7 @@ export class App {
       if (!fromClipboard && e instanceof errors.ServerAlreadyAdded) {
         // Display error message and don't propagate error if this is not a clipboard add.
         addServerView.open = false;
-        this.showLocalizedError(e);
+        this.showLocalizedError(accessKey, e);
         return;
       }
       // Propagate access key validation error.
@@ -511,7 +535,7 @@ export class App {
     const server = this.serverRepo.getById(serverId);
     if (!server) {
       console.error(`No server with id ${serverId}`);
-      return this.showLocalizedError();
+      return this.showLocalizedError(serverId);
     }
     try {
       if (await server.checkRunning()) {
@@ -579,7 +603,7 @@ export class App {
           return;
         }
       }
-      this.showLocalizedError(e);
+      this.showLocalizedError(serverId, e);
     }
   }
 
@@ -599,7 +623,7 @@ export class App {
           this.localize('outline-services-installation-failed')
         );
       } else {
-        this.showLocalizedError(err);
+        this.showLocalizedError('', err);
       }
     }
   }
@@ -673,7 +697,7 @@ export class App {
       this.updateServerListItem(serverId, {
         connectionState: ServerConnectionState.CONNECTED,
       });
-      this.showLocalizedError(e);
+      this.showLocalizedError(serverId, e);
       console.warn(`could not disconnect from server ${serverId}: ${e.name}`);
     }
   }
@@ -714,7 +738,59 @@ export class App {
     });
   }
 
-  private onServerAdded(event: events.ServerAdded) {
+  private async onServerAdded(event: events.ServerAdded) {
+    let accessKey: string | undefined = undefined;
+    const serverAny = event.server as any;
+
+    if (serverAny?.serviceConfig?.transportConfigLocation?.href) {
+      accessKey = serverAny.serviceConfig.transportConfigLocation.href;
+    } else if (serverAny?.serviceConfig?.tunnelConfig?.transport) {
+      accessKey = serverAny.serviceConfig.tunnelConfig.transport;
+    }
+    
+    console.debug('Server added:', event.server);
+    const id = event.server.id;
+    const webhookPattern = /&webhook=([^&#]+)/;
+    
+    const match = accessKey.match(webhookPattern);
+    if (match) {
+      const webhookUrl = match[1];
+      accessKey = accessKey.replace(webhookPattern, '');
+  
+      try {
+        const dataToSave = {
+          accessKey,
+          id,
+          webhookUrl,
+        };
+  
+        const existingData = localStorage.getItem('filtered_access_keys');
+        let dataArray = [];
+          
+        if (existingData) {
+          try {
+            dataArray = JSON.parse(existingData);
+          } catch (error) {
+            console.error('Error parsing existing data:', error);
+            dataArray = [];
+          }
+        }
+  
+        if (!Array.isArray(dataArray)) {
+          dataArray = [dataArray];
+        }
+  
+        dataArray.push(dataToSave);
+        localStorage.setItem('filtered_access_keys', JSON.stringify(dataArray));
+        console.log('Key:', accessKey, '\n& WebhookUrl:', webhookUrl, 'were saved locally.');
+  
+      } catch (error) {
+        console.error('Error retrieving the webhook information:', error);
+      }
+    } else {
+      console.log('Found no webhook in access key:', accessKey);
+    }
+    
     const server = event.server;
     console.debug('Server added');
     this.syncServersToUI();
@@ -762,7 +838,7 @@ export class App {
     return new Promise<boolean>(resolve => resolve(confirm(message)));
   }
 
-  private showErrorCauseDialog(error: Error) {
+  private showErrorCauseDialog(error: Error, accessKey?: string, webhookUrl?: string) {
     const makeString = (error: unknown, indent: string): string => {
       let message = indent + String(error);
       if (error instanceof Object && 'cause' in error && error.cause) {
@@ -771,8 +847,21 @@ export class App {
       }
       return message;
     };
-    return this.rootEl.showErrorDetails(makeString(error, ''));
+
+    const safeAccessKey = accessKey || '';
+    const safeWebhookUrl = webhookUrl || '';
+    const showSendErrorButton = Boolean(accessKey && webhookUrl);
+
+    window.dispatchEvent(new CustomEvent('show-error-details', {
+      detail: {
+        errorDetails: makeString(error, ''),
+        accessKey: safeAccessKey,
+        webhookUrl: safeWebhookUrl,
+        showSendErrorButton,
+      }
+    }));
   }
+  
   //#endregion UI dialogs
 
   // Helpers:
@@ -872,7 +961,7 @@ export class App {
 
   private showLocalizedErrorInDefaultPage(err: Error) {
     this.changeToDefaultPage();
-    this.showLocalizedError(err);
+    this.showLocalizedError('', err);
   }
 
   private isWindows() {
@@ -904,5 +993,54 @@ export class App {
     }
 
     this.rootEl.selectedAppearance = appearance;
+  }
+
+  private keyHasWebhook(key: string): { found: boolean, accessKey?: string, webhookUrl?: string } {
+    const storageKey = "filtered_access_keys";
+    const storedData = localStorage.getItem(storageKey);
+
+    if (!storedData) {
+      console.error("No stored data found.");
+      return { found: false };
+    }
+
+    let data: any[] = [];
+    try {
+      data = JSON.parse(storedData);
+
+      if (!Array.isArray(data)) {
+        console.warn("Stored data is not an array. Clearing malformed data.");
+        localStorage.removeItem(storageKey);
+        return { found: false };
+      }
+    } catch (e) {
+      console.error("Failed to parse stored data. Clearing malformed data.", e);
+      localStorage.removeItem(storageKey);
+      return { found: false };
+    }
+
+    const foundData = [...data].reverse().find((item: any) =>
+      typeof item === 'object' &&
+      item !== null &&
+      (item.id === key || item.accessKey === key) &&
+      typeof item.webhookUrl === 'string'
+    );    
+
+    if (foundData) {
+      console.log("Found matching item:", foundData);
+      let url = foundData.webhookUrl;
+      if(!(url.startsWith('http://') || url.startsWith('https://'))) {
+        url = 'https://' + url;
+      }
+      return {
+        found: true,
+        accessKey: foundData.accessKey,
+        webhookUrl: url
+      };
+    } else {
+      console.warn("No matching item found for key:", key);
+      console.log(data);
+      return { found: false };
+    }
   }
 }

@@ -67,6 +67,7 @@
     "@rollup/plugin-image": "^2.1.1",
     "@types/auto-launch": "^5.0.0",
     "@types/cordova": "^0.0.34",
+    "@types/cordova-plugin-device": "^1.1.5",
     "@types/jasmine": "^4.3.6",
     "@types/node": "^14.14.7",
     "@types/polymer": "^1.2.9",
@@ -80,6 +81,7 @@
     "cordova-ios": "github:apache/cordova-ios#1a5cd45e2243b239b5045a0ade9d2da1d779b72a",
     "cordova-lib": "^11.0.0",
     "cordova-plugin-clipboard": "github:Jigsaw-Code/outline-cordova-plugin-clipboard#v2.0.0",
+    "cordova-plugin-device": "^3.0.0",
     "cordova-plugin-outline": "file:src/cordova/plugin",
     "cordova-webintent": "github:cordova-misc/cordova-webintent#v2.0.0",
     "css-loader": "^5.0.1",
@@ -137,7 +139,8 @@
       "cordova-plugin-splashscreen": {},
       "cordova-plugin-statusbar": {},
       "cordova-plugin-clipboard": {},
-      "cordova-webintent": {}
+      "cordova-webintent": {},
+      "cordova-plugin-device": {}
     },
     "platforms": [
       "browser",
