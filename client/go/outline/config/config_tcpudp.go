@@ -20,6 +20,7 @@ import (
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/configyaml"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
+	"github.com/eycorsican/go-tun2socks/core"
 )
 
 // TCPUDPConfig is the format for the TCPUDP config. It specifies separate TCP and UDP configs
@@ -31,13 +32,13 @@ type TCPUDPConfig struct {
 
 func NewTCPUDPTransportPairSubParser(
 	parseSD configyaml.ParseFunc[*Dialer[transport.StreamConn]],
-	parsePL configyaml.ParseFunc[*PacketListener]) func(ctx context.Context, input map[string]any) (*TransportPair, error) {
+	parseUH configyaml.ParseFunc[*core.UDPConnHandler]) func(ctx context.Context, input map[string]any) (*TransportPair, error) {
 	return func(ctx context.Context, input map[string]any) (*TransportPair, error) {
-		return parseTCPUDPTransportPair(ctx, input, parseSD, parsePL)
+		return parseTCPUDPTransportPair(ctx, input, parseSD, parseUH)
 	}
 }
 
-func parseTCPUDPTransportPair(ctx context.Context, configMap map[string]any, parseSD configyaml.ParseFunc[*Dialer[transport.StreamConn]], parsePL configyaml.ParseFunc[*PacketListener]) (*TransportPair, error) {
+func parseTCPUDPTransportPair(ctx context.Context, configMap map[string]any, parseSD configyaml.ParseFunc[*Dialer[transport.StreamConn]], parseUH configyaml.ParseFunc[*core.UDPConnHandler]) (*TransportPair, error) {
 	var config TCPUDPConfig
 	if err := configyaml.MapToAny(configMap, &config); err != nil {
 		return nil, fmt.Errorf("invalid config format: %w", err)
@@ -48,13 +49,13 @@ func parseTCPUDPTransportPair(ctx context.Context, configMap map[string]any, par
 		return nil, fmt.Errorf("failed to parse StreamDialer: %w", err)
 	}
 
-	pl, err := parsePL(ctx, config.UDP)
+	uh, err := parseUH(ctx, config.UDP)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse PacketListener: %w", err)
+		return nil, fmt.Errorf("failed to parse UDPHandler: %w", err)
 	}
 
 	return &TransportPair{
 		StreamDialer:   sd,
-		PacketListener: pl,
+		UDPHandler: 	uh,
 	}, nil
 }
