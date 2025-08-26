@@ -1,4 +1,4 @@
-"connected_server_state" = "Միացված է";
-"disconnected_server_state" = "Անջատված է";
 "tray_open_window" = "Բացել";
 "quit" = "Փակել";
+"disconnect" = "Disconnect";
+"connect" = "Connect";
