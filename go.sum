@@ -61,8 +61,8 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/Jigsaw-Code/outline-sdk v0.0.20 h1:4ep7MK9lFmcyPIRIbn4xrP1VKdJNsqR6+iJEOHDKnNg=
 github.com/Jigsaw-Code/outline-sdk v0.0.20/go.mod h1:CFDKyGZA4zatKE4vMLe8TyQpZCyINOeRFbMAmYHxodw=
-github.com/Jigsaw-Code/outline-sdk/x v0.0.5 h1:ls768pRw5by/YL5NSVG7Qspq8NrbgXsAqML3sIgFPkM=
-github.com/Jigsaw-Code/outline-sdk/x v0.0.5/go.mod h1:l9BHj3M+4EPJyeDKWQlrtuppEC4P8Gfl+eKs1dyJZ2g=
+github.com/Jigsaw-Code/outline-sdk/x v0.0.6 h1:N4N6R+sO50NuGon8b+mJRJ+MHeK3ytGGxXA0LTSnlYk=
+github.com/Jigsaw-Code/outline-sdk/x v0.0.6/go.mod h1:l9BHj3M+4EPJyeDKWQlrtuppEC4P8Gfl+eKs1dyJZ2g=
 github.com/Masterminds/semver/v3 v3.2.1 h1:RN9w6+7QoMeJVGyfmbcgs28Br8cvmnucEXnY0rYXWg0=
 github.com/Masterminds/semver/v3 v3.2.1/go.mod h1:qvl/7zhW3nngYb5+80sSMF+FG2BjYrf8m9wsX0PNOMQ=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
