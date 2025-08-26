@@ -1,4 +1,4 @@
 "tray_open_window" = "Otvori";
 "quit" = "Zatvori";
-"disconnect" = "Disconnect";
-"connect" = "Connect";
+"disconnect_button_label" = "Prekini vezu";
+"connect_button_label" = "Poveži";

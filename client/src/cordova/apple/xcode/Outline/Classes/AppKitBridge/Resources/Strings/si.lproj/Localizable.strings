@@ -1,4 +1,4 @@
 "tray_open_window" = "විවෘතයි";
 "quit" = "ඉවත් වන්න";
-"disconnect" = "Disconnect";
-"connect" = "Connect";
+"disconnect_button_label" = "විසන්‍ධි කරන්න";
+"connect_button_label" = "සම්බන්‍ධ කරන්න";

@@ -1,4 +1,4 @@
 "tray_open_window" = "Åpne";
 "quit" = "Avslutt";
-"disconnect" = "Disconnect";
-"connect" = "Connect";
+"disconnect_button_label" = "Koble fra";
+"connect_button_label" = "Koble til";

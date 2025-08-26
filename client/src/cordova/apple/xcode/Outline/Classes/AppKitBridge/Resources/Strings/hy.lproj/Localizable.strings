@@ -1,4 +1,4 @@
 "tray_open_window" = "Բացել";
 "quit" = "Փակել";
-"disconnect" = "Disconnect";
-"connect" = "Connect";
+"disconnect_button_label" = "Անջատել";
+"connect_button_label" = "Միանալ";
