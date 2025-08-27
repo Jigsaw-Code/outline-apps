@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"errors"
 	"log/slog"
+	"net"
 	"strconv"
 	"sync"
 
@@ -26,6 +27,7 @@ import (
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/config"
 	perrs "github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/vpn"
+	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
 // establishVpnRequestJSON must match TypeScript's EstablishVpnRequestJson.
@@ -61,9 +63,18 @@ func (api *vpnAPI) Establish(configStr string) (err error) {
 	}
 
 	clientConfig := ClientConfig{}
-	tcp := newFWMarkProtectedTCPDialer(conf.VPN.ProtectionMark)
-	udp := newFWMarkProtectedUDPDialer(conf.VPN.ProtectionMark)
-	clientConfig.TransportParser = config.NewDefaultTransportProvider(tcp, udp)
+	baseTCPDialer := newFWMarkProtectedTCPDialer(conf.VPN.ProtectionMark)
+	defaultStreamDialer := &config.Dialer[transport.StreamConn]{
+		ConnectionProviderInfo: config.ConnectionProviderInfo{ConnType: config.ConnTypeDirect},
+		Dial:                   baseTCPDialer.DialStream,
+	}
+	baseUDPDialer := newFWMarkProtectedUDPDialer(conf.VPN.ProtectionMark)
+	defaultPacketDialer := &config.Dialer[net.Conn]{
+		ConnectionProviderInfo: config.ConnectionProviderInfo{ConnType: config.ConnTypeDirect},
+		Dial:                   baseUDPDialer.DialPacket,
+	}
+
+	clientConfig.TransportParser = config.NewDefaultTransportProvider(defaultStreamDialer, defaultPacketDialer)
 	result := clientConfig.New(conf.VPN.ID, conf.Client)
 	if result.Error != nil {
 		return result.Error
