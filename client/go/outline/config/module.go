@@ -20,6 +20,7 @@ import (
 	"net"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/configyaml"
+	"github.com/Jigsaw-Code/outline-sdk/network"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
@@ -75,6 +76,16 @@ func NewDefaultTransportProvider(tcpDialer transport.StreamDialer, udpDialer tra
 		}
 	})
 
+	packetProxies := newTypeParser(func(ctx context.Context, input configyaml.ConfigNode) (*PacketProxy, error) {
+		switch input.(type) {
+		case nil:
+			// An absent config implicitly means UDP.
+			return &PacketProxy{ConnectionProviderInfo{ConnTypeDirect, ""}, &network.PacketListenerProxy{}}, nil
+		default:
+			return nil, errors.New("parser not specified")
+		}
+	})
+
 	streamEndpoints = newTypeParser(func(ctx context.Context, input configyaml.ConfigNode) (*Endpoint[transport.StreamConn], error) {
 		// TODO: perhaps only support string here to force the struct to have an explicit parser.
 		return parseDirectDialerEndpoint(ctx, input, streamDialers.Parse)
@@ -108,7 +119,7 @@ func NewDefaultTransportProvider(tcpDialer transport.StreamDialer, udpDialer tra
 	packetListeners.RegisterSubParser("shadowsocks", NewShadowsocksPacketListenerSubParser(packetEndpoints.Parse))
 
 	// Transport pairs.
-	transports.RegisterSubParser("tcpudp", NewTCPUDPTransportPairSubParser(streamDialers.Parse, packetListeners.Parse))
+	transports.RegisterSubParser("tcpudp", NewTCPUDPTransportPairSubParser(streamDialers.Parse, packetProxies.Parse))
 
 	return transports
 }

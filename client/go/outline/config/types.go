@@ -16,8 +16,8 @@ package config
 
 import (
 	"context"
-	"net"
 
+	"github.com/Jigsaw-Code/outline-sdk/network"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
@@ -39,10 +39,17 @@ type ConnectionProviderInfo struct {
 	FirstHop string
 }
 
+// TODO remove this type
 // PacketListener is a [transport.PacketListener] with embedded ConnectionProviderInfo.
 type PacketListener struct {
 	ConnectionProviderInfo
 	transport.PacketListener
+}
+
+// PacketProxy is a [network.PacketProxy] with embedded ConnectionProviderInfo.
+type PacketProxy struct {
+	ConnectionProviderInfo
+	network.PacketProxy
 }
 
 // DialFunc is a generic dialing function that can return any type of connction given a context and address.
@@ -67,17 +74,18 @@ type Endpoint[ConnType any] struct {
 
 // TransportPair provides a StreamDialer and PacketListener, to use as the transport in a Tun2Socks VPN.
 type TransportPair struct {
-	StreamDialer   *Dialer[transport.StreamConn]
-	PacketListener *PacketListener
+	StreamDialer *Dialer[transport.StreamConn]
+	PacketProxy  *PacketProxy
+	// TODO do we keep the packetlistener around for some older use cases?
 }
 
 var _ transport.StreamDialer = (*TransportPair)(nil)
-var _ transport.PacketListener = (*TransportPair)(nil)
+var _ network.PacketProxy = (*TransportPair)(nil)
 
 func (t *TransportPair) DialStream(ctx context.Context, address string) (transport.StreamConn, error) {
 	return t.StreamDialer.Dial(ctx, address)
 }
 
-func (t *TransportPair) ListenPacket(ctx context.Context) (net.PacketConn, error) {
-	return t.PacketListener.ListenPacket(ctx)
+func (t *TransportPair) NewSession(reciever network.PacketResponseReceiver) (network.PacketRequestSender, error) {
+	return t.PacketProxy.NewSession(reciever)
 }
