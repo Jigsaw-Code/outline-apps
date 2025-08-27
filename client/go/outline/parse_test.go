@@ -170,7 +170,7 @@ func TestParseConfig_SS_URL(t *testing.T) {
 	parsedOutput := parseFirstHopAndTunnelConfigJSON(t, result.Value)
 	require.Equal(t, expectedFirstHop, parsedOutput.FirstHop)
 
-	clientResult := NewClient(parsedOutput.Client)
+	clientResult := (&ClientConfig{}).New("", parsedOutput.Client)
 	require.Nil(t, clientResult.Error, "NewClient failed with parsed client config: %v", clientResult.Error)
 	require.NotNil(t, clientResult.Client)
 	require.Equal(t, expectedFirstHop, clientResult.Client.sd.FirstHop)
@@ -194,7 +194,7 @@ func TestParseConfig_Legacy_JSON(t *testing.T) {
 	parsedOutput := parseFirstHopAndTunnelConfigJSON(t, result.Value)
 	require.Equal(t, expectedFirstHop, parsedOutput.FirstHop)
 
-	clientResult := NewClient(parsedOutput.Client)
+	clientResult := (&ClientConfig{}).New("", parsedOutput.Client)
 	require.Nil(t, clientResult.Error, "NewClient failed with parsed client config: %v", clientResult.Error)
 	require.NotNil(t, clientResult.Client)
 	require.Equal(t, expectedFirstHop, clientResult.Client.sd.FirstHop)
@@ -219,7 +219,7 @@ func TestParseConfig_Legacy_JSON_WithPrefix(t *testing.T) {
 	parsedOutput := parseFirstHopAndTunnelConfigJSON(t, result.Value)
 	require.Equal(t, expectedFirstHop, parsedOutput.FirstHop)
 
-	clientResult := NewClient(parsedOutput.Client)
+	clientResult := (&ClientConfig{}).New("", parsedOutput.Client)
 	require.Nil(t, clientResult.Error, "NewClient failed with parsed client config: %v", clientResult.Error)
 	require.NotNil(t, clientResult.Client)
 	require.Equal(t, expectedFirstHop, clientResult.Client.sd.FirstHop)
@@ -239,7 +239,7 @@ func TestParseConfig_Legacy_JSONFlow_WithPrefix(t *testing.T) {
 	parsedOutput := parseFirstHopAndTunnelConfigJSON(t, result.Value)
 	require.Equal(t, expectedFirstHop, parsedOutput.FirstHop)
 
-	clientResult := NewClient(parsedOutput.Client)
+	clientResult := (&ClientConfig{}).New("", parsedOutput.Client)
 	require.Nil(t, clientResult.Error, "NewClient failed with parsed client config: %v", clientResult.Error)
 	require.NotNil(t, clientResult.Client)
 	require.Equal(t, expectedFirstHop, clientResult.Client.sd.FirstHop)
@@ -264,7 +264,7 @@ func TestParseConfig_Transport_JSON_WithPrefix(t *testing.T) {
 	parsedOutput := parseFirstHopAndTunnelConfigJSON(t, result.Value)
 	require.Equal(t, expectedFirstHop, parsedOutput.FirstHop)
 
-	clientResult := NewClient(parsedOutput.Client)
+	clientResult := (&ClientConfig{}).New("", parsedOutput.Client)
 	require.Nil(t, clientResult.Error, "NewClient failed with parsed client config: %v", clientResult.Error)
 	require.NotNil(t, clientResult.Client)
 	require.Equal(t, expectedFirstHop, clientResult.Client.sd.FirstHop)
@@ -313,7 +313,7 @@ func TestParseConfig_Flexible_JSON(t *testing.T) {
 	parsedOutput := parseFirstHopAndTunnelConfigJSON(t, result.Value)
 	require.Equal(t, expectedFirstHop, parsedOutput.FirstHop)
 
-	clientResult := NewClient(parsedOutput.Client)
+	clientResult := (&ClientConfig{}).New("", parsedOutput.Client)
 	require.Nil(t, clientResult.Error, "NewClient failed with parsed client config: %v", clientResult.Error)
 	require.NotNil(t, clientResult.Client)
 	require.Equal(t, expectedFirstHop, clientResult.Client.sd.FirstHop)
@@ -339,7 +339,7 @@ prefix: "SSH-2.0\r\n"`
 	parsedOutput := parseFirstHopAndTunnelConfigJSON(t, result.Value)
 	require.Equal(t, expectedFirstHop, parsedOutput.FirstHop)
 
-	clientResult := NewClient(parsedOutput.Client)
+	clientResult := (&ClientConfig{}).New("", parsedOutput.Client)
 	require.Nil(t, clientResult.Error, "NewClient failed with parsed client config: %v", clientResult.Error)
 	require.NotNil(t, clientResult.Client)
 	require.Equal(t, expectedFirstHop, clientResult.Client.sd.FirstHop)
@@ -364,7 +364,7 @@ prefix: "SSH-2.0\r\n"`
 	parsedOutput := parseFirstHopAndTunnelConfigJSON(t, result.Value)
 	require.Equal(t, expectedFirstHop, parsedOutput.FirstHop)
 
-	clientResult := NewClient(parsedOutput.Client)
+	clientResult := (&ClientConfig{}).New("", parsedOutput.Client)
 	require.Nil(t, clientResult.Error, "NewClient failed with parsed client config: %v", clientResult.Error)
 	require.NotNil(t, clientResult.Client)
 	require.Equal(t, expectedFirstHop, clientResult.Client.sd.FirstHop)
@@ -390,7 +390,7 @@ prefix: "SSH-2.0\r\n"`
 	parsedOutput := parseFirstHopAndTunnelConfigJSON(t, result.Value)
 	require.Equal(t, expectedFirstHop, parsedOutput.FirstHop)
 
-	clientResult := NewClient(parsedOutput.Client)
+	clientResult := (&ClientConfig{}).New("", parsedOutput.Client)
 	require.Nil(t, clientResult.Error, "NewClient failed with parsed client config: %v", clientResult.Error)
 	require.NotNil(t, clientResult.Client)
 	require.Equal(t, expectedFirstHop, clientResult.Client.sd.FirstHop)
@@ -420,7 +420,7 @@ prefix: "SSH-2.0\r\n"`
 	parsedOutput := parseFirstHopAndTunnelConfigJSON(t, result.Value)
 	require.Equal(t, expectedFirstHop, parsedOutput.FirstHop)
 
-	clientResult := NewClient(parsedOutput.Client)
+	clientResult := (&ClientConfig{}).New("", parsedOutput.Client)
 	require.Nil(t, clientResult.Error, "NewClient failed with parsed client config: %v", clientResult.Error)
 	require.NotNil(t, clientResult.Client)
 	require.Equal(t, expectedFirstHop, clientResult.Client.sd.FirstHop)
@@ -454,7 +454,7 @@ udp:
 	// FirstHop in JSON output will be empty because sd and pl hops are different
 	require.Empty(t, parsedOutput.FirstHop)
 
-	clientResult := NewClient(parsedOutput.Client)
+	clientResult := (&ClientConfig{}).New("", parsedOutput.Client)
 	require.Nil(t, clientResult.Error, "NewClient failed with parsed client config: %v", clientResult.Error)
 	require.NotNil(t, clientResult.Client)
 	require.Equal(t, expectedSdFirstHop, clientResult.Client.sd.FirstHop)

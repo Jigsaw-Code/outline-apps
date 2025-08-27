@@ -20,6 +20,10 @@ import (
 )
 
 func GetOutlineUserAgent() string {
+	platform := fixedGOOS
+	if platform == "darwin" {
+		platform = "macos"
+	}
 	// TODO: Add Outline Client version.
-	return fmt.Sprintf("Outline (%s; %s; %s)", runtime.GOOS, runtime.GOARCH, runtime.Version())
+	return fmt.Sprintf("Outline (%s; %s; %s)", platform, runtime.GOARCH, runtime.Version())
 }

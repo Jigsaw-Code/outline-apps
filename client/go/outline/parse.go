@@ -40,7 +40,7 @@ type ProviderErrorConfig struct {
 
 // ProviderTunnelConfig is the config to fully configure the VPN.
 type ProviderTunnelConfig struct {
-	ClientConfig `yaml:",inline"`
+	ProviderClientConfig `yaml:",inline"`
 }
 
 // firstHopAndTunnelConfigJSON must match FirstHopAndTunnelConfigJson in config.ts.
@@ -123,7 +123,9 @@ func doParseTunnelConfig(input string) *InvokeMethodResult {
 		}
 	}
 
-	result := NewClient(string(clientConfigBytes))
+	result := (&ClientConfig{
+		DataDir: GetBackendConfig().DataDir,
+	}).New("", string(clientConfigBytes))
 	if result.Error != nil {
 		return &InvokeMethodResult{
 			Error: result.Error,

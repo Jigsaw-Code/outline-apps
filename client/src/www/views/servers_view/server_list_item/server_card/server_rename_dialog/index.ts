@@ -54,9 +54,10 @@ export class ServerRenameDialog extends LitElement {
       --mdc-text-field-label-ink-color: var(--outline-label-color);
       --mdc-text-field-outlined-idle-border-color: var(--outline-input-border);
       --mdc-theme-primary: var(--outline-primary);
-      background-color: var(--outline-input-bg);
       color: var(--outline-input-text);
       border-radius: 4px;
+      display: block;
+      margin: 0 auto;
     }
   `;
 
