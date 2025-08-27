@@ -17,6 +17,7 @@ package config
 import (
 	"context"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"net"
 	"net/url"
@@ -204,4 +205,32 @@ func TestParseShadowsocksConfig_YAML(t *testing.T) {
 		require.Equal(t, "123.x.x.x:443", config.Endpoint)
 		require.Equal(t, "SSH-2.0\r\n", config.Prefix)
 	})
+}
+
+func TestParseShadowsocksStreamDialer_Blocked(t *testing.T) {
+	ctx := context.Background()
+	config := map[string]any{
+		"endpoint": "example.com:1234",
+		"cipher":   "chacha20-ietf-poly1305",
+		"secret":   "SECRET",
+	}
+
+	// Mock parseSE to return a blocked endpoint
+	parseSE := func(ctx context.Context, config configyaml.ConfigNode) (*Endpoint[transport.StreamConn], error) {
+		return &Endpoint[transport.StreamConn]{
+			ConnectionProviderInfo: ConnectionProviderInfo{ConnType: ConnTypeBlocked},
+			Connect: func(ctx context.Context) (transport.StreamConn, error) {
+				return nil, errors.New("blocked")
+			},
+		}, nil
+	}
+
+	dialer, err := parseShadowsocksStreamDialer(ctx, config, parseSE)
+	require.NoError(t, err)
+	require.NotNil(t, dialer)
+	require.Equal(t, ConnTypeBlocked, dialer.ConnType)
+
+	_, err = dialer.Dial(ctx, "some.address:123")
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "blocked")
 }

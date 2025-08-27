@@ -26,9 +26,18 @@ import (
 )
 
 func newTestTransportProvider() *configyaml.TypeParser[*TransportPair] {
-	tcpDialer := &transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
-	udpDialer := &transport.UDPDialer{}
-	return NewDefaultTransportProvider(tcpDialer, udpDialer)
+	baseTCPDialer := &transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
+	defaultStreamDialer := &Dialer[transport.StreamConn]{
+		ConnectionProviderInfo: ConnectionProviderInfo{ConnType: ConnTypeDirect},
+		Dial:                   baseTCPDialer.DialStream,
+	}
+	baseUDPDialer := &transport.UDPDialer{}
+	defaultPacketDialer := &Dialer[net.Conn]{
+		ConnectionProviderInfo: ConnectionProviderInfo{ConnType: ConnTypeDirect},
+		Dial:                   baseUDPDialer.DialPacket,
+	}
+
+	return NewDefaultTransportProvider(defaultStreamDialer, defaultPacketDialer)
 }
 
 func TestRegisterDefaultProviders(t *testing.T) {
@@ -99,8 +108,11 @@ func (d *errorStreamDialer) DialStream(ctx context.Context, addr string) (transp
 
 func TestParseIPTableTCP(t *testing.T) {
 	tp := NewDefaultTransportProvider(
-		&errorStreamDialer{name: "default-tcp"},
-		nil, // UDP transport not under test.
+		&Dialer[transport.StreamConn]{
+			ConnectionProviderInfo: ConnectionProviderInfo{ConnType: ConnTypeDirect},
+			Dial:                   (&errorStreamDialer{name: "default-tcp"}).DialStream,
+		},
+		nil, // UDP transport not under test
 	)
 
 	yamlConfig := `$type: tcpudp
@@ -137,4 +149,43 @@ udp: null`
 	_, err = transportPair.DialStream(context.Background(), "8.8.8.8:53")
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "no dialer available for address 8.8.8.8:53")
+}
+
+func TestParseDefaultAndBlockTCP(t *testing.T) {
+	provider := newTestTransportProvider()
+	ctx := context.Background()
+
+	t.Run("default", func(t *testing.T) {
+		node, err := configyaml.ParseConfigYAML(`
+$type: tcpudp
+tcp:
+  $type: default
+udp: null`)
+		require.NoError(t, err)
+
+		transportPair, err := provider.Parse(ctx, node)
+		require.NoError(t, err)
+		require.NotNil(t, transportPair)
+		require.NotNil(t, transportPair.StreamDialer)
+		require.Equal(t, ConnTypeDirect, transportPair.StreamDialer.ConnType)
+	})
+
+	t.Run("block", func(t *testing.T) {
+		node, err := configyaml.ParseConfigYAML(`
+$type: tcpudp
+tcp:
+  $type: block
+udp: null`)
+		require.NoError(t, err)
+
+		transportPair, err := provider.Parse(ctx, node)
+		require.NoError(t, err)
+		require.NotNil(t, transportPair)
+		require.NotNil(t, transportPair.StreamDialer)
+		require.Equal(t, ConnTypeBlocked, transportPair.StreamDialer.ConnType)
+
+		_, err = transportPair.StreamDialer.Dial(ctx, "example.com:123")
+		require.Error(t, err)
+		require.Equal(t, "blocked by config", err.Error())
+	})
 }
