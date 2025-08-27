@@ -42,6 +42,7 @@ func NewDefaultTransportProvider(defaultStreamDialer *Dialer[transport.StreamCon
 	streamDialers := newTypeParser(func(ctx context.Context, input configyaml.ConfigNode) (*Dialer[transport.StreamConn], error) {
 		switch input.(type) {
 		case nil:
+			// An absent config implicitly means TCP.
 			return defaultStreamDialer, nil
 		case string:
 			// Parse URL-style config.
@@ -54,6 +55,7 @@ func NewDefaultTransportProvider(defaultStreamDialer *Dialer[transport.StreamCon
 	packetDialers := newTypeParser(func(ctx context.Context, input configyaml.ConfigNode) (*Dialer[net.Conn], error) {
 		switch input.(type) {
 		case nil:
+			// An absent config implicitly means UDP.
 			return defaultPacketDialer, nil
 		case string:
 			// Parse URL-style config.
