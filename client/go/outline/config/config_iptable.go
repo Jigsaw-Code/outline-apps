@@ -51,6 +51,7 @@ func parseIPTableStreamDialer(
 
 	allConnTunnelled := true
 	allConnDirect := true
+	allConnBlocked := true
 
 	dialerTable := iptable.NewIPTable[transport.StreamDialer]()
 	for i, entryCfg := range rootCfg.Table {
@@ -70,6 +71,10 @@ func parseIPTableStreamDialer(
 
 		if parsedSubDialer.ConnType != ConnTypeDirect {
 			allConnDirect = false
+		}
+
+		if parsedSubDialer.ConnType != ConnTypeBlocked {
+			allConnBlocked = false
 		}
 
 		ipsDialer := transport.FuncStreamDialer(parsedSubDialer.Dial)
@@ -108,6 +113,10 @@ func parseIPTableStreamDialer(
 			allConnDirect = false
 		}
 
+		if parsedFallbackDialer.ConnType != ConnTypeBlocked {
+			allConnBlocked = false
+		}
+
 		fallbackDialer = transport.FuncStreamDialer(parsedFallbackDialer.Dial)
 	}
 
@@ -125,6 +134,8 @@ func parseIPTableStreamDialer(
 		connType = ConnTypeTunneled
 	} else if allConnDirect {
 		connType = ConnTypeDirect
+	} else if allConnBlocked {
+		connType = ConnTypeBlocked
 	} else {
 		connType = ConnTypePartial
 	}
