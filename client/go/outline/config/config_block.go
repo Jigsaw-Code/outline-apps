@@ -22,10 +22,10 @@ import (
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
-func NewBlockedStreamDialerSubParser(parseSE configyaml.ParseFunc[*Endpoint[transport.StreamConn]]) func(ctx context.Context, input map[string]any) (*Dialer[transport.StreamConn], error) {
+func NewBlockStreamDialerSubParser(parseSE configyaml.ParseFunc[*Endpoint[transport.StreamConn]]) func(ctx context.Context, input map[string]any) (*Dialer[transport.StreamConn], error) {
 	return func(ctx context.Context, input map[string]any) (*Dialer[transport.StreamConn], error) {
 		return &Dialer[transport.StreamConn]{
-			ConnectionProviderInfo: ConnectionProviderInfo{ConnTypeBlocked, ""},
+			ConnectionProviderInfo: ConnectionProviderInfo{ConnType: ConnTypeBlocked},
 			Dial: func(ctx context.Context, address string) (transport.StreamConn, error) {
 				return nil, errors.New("blocked by config")
 			},

@@ -35,15 +35,14 @@ func newTypeParser[T any](fallbackHandler func(context.Context, configyaml.Confi
 }
 
 // NewDefaultTransportProvider provider a [TransportPair].
-func NewDefaultTransportProvider(tcpDialer transport.StreamDialer, udpDialer transport.PacketDialer) *configyaml.TypeParser[*TransportPair] {
+func NewDefaultTransportProvider(defaultStreamDialer *Dialer[transport.StreamConn], defaultPacketDialer *Dialer[net.Conn]) *configyaml.TypeParser[*TransportPair] {
 	var streamEndpoints *configyaml.TypeParser[*Endpoint[transport.StreamConn]]
 	var packetEndpoints *configyaml.TypeParser[*Endpoint[net.Conn]]
 
 	streamDialers := newTypeParser(func(ctx context.Context, input configyaml.ConfigNode) (*Dialer[transport.StreamConn], error) {
 		switch input.(type) {
 		case nil:
-			// An absent config implicitly means TCP.
-			return &Dialer[transport.StreamConn]{ConnectionProviderInfo{ConnTypeDirect, ""}, tcpDialer.DialStream}, nil
+			return defaultStreamDialer, nil
 		case string:
 			// Parse URL-style config.
 			return parseShadowsocksStreamDialer(ctx, input, streamEndpoints.Parse)
@@ -55,8 +54,7 @@ func NewDefaultTransportProvider(tcpDialer transport.StreamDialer, udpDialer tra
 	packetDialers := newTypeParser(func(ctx context.Context, input configyaml.ConfigNode) (*Dialer[net.Conn], error) {
 		switch input.(type) {
 		case nil:
-			// An absent config implicitly means UDP.
-			return &Dialer[net.Conn]{ConnectionProviderInfo{ConnTypeDirect, ""}, udpDialer.DialPacket}, nil
+			return defaultPacketDialer, nil
 		case string:
 			// Parse URL-style config.
 			return parseShadowsocksPacketDialer(ctx, input, packetEndpoints.Parse)
@@ -98,10 +96,12 @@ func NewDefaultTransportProvider(tcpDialer transport.StreamDialer, udpDialer tra
 	packetEndpoints.RegisterSubParser("websocket", NewWebsocketPacketEndpointSubParser(streamEndpoints.Parse))
 
 	// Stream dialers.
+	streamDialers.RegisterSubParser("default", func(ctx context.Context, input map[string]any) (*Dialer[transport.StreamConn], error) {
+		return defaultStreamDialer, nil
+	})
 	streamDialers.RegisterSubParser("iptable", NewIPTableStreamDialerSubParser(streamDialers.Parse))
 	streamDialers.RegisterSubParser("shadowsocks", NewShadowsocksStreamDialerSubParser(streamEndpoints.Parse))
-	streamDialers.RegisterSubParser("direct", NewDirectStreamDialerSubParser(streamEndpoints.Parse))
-	streamDialers.RegisterSubParser("blocked", NewBlockedStreamDialerSubParser(streamEndpoints.Parse))
+	streamDialers.RegisterSubParser("block", NewBlockStreamDialerSubParser(streamEndpoints.Parse))
 
 	// Packet dialers.
 	packetDialers.RegisterSubParser("shadowsocks", NewShadowsocksPacketDialerSubParser(packetEndpoints.Parse))

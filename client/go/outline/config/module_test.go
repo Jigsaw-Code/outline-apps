@@ -26,9 +26,18 @@ import (
 )
 
 func newTestTransportProvider() *configyaml.TypeParser[*TransportPair] {
-	tcpDialer := &transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
-	udpDialer := &transport.UDPDialer{}
-	return NewDefaultTransportProvider(tcpDialer, udpDialer)
+	baseTCPDialer := &transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
+	defaultStreamDialer := &Dialer[transport.StreamConn]{
+		ConnectionProviderInfo: ConnectionProviderInfo{ConnType: ConnTypeDirect},
+		Dial:                   baseTCPDialer.DialStream,
+	}
+	baseUDPDialer := &transport.UDPDialer{}
+	defaultPacketDialer := &Dialer[net.Conn]{
+		ConnectionProviderInfo: ConnectionProviderInfo{ConnType: ConnTypeDirect},
+		Dial:                   baseUDPDialer.DialPacket,
+	}
+
+	return NewDefaultTransportProvider(defaultStreamDialer, defaultPacketDialer)
 }
 
 func TestRegisterDefaultProviders(t *testing.T) {
@@ -99,8 +108,11 @@ func (d *errorStreamDialer) DialStream(ctx context.Context, addr string) (transp
 
 func TestParseIPTableTCP(t *testing.T) {
 	tp := NewDefaultTransportProvider(
-		&errorStreamDialer{name: "default-tcp"},
-		nil, // UDP transport not under test.
+		&Dialer[transport.StreamConn]{
+			ConnectionProviderInfo: ConnectionProviderInfo{ConnType: ConnTypeDirect},
+			Dial:                   (&errorStreamDialer{name: "default-tcp"}).DialStream,
+		},
+		nil, // UDP transport not under test
 	)
 
 	yamlConfig := `$type: tcpudp
