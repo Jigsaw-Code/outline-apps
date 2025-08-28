@@ -138,3 +138,25 @@ udp: null`
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "no dialer available for address 8.8.8.8:53")
 }
+
+func TestParseDefaultAndBlockTCP(t *testing.T) {
+	provider := newTestTransportProvider()
+	ctx := context.Background()
+
+	node, err := configyaml.ParseConfigYAML(`
+$type: tcpudp
+tcp:
+  $type: block
+udp: null`)
+	require.NoError(t, err)
+
+	transportPair, err := provider.Parse(ctx, node)
+	require.NoError(t, err)
+	require.NotNil(t, transportPair)
+	require.NotNil(t, transportPair.StreamDialer)
+	require.Equal(t, ConnTypeBlocked, transportPair.StreamDialer.ConnType)
+
+	_, err = transportPair.StreamDialer.Dial(ctx, "example.com:123")
+	require.Error(t, err)
+	require.Equal(t, "blocked by config", err.Error())
+}
