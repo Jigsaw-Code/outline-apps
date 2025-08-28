@@ -51,6 +51,7 @@ func parseIPTableStreamDialer(
 
 	allConnTunnelled := true
 	allConnDirect := true
+	allConnBlocked := true
 
 	dialerTable := iptable.NewIPTable[transport.StreamDialer]()
 	for i, entryCfg := range rootCfg.Table {
@@ -70,6 +71,10 @@ func parseIPTableStreamDialer(
 
 		if parsedSubDialer.ConnType != ConnTypeDirect {
 			allConnDirect = false
+		}
+
+		if parsedSubDialer.ConnType != ConnTypeBlocked {
+			allConnBlocked = false
 		}
 
 		ipsDialer := transport.FuncStreamDialer(parsedSubDialer.Dial)
@@ -108,6 +113,10 @@ func parseIPTableStreamDialer(
 			allConnDirect = false
 		}
 
+		if parsedFallbackDialer.ConnType != ConnTypeBlocked {
+			allConnBlocked = false
+		}
+
 		fallbackDialer = transport.FuncStreamDialer(parsedFallbackDialer.Dial)
 	}
 
@@ -118,13 +127,21 @@ func parseIPTableStreamDialer(
 	}
 
 	var connType ConnType
-	if allConnDirect && allConnTunnelled {
-		// This should never happen because we require len(rootCfg.Table) != 0
+	// These should never happen because we require len(rootCfg.Table) != 0
+	if allConnDirect && allConnTunnelled && allConnBlocked {
+		return nil, fmt.Errorf("allConnDirect, allConnTunnelled and allConnBlocked cannot all be true")
+	} else if allConnDirect && allConnTunnelled {
 		return nil, fmt.Errorf("allConnDirect and allConnTunnelled cannot both be true")
+	} else if allConnDirect && allConnBlocked {
+		return nil, fmt.Errorf("allConnDirect and allConnBlocked cannot both be true")
+	} else if allConnTunnelled && allConnBlocked {
+		return nil, fmt.Errorf("allConnTunnelled and allConnBlocked cannot both be true")
 	} else if allConnTunnelled {
 		connType = ConnTypeTunneled
 	} else if allConnDirect {
 		connType = ConnTypeDirect
+	} else if allConnBlocked {
+		connType = ConnTypeBlocked
 	} else {
 		connType = ConnTypePartial
 	}
