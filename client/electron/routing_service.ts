@@ -210,7 +210,7 @@ export class RoutingDaemon {
     let response: RoutingServiceResponse | undefined = undefined;
     try {
       response = JSON.parse(data.toString());
-    } catch (error) {
+    } catch {
       console.error(
         `failed to parse routing service response: ${data.toString()}`
       );

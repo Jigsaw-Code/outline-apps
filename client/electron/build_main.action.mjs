@@ -28,7 +28,8 @@ const ELECTRON_BUILD_DIR = 'output';
 const ELECTRON_PLATFORMS = ['linux', 'windows'];
 
 export async function main(...parameters) {
-  const {platform, buildMode, sentryDsn, versionName} = getBuildParameters(parameters);
+  const {platform, buildMode, sentryDsn, versionName} =
+    getBuildParameters(parameters);
 
   if (!ELECTRON_PLATFORMS.includes(platform)) {
     throw new TypeError(
@@ -42,10 +43,12 @@ export async function main(...parameters) {
 
   // TODO(daniellacosse): separate building the preload script out into its own separate step
   await runWebpack(
-    electronMainWebpackConfigs({sentryDsn, appVersion: versionName}).map(config => ({
-      ...config,
-      mode: getWebpackBuildMode(buildMode),
-    }))
+    electronMainWebpackConfigs({sentryDsn, appVersion: versionName}).map(
+      config => ({
+        ...config,
+        mode: getWebpackBuildMode(buildMode),
+      })
+    )
   );
 
   if (platform === 'windows') {
@@ -56,10 +59,19 @@ export async function main(...parameters) {
 
       windowsEnvironment += `\n!define SENTRY_URL "https://sentry.io/api${projectID}/store/?sentry_version=7&sentry_key=${apiKey}"`;
     } else {
-      windowsEnvironment += `\n!define SENTRY_URL "<debug>"`;
+      windowsEnvironment += '\n!define SENTRY_URL "<debug>"';
     }
 
-    await fs.writeFile(path.resolve(getRootDir(), ELECTRON_BUILD_DIR, 'client', 'electron', 'env.nsh'), windowsEnvironment);
+    await fs.writeFile(
+      path.resolve(
+        getRootDir(),
+        ELECTRON_BUILD_DIR,
+        'client',
+        'electron',
+        'env.nsh'
+      ),
+      windowsEnvironment
+    );
   }
 }
 
