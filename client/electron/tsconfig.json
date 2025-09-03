@@ -1,5 +1,5 @@
 {
-  "extends": "../src/www/tsconfig.json",
+  "extends": "../web_app/tsconfig.json",
   "compilerOptions": {
     "outDir": "../../output/electron"
   }

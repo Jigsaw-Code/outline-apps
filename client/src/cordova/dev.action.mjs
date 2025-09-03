@@ -32,7 +32,7 @@ const OUTLINE_APP_WWW_PATH = 'Contents/Resources/www';
 
 const getUIHash = async () => {
   const hashResult = await hashElement(
-    path.join(getRootDir(), 'client/src/www'),
+    path.join(getRootDir(), 'client/web_app'),
     {
       files: {include: ['**/*.ts', '**/*.html', '**/*.css', '**/*.js']},
     }
@@ -69,7 +69,7 @@ export async function main(...givenParameters) {
     `--versionName=${versionName}`,
   ];
 
-  await runAction('client/src/www/build', ...parameters);
+  await runAction('client/web_app/build', ...parameters);
   await runAction('client/go/build', ...parameters);
   await runAction('client/src/cordova/setup', ...parameters);
 
@@ -85,7 +85,7 @@ export async function main(...givenParameters) {
     previousUIHashResult = currentUIHashResult;
 
     isBuilding = true;
-    await runAction('client/src/www/build', ...parameters);
+    await runAction('client/web_app/build', ...parameters);
     isBuilding = false;
 
     await fs.copy(
