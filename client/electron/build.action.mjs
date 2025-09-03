@@ -51,7 +51,7 @@ export async function main(...parameters) {
     );
   }
 
-  await runAction('client/src/www/build', ...parameters);
+  await runAction('client/web_app/build', ...parameters);
   await runAction('client/go/build', ...parameters);
   await runAction('client/electron/build_main', ...parameters);
 

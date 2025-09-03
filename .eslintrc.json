@@ -25,37 +25,37 @@
             "from": ".",
             "except": ["./infrastructure", "./node_modules"]
           },
-          // Similar to above but for src/www/model, but you can use files from both the
-          // src/www/model and src/www/infrastructure paths.
+          // Similar to above but for web_app/model, but you can use files from both the
+          // web_app/model and src/www/infrastructure paths.
           {
-            "target": "./client/src/www/model",
+            "target": "./client/web_app/model",
             "from": ".",
-            "except": ["./client/src/www/model", "./infrastructure", "./node_modules"]
+            "except": ["./client/web_app/model", "./infrastructure", "./node_modules"]
           },
           // Prevents the internals of the outline_server_repository from being used publicly in the app.
           {
-            "target": "./client/src/www/app/*.ts",
-            "from": "./client/src/www/app/outline_server_repository/server.ts"
+            "target": "./client/web_app/app/*.ts",
+            "from": "./client/web_app/app/outline_server_repository/server.ts"
           },
           {
-            "target": "./client/src/www/app/*.ts",
-            "from": "./client/src/www/app/outline_server_repository/access_key_serialization.ts"
+            "target": "./client/web_app/app/*.ts",
+            "from": "./client/web_app/app/outline_server_repository/access_key_serialization.ts"
           },
           {
-            "target": "./client/src/www/views",
-            "from": "./client/src/www/model"
+            "target": "./client/web_app/views",
+            "from": "./client/web_app/model"
           },
           {
-            "target": "./client/src/www/ui_components",
-            "from": "./client/src/www/model"
+            "target": "./client/web_app/ui_components",
+            "from": "./client/web_app/model"
           },
           {
-            "target": "./client/src/www/views",
-            "from": "./client/src/www/app"
+            "target": "./client/web_app/views",
+            "from": "./client/web_app/app"
           },
           {
-            "target": "./client/src/www/ui_components",
-            "from": "./client/src/www/app"
+            "target": "./client/web_app/ui_components",
+            "from": "./client/web_app/app"
           }
         ]
       }
