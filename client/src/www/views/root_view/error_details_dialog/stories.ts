@@ -121,6 +121,8 @@ export default {
         'error-details-dialog-dismiss': 'Dismiss',
         'error-details-dialog-copy': 'Copy',
         'error-details-dialog-copied': 'Copied',
+        'error-details-dialog-send': 'Send Error',
+        'error-details-dialog-sent': 'Error Sent',
       }[messageId];
     },
   },

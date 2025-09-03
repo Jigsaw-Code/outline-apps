@@ -14,9 +14,8 @@
     "rootDir": "../",
     "skipLibCheck": true,
     "target": "es2017",
-    "lib": [
-      "es2022"
-    ]
+    "lib": ["es2022"],
+    "types": ["cordova", "polymer", "cordova-plugin-device"]
   },
   "exclude": [
     "*.cjs",
