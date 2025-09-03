@@ -87,6 +87,8 @@ tasks:
     env:
       # Bug workaround as per https://github.com/golang/go/issues/71827#issuecomment-2669425491
       GODEBUG: gotypesalias=0
+    dotenv:
+      - '{{.OUT_DIR}}/android/.env'
     preconditions:
       - sh: '[[ -d "$ANDROID_HOME" ]]'
         msg: "Must set ANDROID_HOME"
