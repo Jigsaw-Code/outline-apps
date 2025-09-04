@@ -14,11 +14,11 @@
 import {LitElement, html, css} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import '@material/web/all.js';
-import { unsafeHTML } from 'lit/directives/unsafe-html.js';
+import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
-import proxylessHeaderImage from "../../../../../assets/dialog_headers/proxyless.svg";
-import splitTunnelingHeaderImage from "../../../../../assets/dialog_headers/split_tunneling.svg";
-import completeProtectionHeaderImage from "../../../../../assets/dialog_headers/complete_protection.svg";
+import proxylessHeaderImage from '../../../../../assets/dialog_headers/proxyless.svg';
+import splitTunnelingHeaderImage from '../../../../../assets/dialog_headers/split_tunneling.svg';
+import completeProtectionHeaderImage from '../../../../../assets/dialog_headers/complete_protection.svg';
 
 @customElement('server-info-dialog')
 class ServerInfoDialog extends LitElement {
@@ -28,7 +28,6 @@ class ServerInfoDialog extends LitElement {
   @property({type: String}) headerImage: string;
   @property({type: String}) titleMessageId: string;
   @property({type: String}) contentMessageId: string;
-
 
   static styles = css`
     :host {
