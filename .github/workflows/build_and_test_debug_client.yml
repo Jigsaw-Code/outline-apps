@@ -242,6 +242,9 @@ jobs:
           cache: npm
           cache-dependency-path: ./package-lock.json
 
+      - name: Setup Java
+        run: echo "JAVA_HOME=$JAVA_HOME_17_X64" >> $GITHUB_ENV
+
       - name: Install NPM Dependencies
         run: npm ci
 
