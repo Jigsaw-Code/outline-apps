@@ -18,16 +18,16 @@ main() {
     # Note: JAVA_HOME_17_{X64,arm64} are variables provided by the Github runners, so we add them here for convenience.
     case "$(uname)" in
         'Linux')
-        java_home="${JAVA_HOME:-${JAVA_HOME_17_X64:-/usr/lib/jvm/java-17-openjdk-amd64}}"
+        java_home="${JAVA_HOME_17_X64:-${JAVA_HOME:-/usr/lib/jvm/java-17-openjdk-amd64}}"
         android_home="${ANDROID_HOME:-${HOME}/Android/Sdk}"
         ;;
         'Darwin')
-        java_home="${JAVA_HOME:-${JAVA_HOME_17_arm64:-$(/usr/libexec/java_home -v 17.0)}}"
+        java_home="${JAVA_HOME_17_arm64:-${JAVA_HOME:-$(/usr/libexec/java_home -v 17.0)}}"
         android_home="${ANDROID_HOME:-$HOME/Library/Android/sdk}"
         ;;
         'MINGW64_NT'* | 'CYGWIN'* | 'Windows_NT')
         # Assuming a bash-like shell (e.g., Git Bash) is used on Windows
-        java_home="${JAVA_HOME:-${JAVA_HOME_17_X64:-C:/Program Files/Java/jdk-17}}"
+        java_home="${JAVA_HOME_17_X64:-${JAVA_HOME:-C:/Program Files/Java/jdk-17}}"
         android_home="${ANDROID_HOME:-$LOCALAPPDATA/Android/Sdk}"
         ;;
     esac
