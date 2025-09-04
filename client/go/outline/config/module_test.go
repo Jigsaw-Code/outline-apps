@@ -26,18 +26,9 @@ import (
 )
 
 func newTestTransportProvider() *configyaml.TypeParser[*TransportPair] {
-	baseTCPDialer := &transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
-	defaultStreamDialer := &Dialer[transport.StreamConn]{
-		ConnectionProviderInfo: ConnectionProviderInfo{ConnType: ConnTypeDirect},
-		Dial:                   baseTCPDialer.DialStream,
-	}
-	baseUDPDialer := &transport.UDPDialer{}
-	defaultPacketDialer := &Dialer[net.Conn]{
-		ConnectionProviderInfo: ConnectionProviderInfo{ConnType: ConnTypeDirect},
-		Dial:                   baseUDPDialer.DialPacket,
-	}
-
-	return NewDefaultTransportProvider(defaultStreamDialer, defaultPacketDialer)
+	tcpDialer := &transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
+	udpDialer := &transport.UDPDialer{}
+	return NewDefaultTransportProvider(tcpDialer, udpDialer)
 }
 
 func TestRegisterDefaultProviders(t *testing.T) {
@@ -108,11 +99,8 @@ func (d *errorStreamDialer) DialStream(ctx context.Context, addr string) (transp
 
 func TestParseIPTableTCP(t *testing.T) {
 	tp := NewDefaultTransportProvider(
-		&Dialer[transport.StreamConn]{
-			ConnectionProviderInfo: ConnectionProviderInfo{ConnType: ConnTypeDirect},
-			Dial:                   (&errorStreamDialer{name: "default-tcp"}).DialStream,
-		},
-		nil, // UDP transport not under test
+		&errorStreamDialer{name: "default-tcp"},
+		nil, // UDP transport not under test.
 	)
 
 	yamlConfig := `$type: tcpudp
@@ -155,11 +143,11 @@ func TestParseDefaultAndBlockTCP(t *testing.T) {
 	provider := newTestTransportProvider()
 	ctx := context.Background()
 
-	t.Run("default", func(t *testing.T) {
+	t.Run("direct", func(t *testing.T) {
 		node, err := configyaml.ParseConfigYAML(`
 $type: tcpudp
 tcp:
-  $type: default
+  $type: direct
 udp: null`)
 		require.NoError(t, err)
 

@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
-	"net"
 	"os"
 	"os/signal"
 	"strings"
@@ -31,7 +30,6 @@ import (
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/config"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/tun2socks"
-	"github.com/Jigsaw-Code/outline-sdk/transport"
 	_ "github.com/eycorsican/go-tun2socks/common/log/simple" // Register a simple logger.
 	"github.com/eycorsican/go-tun2socks/core"
 	"github.com/eycorsican/go-tun2socks/proxy/dnsfallback"
@@ -128,19 +126,11 @@ func main() {
 
 	clientConfig := outline.ClientConfig{}
 	if *args.adapterIndex >= 0 {
-		baseTCPDialer, baseUDPDialer, err := newBaseDialersWithAdapter(*args.adapterIndex)
+		tcp, udp, err := newBaseDialersWithAdapter(*args.adapterIndex)
 		if err != nil {
 			printErrorAndExit(err, exitCodeFailure)
 		}
-		defaultStreamDialer := &config.Dialer[transport.StreamConn]{
-			ConnectionProviderInfo: config.ConnectionProviderInfo{ConnType: config.ConnTypeDirect},
-			Dial:                   baseTCPDialer.DialStream,
-		}
-		defaultPacketDialer := &config.Dialer[net.Conn]{
-			ConnectionProviderInfo: config.ConnectionProviderInfo{ConnType: config.ConnTypeDirect},
-			Dial:                   baseUDPDialer.DialPacket,
-		}
-		clientConfig.TransportParser = config.NewDefaultTransportProvider(defaultStreamDialer, defaultPacketDialer)
+		clientConfig.TransportParser = config.NewDefaultTransportProvider(tcp, udp)
 	}
 	result := clientConfig.New(*args.keyID, *args.clientConfig)
 	if result.Error != nil {
