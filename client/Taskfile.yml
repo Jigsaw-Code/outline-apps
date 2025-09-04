@@ -18,11 +18,12 @@ requires:
   vars: [OUTPUT_DIR]
 
 tasks:
-  configure:android:
+  android:configure:
     desc: Auto-configures the environment for Android development
     vars:
       DOTENV: '{{joinPath .OUTPUT_DIR "android" ".env"}}'
     generates:
       - '{{.DOTENV}}'
     cmds:
+      - mkdir -p '{{dir .DOTENV}}'
       - '{{joinPath .TASKFILE_DIR "build" "configure_android.sh"}} > "{{.DOTENV}}"'

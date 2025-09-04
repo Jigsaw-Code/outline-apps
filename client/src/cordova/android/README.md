@@ -61,7 +61,7 @@ For development of the OutlineAndroidLib, we recommend installing Android Studio
 We provide a script to auto-configure the Android environmental variables. Run:
 
 ```shell
-go tool task client:configure:android
+go tool task client:android:configure
 source output/client/android/.env
 ```
 
