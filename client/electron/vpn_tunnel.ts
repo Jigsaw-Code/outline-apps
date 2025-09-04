@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {TunnelStatus} from '../web_app/app/outline_server_repository/vpn';
+import {TunnelStatus} from '../web/app/outline_server_repository/vpn';
 
 // Represents a VPN tunnel to a proxy server.
 export interface VpnTunnel {

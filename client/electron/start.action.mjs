@@ -30,7 +30,7 @@ import {getBuildParameters} from '../build/get_build_parameters.mjs';
 export async function main(...parameters) {
   const {platform, buildMode} = getBuildParameters(parameters);
 
-  await runAction('client/web_app/build', platform, `--buildMode=${buildMode}`);
+  await runAction('client/web/build', platform, `--buildMode=${buildMode}`);
   await runAction('client/electron/build_main', ...parameters);
   await runAction(
     'client/electron/build',

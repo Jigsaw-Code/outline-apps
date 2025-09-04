@@ -15,7 +15,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import {StartRequestJson} from '../web_app/app/outline_server_repository/vpn';
+import {StartRequestJson} from '../web/app/outline_server_repository/vpn';
 
 // Persistence layer for a single SerializableTunnel.
 export class TunnelStore {

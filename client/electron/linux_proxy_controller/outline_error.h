@@ -23,7 +23,7 @@ namespace outline {
 
 /**
  * @brief The standard error code constants used by outline.
- * @remarks The codes are copied from "/web_app/model/errors.ts".
+ * @remarks The codes are copied from "/web/model/errors.ts".
  */
 enum class ErrorCode {
   kOk = 0,

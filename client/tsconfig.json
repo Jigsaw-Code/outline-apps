@@ -27,6 +27,6 @@
     "electron",
     "go",
     "src",
-    "web_app"
+    "web"
   ]
 }

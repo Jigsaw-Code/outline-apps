@@ -27,7 +27,7 @@ const ANDROID = 'android';
 const IOS = 'ios';
 const VALID_PLATFORMS = [ANDROID, IOS];
 
-const SOURCE_MESSAGES_DIR = 'client/web_app/messages';
+const SOURCE_MESSAGES_DIR = 'client/web/messages';
 
 /**
  * Parses and verifies the action parameters and returns the specified platform.

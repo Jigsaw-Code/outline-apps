@@ -21,9 +21,9 @@ import * as fsextra from 'fs-extra';
 import * as sudo from 'sudo-prompt';
 
 import {pathToEmbeddedOutlineService} from './app_paths';
-import {TunnelStatus} from '../web_app/app/outline_server_repository/vpn';
-import {ErrorCode} from '../web_app/model/errors';
-import {PlatformError, GoErrorCode} from '../web_app/model/platform_error';
+import {TunnelStatus} from '../web/app/outline_server_repository/vpn';
+import {ErrorCode} from '../web/model/errors';
+import {PlatformError, GoErrorCode} from '../web/model/platform_error';
 
 const isLinux = platform() === 'linux';
 const isWindows = platform() === 'win32';
