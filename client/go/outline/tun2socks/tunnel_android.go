@@ -15,24 +15,24 @@
 package tun2socks
 
 import (
+	"context"
 	"errors"
+	"fmt"
+	"log/slog"
 	"os"
 	"runtime/debug"
+	"sync"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
-	"github.com/eycorsican/go-tun2socks/common/log"
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/vpn"
 	_ "github.com/eycorsican/go-tun2socks/common/log/simple" // Import simple log for the side effect of making logs printable.
 	"golang.org/x/sys/unix"
 )
 
-// vpnMtu defines the buffer size for the packet relay.
-const vpnMtu = 1500
-
 func init() {
 	// Conserve memory by increasing garbage collection frequency.
 	debug.SetGCPercent(10)
-	log.SetLevel(log.WARN)
 }
 
 // ConnectOutlineTunnel reads packets from a TUN device and routes it to an Outline proxy server.
@@ -43,11 +43,13 @@ func init() {
 //     is released by OutlineTunnel.Disconnect(), so the caller must close `fd` _and_ call
 //     Disconnect() in order to close the TUN device.
 //   - `client` is the Outline client (created by [outline.NewClient]).
-//   - `isUDPEnabled` indicates whether the tunnel and/or network enable UDP proxying.
+//   - `isAutoStart` indicates whether the tunnel is established as part of an auto-start workflow.
 //
 // Returns an error if the TUN file descriptor cannot be opened, or if the tunnel fails to
 // connect.
-func ConnectOutlineTunnel(fd int, client *outline.Client, isUDPEnabled bool) *ConnectOutlineTunnelResult {
+//
+// TODO(junyi): remove isAutoStart
+func ConnectOutlineTunnel(fd int, client *outline.Client, isAutoStart bool) *ConnectOutlineTunnelResult {
 	tun, err := makeTunFile(fd)
 	if err != nil {
 		return &ConnectOutlineTunnelResult{Error: &platerrors.PlatformError{
@@ -57,17 +59,84 @@ func ConnectOutlineTunnel(fd int, client *outline.Client, isUDPEnabled bool) *Co
 		}}
 	}
 
-	t, err := newTunnel(client, isUDPEnabled, tun)
+	t, err := newRemoteDeviceTunnel(client, isAutoStart)
 	if err != nil {
 		return &ConnectOutlineTunnelResult{Error: &platerrors.PlatformError{
 			Code:    platerrors.SetupTrafficHandlerFailed,
-			Message: "failed to connect Outline to the TUN device",
+			Message: "failed to connect to remote server",
 			Cause:   platerrors.ToPlatformError(err),
 		}}
 	}
+	t.tun = tun
+	vpn.GoRelayTraffic(t.rd, t.tun, &t.wg)
+	vpn.GoRelayTraffic(t.tun, t.rd, &t.wg)
 
-	go processInputPackets(t, tun)
 	return &ConnectOutlineTunnelResult{Tunnel: t}
+}
+
+type remoteDeviceTunnel struct {
+	client    *outline.Client
+	tun       *os.File
+	rd        *vpn.RemoteDevice
+	connected bool
+	wg        sync.WaitGroup
+}
+
+var _ Tunnel = (*remoteDeviceTunnel)(nil)
+
+func newRemoteDeviceTunnel(client *outline.Client, isAutoStart bool) (t *remoteDeviceTunnel, err error) {
+	if err := client.StartSession(); err != nil {
+		return nil, fmt.Errorf("failed to start backend Client session: %w", err)
+	}
+	defer func() {
+		if err != nil {
+			client.EndSession()
+		}
+	}()
+	rd, err := vpn.ConnectRemoteDevice(context.Background(), client, client)
+	if err != nil {
+		return nil, err
+	}
+	if !isAutoStart {
+		if err := rd.GetHealthStatus(); err != nil {
+			slog.Warn("remote device is not healthy", "err", err)
+			return nil, err
+		}
+	} else {
+		slog.Info("skip health check due to auto-start")
+	}
+	return &remoteDeviceTunnel{
+		client:    client,
+		rd:        rd,
+		connected: true,
+	}, nil
+}
+
+func (t *remoteDeviceTunnel) IsConnected() bool {
+	return t.connected
+}
+
+func (t *remoteDeviceTunnel) Disconnect() {
+	t.connected = false
+	t.tun.Close()
+	t.rd.Close()
+	// TODO(junyi): seems no need to wait
+	// t.wg.Wait()
+	if t.client != nil {
+		if err := t.client.EndSession(); err != nil {
+			slog.Error("failed to end backend Client session", "err", err)
+		}
+		t.client = nil
+	}
+}
+
+func (t *remoteDeviceTunnel) Write(data []byte) (int, error) {
+	return 0, errors.ErrUnsupported
+}
+
+func (t *remoteDeviceTunnel) UpdateUDPSupport() bool {
+	t.rd.NotifyNetworkChanged()
+	return false /* dummy value, should not be used */
 }
 
 // makeTunFile returns an os.File object from a TUN file descriptor `fd`.
@@ -88,21 +157,4 @@ func makeTunFile(fd int) (*os.File, error) {
 		return nil, errors.New("Failed to open TUN file descriptor")
 	}
 	return file, nil
-}
-
-// processInputPackets reads packets from a TUN device `tun` and writes them to `tunnel`.
-func processInputPackets(tunnel Tunnel, tun *os.File) {
-	buffer := make([]byte, vpnMtu)
-	for tunnel.IsConnected() {
-		len, err := tun.Read(buffer)
-		if err != nil {
-			log.Warnf("Failed to read packet from TUN: %v", err)
-			continue
-		}
-		if len == 0 {
-			log.Infof("Read EOF from TUN")
-			continue
-		}
-		tunnel.Write(buffer)
-	}
 }

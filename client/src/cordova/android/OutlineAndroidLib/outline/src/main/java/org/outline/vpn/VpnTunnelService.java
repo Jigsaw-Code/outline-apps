@@ -239,28 +239,6 @@ public class VpnTunnelService extends VpnService {
       return clientResult.getError();
     }
     final outline.Client client = clientResult.getClient();
-
-    boolean remoteUdpForwardingEnabled;
-    if (isAutoStart) {
-      // TODO(fortuna): retest connectivity instead of restoring it. Needs a UDP test.
-      remoteUdpForwardingEnabled = tunnelStore.isUdpSupported();
-    } else {
-      try {
-        // Do not perform connectivity checks when connecting on startup. We should avoid failing
-        // the connection due to a network error, as network may not be ready.
-        final TCPAndUDPConnectivityResult connResult = Outline.checkTCPAndUDPConnectivity(client);
-        LOG.info(String.format(Locale.ROOT, "Go connectivity check result: %s", connResult));
-
-        if (connResult.getTCPError() != null) {
-          tearDownActiveTunnel();
-          return connResult.getTCPError();
-        }
-        remoteUdpForwardingEnabled = connResult.getUDPError() == null;
-      } catch (Exception e) {
-        tearDownActiveTunnel();
-        return new PlatformError(Platerrors.InternalError, "failed to check connectivity");
-      }
-    }
     this.tunnelConfig = config;
 
     // If the VPN is already running, we skip the set up of the VPN routing.
@@ -306,15 +284,15 @@ public class VpnTunnelService extends VpnService {
 
     // Start exchanging traffic between the local TUN device and the remote device.
     final ConnectOutlineTunnelResult result =
-            Tun2socks.connectOutlineTunnel(this.tunFd.getFd(), client, remoteUdpForwardingEnabled);
+            Tun2socks.connectOutlineTunnel(this.tunFd.getFd(), client, isAutoStart);
     if (result.getError() != null) {
       tearDownActiveTunnel();
       return result.getError();
     }
     this.remoteDevice = result.getTunnel();
-    
+
     startForegroundWithNotification(config.name);
-    storeActiveTunnel(config, remoteUdpForwardingEnabled);
+    storeActiveTunnel(config);
     return null;
   }
 
@@ -403,14 +381,9 @@ public class VpnTunnelService extends VpnService {
       broadcastVpnConnectivityChange(TunnelStatus.CONNECTED);
       updateNotification(TunnelStatus.CONNECTED);
 
-      boolean isUdpSupported = false;
       if (VpnTunnelService.this.remoteDevice != null) {
-        isUdpSupported = VpnTunnelService.this.remoteDevice.updateUDPSupport();
+        VpnTunnelService.this.remoteDevice.updateUDPSupport();
       }
-      LOG.info(
-          String.format("UDP support: %s -> %s", tunnelStore.isUdpSupported(), isUdpSupported));
-      // Why do we need to persist this? TODO(fortuna): remove.
-      tunnelStore.setIsUdpSupported(isUdpSupported);
     }
 
     @Override
@@ -489,7 +462,7 @@ public class VpnTunnelService extends VpnService {
     }
   }
 
-  private void storeActiveTunnel(@NonNull final TunnelConfig config, boolean isUdpSupported) {
+  private void storeActiveTunnel(@NonNull final TunnelConfig config) {
     LOG.info("Storing active tunnel.");
     JSONObject tunnel = new JSONObject();
     try {
@@ -500,7 +473,6 @@ public class VpnTunnelService extends VpnService {
       LOG.log(Level.SEVERE, "Failed to store JSON tunnel data", e);
     }
     tunnelStore.setTunnelStatus(TunnelStatus.CONNECTED);
-    tunnelStore.setIsUdpSupported(isUdpSupported);
   }
 
   // Error reporting
