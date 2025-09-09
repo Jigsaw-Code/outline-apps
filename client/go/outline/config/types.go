@@ -29,7 +29,7 @@ const (
 	ConnTypeDirect ConnType = iota
 	ConnTypeTunneled
 	ConnTypePartial
-  ConnTypeBlocked
+	ConnTypeBlocked
 )
 
 // ConnProviderConfig represents a dialer or endpoint that can create connections.
