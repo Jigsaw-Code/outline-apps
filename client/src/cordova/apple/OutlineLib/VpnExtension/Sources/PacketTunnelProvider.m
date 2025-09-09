@@ -125,7 +125,7 @@ NSString *const kDefaultPathKey = @"defaultPath";
             }
             BOOL isUdpSupported =
                 isOnDemand ? self.isUdpSupported : udpConnectionError == nil;
-            PlaterrorsPlatformError *tun2socksError = [self startTun2Socks:isUdpSupported];
+            PlaterrorsPlatformError *tun2socksError = [self startTun2Socks:isOnDemand];
             if (tun2socksError != nil) {
               return startDone([SwiftBridge newOutlineErrorFromPlatformError:tun2socksError]);
             }
@@ -268,6 +268,7 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
 }
 
 - (BOOL)write:(NSData *_Nullable)packet n:(long *)n error:(NSError *_Nullable *)error {
+  DDLogWarn(@"read from tunnel %ld bytes", *n);
   [self.packetFlow writePackets:@[ packet ] withProtocols:@[ @(AF_INET) ]];
   return YES;
 }
@@ -280,6 +281,7 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
                                                           NSArray<NSNumber *> *_Nonnull protocols) {
     for (NSData *packet in packets) {
       [weakSelf.tunnel write:packet ret0_:&bytesWritten error:nil];
+      DDLogWarn(@"written to tunnel %ld bytes", bytesWritten);
     }
     dispatch_async(weakSelf.packetQueue, ^{
       [weakSelf processPackets];
@@ -287,7 +289,7 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
   }];
 }
 
-- (PlaterrorsPlatformError*)startTun2Socks:(BOOL)isUdpSupported {
+- (PlaterrorsPlatformError*)startTun2Socks:(BOOL)isAutoStart {
   BOOL isRestart = self.tunnel != nil && self.tunnel.isConnected;
   if (isRestart) {
     [self.tunnel disconnect];
@@ -297,8 +299,9 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
   if (clientResult.error != nil) {
     return clientResult.error;
   }
+  DDLogWarn(@"Start connecting to tunnel ...");
   Tun2socksConnectOutlineTunnelResult *result =
-    Tun2socksConnectOutlineTunnel(weakSelf, clientResult.client, isUdpSupported);
+    Tun2socksConnectOutlineTunnel(weakSelf, clientResult.client, isAutoStart);
   if (result.error != nil) {
     DDLogError(@"Failed to start tun2socks: %@", result.error);
     return result.error;

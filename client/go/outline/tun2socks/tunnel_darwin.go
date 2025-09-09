@@ -15,10 +15,15 @@
 package tun2socks
 
 import (
+	"context"
+	"fmt"
 	"io"
+	"log/slog"
+	"sync"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/vpn"
 )
 
 // TunWriter is an interface that allows for outputting packets to the TUN (VPN).
@@ -31,10 +36,12 @@ type TunWriter interface {
 //
 // `tunWriter` is used to output packets to the TUN (VPN).
 // `client` is the Outline client (created by [outline.NewClient]).
-// `isUDPEnabled` indicates whether the tunnel and/or network enable UDP proxying.
+// `isAutoStart` indicates whether the tunnel is established as part of an auto-start workflow.
 //
 // Sets an error if the tunnel fails to connect.
-func ConnectOutlineTunnel(tunWriter TunWriter, client *outline.Client, isUDPEnabled bool) *ConnectOutlineTunnelResult {
+//
+// TODO(junyi): remove isAutoStart
+func ConnectOutlineTunnel(tunWriter TunWriter, client *outline.Client, isAutoStart bool) *ConnectOutlineTunnelResult {
 	if tunWriter == nil {
 		return &ConnectOutlineTunnelResult{Error: &platerrors.PlatformError{
 			Code:    platerrors.InternalError,
@@ -47,13 +54,79 @@ func ConnectOutlineTunnel(tunWriter TunWriter, client *outline.Client, isUDPEnab
 		}}
 	}
 
-	t, err := newTunnel(client, isUDPEnabled, tunWriter)
+	t, err := newRemoteDeviceTunnel(client, isAutoStart)
 	if err != nil {
 		return &ConnectOutlineTunnelResult{Error: &platerrors.PlatformError{
 			Code:    platerrors.SetupTrafficHandlerFailed,
-			Message: "failed to connect Outline to the TUN device",
+			Message: "failed to connect to remote server",
 			Cause:   platerrors.ToPlatformError(err),
 		}}
 	}
+	t.tun = tunWriter
+	vpn.GoRelayTraffic(t.tun, t.rd, &t.wg)
+
 	return &ConnectOutlineTunnelResult{Tunnel: t}
+}
+
+type remoteDeviceTunnel struct {
+	client    *outline.Client
+	tun       TunWriter
+	rd        *vpn.RemoteDevice
+	connected bool
+	wg        sync.WaitGroup
+}
+
+var _ Tunnel = (*remoteDeviceTunnel)(nil)
+
+func newRemoteDeviceTunnel(client *outline.Client, isAutoStart bool) (t *remoteDeviceTunnel, err error) {
+	if err := client.StartSession(); err != nil {
+		return nil, fmt.Errorf("failed to start backend Client session: %w", err)
+	}
+	defer func() {
+		if err != nil {
+			client.EndSession()
+		}
+	}()
+	rd, err := vpn.ConnectRemoteDevice(context.Background(), client, client)
+	if err != nil {
+		return nil, err
+	}
+	if !isAutoStart {
+		if err := rd.GetHealthStatus(); err != nil {
+			slog.Warn("remote device is not healthy", "err", err)
+			return nil, err
+		}
+	} else {
+		slog.Info("skip health check due to auto-start")
+	}
+	return &remoteDeviceTunnel{
+		client:    client,
+		rd:        rd,
+		connected: true,
+	}, nil
+}
+
+func (t *remoteDeviceTunnel) IsConnected() bool {
+	return t.connected
+}
+
+func (t *remoteDeviceTunnel) Disconnect() {
+	t.connected = false
+	t.tun.Close()
+	t.rd.Close()
+	if t.client != nil {
+		if err := t.client.EndSession(); err != nil {
+			slog.Error("failed to end backend Client session", "err", err)
+		}
+		t.client = nil
+	}
+}
+
+func (t *remoteDeviceTunnel) Write(data []byte) (int, error) {
+	return t.rd.Write(data)
+}
+
+func (t *remoteDeviceTunnel) UpdateUDPSupport() bool {
+	t.rd.NotifyNetworkChanged()
+	return false /* dummy value, should not be used */
 }
