@@ -81,6 +81,7 @@ func parseShadowsocksTransport(ctx context.Context, config configyaml.ConfigNode
 	if params.SaltGenerator != nil {
 		sd.SaltGenerator = params.SaltGenerator
 	}
+
 	pe, err := parsePE(ctx, params.Endpoint)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create PacketEndpoint: %w", err)
@@ -92,7 +93,7 @@ func parseShadowsocksTransport(ctx context.Context, config configyaml.ConfigNode
 	// For the Shadowsocks transport, the prefix only applies to TCP. To use a prefix with UDP, one needs to
 	// specify it in the PacketListener config explicitly. This is to ensure backwards-compatibility.
 	return &TransportPair{
-		&Dialer[transport.StreamConn]{ConnectionProviderInfo{se.ConnType, se.FirstHop}, sd.DialStream},
+		&Dialer[transport.StreamConn]{ConnectionProviderInfo{ConnTypeTunneled, se.FirstHop}, sd.DialStream},
 		&PacketListener{ConnectionProviderInfo{ConnTypeTunneled, pe.FirstHop}, pl},
 	}, nil
 }
@@ -114,7 +115,8 @@ func parseShadowsocksStreamDialer(ctx context.Context, config configyaml.ConfigN
 	if params.SaltGenerator != nil {
 		sd.SaltGenerator = params.SaltGenerator
 	}
-	return &Dialer[transport.StreamConn]{ConnectionProviderInfo{se.ConnType, se.FirstHop}, sd.DialStream}, nil
+
+	return &Dialer[transport.StreamConn]{ConnectionProviderInfo{ConnTypeTunneled, se.FirstHop}, sd.DialStream}, nil
 }
 
 func parseShadowsocksPacketDialer(ctx context.Context, config configyaml.ConfigNode, parsePE configyaml.ParseFunc[*Endpoint[net.Conn]]) (*Dialer[net.Conn], error) {
