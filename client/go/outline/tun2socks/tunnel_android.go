@@ -21,7 +21,6 @@ import (
 	"log/slog"
 	"os"
 	"runtime/debug"
-	"sync"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
@@ -68,8 +67,8 @@ func ConnectOutlineTunnel(fd int, client *outline.Client, isAutoStart bool) *Con
 		}}
 	}
 	t.tun = tun
-	vpn.GoRelayTraffic(t.rd, t.tun, &t.wg)
-	vpn.GoRelayTraffic(t.tun, t.rd, &t.wg)
+	go vpn.RelayTraffic(t.rd, t.tun)
+	go vpn.RelayTraffic(t.tun, t.rd)
 
 	return &ConnectOutlineTunnelResult{Tunnel: t}
 }
@@ -79,7 +78,6 @@ type remoteDeviceTunnel struct {
 	tun       *os.File
 	rd        *vpn.RemoteDevice
 	connected bool
-	wg        sync.WaitGroup
 }
 
 var _ Tunnel = (*remoteDeviceTunnel)(nil)
@@ -120,8 +118,6 @@ func (t *remoteDeviceTunnel) Disconnect() {
 	t.connected = false
 	t.tun.Close()
 	t.rd.Close()
-	// TODO(junyi): seems no need to wait
-	// t.wg.Wait()
 	if t.client != nil {
 		if err := t.client.EndSession(); err != nil {
 			slog.Error("failed to end backend Client session", "err", err)

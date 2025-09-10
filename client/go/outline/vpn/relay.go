@@ -18,17 +18,14 @@ import (
 	"io"
 	"log/slog"
 	"math/rand"
-	"sync"
 )
 
-// GoRelayTraffic copies data from `src` to `dst` until an error occurs in a new goroutine.
-// It closes `dst` and signals the provided WaitGroup when complete.
-func GoRelayTraffic(dst, src io.ReadWriteCloser, wg *sync.WaitGroup) {
-	wg.Go(func() {
-		id := rand.Intn(1000)
-		slog.Debug("relaying traffic ...", "#", id)
-		n, err := io.Copy(dst, src)
-		slog.Debug("relaying traffic done", "#", id, "n", n, "err", err)
-		dst.Close()
-	})
+// RelayTraffic copies data from `src` to `dst` until an error occurs.
+// It closes `dst` when complete.
+func RelayTraffic(dst io.WriteCloser, src io.Reader) {
+	id := rand.Intn(1000) // A fake gorotuine ID for logging
+	slog.Debug("relaying traffic ...", "#", id)
+	n, err := io.Copy(dst, src)
+	slog.Debug("relaying traffic done", "#", id, "n", n, "err", err)
+	dst.Close()
 }

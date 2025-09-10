@@ -156,8 +156,8 @@ func EstablishVPN(
 		return
 	}
 
-	GoRelayTraffic(c.proxy, c.platform.TUN(), &c.wgCopy)
-	GoRelayTraffic(c.platform.TUN(), c.proxy, &c.wgCopy)
+	c.wgCopy.Go(func() { RelayTraffic(c.proxy, c.platform.TUN()) })
+	c.wgCopy.Go(func() { RelayTraffic(c.platform.TUN(), c.proxy) })
 
 	slog.Info("vpn connection established", "id", c.ID)
 	return c, nil
