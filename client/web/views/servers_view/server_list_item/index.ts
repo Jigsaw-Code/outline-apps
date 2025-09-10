@@ -18,6 +18,12 @@ import {Ref} from 'lit/directives/ref';
 
 import {ServerConnectionState} from '../server_connection_indicator';
 
+export enum ServerConnectionType {
+  PROXYLESS = 'PROXYLESS',
+  SPLIT = 'SPLIT_TUNNELING',
+  COMPLETE = 'COMPLETE_PROTECTION',
+}
+
 export enum ServerListItemEvent {
   CONNECT = 'ConnectPressed',
   DISCONNECT = 'DisconnectPressed',
@@ -35,6 +41,7 @@ export interface ServerListItem {
   id: string;
   name: string;
   connectionState: ServerConnectionState;
+  connectionType: ServerConnectionType;
 }
 
 /**

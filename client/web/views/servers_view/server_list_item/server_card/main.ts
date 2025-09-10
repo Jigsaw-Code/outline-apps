@@ -20,7 +20,7 @@ import { Ref } from 'lit/directives/ref.js';
 
 import '../../server_connection_indicator';
 import './server_rename_dialog';
-import { ServerListItem, ServerListItemElement, ServerListItemEvent } from '..';
+import { ServerConnectionType, ServerListItem, ServerListItemElement, ServerListItemEvent } from '..';
 import { ServerConnectionState } from '../../server_connection_indicator';
 
 @customElement('server-card')
@@ -157,6 +157,19 @@ export class ServerCard
       word-break: break-all;
     }
 
+    .card-metadata-connection-type-container {
+      display: flex;
+      align-items: center;
+      margin-top: var(--outline-gutter);
+      gap: var(--outline-mini-gutter);
+    }
+
+    md-assist-chip {
+      --md-assist-chip-leading-icon-color: var(--outline-text-color);
+      --md-assist-chip-outline-width: 0;
+      --md-assist-chip-container-shape: 1rem;
+    }
+
     .card-menu {
       --md-menu-container-color: var(--outline-card-background);
     }
@@ -217,6 +230,9 @@ export class ServerCard
               ${this.server.name}
             </h2>
             <label class="card-metadata-server-address">${this.server.address}</label>
+            <div class="card-metadata-connection-type-container">
+              ${this.renderConnectionType()}
+            </div>
           </div>
         </div>
         <md-icon-button
@@ -256,6 +272,39 @@ export class ServerCard
         @cancel=${this.cancelRename}
         @submit=${this.submitRename}
       ></server-rename-dialog>
+    `;
+  }
+
+  // TODO: hoist colors and add messages
+  renderConnectionType() {
+    if (!this.server.connectionType) {
+      return html`<i>${this.localize('server-card-no-connection-type')}</i>`
+    }
+
+    let connectionMessage, connectionIcon, connectionColor;
+
+    switch(this.server.connectionType) {
+      case ServerConnectionType.PROXYLESS:
+      case ServerConnectionType.SPLIT:
+        connectionColor = '#D9F5F2';
+        connectionIcon = 'shield';
+        connectionMessage = this.localize('server-card-limited-connection-type')
+        break;
+      case ServerConnectionType.COMPLETE:
+        connectionColor = '#8CE2D6';
+        connectionIcon = 'shield_lock';
+        connectionMessage = this.localize('server-card-complete-connection-type')
+        break;
+    }
+
+    return html`
+      <md-assist-chip style="background: ${connectionColor};">
+        <md-icon slot="icon">${connectionIcon}</md-icon>
+        ${connectionMessage}
+      </md-assist-chip>
+      <!-- <md-icon-button>
+        <md-icon>info</md-icon>
+      </md-icon-button> -->
     `;
   }
 
