@@ -268,8 +268,8 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
 }
 
 - (BOOL)write:(NSData *_Nullable)packet n:(long *)n error:(NSError *_Nullable *)error {
-  DDLogWarn(@"read from tunnel %ld bytes", *n);
   [self.packetFlow writePackets:@[ packet ] withProtocols:@[ @(AF_INET) ]];
+  *n = packet.length;
   return YES;
 }
 
@@ -281,7 +281,6 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
                                                           NSArray<NSNumber *> *_Nonnull protocols) {
     for (NSData *packet in packets) {
       [weakSelf.tunnel write:packet ret0_:&bytesWritten error:nil];
-      DDLogWarn(@"written to tunnel %ld bytes", bytesWritten);
     }
     dispatch_async(weakSelf.packetQueue, ^{
       [weakSelf processPackets];
@@ -299,7 +298,6 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
   if (clientResult.error != nil) {
     return clientResult.error;
   }
-  DDLogWarn(@"Start connecting to tunnel ...");
   Tun2socksConnectOutlineTunnelResult *result =
     Tun2socksConnectOutlineTunnel(weakSelf, clientResult.client, isAutoStart);
   if (result.error != nil) {

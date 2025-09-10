@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
-	"sync"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
@@ -63,7 +62,7 @@ func ConnectOutlineTunnel(tunWriter TunWriter, client *outline.Client, isAutoSta
 		}}
 	}
 	t.tun = tunWriter
-	vpn.GoRelayTraffic(t.tun, t.rd, &t.wg)
+	go vpn.RelayTraffic(t.tun, t.rd)
 
 	return &ConnectOutlineTunnelResult{Tunnel: t}
 }
@@ -73,7 +72,6 @@ type remoteDeviceTunnel struct {
 	tun       TunWriter
 	rd        *vpn.RemoteDevice
 	connected bool
-	wg        sync.WaitGroup
 }
 
 var _ Tunnel = (*remoteDeviceTunnel)(nil)
