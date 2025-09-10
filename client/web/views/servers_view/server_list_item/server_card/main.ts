@@ -14,19 +14,15 @@
 import { Corner, type Menu } from '@material/web/menu/menu';
 
 import { Localizer } from '@outline/infrastructure/i18n';
-
 import { css, html, LitElement } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { Ref } from 'lit/directives/ref.js';
 
-import { ServerConnectionType, ServerListItem, ServerListItemElement, ServerListItemEvent } from '..';
-import { ServerConnectionState } from '../../server_connection_indicator';
-
+import '../../server_connection_indicator';
 import './server_rename_dialog';
 import './server_info_dialog';
-import '../../server_connection_indicator';
-
-export * from './legacy';
+import { ServerConnectionType, ServerListItem, ServerListItemElement, ServerListItemEvent } from '..';
+import { ServerConnectionState } from '../../server_connection_indicator';
 
 @customElement('server-card')
 export class ServerCard
@@ -71,13 +67,13 @@ export class ServerCard
     .card {
       --min-indicator-size: calc(
           var(--server-name-size) + var(--outline-mini-gutter) +
-            var(--server-address-size) + 48px - 1rem
+            var(--server-address-size)
         );
 
       --max-indicator-size: calc(
         var(--outline-slim-gutter) + var(--server-name-size) +
           var(--outline-mini-gutter) + var(--server-address-size) +
-          var(--outline-slim-gutter) + 48px - 1rem
+          var(--outline-slim-gutter)
       );
       
       align-items: center;
@@ -85,8 +81,8 @@ export class ServerCard
       border-radius: var(--outline-corner);
       box-shadow: var(--outline-elevation);
       display: grid;
-      gap: var(--outline-gutter);
-      grid-gap: var(--outline-gutter);
+      gap: var(--outline-slim-gutter);
+      grid-gap: var(--outline-slim-gutter);
       overflow: hidden;
       width: 100%;
 
@@ -108,7 +104,6 @@ export class ServerCard
     }
 
     server-connection-indicator {
-      margin: 0 var(--outline-mini-gutter);
       min-height: var(--min-indicator-size);
       max-height: var(--max-indicator-size);
       float: left;
@@ -193,6 +188,7 @@ export class ServerCard
 
     .card-footer {
       background: var(--outline-card-footer);
+      border-top: var(--outline-hairline);
       box-sizing: border-box;
       grid-area: footer;
       padding: var(--outline-mini-gutter) var(--outline-gutter);
@@ -278,7 +274,23 @@ export class ServerCard
         @cancel=${this.cancelRename}
         @submit=${this.submitRename}
       ></server-rename-dialog>
+      ${this.renderInfoDialogs()}
     `;
+  }
+
+  renderInfoDialogs() {
+    const open = this.isInfoDialogOpen;
+    const localize = this.localize;
+    const cancel = () => this.isInfoDialogOpen = false;
+
+    switch(this.server.connectionType) {
+      case ServerConnectionType.PROXYLESS:
+        return html`<server-proxyless-info-dialog .open=${open} .localize=${localize} @cancel=${cancel}></server-proxyless-info-dialog>`;
+      case ServerConnectionType.SPLIT:
+        return html`<server-split-tunneling-info-dialog .open=${open} .localize=${localize} @cancel=${cancel}></server-split-tunneling-info-dialog>`;
+      case ServerConnectionType.COMPLETE:
+        return html`<server-complete-protection-info-dialog .open=${open} .localize=${localize} @cancel=${cancel}></server-complete-protection-info-dialog>`;
+    }
   }
 
     // TODO: hoist colors and add messages
@@ -287,46 +299,30 @@ export class ServerCard
       return html`<i>${this.localize('server-card-no-connection-type')}</i>`
     }
 
-    let connectionMessage, connectionIcon, connectionColor, connectionInfoDialog;
+    let connectionMessage, connectionIcon, connectionColor;
 
     switch(this.server.connectionType) {
       case ServerConnectionType.PROXYLESS:
-        connectionInfoDialog = html`<server-proxyless-info-dialog
-          .open=${this.isInfoDialogOpen}
-          .localize=${this.localize}
-          @cancel=${this.closeInfo}
-        ></server-proxyless-info-dialog>`;
       case ServerConnectionType.SPLIT:
-        connectionColor = '--outline-partial-connection-color';
+        connectionColor = '#D9F5F2';
         connectionIcon = 'shield';
-        connectionInfoDialog ??= html`<server-split-tunneling-info-dialog
-          .open=${this.isInfoDialogOpen}
-          .localize=${this.localize}
-          @cancel=${this.closeInfo}
-        ></server-split-tunneling-info-dialog>`
         connectionMessage = this.localize('server-card-limited-connection-type')
         break;
       case ServerConnectionType.COMPLETE:
-        connectionColor = '--outline-complete-connection-color';
+        connectionColor = '#8CE2D6';
         connectionIcon = 'shield_lock';
-        connectionInfoDialog = html`<server-complete-protection-info-dialog
-          .open=${this.isInfoDialogOpen}
-          .localize=${this.localize}
-          @cancel=${this.closeInfo}
-        ></server-complete-protection-info-dialog>`;
         connectionMessage = this.localize('server-card-complete-connection-type')
         break;
     }
 
     return html`
-      <md-assist-chip style="background: var(${connectionColor});">
+      <md-assist-chip style="background: ${connectionColor};">
         <md-icon slot="icon">${connectionIcon}</md-icon>
         ${connectionMessage}
       </md-assist-chip>
-      <md-icon-button @click=${this.openInfo}>
+      <md-icon-button @click=${() => this.isInfoDialogOpen = true}>
         <md-icon>info</md-icon>
       </md-icon-button>
-      ${connectionInfoDialog}
     `;
   }
 
@@ -349,28 +345,19 @@ export class ServerCard
       })
     );
   }
-
-  openInfo() {
-    this.isInfoDialogOpen = true;
-  }
-
-  closeInfo() {
-    this.isInfoDialogOpen = false;
-  }
   
-  openMenu() {;
-    const menu = this.menu as Menu;
+  openMenu() {
+    const menuElement = this.menu.value;
 
-
-    if (!menu) {
+    if (!menuElement || !this.menuButton.value) {
       return;
     }
 
-    if (!menu.anchorElement) {
-      menu.anchorElement = this.menuButton as HTMLElement;
+    if (!menuElement.anchorElement) {
+      menuElement.anchorElement = this.menuButton.value;
     }
 
-    menu.show();
+    menuElement.show();
   }
 
   connectToggle() {

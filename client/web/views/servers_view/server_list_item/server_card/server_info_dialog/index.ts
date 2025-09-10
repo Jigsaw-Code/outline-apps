@@ -97,8 +97,6 @@ class ServerInfoDialog extends LitElement {
   }
 
   private handleClose() {
-    console.log("handle close");
-
     this.dispatchEvent(new CustomEvent('cancel'));
   }
 }
