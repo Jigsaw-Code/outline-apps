@@ -32,7 +32,10 @@ export async function main() {
 
   const webpackConfig = getBrowserWebpackConfig('browser', 'debug');
 
-  await new WebpackServer(webpackConfig.devServer, webpack(webpackConfig)).start();
+  await new WebpackServer(
+    webpackConfig.devServer,
+    webpack(webpackConfig)
+  ).start();
 }
 
 if (import.meta.url === url.pathToFileURL(process.argv[1]).href) {
