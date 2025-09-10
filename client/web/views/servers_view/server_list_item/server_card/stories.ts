@@ -44,4 +44,3 @@ export const ServerCard = ({server}: ServerListItemElement) => html`
     <server-card .localize=${localize} .server=${server}></server-card>
   </div>
 `;
-
