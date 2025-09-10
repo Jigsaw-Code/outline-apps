@@ -17,9 +17,9 @@
 
 import {html} from 'lit';
 
-import '../../index';
+import './index';
 
-import {ServerListItemElement} from '..';
+import {ServerConnectionType, ServerListItemElement} from '..';
 import {localize} from '../../../../testing/localize';
 import {ServerConnectionState} from '../../server_connection_indicator';
 
@@ -30,6 +30,7 @@ export default {
       name: 'My Server',
       address: '1.0.0.127',
       connectionState: ServerConnectionState.DISCONNECTED,
+      connectionType: ServerConnectionType.COMPLETE
     },
   },
   argTypes: {

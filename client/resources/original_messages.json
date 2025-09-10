@@ -535,6 +535,14 @@
       }
     }
   },
+  "server_card_limited_connection_type": {
+    "desciption": "The text in a chip indicating to the user that their current internet connection is only partially protected.",
+    "message": "Limited protection"
+  },
+  "server_card_complete_connection_type": {
+    "description": "The text in a chip indicating to the user that their current internet connection is completely protected.",
+    "message": "Complete protection"
+  },
   "server_default_name": {
     "description": "This is the default name for an added server when the type or name is not specified by the access key.",
     "message": "Proxy Server"
