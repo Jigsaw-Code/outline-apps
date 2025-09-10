@@ -29,7 +29,6 @@ class ServerInfoDialog extends LitElement {
   @property({type: String}) titleMessageId: string;
   @property({type: String}) contentMessageId: string;
 
-
   static styles = css`
     :host {
       --md-sys-color-primary: var(--outline-primary);
