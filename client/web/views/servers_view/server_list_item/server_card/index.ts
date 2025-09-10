@@ -60,8 +60,8 @@ export class ServerCard
     }
 
     :host {
-      --server-name-size: 1rem;
-      --server-address-size: 0.875rem;
+      --server-name-size: 1.25rem;
+      --server-metadata-size: 0.75rem;
 
       display: inline-block;
       height: 100%;
@@ -72,13 +72,13 @@ export class ServerCard
     .card {
       --min-indicator-size: calc(
           var(--server-name-size) + var(--outline-mini-gutter) +
-            var(--server-address-size) + 48px - 1rem
+            var(--server-metadata-size)
         );
 
       --max-indicator-size: calc(
         var(--outline-slim-gutter) + var(--server-name-size) +
-          var(--outline-mini-gutter) + var(--server-address-size) +
-          var(--outline-slim-gutter) + 48px - 1rem
+          var(--outline-mini-gutter) + var(--server-metadata-size) +
+          var(--outline-slim-gutter)
       );
       
       align-items: center;
@@ -130,7 +130,7 @@ export class ServerCard
 
     .card-connection-label {
       color: var(--outline-label-color);
-      font-size: var(--server-address-size);
+      font-size: var(--server-metadata-size);
       font-family: var(--outline-font-family);
       padding-top: 0.5rem;
     }
@@ -161,18 +161,20 @@ export class ServerCard
       /* https://caniuse.com/?search=line-clamp */
       -webkit-line-clamp: 2;
       color: var(--outline-label-color);
-      font-size: var(--server-address-size);
+      font-size: var(--server-metadata-size);
       word-break: break-all;
     }
 
     .card-metadata-connection-type-container {
-      display: flex;
       align-items: center;
-      margin-top: var(--outline-gutter);
+      display: flex;
+      flex-wrap: wrap;
       gap: var(--outline-mini-gutter);
+      margin-top: var(--outline-gutter);
     }
 
-    md-assist-chip {
+    md-assist-chip { 
+      --md-assist-chip-label-text-size: var(--server-metadata-size);
       --md-assist-chip-leading-icon-color: var(--outline-text-color);
       --md-assist-chip-outline-width: 0;
       --md-assist-chip-container-shape: 1rem;
@@ -219,6 +221,10 @@ export class ServerCard
 
     .card-basic-access server-connection-indicator {
       display: none;
+    }
+
+    .card-basic-access .card-metadata-connection-type-container {
+      margin-top: var(--outline-mini-gutter);
     }
 
     .card-basic-access footer {
