@@ -59,7 +59,7 @@ body {
 
   --outline-font-family: Roboto, sans-serif;
 
-  --outline-corner: 2px;
+  --outline-corner: 0.5rem;
 
   --outline-large-gutter: 2rem;
   --outline-gutter: 1rem;
@@ -72,8 +72,8 @@ body {
   --outline-text-color: var(--outline-black);
   --outline-label-color: var(--outline-medium-gray);
   --outline-hairline: 1px solid hsl(0, 0%, 85%);
-  --outline-elevation-color: rgb(0 0 0 / 30%);
-  --outline-elevation: var(--outline-elevation-color) 0px 2px 3px 2px;
+  --outline-elevation-color: hsla(0, 0%, 0%, 0.10);
+  --outline-elevation: var(--outline-elevation-color) 2px 2px 4px 0px;
   --outline-icon-color:rgb(73, 69, 79);
 
   --outline-partial-connection-color: var(--outline-primary-light);

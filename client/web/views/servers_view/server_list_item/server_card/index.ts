@@ -71,13 +71,13 @@ export class ServerCard
     .card {
       --min-indicator-size: calc(
           var(--server-name-size) + var(--outline-mini-gutter) +
-            var(--server-address-size)
+            var(--server-address-size) + 48px - 1rem
         );
 
       --max-indicator-size: calc(
         var(--outline-slim-gutter) + var(--server-name-size) +
           var(--outline-mini-gutter) + var(--server-address-size) +
-          var(--outline-slim-gutter)
+          var(--outline-slim-gutter) + 48px - 1rem
       );
       
       align-items: center;
@@ -85,8 +85,8 @@ export class ServerCard
       border-radius: var(--outline-corner);
       box-shadow: var(--outline-elevation);
       display: grid;
-      gap: var(--outline-slim-gutter);
-      grid-gap: var(--outline-slim-gutter);
+      gap: var(--outline-gutter);
+      grid-gap: var(--outline-gutter);
       overflow: hidden;
       width: 100%;
 
@@ -108,6 +108,7 @@ export class ServerCard
     }
 
     server-connection-indicator {
+      margin: 0 var(--outline-mini-gutter);
       min-height: var(--min-indicator-size);
       max-height: var(--max-indicator-size);
       float: left;
@@ -192,7 +193,6 @@ export class ServerCard
 
     .card-footer {
       background: var(--outline-card-footer);
-      border-top: var(--outline-hairline);
       box-sizing: border-box;
       grid-area: footer;
       padding: var(--outline-mini-gutter) var(--outline-gutter);
