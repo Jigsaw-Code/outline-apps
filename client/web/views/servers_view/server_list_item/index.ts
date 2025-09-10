@@ -25,6 +25,7 @@ export enum ServerConnectionType {
 }
 
 export enum ServerListItemEvent {
+  CONFIGURE_DNS = 'ConfigureDns',
   CONNECT = 'ConnectPressed',
   DISCONNECT = 'DisconnectPressed',
   FORGET = 'ForgetPressed',

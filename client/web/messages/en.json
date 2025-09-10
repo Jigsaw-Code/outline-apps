@@ -11,6 +11,8 @@
   "appearance-system": "System",
   "auto-connect-dialog-detail": "Unless you disconnect from your Outline server, Outline will automatically connect next time you restart your device.",
   "auto-connect-dialog-title": "Stay protected, always",
+  "basic-access-name": "Outline Basic Access",
+  "basic-access-configure-dns": "Configure",
   "cancel": "Cancel",
   "change-language-page-title": "Change Language",
   "close": "Close",

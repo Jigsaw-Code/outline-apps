@@ -15,9 +15,10 @@ import { Corner, type Menu } from '@material/web/menu/menu';
 
 import { Localizer } from '@outline/infrastructure/i18n';
 
-import { css, html, LitElement } from 'lit';
+import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { Ref } from 'lit/directives/ref.js';
+import { classMap } from 'lit/directives/class-map.js';
 
 import { ServerConnectionType, ServerListItem, ServerListItemElement, ServerListItemEvent } from '..';
 import { ServerConnectionState } from '../../server_connection_indicator';
@@ -209,6 +210,21 @@ export class ServerCard
 
       text-transform: uppercase;
     }
+
+    .card-basic-access {
+      box-shadow: none;
+      border-radius: 2rem;
+      border: 2px solid var(--outline-light-gray);
+    }
+
+    .card-basic-access server-connection-indicator {
+      display: none;
+    }
+
+    .card-basic-access footer {
+      background: transparent;
+      border-top: 2px solid var(--outline-light-gray);
+    }
   `
 
   get isConnectedState() {
@@ -216,26 +232,29 @@ export class ServerCard
       ServerConnectionState.CONNECTING,
       ServerConnectionState.CONNECTED,
       ServerConnectionState.RECONNECTING,
-    ].includes(this.server.connectionState);
+    ].includes(this.server?.connectionState);
   }
 
   get hasErrorMessage() {
-    return Boolean(this.server.errorMessageId);
+    return Boolean(this.server?.errorMessageId);
   }
 
   render() {
     return html`
-      <div class="card">
+      <div class=${classMap({
+        card: true,
+        'card-basic-access': !this.server,
+      })}>
         <div class="card-metadata" aria-labelledby="server-name">
           <server-connection-indicator
             ?darkMode=${this.darkMode}
-            connection-state="${this.server.connectionState}"
+            connection-state="${this.server?.connectionState}"
           ></server-connection-indicator>
           <div class="card-metadata-text">
             <h2 class="card-metadata-server-name" id="server-name">
-              ${this.server.name}
+              ${this.server?.name ?? this.localize('basic-access-name')}
             </h2>
-            <label class="card-metadata-server-address">${this.server.address}</label>
+            <label class="card-metadata-server-address">${this.server?.address}</label>
             <div class="card-metadata-connection-type-container">
               ${this.renderConnectionType()}
             </div>
@@ -248,7 +267,7 @@ export class ServerCard
           <md-icon>more_vert</md-icon>
         </md-icon-button>  
         <footer class="card-footer">
-          <span class="card-error">${this.hasErrorMessage ? this.localize(this.server.errorMessageId) : ''}</span>
+          <span class="card-error">${this.hasErrorMessage ? this.localize(this.server?.errorMessageId) : ''}</span>
           <md-text-button
             class="card-footer-button"
             @click="${this.connectToggle}"
@@ -258,38 +277,58 @@ export class ServerCard
           </md-text-button>
         </footer>
       </div>
-      <md-menu
-        class="card-menu"
-        menuCorner=${Corner.END_END}
-        quick
-      >
-        <md-menu-item @click="${this.beginRename}">
-          ${this.localize('server-rename')}
-        </md-menu-item>
-        <md-menu-item @click="${this.forget}">
-          ${this.localize('server-forget')}
-        </md-menu-item>
-      </md-menu>
+      ${this.renderServerMenu()}
       <server-rename-dialog
         .open=${this.isRenameDialogOpen}
         .localize=${this.localize}
-        .serverId=${this.server.id}
-        .serverName=${this.server.name}
+        .serverId=${this.server?.id}
+        .serverName=${this.server?.name}
         @cancel=${this.cancelRename}
         @submit=${this.submitRename}
       ></server-rename-dialog>
     `;
   }
 
-    // TODO: hoist colors and add messages
+  renderServerMenu() {
+    if (!this.server) {
+      return html`<md-menu
+        class="card-menu"
+        menuCorner=${Corner.END_END}
+        quick
+      >
+        <md-menu-item @click="${this.configureDns}">
+          ${this.localize('basic-access-configure-dns')}
+        </md-menu-item>
+      </md-menu>`;
+    }
+
+    return html`<md-menu
+      class="card-menu"
+      menuCorner=${Corner.END_END}
+      quick
+    >
+      <md-menu-item @click="${this.beginRename}">
+        ${this.localize('server-rename')}
+      </md-menu-item>
+      <md-menu-item @click="${this.forget}">
+        ${this.localize('server-forget')}
+      </md-menu-item>
+    </md-menu>`;
+  }
+
   renderConnectionType() {
-    if (!this.server.connectionType) {
+    let connectionType, connectionMessage, connectionIcon, connectionColor, connectionInfoDialog;
+
+    if (!this.server) {
+      connectionType = ServerConnectionType.PROXYLESS;
+    }
+
+    if (this.server && !this.server.connectionType) {
       return html`<i>${this.localize('server-card-no-connection-type')}</i>`
     }
 
-    let connectionMessage, connectionIcon, connectionColor, connectionInfoDialog;
-
-    switch(this.server.connectionType) {
+    connectionType ??= this.server.connectionType;
+    switch(connectionType) {
       case ServerConnectionType.PROXYLESS:
         connectionInfoDialog = html`<server-proxyless-info-dialog
           .open=${this.isInfoDialogOpen}
@@ -348,6 +387,17 @@ export class ServerCard
         composed: true,
       })
     );
+  }
+
+  configureDns() {
+    // This is an app-level setting, so we send an event for the
+    // app to intercept.
+    this.dispatchEvent(
+      new CustomEvent(ServerListItemEvent.CONFIGURE_DNS, {
+        bubbles: true,
+        composed: true
+      })
+    )
   }
 
   openInfo() {

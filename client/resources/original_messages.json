@@ -75,6 +75,14 @@
     "description": "The title of a message to the user that tells them Outline will keep connected unless explicitly told to disconnect. Outline is the product name and can be found in the translation glossary.",
     "message": "Stay protected, always"
   },
+  "basic_access_name": {
+    "description": "TODO",
+    "message": "Outline Basic Access"
+  },
+  "basic_access_configure_dns": {
+    "description": "TODO",
+    "message": "Configure"
+  },
   "cancel": {
     "description": "The text on a button to cancel the current operation.",
     "message": "Cancel"

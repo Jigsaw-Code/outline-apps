@@ -45,3 +45,9 @@ export const ServerCard = ({server}: ServerListItemElement) => html`
     <server-card .localize=${localize} .server=${server}></server-card>
   </div>
 `;
+
+export const BasicAccessCard = () => html`
+  <div style="width: 100%; height: clamp(100px, 100%, 150px);">
+    <server-card .localize=${localize}></server-card>
+  </div>
+`;
