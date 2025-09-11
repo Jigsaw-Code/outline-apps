@@ -66,6 +66,9 @@ export class PrivacyAcknowledgementDialog extends LitElement {
     img {
       width: 112px;
       height: 158px;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
     }
 
     h2 {

@@ -247,10 +247,3 @@ section,
 .zerostate-footer {
   color: var(--outline-text-color);
 }
-
-/* Prevent images from being selectable on iOS, which can cause a crash when trying to save them. */
-img {
-  -webkit-user-select: none;
-  user-select: none;
-  -webkit-touch-callout: none;
-}
