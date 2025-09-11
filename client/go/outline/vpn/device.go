@@ -85,14 +85,6 @@ func ConnectRemoteDevice(
 	return dev, nil
 }
 
-// WriteTo writes data to w until there's no more data or when an error occurs.
-//
-// If the underlying IPDevice implements io.WriterTo, we call it directly.
-// Otherwise, we fallback to a standard io.Copy.
-func (d *RemoteDevice) WriteTo(w io.Writer) (int64, error) {
-	return io.Copy(w, d.ReadWriteCloser)
-}
-
 // Close closes the connection to the Outline server.
 func (dev *RemoteDevice) Close() (err error) {
 	if dev.ReadWriteCloser != nil {
