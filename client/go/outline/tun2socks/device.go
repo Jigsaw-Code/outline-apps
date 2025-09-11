@@ -86,6 +86,6 @@ func (d *RemoteDevice) Close() *perrs.PlatformError {
 	if d.tun != nil {
 		err = d.tun.Close()
 	}
-	err = errors.Join(d.rd.Close())
+	err = errors.Join(err, d.rd.Close())
 	return perrs.ToPlatformError(err)
 }
