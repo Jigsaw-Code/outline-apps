@@ -48,6 +48,6 @@ export const ServerCard = ({server}: ServerListItemElement) => html`
 
 export const BasicAccessCard = () => html`
   <div style="width: 100%; height: clamp(100px, 100%, 150px);">
-    <server-card .localize=${localize}></server-card>
+    <server-card .localize=${localize} .server=${{ name: 'Outline Basic Access', connectionState: ServerConnectionState.DISCONNECTED }} basicAccess></server-card>
   </div>
 `;

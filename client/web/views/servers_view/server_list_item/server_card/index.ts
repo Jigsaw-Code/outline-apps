@@ -36,6 +36,7 @@ export class ServerCard
   @property({ type: Object }) server: ServerListItem;
   @property({ type: Object }) localize: Localizer;
   @property({ type: Boolean }) darkMode = false;
+  @property({ type: Boolean }) basicAccess = false;
 
   @query('.card-menu') menu: Ref<Menu>;
   @query('.card-menu-button') menuButton: Ref<HTMLElement>;
@@ -85,6 +86,8 @@ export class ServerCard
       background: var(--outline-card-background);
       border-radius: var(--outline-corner);
       box-shadow: var(--outline-elevation);
+      container-type: inline-size;
+      container-name: connection-message;
       display: grid;
       gap: var(--outline-gutter);
       grid-gap: var(--outline-gutter);
@@ -173,11 +176,34 @@ export class ServerCard
       margin-top: var(--outline-gutter);
     }
 
-    md-assist-chip { 
-      --md-assist-chip-label-text-size: var(--server-metadata-size);
-      --md-assist-chip-leading-icon-color: var(--outline-text-color);
-      --md-assist-chip-outline-width: 0;
-      --md-assist-chip-container-shape: 1rem;
+    .card-metadata-connection-type-container > i {
+      font-family: var(--outline-font-family);
+      font-size: var(--server-metadata-size);
+      color: var(--outline-medium-gray);
+    }
+
+    .card-metadata-connection-type {
+      align-items: center;
+      border-radius: 2rem;
+      display: flex;
+      width: max-content;
+      gap: 0.15rem;
+      padding: var(--outline-mini-gutter) var(--outline-slim-gutter);
+    }
+
+    .card-metadata-connection-type-message {
+      font-size: var(--server-metadata-size);
+      font-family: var(--outline-font-family);
+    }
+
+    @container connection-message (width < 380px) {
+      .card-metadata-connection-type {
+        padding: var(--outline-mini-gutter);
+      }
+
+      .card-metadata-connection-type-message {
+        display: none;
+      }
     }
 
     .card-menu {
@@ -238,18 +264,18 @@ export class ServerCard
       ServerConnectionState.CONNECTING,
       ServerConnectionState.CONNECTED,
       ServerConnectionState.RECONNECTING,
-    ].includes(this.server?.connectionState);
+    ].includes(this.server.connectionState);
   }
 
   get hasErrorMessage() {
-    return Boolean(this.server?.errorMessageId);
+    return Boolean(this.server.errorMessageId);
   }
 
   render() {
     return html`
       <div class=${classMap({
         card: true,
-        'card-basic-access': !this.server,
+        'card-basic-access': this.basicAccess,
       })}>
         <div class="card-metadata" aria-labelledby="server-name">
           <server-connection-indicator
@@ -258,9 +284,9 @@ export class ServerCard
           ></server-connection-indicator>
           <div class="card-metadata-text">
             <h2 class="card-metadata-server-name" id="server-name">
-              ${this.server?.name ?? this.localize('basic-access-name')}
+              ${this.server.name ?? this.localize('basic-access-name')}
             </h2>
-            <label class="card-metadata-server-address">${this.server?.address}</label>
+            <label class="card-metadata-server-address">${this.server.address}</label>
             <div class="card-metadata-connection-type-container">
               ${this.renderConnectionType()}
             </div>
@@ -273,7 +299,7 @@ export class ServerCard
           <md-icon>more_vert</md-icon>
         </md-icon-button>  
         <footer class="card-footer">
-          <span class="card-error">${this.hasErrorMessage ? this.localize(this.server?.errorMessageId) : ''}</span>
+          <span class="card-error">${this.hasErrorMessage ? this.localize(this.server.errorMessageId) : ''}</span>
           <md-text-button
             class="card-footer-button"
             @click="${this.connectToggle}"
@@ -287,8 +313,8 @@ export class ServerCard
       <server-rename-dialog
         .open=${this.isRenameDialogOpen}
         .localize=${this.localize}
-        .serverId=${this.server?.id}
-        .serverName=${this.server?.name}
+        .serverId=${this.server.id}
+        .serverName=${this.server.name}
         @cancel=${this.cancelRename}
         @submit=${this.submitRename}
       ></server-rename-dialog>
@@ -325,11 +351,11 @@ export class ServerCard
   renderConnectionType() {
     let connectionType, connectionMessage, connectionIcon, connectionColor, connectionInfoDialog;
 
-    if (!this.server) {
+    if (this.basicAccess) {
       connectionType = ServerConnectionType.PROXYLESS;
     }
 
-    if (this.server && !this.server.connectionType) {
+    if (!this.basicAccess && this.server && !this.server.connectionType) {
       return html`<i>${this.localize('server-card-no-connection-type')}</i>`
     }
 
@@ -364,10 +390,10 @@ export class ServerCard
     }
 
     return html`
-      <md-assist-chip style="background: var(${connectionColor});">
+      <div class="card-metadata-connection-type" style="background: var(${connectionColor});">
         <md-icon slot="icon">${connectionIcon}</md-icon>
-        ${connectionMessage}
-      </md-assist-chip>
+        <span class="card-metadata-connection-type-message">${connectionMessage}</span>
+      </div>
       <md-icon-button @click=${this.openInfo}>
         <md-icon>info</md-icon>
       </md-icon-button>
