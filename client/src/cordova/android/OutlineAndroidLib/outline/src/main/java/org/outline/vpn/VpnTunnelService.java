@@ -279,7 +279,6 @@ public class VpnTunnelService extends VpnService {
         tearDownActiveTunnel();
         return new PlatformError(Platerrors.SetupSystemVPNFailed, "failed to establish the VPN");
       }
-      startNetworkConnectivityMonitor();
     }
 
     final ConnectRemoteDeviceResult result = Tun2socks.connectRemoteDevice(client);
@@ -312,6 +311,7 @@ public class VpnTunnelService extends VpnService {
     }
     LOG.info("Relaying traffic between TUN device and remote device.");
 
+    startNetworkConnectivityMonitor();
     startForegroundWithNotification(config.name);
     storeActiveTunnel(config);
     return null;
