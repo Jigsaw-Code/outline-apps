@@ -56,9 +56,9 @@ import outline.Outline;
 import outline.TCPAndUDPConnectivityResult;
 import platerrors.Platerrors;
 import platerrors.PlatformError;
-import tun2socks.ConnectOutlineTunnelResult;
+import tun2socks.ConnectRemoteDeviceResult;
+import tun2socks.RemoteDevice;
 import tun2socks.Tun2socks;
-import tun2socks.Tunnel;
 
 /**
  * Android service responsible for managing a VPN tunnel. Clients must bind to this
@@ -110,7 +110,7 @@ public class VpnTunnelService extends VpnService {
   /** File descriptor for the local TUN device, provided by VpnService.Builder.establish(). */
   private ParcelFileDescriptor tunFd;
   /** The Go "remote device" implementation. */
-  private Tunnel remoteDevice;
+  private RemoteDevice remoteDevice;
 
   private TunnelConfig tunnelConfig;
   private NetworkConnectivityMonitor networkConnectivityMonitor;
@@ -282,14 +282,35 @@ public class VpnTunnelService extends VpnService {
       startNetworkConnectivityMonitor();
     }
 
-    // Start exchanging traffic between the local TUN device and the remote device.
-    final ConnectOutlineTunnelResult result =
-            Tun2socks.connectOutlineTunnel(this.tunFd.getFd(), client, isAutoStart);
+    final ConnectRemoteDeviceResult result = Tun2socks.connectRemoteDevice(client);
     if (result.getError() != null) {
       tearDownActiveTunnel();
       return result.getError();
     }
-    this.remoteDevice = result.getTunnel();
+    this.remoteDevice = result.getDevice();
+    LOG.info("Remote device created successfully.");
+
+    if (!isAutoStart) {
+      final PlatformError healthErr = this.remoteDevice.getHealthStatus();
+      if (healthErr != null) {
+        LOG.log(Level.SEVERE, "Remote device is not healthy", healthErr);
+        this.stopRemoteDevice();
+        tearDownActiveTunnel();
+        return healthErr;
+      }
+      LOG.info("Remote device is healthy.");
+    } else {
+      LOG.info("Auto-start VPN, skip health check.");
+    }
+
+    final PlatformError err = Tun2socks.goRelayTraffic(this.tunFd.getFd(), this.remoteDevice);
+    if (err != null) {
+      LOG.log(Level.SEVERE, "Failed to relay traffic between TUN and remote devices", err);
+      this.stopRemoteDevice();
+      tearDownActiveTunnel();
+      return err;
+    }
+    LOG.info("Relaying traffic between TUN device and remote device.");
 
     startForegroundWithNotification(config.name);
     storeActiveTunnel(config);
@@ -355,8 +376,11 @@ public class VpnTunnelService extends VpnService {
     if (this.remoteDevice == null) {
       return;
     }
-    if (this.remoteDevice.isConnected()) {
-      this.remoteDevice.disconnect();
+    final PlatformError err = this.remoteDevice.close();
+    if (err != null) {
+      LOG.severe("Failed to close the remote device.");
+    } else {
+      LOG.info("Remote device closed successfully.");
     }
     this.remoteDevice = null;
   }
@@ -382,7 +406,7 @@ public class VpnTunnelService extends VpnService {
       updateNotification(TunnelStatus.CONNECTED);
 
       if (VpnTunnelService.this.remoteDevice != null) {
-        VpnTunnelService.this.remoteDevice.updateUDPSupport();
+        VpnTunnelService.this.remoteDevice.notifyNetworkChanged();
       }
     }
 

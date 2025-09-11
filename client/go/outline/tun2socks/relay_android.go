@@ -1,0 +1,69 @@
+// Copyright 2025 The Outline Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package tun2socks
+
+import (
+	"errors"
+	"os"
+
+	perrs "github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/vpn"
+	"golang.org/x/sys/unix"
+)
+
+// GoRelayTraffic starts two goroutines to relay network traffic bidirectionally
+// between a TUN device and a remote device for Android.
+func GoRelayTraffic(fd int, rd *RemoteDevice) *perrs.PlatformError {
+	if rd == nil {
+		return &perrs.PlatformError{
+			Code:    perrs.InternalError,
+			Message: "remote device must be provided",
+		}
+	}
+	tun, err := makeTunFile(fd)
+	if err != nil {
+		return &perrs.PlatformError{
+			Code:    perrs.SetupSystemVPNFailed,
+			Message: "failed to create the TUN device",
+			Cause:   perrs.ToPlatformError(err),
+		}
+	}
+	rd.tun = tun
+
+	go vpn.RelayTraffic(rd.rd.ReadWriteCloser, tun)
+	go vpn.RelayTraffic(tun, rd.rd.ReadWriteCloser)
+
+	return nil
+}
+
+// makeTunFile returns an os.File object from a TUN file descriptor `fd`.
+// The returned os.File holds a separate reference to the underlying file,
+// so the file will not be closed until both `fd` and the os.File are
+// separately closed.  (UNIX only.)
+func makeTunFile(fd int) (*os.File, error) {
+	if fd < 0 {
+		return nil, errors.New("Must provide a valid TUN file descriptor")
+	}
+	// Make a copy of `fd` so that os.File's finalizer doesn't close `fd`.
+	newfd, err := unix.Dup(fd)
+	if err != nil {
+		return nil, err
+	}
+	file := os.NewFile(uintptr(newfd), "")
+	if file == nil {
+		return nil, errors.New("Failed to open TUN file descriptor")
+	}
+	return file, nil
+}
