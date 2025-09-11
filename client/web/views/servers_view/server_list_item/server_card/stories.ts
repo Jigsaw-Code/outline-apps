@@ -18,6 +18,7 @@
 import {html} from 'lit';
 
 import './index';
+import {ServerCard} from './index';
 
 import {ServerConnectionType, ServerListItemElement} from '..';
 import {localize} from '../../../../testing/localize';
@@ -32,6 +33,7 @@ export default {
       connectionState: ServerConnectionState.DISCONNECTED,
       connectionType: ServerConnectionType.COMPLETE
     },
+    basicAccess: false,
   },
   argTypes: {
     server: {
@@ -40,14 +42,8 @@ export default {
   },
 };
 
-export const ServerCard = ({server}: ServerListItemElement) => html`
+export const Example = ({server, basicAccess}: ServerCard) => html`
   <div style="width: 100%; height: clamp(100px, 100%, 150px);">
-    <server-card .localize=${localize} .server=${server}></server-card>
-  </div>
-`;
-
-export const BasicAccessCard = () => html`
-  <div style="width: 100%; height: clamp(100px, 100%, 150px);">
-    <server-card .localize=${localize} .server=${{ name: 'Outline Basic Access', connectionState: ServerConnectionState.DISCONNECTED }} basicAccess></server-card>
+    <server-card .localize=${localize} .server=${server} ?basicAccess=${basicAccess}></server-card>
   </div>
 `;

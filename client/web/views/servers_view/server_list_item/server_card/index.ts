@@ -15,7 +15,7 @@ import { Corner, type Menu } from '@material/web/menu/menu';
 
 import { Localizer } from '@outline/infrastructure/i18n';
 
-import { css, html, LitElement, nothing } from 'lit';
+import { css, html, LitElement } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { Ref } from 'lit/directives/ref.js';
 import { classMap } from 'lit/directives/class-map.js';
@@ -158,6 +158,12 @@ export class ServerCard
       /* To break the line in case a sequence of word characters is longer than the line.
         See https://github.com/Jigsaw-Code/outline-apps/issues/1372. */
       word-break: break-all;
+
+      transition: color 0.2s ease-in-out;
+    }
+
+    .card-metadata-server-name-basic-access-connected {
+      color: var(--outline-primary);
     }
 
     .card-metadata-server-address {
@@ -280,10 +286,17 @@ export class ServerCard
         <div class="card-metadata" aria-labelledby="server-name">
           <server-connection-indicator
             ?darkMode=${this.darkMode}
-            connection-state="${this.server?.connectionState}"
+            connection-state="${this.server.connectionState}"
           ></server-connection-indicator>
           <div class="card-metadata-text">
-            <h2 class="card-metadata-server-name" id="server-name">
+            <h2
+              id="server-name"
+              class=${classMap({
+                'card-metadata-server-name': true,
+                'card-metadata-server-name-basic-access-connected':
+                  this.basicAccess && this.server.connectionState === ServerConnectionState.CONNECTED,
+              })}
+            >
               ${this.server.name ?? this.localize('basic-access-name')}
             </h2>
             <label class="card-metadata-server-address">${this.server.address}</label>
