@@ -313,7 +313,6 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
   PlaterrorsPlatformError *relayErr = Tun2socksGoRelayTrafficOneWay(weakSelf, self.remoteDevice);
   if (relayErr != nil) {
     DDLogError(@"Failed to relay traffic from remote device to TUN: %@", relayErr.error);
-    [self.remoteDevice close];
     return relayErr;
   }
   DDLogInfo(@"Relaying traffic from remote device to TUN");
