@@ -20,7 +20,7 @@ import {html} from 'lit';
 import './index';
 import {ServerCard} from './index';
 
-import {ServerConnectionType, ServerListItemElement} from '..';
+import {ServerConnectionType} from '..';
 import {localize} from '../../../../testing/localize';
 import {ServerConnectionState} from '../../server_connection_indicator';
 

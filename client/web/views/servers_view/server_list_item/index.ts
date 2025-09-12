@@ -42,7 +42,7 @@ export interface ServerListItem {
   id: string;
   name: string;
   connectionState: ServerConnectionState;
-  connectionType: ServerConnectionType;
+  connectionType?: ServerConnectionType;
 }
 
 /**

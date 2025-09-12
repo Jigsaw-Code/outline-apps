@@ -11,17 +11,17 @@
   limitations under the License.
 */
 
-import { Corner, type Menu } from '@material/web/menu/menu';
+import {Corner, type Menu} from '@material/web/menu/menu';
 
-import { Localizer } from '@outline/infrastructure/i18n';
+import {Localizer} from '@outline/infrastructure/i18n';
 
-import { css, html, LitElement } from 'lit';
-import { customElement, property, query, state } from 'lit/decorators.js';
-import { Ref } from 'lit/directives/ref.js';
-import { classMap } from 'lit/directives/class-map.js';
+import {css, html, LitElement} from 'lit';
+import {customElement, property, query, state} from 'lit/decorators.js';
+import {Ref} from 'lit/directives/ref.js';
+import {classMap} from 'lit/directives/class-map.js';
 
-import { ServerConnectionType, ServerListItem, ServerListItemElement, ServerListItemEvent } from '..';
-import { ServerConnectionState } from '../../server_connection_indicator';
+import {ServerConnectionType, ServerListItem, ServerListItemElement, ServerListItemEvent} from '..';
+import {ServerConnectionState} from '../../server_connection_indicator';
 
 import './server_rename_dialog';
 import './server_info_dialog';

@@ -543,8 +543,12 @@
       }
     }
   },
+  "server_card_no_connection_type": {
+    "description": "A line of text displayed in the server card before the type of connection is known to the system.",
+    "message": "Connect for details"
+  },
   "server_card_limited_connection_type": {
-    "desciption": "The text in a chip indicating to the user that their current internet connection is only partially protected.",
+    "description": "The text in a chip indicating to the user that their current internet connection is only partially protected.",
     "message": "Limited protection"
   },
   "server_card_complete_connection_type": {
