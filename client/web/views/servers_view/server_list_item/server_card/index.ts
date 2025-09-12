@@ -297,7 +297,7 @@ export class ServerCard
                   this.basicAccess && this.server.connectionState === ServerConnectionState.CONNECTED,
               })}
             >
-              ${this.server.name ?? this.localize('basic-access-name')}
+              ${this.server.name}
             </h2>
             <label class="card-metadata-server-address">${this.server.address}</label>
             <div class="card-metadata-connection-type-container">
