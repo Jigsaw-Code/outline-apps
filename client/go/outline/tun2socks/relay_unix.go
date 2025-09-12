@@ -20,6 +20,7 @@ package tun2socks
 
 import (
 	"errors"
+	"log/slog"
 	"os"
 
 	perrs "github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
@@ -44,7 +45,15 @@ func GoRelayTraffic(fd int, rd *RemoteDevice) *perrs.PlatformError {
 			Cause:   perrs.ToPlatformError(err),
 		}
 	}
+
 	rd.mu.Lock()
+	if rd.tun != nil {
+		if err := rd.tun.Close(); err != nil {
+			slog.Info("successfully closed an already existing tun device")
+		} else {
+			slog.Warn("failed to close an already existing tun device", "err", err)
+		}
+	}
 	rd.tun = tun
 	rd.mu.Unlock()
 
