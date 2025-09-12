@@ -14,13 +14,17 @@
 import {Corner, type Menu} from '@material/web/menu/menu';
 
 import {Localizer} from '@outline/infrastructure/i18n';
-
 import {css, html, LitElement} from 'lit';
 import {customElement, property, query, state} from 'lit/decorators.js';
-import {Ref} from 'lit/directives/ref.js';
 import {classMap} from 'lit/directives/class-map.js';
+import {Ref} from 'lit/directives/ref.js';
 
-import {ServerConnectionType, ServerListItem, ServerListItemElement, ServerListItemEvent} from '..';
+import {
+  ServerConnectionType,
+  ServerListItem,
+  ServerListItemElement,
+  ServerListItemEvent,
+} from '..';
 import {ServerConnectionState} from '../../server_connection_indicator';
 
 import './server_rename_dialog';
@@ -30,13 +34,11 @@ import '../../server_connection_indicator';
 export * from './legacy';
 
 @customElement('server-card')
-export class ServerCard
-  extends LitElement
-  implements ServerListItemElement {
-  @property({ type: Object }) server: ServerListItem;
-  @property({ type: Object }) localize: Localizer;
-  @property({ type: Boolean }) darkMode = false;
-  @property({ type: Boolean }) basicAccess = false;
+export class ServerCard extends LitElement implements ServerListItemElement {
+  @property({type: Object}) server: ServerListItem;
+  @property({type: Object}) localize: Localizer;
+  @property({type: Boolean}) darkMode = false;
+  @property({type: Boolean}) basicAccess = false;
 
   @query('.card-menu') menu: Ref<Menu>;
   @query('.card-menu-button') menuButton: Ref<HTMLElement>;
@@ -72,16 +74,16 @@ export class ServerCard
 
     .card {
       --min-indicator-size: calc(
-          var(--server-name-size) + var(--outline-mini-gutter) +
-            var(--server-metadata-size)
-        );
+        var(--server-name-size) + var(--outline-mini-gutter) +
+          var(--server-metadata-size)
+      );
 
       --max-indicator-size: calc(
         var(--outline-slim-gutter) + var(--server-name-size) +
           var(--outline-mini-gutter) + var(--server-metadata-size) +
           var(--outline-slim-gutter)
       );
-      
+
       align-items: center;
       background: var(--outline-card-background);
       border-radius: var(--outline-corner);
@@ -263,7 +265,7 @@ export class ServerCard
       background: transparent;
       border-top: 2px solid var(--outline-light-gray);
     }
-  `
+  `;
 
   get isConnectedState() {
     return [
@@ -279,10 +281,12 @@ export class ServerCard
 
   render() {
     return html`
-      <div class=${classMap({
-        card: true,
-        'card-basic-access': this.basicAccess,
-      })}>
+      <div
+        class=${classMap({
+          card: true,
+          'card-basic-access': this.basicAccess,
+        })}
+      >
         <div class="card-metadata" aria-labelledby="server-name">
           <server-connection-indicator
             ?darkMode=${this.darkMode}
@@ -294,31 +298,40 @@ export class ServerCard
               class=${classMap({
                 'card-metadata-server-name': true,
                 'card-metadata-server-name-basic-access-connected':
-                  this.basicAccess && this.server.connectionState === ServerConnectionState.CONNECTED,
+                  this.basicAccess &&
+                  this.server.connectionState ===
+                    ServerConnectionState.CONNECTED,
               })}
             >
               ${this.server.name}
             </h2>
-            <label class="card-metadata-server-address">${this.server.address}</label>
+            <label class="card-metadata-server-address"
+              >${this.server.address}</label
+            >
             <div class="card-metadata-connection-type-container">
               ${this.renderConnectionType()}
             </div>
           </div>
         </div>
-        <md-icon-button
-          class="card-menu-button"
-          @click=${this.openMenu}
-        >
+        <md-icon-button class="card-menu-button" @click=${this.openMenu}>
           <md-icon>more_vert</md-icon>
-        </md-icon-button>  
+        </md-icon-button>
         <footer class="card-footer">
-          <span class="card-error">${this.hasErrorMessage ? this.localize(this.server.errorMessageId) : ''}</span>
+          <span class="card-error"
+            >${this.hasErrorMessage
+              ? this.localize(this.server.errorMessageId)
+              : ''}</span
+          >
           <md-text-button
             class="card-footer-button"
             @click="${this.connectToggle}"
             ?disabled=${this.hasErrorMessage}
           >
-            ${this.localize(this.isConnectedState ? 'disconnect-button-label' : 'connect-button-label')}
+            ${this.localize(
+              this.isConnectedState
+                ? 'disconnect-button-label'
+                : 'connect-button-label'
+            )}
           </md-text-button>
         </footer>
       </div>
@@ -336,22 +349,14 @@ export class ServerCard
 
   renderServerMenu() {
     if (!this.server) {
-      return html`<md-menu
-        class="card-menu"
-        menuCorner=${Corner.END_END}
-        quick
-      >
+      return html`<md-menu class="card-menu" menuCorner=${Corner.END_END} quick>
         <md-menu-item @click="${this.configureDns}">
           ${this.localize('basic-access-configure-dns')}
         </md-menu-item>
       </md-menu>`;
     }
 
-    return html`<md-menu
-      class="card-menu"
-      menuCorner=${Corner.END_END}
-      quick
-    >
+    return html`<md-menu class="card-menu" menuCorner=${Corner.END_END} quick>
       <md-menu-item @click="${this.beginRename}">
         ${this.localize('server-rename')}
       </md-menu-item>
@@ -362,24 +367,29 @@ export class ServerCard
   }
 
   renderConnectionType() {
-    let connectionType, connectionMessage, connectionIcon, connectionColor, connectionInfoDialog;
+    let connectionType,
+      connectionMessage,
+      connectionIcon,
+      connectionColor,
+      connectionInfoDialog;
 
     if (this.basicAccess) {
       connectionType = ServerConnectionType.PROXYLESS;
     }
 
     if (!this.basicAccess && this.server && !this.server.connectionType) {
-      return html`<i>${this.localize('server-card-no-connection-type')}</i>`
+      return html`<i>${this.localize('server-card-no-connection-type')}</i>`;
     }
 
     connectionType ??= this.server.connectionType;
-    switch(connectionType) {
+    switch (connectionType) {
       case ServerConnectionType.PROXYLESS:
         connectionInfoDialog = html`<server-proxyless-info-dialog
           .open=${this.isInfoDialogOpen}
           .localize=${this.localize}
           @cancel=${this.closeInfo}
         ></server-proxyless-info-dialog>`;
+      // eslint-disable-next-line no-fallthrough
       case ServerConnectionType.SPLIT:
         connectionColor = '--outline-partial-connection-color';
         connectionIcon = 'shield';
@@ -387,8 +397,10 @@ export class ServerCard
           .open=${this.isInfoDialogOpen}
           .localize=${this.localize}
           @cancel=${this.closeInfo}
-        ></server-split-tunneling-info-dialog>`
-        connectionMessage = this.localize('server-card-limited-connection-type')
+        ></server-split-tunneling-info-dialog>`;
+        connectionMessage = this.localize(
+          'server-card-limited-connection-type'
+        );
         break;
       case ServerConnectionType.COMPLETE:
         connectionColor = '--outline-complete-connection-color';
@@ -398,14 +410,21 @@ export class ServerCard
           .localize=${this.localize}
           @cancel=${this.closeInfo}
         ></server-complete-protection-info-dialog>`;
-        connectionMessage = this.localize('server-card-complete-connection-type')
+        connectionMessage = this.localize(
+          'server-card-complete-connection-type'
+        );
         break;
     }
 
     return html`
-      <div class="card-metadata-connection-type" style="background: var(${connectionColor});">
+      <div
+        class="card-metadata-connection-type"
+        style="background: var(${connectionColor});"
+      >
         <md-icon slot="icon">${connectionIcon}</md-icon>
-        <span class="card-metadata-connection-type-message">${connectionMessage}</span>
+        <span class="card-metadata-connection-type-message"
+          >${connectionMessage}</span
+        >
       </div>
       <md-icon-button @click=${this.openInfo}>
         <md-icon>info</md-icon>
@@ -427,7 +446,7 @@ export class ServerCard
 
     this.dispatchEvent(
       new CustomEvent(ServerListItemEvent.RENAME, {
-        detail: { serverId: event.detail.id, newName: event.detail.name },
+        detail: {serverId: event.detail.id, newName: event.detail.name},
         bubbles: true,
         composed: true,
       })
@@ -440,9 +459,9 @@ export class ServerCard
     this.dispatchEvent(
       new CustomEvent(ServerListItemEvent.CONFIGURE_DNS, {
         bubbles: true,
-        composed: true
+        composed: true,
       })
-    )
+    );
   }
 
   openInfo() {
@@ -452,10 +471,9 @@ export class ServerCard
   closeInfo() {
     this.isInfoDialogOpen = false;
   }
-  
-  openMenu() {;
-    const menu = this.menu as Menu;
 
+  openMenu() {
+    const menu = this.menu as Menu;
 
     if (!menu) {
       return;
@@ -475,7 +493,7 @@ export class ServerCard
           ? ServerListItemEvent.DISCONNECT
           : ServerListItemEvent.CONNECT,
         {
-          detail: { serverId: this.server.id },
+          detail: {serverId: this.server.id},
           bubbles: true,
           composed: true,
         }
@@ -495,7 +513,7 @@ export class ServerCard
   forget() {
     this.dispatchEvent(
       new CustomEvent(ServerListItemEvent.FORGET, {
-        detail: { serverId: this.server.id },
+        detail: {serverId: this.server.id},
         bubbles: true,
         composed: true,
       })

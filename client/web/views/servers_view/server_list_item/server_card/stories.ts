@@ -19,7 +19,6 @@ import {html} from 'lit';
 
 import './index';
 import {ServerCard} from './index';
-
 import {ServerConnectionType} from '..';
 import {localize} from '../../../../testing/localize';
 import {ServerConnectionState} from '../../server_connection_indicator';
@@ -31,7 +30,7 @@ export default {
       name: 'My Server',
       address: '1.0.0.127',
       connectionState: ServerConnectionState.DISCONNECTED,
-      connectionType: ServerConnectionType.COMPLETE
+      connectionType: ServerConnectionType.COMPLETE,
     },
     basicAccess: false,
   },
@@ -44,6 +43,10 @@ export default {
 
 export const Example = ({server, basicAccess}: ServerCard) => html`
   <div style="width: 100%; height: clamp(100px, 100%, 150px);">
-    <server-card .localize=${localize} .server=${server} ?basicAccess=${basicAccess}></server-card>
+    <server-card
+      .localize=${localize}
+      .server=${server}
+      ?basicAccess=${basicAccess}
+    ></server-card>
   </div>
 `;
