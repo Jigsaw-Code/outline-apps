@@ -293,7 +293,6 @@ public class VpnTunnelService extends VpnService {
       final PlatformError healthErr = this.remoteDevice.getHealthStatus();
       if (healthErr != null) {
         LOG.log(Level.SEVERE, "Remote device is not healthy", healthErr);
-        this.stopRemoteDevice();
         tearDownActiveTunnel();
         return healthErr;
       }
@@ -305,7 +304,6 @@ public class VpnTunnelService extends VpnService {
     final PlatformError err = Tun2socks.goRelayTraffic(this.tunFd.getFd(), this.remoteDevice);
     if (err != null) {
       LOG.log(Level.SEVERE, "Failed to relay traffic between TUN and remote devices", err);
-      this.stopRemoteDevice();
       tearDownActiveTunnel();
       return err;
     }
@@ -378,7 +376,7 @@ public class VpnTunnelService extends VpnService {
     }
     final PlatformError err = this.remoteDevice.close();
     if (err != null) {
-      LOG.severe("Failed to close the remote device.");
+      LOG.log(Level.WARNING, "Failed to close remote device", err);
     } else {
       LOG.info("Remote device closed successfully.");
     }
