@@ -19,6 +19,7 @@ import (
 	"errors"
 	"io"
 	"log/slog"
+	"sync"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline"
 	perrs "github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
@@ -30,7 +31,8 @@ import (
 //
 // This type is exported through gomobile, and wraps a [vpn.RemoteDevice].
 type RemoteDevice struct {
-	tun    io.Closer // will be set in GoRelayTraffic
+	mu     sync.Mutex // protect tun modifications
+	tun    io.Closer  // will be set in GoRelayTraffic
 	rd     *vpn.RemoteDevice
 	client *outline.Client
 }
@@ -83,9 +85,11 @@ func (d *RemoteDevice) Close() *perrs.PlatformError {
 		}
 	}()
 	var err error = nil
+	d.mu.Lock()
 	if d.tun != nil {
 		err = d.tun.Close()
 	}
+	d.mu.Unlock()
 	err = errors.Join(err, d.rd.Close())
 	return perrs.ToPlatformError(err)
 }

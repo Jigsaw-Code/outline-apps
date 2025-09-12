@@ -24,7 +24,7 @@ import (
 )
 
 // GoRelayTraffic starts two goroutines to relay network traffic bidirectionally
-// between a TUN device and a remote device for Android.
+// between a TUN device (passed as a file descriptor) and a remote device.
 func GoRelayTraffic(fd int, rd *RemoteDevice) *perrs.PlatformError {
 	if rd == nil {
 		return &perrs.PlatformError{
@@ -40,7 +40,9 @@ func GoRelayTraffic(fd int, rd *RemoteDevice) *perrs.PlatformError {
 			Cause:   perrs.ToPlatformError(err),
 		}
 	}
+	rd.mu.Lock()
 	rd.tun = tun
+	rd.mu.Unlock()
 
 	go vpn.RelayTraffic(rd.rd.ReadWriteCloser, tun)
 	go vpn.RelayTraffic(tun, rd.rd.ReadWriteCloser)

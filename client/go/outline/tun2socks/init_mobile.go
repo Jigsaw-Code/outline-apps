@@ -18,9 +18,11 @@ package tun2socks
 
 import "runtime/debug"
 
+// TODO: convert this to an explicit API call
+// TODO: revisit to investigate other options
 func init() {
-	// Apple VPN extensions have a memory limit of 15MB.
-	// Conserve memory by increasing garbage collection frequency
-	// and returning memory to the OS every minute.
+	// Apple VPN extensions have a memory limit of 50MB.
+	// Conserve memory by setting GC frequency a small percent
+	// to not let the memory grow too much before the GC runs.
 	debug.SetGCPercent(10)
 }

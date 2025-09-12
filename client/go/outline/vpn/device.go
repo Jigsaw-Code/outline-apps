@@ -40,8 +40,9 @@ type RemoteDevice struct {
 	remote, fallback network.PacketProxy
 
 	// health check fields
-	hcDone sync.WaitGroup
-	hcErr  error
+	tcpMu        sync.Mutex
+	tcpCheckDone sync.WaitGroup
+	tcpErr       error
 }
 
 func ConnectRemoteDevice(
@@ -73,7 +74,7 @@ func ConnectRemoteDevice(
 		return nil, errSetupHandler("failed to create combined UDP handler", err)
 	}
 
-	dev.hcDone.Go(dev.checkTCPHealthAndUpdate)
+	dev.tcpCheckDone.Go(dev.checkTCPHealthAndUpdate)
 	go dev.checkUDPHealthAndUpdate()
 
 	dev.ReadWriteCloser, err = lwip2transport.ConfigureDevice(sd, dev.pkt)
@@ -94,8 +95,10 @@ func (dev *RemoteDevice) Close() (err error) {
 }
 
 func (d *RemoteDevice) GetHealthStatus() error {
-	d.hcDone.Wait()
-	return d.hcErr
+	d.tcpCheckDone.Wait()
+	d.tcpMu.Lock()
+	defer d.tcpMu.Unlock()
+	return d.tcpErr
 }
 
 // NotifyNetworkChanged notifies the device that the underlying network has changed.
@@ -106,10 +109,14 @@ func (d *RemoteDevice) NotifyNetworkChanged() {
 
 func (d *RemoteDevice) checkTCPHealthAndUpdate() {
 	slog.Debug("remote device is checking TCP health status...")
-	if d.hcErr = connectivity.CheckTCPConnectivity(d.sd); d.hcErr == nil {
+	err := connectivity.CheckTCPConnectivity(d.sd)
+
+	d.tcpMu.Lock()
+	defer d.tcpMu.Unlock()
+	if d.tcpErr = err; d.tcpErr == nil {
 		slog.Info("remote device TCP is healthy")
 	} else {
-		slog.Warn("remote device TCP is not healthy", "err", d.hcErr)
+		slog.Warn("remote device TCP is not healthy", "err", d.tcpErr)
 	}
 }
 
