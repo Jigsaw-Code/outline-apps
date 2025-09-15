@@ -74,6 +74,10 @@ func (d *RemoteDevice) GetHealthStatus() *perrs.PlatformError {
 	return perrs.ToPlatformError(d.rd.GetHealthStatus())
 }
 
+func (d *RemoteDevice) Write(p []byte) (int, error) {
+	return d.rd.Write(p)
+}
+
 func (d *RemoteDevice) NotifyNetworkChanged() {
 	d.rd.NotifyNetworkChanged()
 }
