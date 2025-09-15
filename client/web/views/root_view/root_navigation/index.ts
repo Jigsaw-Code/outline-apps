@@ -35,6 +35,7 @@ export class RootNavigation extends LitElement {
 
     /* Prevent images from being selectable on iOS, which can cause a crash when trying to save them. */
     img {
+      pointer-events: none;
       -webkit-user-select: none;
       user-select: none;
       -webkit-touch-callout: none;
@@ -108,9 +109,6 @@ export class RootNavigation extends LitElement {
 
     header img {
       width: 76px;
-      -webkit-user-select: none;
-      user-select: none;
-      -webkit-touch-callout: none;
     }
 
     md-list-item {
