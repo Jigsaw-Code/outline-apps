@@ -16,7 +16,6 @@ package tun2socks
 
 import (
 	"io"
-	"runtime/debug"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
@@ -25,12 +24,6 @@ import (
 // TunWriter is an interface that allows for outputting packets to the TUN (VPN).
 type TunWriter interface {
 	io.WriteCloser
-}
-
-func init() {
-	// Apple VPN extensions have a memory limit of 15MB. Conserve memory by increasing garbage
-	// collection frequency and returning memory to the OS every minute.
-	debug.SetGCPercent(10)
 }
 
 // ConnectOutlineTunnel reads packets from a TUN device and routes it to an Outline proxy server.
