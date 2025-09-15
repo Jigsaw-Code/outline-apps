@@ -35,6 +35,7 @@ body {
   /* RGB values for primary color */
   --outline-dark-primary: hsl(200, 19%, 18%);
   --outline-error: hsl(4, 90%, 58%);
+  --outline-warning: hsl(52, 100%, 49%);
 
   --outline-black: hsl(0, 0%, 0%);
   --outline-off-black: hsl(0, 0%, 15%);

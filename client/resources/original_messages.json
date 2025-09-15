@@ -75,6 +75,14 @@
     "description": "The title of a message to the user that tells them Outline will keep connected unless explicitly told to disconnect. Outline is the product name and can be found in the translation glossary.",
     "message": "Stay protected, always"
   },
+  "basic_access_content": {
+    "description": "The body text of a dialog box explaining what 'Basic Access' means for a server connection.",
+    "message": "Outline Basic Access is an alternative way to connect to the open internet. It offers limited protection of your internet traffic. This approach will make it harder for outside observers to see what you connect to online, without the use of a VPN (proxy) server.<br><br>This feature may help you connect to the open internet if you do not have a traditional Outline VPN access key, or if your VPN access key is not successfully connecting. <a src='TODO'>Learn more</a>"
+  },
+  "basic_access_title": {
+    "description": "The title of a dialog box explaining what 'Basic Access' means for a server connection.",
+    "message": "Basic Access<br><span style='color:hsl(176, 97%, 26%);'>A New Way to Get Online</span>"
+  },
   "cancel": {
     "description": "The text on a button to cancel the current operation.",
     "message": "Cancel"
@@ -102,6 +110,10 @@
   "connecting_server_state": {
     "description": "A status message on a particular server that indicates the application is currently trying to connect to the labeled server.",
     "message": "Connecting..."
+  },
+  "connection_confirm_checkbox_label": {
+    "description": "The text for a checkbox to allow Outline to connect with limited protection.",
+    "message": "Allow Outline to connect me to the internet with limited protection"
   },
   "contact_page_title": {
     "description": "The menu item text and title of a page for a user to contact the support team.",
@@ -213,6 +225,10 @@
     "description": "The hint text for a textbox for the user's email address when sending feedback. The email address is not a required field in the form.",
     "message": "Email address (optional)"
   },
+  "enable": {
+    "description": "The text on a button to enable a feature.",
+    "message": "Enable"
+  },
   "error_connection_configuration": {
     "desciption": "An error message shown when the user's server configuration is invalid. The user should contact their service manager to resolve the issue.",
     "message": "Invalid configuration. Screenshot the error details and send them to your access key provider."
@@ -321,6 +337,14 @@
     "description": "Negative answer to a form question.",
     "message": "No"
   },
+  "next": {
+    "description": "The text on a button to proceed to the next step.",
+    "message": "Next"
+  },
+  "not_now": {
+    "description": "The text on a button to dismiss a dialog or suggestion for now.",
+    "message": "Not now"
+  },
   "non_system_vpn_warning_detail": {
     "description": "Further explanation message that the user needs to verify that their browser is connected through Outline. Outline is the product name and can be found in the translation glossary.",
     "message": "Most browsers connect automatically with Outline, some do not."
@@ -400,6 +424,14 @@
   "quit": {
     "description": "The text for a button that quits (closes) the application.",
     "message": "Quit"
+  },
+  "proxyless_confirm_dialog_content": {
+    "description": "The body text of a dialog box asking the user to confirm connecting with limited protection (proxyless).",
+    "message": "This key uses an alternative way to connect to the open internet. It offers limited protection of your internet traffic. This approach will make it harder for outside observers to see what you connect to online, without the use of a VPN (proxy) server.<br><br>To learn more, contact the person who gave you this access key."
+  },
+  "proxyless_confirm_dialog_title": {
+    "description": "The title of a dialog box asking the user to confirm connecting with limited protection (proxyless).",
+    "message": "Connect with Limited Protection?"
   },
   "reconnecting_server_state": {
     "description": "A status message on a particular that indicates the application is in the process of reestablishing a connection with the labeled server.",
@@ -596,6 +628,14 @@
   "server_rename_complete": {
     "description": "The success message after renaming a server in the application.",
     "message": "Server renamed"
+  },
+  "split_confirm_dialog_content": {
+    "description": "The body text of a dialog box asking the user to confirm connecting with limited protection (split tunneling).",
+    "message": "This key offers limited protection when connecting to the open internet. Outline will bypass the VPN (proxy) server in certain cases.<ul><li>For some connections, Outline will connect directly to the internet.</li><li>For some connections, Outline will use an alternative method to make it hard for others to see what you connect to.</li></ul>This key may help you connect to the open internet if your VPN access key is not successfully connecting.<br><br>To learn more, contact the person who gave you this access key."
+  },
+  "split_confirm_dialog_title": {
+    "description": "The title of a dialog box asking the user to confirm connecting with limited protection (split tunneling).",
+    "message": "Connect with Limited Protection?"
   },
   "server_split_tunneling_info_dialog_content": {
     "description": "The body text of a dialog box explaining what 'Split Tunneling' means for a server connection.",
