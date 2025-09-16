@@ -63,22 +63,8 @@ export class DnsConfigDialog extends LitElement {
     }
 
     header {
-      padding: 0;
-      padding-bottom: initial;
-      flex-direction: column;
-    }
-
-    h1 {
-      box-sizing: border-box;
-      font-size: 1.5rem;
-      font-weight: 700;
-      letter-spacing: 0px;
-      line-height: 1.75rem;
-      margin-bottom: 0;
-      padding: 0 1.5rem;
-      text-align: left;
-      vertical-align: middle;
-      width: 100%;
+      padding: 1.5rem;
+      padding-bottom: var(--outline-mini-gutter);
     }
 
     article {
@@ -86,18 +72,17 @@ export class DnsConfigDialog extends LitElement {
       font-size: 0.875rem;
       line-height: 1.25rem;
       letter-spacing: 0.5px;
-      padding: 1.5rem;
-    }
-
-    .content {
-      display: flex;
-      flex-direction: column;
-      gap: var(--outline-gutter);
+      padding: var(--outline-mini-gutter) 1.5rem;
     }
 
     .description {
       color: var(--md-sys-color-on-surface-variant);
-      margin: 0;
+      margin-bottom: var(--outline-large-gutter);
+    }
+
+    a {
+      color: var(--outline-primary);
+      text-decoration: underline;
     }
 
     .radio-label {
@@ -112,6 +97,10 @@ export class DnsConfigDialog extends LitElement {
       width: 100%;
     }
 
+    .radio-option-group {
+      margin-bottom: var(--outline-large-gutter);
+    }
+
     .radio-option-group md-filled-select,
     .radio-option-group md-filled-text-field {
       margin-left: calc(2rem + var(--outline-mini-gutter));
@@ -122,10 +111,21 @@ export class DnsConfigDialog extends LitElement {
     .server-description {
       margin-left: calc(2rem + var(--outline-mini-gutter));
       width: calc(100% - 2rem - var(--outline-mini-gutter));
-      font-size: 0.75rem; /* 12px */
+      font-size: 0.75rem;
       line-height: 1rem;
       margin-top: var(--outline-mini-gutter);
       color: var(--md-sys-color-on-surface-variant);
+    }
+
+    md-filled-select {
+      --md-filled-select-text-field-container-color: transparent;
+    }
+
+    md-filled-select,
+    md-filled-text-field {
+      --md-filled-field-leading-space: 0;
+      --md-filled-field-top-space: var(--outline-mini-gutter);
+      --md-filled-field-bottom-space: var(--outline-mini-gutter);
     }
 
     fieldset {
@@ -159,7 +159,7 @@ export class DnsConfigDialog extends LitElement {
 
         <article slot="content">
             <div class="description">
-              ${this.localize('dns-select-description')}
+              ${unsafeHTML(this.localize('dns-select-description'))}
             </div>
 
             <div class="radio-option-group">
