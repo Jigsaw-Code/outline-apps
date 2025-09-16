@@ -65,16 +65,14 @@ func parseIPTableStreamDialer(
 			return nil, fmt.Errorf("failed to parse nested stream dialer for table entry %d: %w", i, err)
 		}
 
-		if parsedSubDialer.ConnType != ConnTypeTunneled && parsedSubDialer.ConnType != ConnTypeBlocked {
-			allConnTunnelled = false
-		}
-
-		if parsedSubDialer.ConnType != ConnTypeDirect && parsedSubDialer.ConnType != ConnTypeBlocked {
-			allConnDirect = false
-		}
-
 		if parsedSubDialer.ConnType != ConnTypeBlocked {
 			allConnBlocked = false
+			if parsedSubDialer.ConnType != ConnTypeTunneled {
+				allConnTunnelled = false
+			}
+			if parsedSubDialer.ConnType != ConnTypeDirect {
+				allConnDirect = false
+			}
 		}
 
 		ipsDialer := transport.FuncStreamDialer(parsedSubDialer.Dial)
@@ -105,16 +103,14 @@ func parseIPTableStreamDialer(
 			return nil, fmt.Errorf("failed to parse nested stream dialer fallback: %w", err)
 		}
 
-		if parsedFallbackDialer.ConnType != ConnTypeTunneled && parsedFallbackDialer.ConnType != ConnTypeBlocked {
-			allConnTunnelled = false
-		}
-
-		if parsedFallbackDialer.ConnType != ConnTypeDirect && parsedFallbackDialer.ConnType != ConnTypeBlocked {
-			allConnDirect = false
-		}
-
 		if parsedFallbackDialer.ConnType != ConnTypeBlocked {
 			allConnBlocked = false
+			if parsedFallbackDialer.ConnType != ConnTypeTunneled {
+				allConnTunnelled = false
+			}
+			if parsedFallbackDialer.ConnType != ConnTypeDirect {
+				allConnDirect = false
+			}
 		}
 
 		fallbackDialer = transport.FuncStreamDialer(parsedFallbackDialer.Dial)
