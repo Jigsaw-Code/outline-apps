@@ -65,11 +65,11 @@ func parseIPTableStreamDialer(
 			return nil, fmt.Errorf("failed to parse nested stream dialer for table entry %d: %w", i, err)
 		}
 
-		if parsedSubDialer.ConnType != ConnTypeTunneled {
+		if parsedSubDialer.ConnType != ConnTypeTunneled && parsedSubDialer.ConnType != ConnTypeBlocked {
 			allConnTunnelled = false
 		}
 
-		if parsedSubDialer.ConnType != ConnTypeDirect {
+		if parsedSubDialer.ConnType != ConnTypeDirect && parsedSubDialer.ConnType != ConnTypeBlocked {
 			allConnDirect = false
 		}
 
@@ -105,11 +105,11 @@ func parseIPTableStreamDialer(
 			return nil, fmt.Errorf("failed to parse nested stream dialer fallback: %w", err)
 		}
 
-		if parsedFallbackDialer.ConnType != ConnTypeTunneled {
+		if parsedFallbackDialer.ConnType != ConnTypeTunneled && parsedFallbackDialer.ConnType != ConnTypeBlocked {
 			allConnTunnelled = false
 		}
 
-		if parsedFallbackDialer.ConnType != ConnTypeDirect {
+		if parsedFallbackDialer.ConnType != ConnTypeDirect && parsedFallbackDialer.ConnType != ConnTypeBlocked {
 			allConnDirect = false
 		}
 

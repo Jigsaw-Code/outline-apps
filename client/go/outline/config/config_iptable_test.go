@@ -262,7 +262,7 @@ table:
       - 0.0.0.0/0
     dialer: {name: default}
 `,
-			expectedConnType: ConnTypePartial,
+			expectedConnType: ConnTypeTunneled,
 		},
 	}
 

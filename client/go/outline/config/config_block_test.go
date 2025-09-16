@@ -22,7 +22,7 @@ import (
 )
 
 func TestNewBlockStreamDialerSubParser(t *testing.T) {
-	subParser := NewBlockStreamDialerSubParser(nil)
+	subParser := NewBlockStreamDialerSubParser()
 
 	dialer, err := subParser(context.Background(), nil)
 	require.NoError(t, err)
