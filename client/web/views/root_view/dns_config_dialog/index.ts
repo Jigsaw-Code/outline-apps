@@ -142,6 +142,10 @@ export class DnsConfigDialog extends LitElement {
 
       this.editedConfiguration = {server: this.currentlySelectedServer};
     }
+
+    if (changedProperties.has('configuration') && this.configuration) {
+      this.editedConfiguration = {...this.configuration};
+    }
   }
 
   get currentlySelectedServer() {
