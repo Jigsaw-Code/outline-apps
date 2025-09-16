@@ -53,6 +53,13 @@ class ConnectionConfirmDialog extends LitElement {
       flex-direction: column;
     }
 
+    img {
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+
     h1 {
       box-sizing: border-box;
       font-size: 1.5rem;
