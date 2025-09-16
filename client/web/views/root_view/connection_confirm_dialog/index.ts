@@ -66,7 +66,7 @@ class ConnectionConfirmDialog extends LitElement {
       font-weight: 700;
       letter-spacing: 0px;
       line-height: 1.75rem;
-      margin-bottom: 0;
+      margin-bottom: var(--outline-slim-gutter);
       padding: 0 1.5rem;
       text-align: left;
       vertical-align: middle;
@@ -81,13 +81,32 @@ class ConnectionConfirmDialog extends LitElement {
       padding: 1.5rem;
     }
 
-    .content {
+    fieldset {
       display: flex;
       flex-direction: column;
       gap: var(--outline-gutter);
     }
 
-    .checkbox {
+    a {
+      text-decoration: underline;
+      color: var(--outline-primary);
+    }
+
+    fieldset {
+      border: none;
+      text-transform: uppercase;
+    }
+
+    .action-row {
+      display: flex;
+      gap: var(--outline-gutter);
+    }
+
+    .action-row:last-child {
+      justify-content: flex-end;
+    }
+
+    .confirmation-checkbox {
       /* 'display: flex;' distorts the checkbox by default. */
       display: grid;
 
@@ -98,6 +117,8 @@ class ConnectionConfirmDialog extends LitElement {
       grid-template-columns: 2rem 1fr;
       place-items: center;
 
+      font-family: var(--outline-font-family);
+      text-transform: initial;
       background: var(--outline-light-gray);
       border-radius: var(--outline-corner);
       border: 1px solid var(--outline-warning);
@@ -106,14 +127,9 @@ class ConnectionConfirmDialog extends LitElement {
       padding: var(--outline-slim-gutter) var(--outline-mini-gutter);
     }
 
-    .checkbox > div {
+    .confirmation-checkbox-label {
       width: 100%;
       padding-right: var(--outline-mini-gutter);
-    }
-
-    fieldset {
-      border: none;
-      text-transform: uppercase;
     }
   `;
 
@@ -126,26 +142,33 @@ class ConnectionConfirmDialog extends LitElement {
         </header>
 
         <article slot="content">
-          <div class="content">
-            <div>${unsafeHTML(this.localize(this.contentMessageId))}</div>
+          ${unsafeHTML(this.localize(this.contentMessageId))}
+        </article>
 
-            <label class="checkbox">
+        <fieldset slot="actions">
+          <div class="action-row">
+            <label class="confirmation-checkbox">
               <md-checkbox
                 @change=${this.change}
                 ?checked=${this.isChecked}
               ></md-checkbox>
-              <div>${this.localize('connection-confirm-checkbox-label')}</div>
+              <div class="confirmation-checkbox-label">
+                ${this.localize('connection-confirm-checkbox-label')}
+              </div>
             </label>
           </div>
-        </article>
 
-        <fieldset slot="actions">
-          <md-text-button @click=${this.close}>
-            ${this.localize('not-now')}
-          </md-text-button>
-          <md-filled-button @click=${this.confirm} ?disabled=${!this.isChecked}>
-            ${this.localize(this.confirmButtonMessageId)}
-          </md-filled-button>
+          <div class="action-row">
+            <md-text-button @click=${this.close}>
+              ${this.localize('not-now')}
+            </md-text-button>
+            <md-filled-button
+              @click=${this.confirm}
+              ?disabled=${!this.isChecked}
+            >
+              ${this.localize(this.confirmButtonMessageId)}
+            </md-filled-button>
+          </div>
         </fieldset>
       </md-dialog>
     `;
