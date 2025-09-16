@@ -32,5 +32,5 @@ func TestNewBlockStreamDialerSubParser(t *testing.T) {
 
 	_, err = dialer.Dial(context.Background(), "example.com:1234")
 	require.Error(t, err)
-	require.Equal(t, "blocked by config", err.Error())
+	require.ErrorContains(t, err, "blocked by config")
 }
