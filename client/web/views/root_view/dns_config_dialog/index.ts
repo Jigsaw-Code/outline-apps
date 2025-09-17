@@ -17,7 +17,7 @@ import type {
   MdRadio,
 } from '@material/web/all.js';
 
-import {LitElement, html, css, nothing} from 'lit';
+import {LitElement, html, css} from 'lit';
 import {customElement, property, state, query} from 'lit/decorators.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 import '@material/web/all.js';
@@ -45,7 +45,7 @@ export class DnsConfigDialog extends LitElement {
   @property({type: Object}) configuration: DnsConfigurationUI;
 
   @query('#server-selector') private serverSelector: MdFilledSelect;
-  @query('#custom-input') private customInput: MdFilledTextField;
+  @query('#custom-url-input') private customUrlInput: MdFilledTextField;
 
   @state() private editedConfiguration: DnsConfigurationUI;
 
@@ -63,6 +63,7 @@ export class DnsConfigDialog extends LitElement {
     }
 
     header {
+      font-size: 1.5rem;
       padding: 1.5rem;
       padding-bottom: var(--outline-mini-gutter);
     }
@@ -85,47 +86,43 @@ export class DnsConfigDialog extends LitElement {
       text-decoration: underline;
     }
 
-    .radio-label {
+    .configuration-options {
       display: grid;
-      grid-template-columns: 2rem 1fr;
-      align-items: center;
+      grid-template-columns: auto 1fr;
+      gap: var(--outline-large-gutter) var(--outline-gutter);
+      margin-bottom: var(--outline-gutter);
+    }
+
+    .configuration-option-stack {
+      display: flex;
+      flex-direction: column;
       gap: var(--outline-mini-gutter);
-      cursor: pointer;
-    }
-
-    .radio-label > div {
-      width: 100%;
-    }
-
-    .radio-option-group {
-      margin-bottom: var(--outline-large-gutter);
-    }
-
-    .radio-option-group md-filled-select,
-    .radio-option-group md-filled-text-field {
-      margin-left: calc(2rem + var(--outline-mini-gutter));
-      width: calc(100% - 2rem - var(--outline-mini-gutter));
-      margin-top: var(--outline-mini-gutter);
-    }
-
-    .server-description {
-      margin-left: calc(2rem + var(--outline-mini-gutter));
-      width: calc(100% - 2rem - var(--outline-mini-gutter));
-      font-size: 0.75rem;
-      line-height: 1rem;
-      margin-top: var(--outline-mini-gutter);
-      color: var(--md-sys-color-on-surface-variant);
     }
 
     md-filled-select {
       --md-filled-select-text-field-container-color: transparent;
+
+      min-width: auto;
+    }
+
+    md-filled-select::part(menu) {
+      --md-menu-container-color: var(--outline-white);
+      --md-menu-item-selected-container-color: var(--outline-primary-light);
     }
 
     md-filled-select,
     md-filled-text-field {
-      --md-filled-field-leading-space: 0;
+      --md-filled-field-content-size: 0.875rem;
+
+      --md-filled-field-leading-space: 2px;
       --md-filled-field-top-space: var(--outline-mini-gutter);
       --md-filled-field-bottom-space: var(--outline-mini-gutter);
+    }
+
+    .built-in-server-description {
+      font-size: 0.875rem;
+
+      margin: 0;
     }
 
     fieldset {
@@ -162,21 +159,22 @@ export class DnsConfigDialog extends LitElement {
         <header slot="headline">${this.localize('dns-select-title')}</header>
 
         <article slot="content">
-            <div class="description">
-              ${unsafeHTML(this.localize('dns-select-description'))}
-            </div>
+          <div class="description">
+            ${unsafeHTML(this.localize('dns-select-description'))}
+          </div>
 
-            <div class="radio-option-group">
-              <label class="radio-label">
-                <md-radio
-                  name="config-type"
-                  value="server"
-                  @change=${this.switchConfigurationType}
-                  ?checked=${'server' in this.editedConfiguration}
-                ></md-radio>
-                <div>${this.localize('dns-built-in-server')}</div>
-              </label>
-
+          <div class="configuration-options">
+            <md-radio
+              id="dns-built-in-server-option"
+              name="config-type"
+              value="server"
+              @change=${this.switchConfigurationType}
+              ?checked=${'server' in this.editedConfiguration}
+            ></md-radio>
+            <div class="configuration-option-stack">
+              <label for="dns-built-in-server-option"
+                >${this.localize('dns-built-in-server')}</label
+              >
               <md-filled-select
                 id="server-selector"
                 .value=${this.currentlySelectedServer?.url.toString()}
@@ -192,26 +190,32 @@ export class DnsConfigDialog extends LitElement {
                   `
                 )}
               </md-filled-select>
-              <p class="server-description">
-                ${unsafeHTML(this.localize(this.currentlySelectedServer?.descriptionMessageId))}
+              <p class="built-in-server-description">
+                ${unsafeHTML(
+                  this.localize(
+                    this.currentlySelectedServer?.descriptionMessageId
+                  )
+                )}
               </p>
             </div>
-
-            <div class="radio-option-group">
-              <label class="radio-label">
-                <md-radio
-                  name="config-type"
-                  value="custom"
-                  @change=${this.switchConfigurationType}
-                  ?checked=${'custom' in this.editedConfiguration}
-                ></md-radio>
-                <div>${this.localize('dns-custom-server')}</div>
-              </label>
+            <md-radio
+              id="dns-custom-server-option"
+              name="config-type"
+              value="custom"
+              @change=${this.switchConfigurationType}
+              ?checked=${'custom' in this.editedConfiguration}
+            ></md-radio>
+            <div class="configuration-option-stack">
+              <label for="dns-custom-server-option"
+                >${this.localize('dns-custom-server')}</label
+              >
               <md-filled-text-field
-                id="custom-input"
-                .value=${'custom' in this.editedConfiguration ? this.editedConfiguration.custom.toString() : nothing}
+                id="custom-url-input"
+                .value=${'custom' in this.editedConfiguration
+                  ? this.editedConfiguration.custom.toString()
+                  : ''}
                 placeholder=${this.localize('dns-custom-placeholder')}
-                @input=${this.inputCustom}
+                @input=${this.inputCustomUrl}
               ></md-filled-text-field>
             </div>
           </div>
@@ -221,9 +225,7 @@ export class DnsConfigDialog extends LitElement {
           <md-text-button @click=${this.close}>
             ${this.localize('cancel')}
           </md-text-button>
-          <md-filled-button
-            @click=${this.confirm}
-          >
+          <md-filled-button @click=${this.confirm}>
             ${this.localize('accept')}
           </md-filled-button>
         </fieldset>
@@ -242,7 +244,7 @@ export class DnsConfigDialog extends LitElement {
         break;
       case 'custom':
         this.editedConfiguration = {
-          custom: new URL(this.customInput.value),
+          custom: new URL(this.customUrlInput.value),
         };
         break;
     }
@@ -258,7 +260,7 @@ export class DnsConfigDialog extends LitElement {
     };
   }
 
-  private inputCustom(event: Event) {
+  private inputCustomUrl(event: Event) {
     const element = event.target as MdFilledTextField;
 
     this.editedConfiguration = {
