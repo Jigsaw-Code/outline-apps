@@ -83,6 +83,10 @@
     "description": "The title of a dialog box explaining what 'Basic Access' means for a server connection.",
     "message": "Basic Access<br><span style='color:var(--outline-splash-title-color);'>A New Way to Get Online</span>"
   },
+  "basic_access_configure_dns": {
+    "description": "The option in the basic access menu to configure DNS settings for the feature.",
+    "message": "Configure"
+  },
   "cancel": {
     "description": "The text on a button to cancel the current operation.",
     "message": "Cancel"
@@ -566,6 +570,18 @@
         "content": "{openLink2}"
       }
     }
+  },
+  "server_card_no_connection_type": {
+    "description": "A line of text displayed in the server card before the type of connection is known to the system.",
+    "message": "Connect for details"
+  },
+  "server_card_limited_connection_type": {
+    "description": "The text in a chip indicating to the user that their current internet connection is only partially protected.",
+    "message": "Limited protection"
+  },
+  "server_card_complete_connection_type": {
+    "description": "The text in a chip indicating to the user that their current internet connection is completely protected.",
+    "message": "Complete protection"
   },
   "server_default_name": {
     "description": "This is the default name for an added server when the type or name is not specified by the access key.",
