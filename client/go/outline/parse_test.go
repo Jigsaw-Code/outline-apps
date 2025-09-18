@@ -533,6 +533,22 @@ error:
 	}, result.Error)
 }
 
+func TestParseConfig_BasicAccess(t *testing.T) {
+	userInputConfig := `
+transport:
+  $type: basic-access
+  dns_resolvers:
+    - $type: https
+      address: https://dns.google/dns-query
+    - $type: https
+      address: https://dns.quad9.net/dns-query`
+
+	result := doParseTunnelConfig(userInputConfig)
+	require.Nil(t, result.Error, "doParseTunnelConfig failed: %v", result.Error)
+
+	matchClientConfig(t, userInputConfig, result.Value)
+}
+
 // The tests below are to record broken usage of github.com/goccy/go-yaml.
 // See https://github.com/Jigsaw-Code/outline-apps/issues/2576.
 // We can go back to using those functions if they get fixed.

@@ -34,7 +34,7 @@ func TestParseProxyless(t *testing.T) {
 	provider := newTestProxylessProvider()
 
 	node, err := configyaml.ParseConfigYAML(`
-tcp:
+transport:
   $type: basic-access
   dns_resolvers:
     - $type: https
