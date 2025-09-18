@@ -72,6 +72,7 @@ public class VpnTunnelService extends VpnService {
   private static final String TUNNEL_ID_KEY = "id";
   private static final String TUNNEL_CONFIG_KEY = "config";
   private static final String TUNNEL_SERVER_NAME = "serverName";
+  private static final String LOCAL_DNS_SERVER_IP = "10.111.222.53";
   private static final String[] DNS_RESOLVER_IP_ADDRESSES = {
     // OpenDNS
     "208.67.222.222", "208.67.220.220",
@@ -246,7 +247,6 @@ public class VpnTunnelService extends VpnService {
     if (!alreadyRunning) {
       // Only establish the VPN if this is not a tunnel restart.
       try {
-        String dnsResolver = DNS_RESOLVER_IP_ADDRESSES[new Random().nextInt(DNS_RESOLVER_IP_ADDRESSES.length)];
         VpnService.Builder builder =
                 new VpnService.Builder()
                         .setSession(this.getApplicationName())
@@ -256,7 +256,7 @@ public class VpnTunnelService extends VpnService {
                         // Some random local IP we believe won't conflict.
                         // TODO(fortuna): dynamically select it.
                         .addAddress("10.111.222.1", 24)
-                        .addDnsServer(dnsResolver)
+                        .addDnsServer(LOCAL_DNS_SERVER_IP)
                         .setBlocking(true)
                         .addDisallowedApplication(this.getPackageName());
 
@@ -281,7 +281,8 @@ public class VpnTunnelService extends VpnService {
       }
     }
 
-    final ConnectRemoteDeviceResult result = Tun2socks.connectRemoteDevice(client);
+    String dnsResolver = DNS_RESOLVER_IP_ADDRESSES[new Random().nextInt(DNS_RESOLVER_IP_ADDRESSES.length)];
+    final ConnectRemoteDeviceResult result = Tun2socks.connectRemoteDevice(client, LOCAL_DNS_SERVER_IP, dnsResolver);
     if (result.getError() != null) {
       tearDownActiveTunnel();
       return result.getError();

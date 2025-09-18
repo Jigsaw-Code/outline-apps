@@ -31,6 +31,7 @@ type Config struct {
 	ID              string   `json:"id"`
 	InterfaceName   string   `json:"interfaceName"`
 	IPAddress       string   `json:"ipAddress"`
+	LocalDNSIP      string   `json:"localDNSIP"`
 	DNSServers      []string `json:"dnsServers"`
 	ConnectionName  string   `json:"connectionName"`
 	RoutingTableId  uint32   `json:"routingTableId"`
@@ -141,7 +142,17 @@ func EstablishVPN(
 		}
 	}()
 
-	if c.proxy, err = ConnectRemoteDevice(ctx, sd, pl); err != nil {
+	resolv, err := NewDefaultResolver(sd, pl, conf.DNSServers[0])
+	if err != nil {
+		slog.Error("failed to create the default DNS resolver", "err", err)
+		return nil, err
+	}
+	dns, err := NewDNSInterceptor(conf.LocalDNSIP, resolv)
+	if err != nil {
+		slog.Error("failed to create the DNS interceptor", "err", err)
+		return nil, err
+	}
+	if c.proxy, err = ConnectRemoteDevice(ctx, sd, pl, dns); err != nil {
 		slog.Error("failed to connect to the remote device", "err", err)
 		return
 	}

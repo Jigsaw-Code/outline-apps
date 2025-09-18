@@ -45,7 +45,7 @@ type ConnectRemoteDeviceResult struct {
 	Error  *perrs.PlatformError
 }
 
-func ConnectRemoteDevice(client *outline.Client) (res *ConnectRemoteDeviceResult) {
+func ConnectRemoteDevice(client *outline.Client, localDNSIP, dnsServer string) (res *ConnectRemoteDeviceResult) {
 	if err := client.StartSession(); err != nil {
 		return &ConnectRemoteDeviceResult{Error: &perrs.PlatformError{
 			Code:    perrs.SetupTrafficHandlerFailed,
@@ -60,7 +60,15 @@ func ConnectRemoteDevice(client *outline.Client) (res *ConnectRemoteDeviceResult
 			}
 		}
 	}()
-	rd, err := vpn.ConnectRemoteDevice(context.Background(), client, client)
+	resolv, err := vpn.NewDefaultResolver(client, client, dnsServer)
+	if err != nil {
+		return &ConnectRemoteDeviceResult{Error: perrs.ToPlatformError(err)}
+	}
+	dns, err := vpn.NewDNSInterceptor(localDNSIP, resolv)
+	if err != nil {
+		return &ConnectRemoteDeviceResult{Error: perrs.ToPlatformError(err)}
+	}
+	rd, err := vpn.ConnectRemoteDevice(context.Background(), client, client, dns)
 	if err != nil {
 		return &ConnectRemoteDeviceResult{Error: perrs.ToPlatformError(err)}
 	}

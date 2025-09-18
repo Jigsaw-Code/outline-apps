@@ -24,7 +24,6 @@ import (
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/connectivity"
 	perrs "github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/Jigsaw-Code/outline-sdk/network"
-	"github.com/Jigsaw-Code/outline-sdk/network/dnstruncate"
 	"github.com/Jigsaw-Code/outline-sdk/network/lwip2transport"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
@@ -33,11 +32,9 @@ import (
 type RemoteDevice struct {
 	io.ReadWriteCloser
 
-	sd transport.StreamDialer
-	pl transport.PacketListener
-
-	pkt              network.DelegatePacketProxy
-	remote, fallback network.PacketProxy
+	sd  transport.StreamDialer
+	pp  network.PacketProxy
+	dns *DNSInterceptor
 
 	// health check fields
 	tcpMu        sync.Mutex
@@ -46,7 +43,10 @@ type RemoteDevice struct {
 }
 
 func ConnectRemoteDevice(
-	ctx context.Context, sd transport.StreamDialer, pl transport.PacketListener,
+	ctx context.Context,
+	sd transport.StreamDialer,
+	pl transport.PacketListener,
+	dns *DNSInterceptor,
 ) (_ *RemoteDevice, err error) {
 	if sd == nil {
 		return nil, errors.New("StreamDialer must be provided")
@@ -54,30 +54,34 @@ func ConnectRemoteDevice(
 	if pl == nil {
 		return nil, errors.New("PacketListener must be provided")
 	}
+	if dns == nil {
+		return nil, errors.New("DNS interceptor must be provided")
+	}
 	if ctx.Err() != nil {
 		return nil, errCancelled(ctx.Err())
 	}
 
-	dev := &RemoteDevice{sd: sd, pl: pl}
+	dev := &RemoteDevice{dns: dns}
 
-	dev.remote, err = network.NewPacketProxyFromPacketListener(pl)
+	if dev.sd, err = dns.NewStreamDialer(sd); err != nil {
+		return nil, errSetupHandler("failed to create TCP handler", err)
+	}
+	slog.Debug("remote device TCP handler created")
+
+	pp, err := network.NewPacketProxyFromPacketListener(pl)
 	if err != nil {
-		return nil, errSetupHandler("failed to create remote UDP handler", err)
+		return nil, errSetupHandler("failed to create UDP handler (internal)", err)
 	}
-	slog.Debug("remote device remote UDP handler created")
+	slog.Debug("remote device UDP handler (internal) created")
 
-	if dev.fallback, err = dnstruncate.NewPacketProxy(); err != nil {
-		return nil, errSetupHandler("failed to create UDP handler for DNS-fallback", err)
+	if dev.pp, err = dns.NewPacketProxy(pp); err != nil {
+		return nil, errSetupHandler("failed to create UDP handler", err)
 	}
-	slog.Debug("remote device local DNS-fallback UDP handler created")
-	if dev.pkt, err = network.NewDelegatePacketProxy(dev.fallback); err != nil {
-		return nil, errSetupHandler("failed to create combined UDP handler", err)
-	}
+	slog.Debug("remote device UDP handler created")
 
 	dev.tcpCheckDone.Go(dev.checkTCPHealthAndUpdate)
-	go dev.checkUDPHealthAndUpdate()
 
-	dev.ReadWriteCloser, err = lwip2transport.ConfigureDevice(sd, dev.pkt)
+	dev.ReadWriteCloser, err = lwip2transport.ConfigureDevice(dev.sd, dev.pp)
 	if err != nil {
 		return nil, errSetupHandler("remote device failed to configure network stack", err)
 	}
@@ -104,7 +108,7 @@ func (d *RemoteDevice) GetHealthStatus() error {
 // NotifyNetworkChanged notifies the device that the underlying network has changed.
 // It will re-test the UDP connectivity and update its UDP handler accordingly.
 func (d *RemoteDevice) NotifyNetworkChanged() {
-	go d.checkUDPHealthAndUpdate()
+	d.dns.OnNotifyNetworkChanged()
 }
 
 func (d *RemoteDevice) checkTCPHealthAndUpdate() {
@@ -117,16 +121,6 @@ func (d *RemoteDevice) checkTCPHealthAndUpdate() {
 		slog.Info("remote device TCP is healthy")
 	} else {
 		slog.Warn("remote device TCP is not healthy", "err", d.tcpErr)
-	}
-}
-
-func (d *RemoteDevice) checkUDPHealthAndUpdate() error {
-	if err := connectivity.CheckUDPConnectivity(d.pl); err == nil {
-		slog.Info("remote device UDP is healthy")
-		return d.pkt.SetProxy(d.remote)
-	} else {
-		slog.Warn("remote device UDP is not healthy", "err", err)
-		return d.pkt.SetProxy(d.fallback)
 	}
 }
 
