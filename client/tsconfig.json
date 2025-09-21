@@ -15,7 +15,7 @@
     "skipLibCheck": true,
     "target": "es2017",
     "lib": ["es2022"],
-    "types": ["cordova", "polymer", "cordova-plugin-device"]
+    "types": ["cordova", "polymer", "cordova-plugin-device", "jest", "mocha"]
   },
   "exclude": [
     "*.cjs",

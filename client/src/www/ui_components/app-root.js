@@ -401,7 +401,6 @@ export class AppRoot extends mixinBehaviors(
           id="toastButton"
           on-tap="_callToastHandler"
         ></paper-button>
-        
         <a hidden="" id="toastUrl" href="[[toastUrl]]"></a>
       </paper-toast>
     `;
@@ -753,7 +752,7 @@ export class AppRoot extends mixinBehaviors(
     delete toastButton._handler;
     handler();
   }
-  
+
   promptAddServer() {
     this.$.addServerView.open = true;
   }

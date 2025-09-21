@@ -31,7 +31,6 @@
     "@storybook/test": "^8.2.6",
     "@storybook/web-components": "^8.2.6",
     "@storybook/web-components-vite": "^8.2.6",
-    "@types/cordova-plugin-device": "^1.1.5",
     "@types/node-fetch": "^2.6.7",
     "@types/polymer": "^1.2.16",
     "@typescript-eslint/eslint-plugin": "^8.24.1",

@@ -29,7 +29,7 @@ import {localize} from '../../testing/localize';
 
 describe('ContactView', () => {
   let el: ContactView;
-  let mockErrorReporter: jasmine.SpyObj<OutlineErrorReporter>;
+  let mockErrorReporter: jest.Mocked<OutlineErrorReporter>;
 
   beforeEach(async () => {
     mockErrorReporter = jasmine.createSpyObj(
@@ -50,7 +50,7 @@ describe('ContactView', () => {
 
   it('hides issue selector by default', async () => {
     const issueSelector = el.shadowRoot?.querySelector('mwc-select');
-    expect(issueSelector?.hasAttribute('hidden')).toBeTrue();
+    expect(issueSelector?.hasAttribute('hidden')).toBe(true);
   });
 
   it('hides support form by default', async () => {
@@ -97,7 +97,7 @@ describe('ContactView', () => {
     });
 
     it('shows the issue selector', () => {
-      expect(issueSelector.hasAttribute('hidden')).toBeFalse();
+      expect(issueSelector.hasAttribute('hidden')).toBe(false);
     });
 
     it('shows the correct items in the selector', () => {
@@ -217,7 +217,7 @@ describe('ContactView', () => {
 
       it('emits failure event when feedback reporting fails', async () => {
         const listener = oneEvent(el, 'error');
-        mockErrorReporter.report.and.throwError('fail');
+        mockErrorReporter.report.mockImplementation(() => { throw new Error('fail'); });
 
         const supportForm: SupportForm =
           el.shadowRoot!.querySelector('support-form')!;

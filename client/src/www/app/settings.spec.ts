@@ -76,13 +76,13 @@ describe('Settings', () => {
     const settings = new Settings(new InMemoryStorage(), FAKE_SETTINGS_KEYS);
     expect(() => {
       settings.set('invalidSetting', 'value');
-    }).toThrowError();
+    }).toThrow();
   });
 
   it('throws when storage is corrupted', () => {
     const storage = new InMemoryStorage(new Map([[Settings.STORAGE_KEY, '"malformed": "json"']]));
     expect(() => {
       new Settings(storage, FAKE_SETTINGS_KEYS);
-    }).toThrowError(SyntaxError);
+    }).toThrow(SyntaxError);
   });
 });

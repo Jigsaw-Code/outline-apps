@@ -161,10 +161,10 @@ describe('OutlineServerRepository', () => {
 
   it('add throws on invalid access keys', async () => {
     const repo = await newTestRepo(new EventQueue(), new InMemoryStorage());
-    await expectAsync(repo.add('ss://invalid')).toBeRejectedWithError(
+    await expect(repo.add('ss://invalid')).rejects.toThrow(
       InvalidServiceConfiguration
     );
-    await expectAsync(repo.add('')).toBeRejectedWithError(
+    await expect(repo.add('')).rejects.toThrow(
       InvalidServiceConfiguration
     );
   });
@@ -309,12 +309,12 @@ describe('OutlineServerRepository', () => {
 
   it('validates static access keys', async () => {
     // Invalid access keys.
-    await expectAsync(config.parseAccessKey('')).toBeRejectedWithError(
+    await expect(config.parseAccessKey('')).rejects.toThrow(
       InvalidServiceConfiguration
     );
-    await expectAsync(
+    await expect(
       config.parseAccessKey('ss://invalid')
-    ).toBeRejectedWithError(InvalidServiceConfiguration);
+    ).rejects.toThrow(InvalidServiceConfiguration);
     // IPv6 host.
     expect(
       await config.parseAccessKey(

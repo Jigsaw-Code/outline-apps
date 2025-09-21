@@ -90,7 +90,7 @@ describe('SupportForm', () => {
     const submitButton = el.shadowRoot!.querySelectorAll(
       'mwc-button'
     )[1] as HTMLElement;
-    expect(submitButton.hasAttribute('disabled')).toBeTrue();
+    expect(submitButton.hasAttribute('disabled')).toBe(true);
   });
 
   describe('when form is valid', () => {
@@ -123,7 +123,7 @@ describe('SupportForm', () => {
     });
 
     it('submit button is enabled', async () => {
-      expect(submitButton.hasAttribute('disabled')).toBeFalse();
+      expect(submitButton.hasAttribute('disabled')).toBe(false);
     });
 
     it('clicking submit button emits form submit success event', async () => {
@@ -132,7 +132,7 @@ describe('SupportForm', () => {
       submitButton.click();
 
       const {detail} = await listener;
-      expect(detail).toBeTrue();
+      expect(detail).toBe(true);
     });
   });
 
@@ -148,6 +148,6 @@ describe('SupportForm', () => {
     cancelButton.click();
 
     const {detail} = await listener;
-    expect(detail).toBeTrue();
+    expect(detail).toBe(true);
   });
 });

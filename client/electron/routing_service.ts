@@ -353,7 +353,7 @@ async function installLinuxRoutingServices(): Promise<void> {
     const src = path.join(srcFolderPath, descriptor.filename);
 
     const srcContent = await fsextra.readFile(src);
-    descriptor.sha256 = createHash('sha256').update(srcContent).digest('hex');
+    descriptor.sha256 = createHash('sha256').update(Uint8Array.from(srcContent)).digest('hex');
 
     const dest = path.join(tmp, descriptor.filename);
     await fsextra.copy(src, dest, {overwrite: true});
@@ -407,3 +407,7 @@ export async function installRoutingServices(): Promise<void> {
 }
 
 //#endregion routing service installation
+
+// Example usage: create a SHA-256 hash from a Buffer
+const buffer = Buffer.from('example data');
+const hash = createHash('sha256').update(buffer.toString()).digest('hex');

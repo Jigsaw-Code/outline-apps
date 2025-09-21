@@ -524,12 +524,12 @@
     "message": "Dismiss"
   },
   "error_details_dialog_send": {
-  "description": "The button for reporting an error to the provider via webhook.",
-  "message": "Send Error"
+    "description": "The button for reporting an error to the provider via webhook.",
+    "message": "Send Error"
   },
   "error_details_dialog_sent": {
-  "description": "The text of a button after we have sent the error details to the Webhook.",
-  "message": "Error Sent"
+    "description": "The text of a button after we have sent the error details to the Webhook.",
+    "message": "Error Sent"
   },
   "server_default_name": {
     "description": "This is the default name for an added server when the type or name is not specified by the access key.",
