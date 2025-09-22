@@ -60,7 +60,13 @@ func newPlatformVPNConn(conf *Config) (_ platformVPNConn, err error) {
 	}
 	dnsIP := net.ParseIP(conf.LocalDNSIP).To4()
 	if dnsIP == nil {
-		return nil, errInvalidConfig("DNS server must be a valid IP(v4)", "dns", conf.LocalDNSIP)
+		return nil, perrs.PlatformError{
+			Code:    perrs.InternalError,
+			Message: "must provide a valid local DNS server IP",
+			Details: map[string]any{
+				"ip": conf.LocalDNSIP,
+			},
+		}
 	}
 	c.nmOpts.DNSServers4 = append(c.nmOpts.DNSServers4, dnsIP)
 
