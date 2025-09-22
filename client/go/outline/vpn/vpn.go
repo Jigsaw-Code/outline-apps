@@ -142,17 +142,17 @@ func EstablishVPN(
 		}
 	}()
 
-	resolv, err := NewDefaultResolver(sd, pl, conf.DNSServers[0])
+	sd, err = WrapDNSInterceptedStreamDialer(sd, conf.LocalDNSIP, conf.DNSServers[0])
 	if err != nil {
-		slog.Error("failed to create the default DNS resolver", "err", err)
+		slog.Error("failed to wrap DNS intercepted TCP handler", "err", err)
 		return nil, err
 	}
-	dns, err := NewDNSInterceptor(conf.LocalDNSIP, resolv)
+	pp, err := WrapDNSInterceptedPacketProxy(pl, conf.LocalDNSIP, conf.DNSServers[0])
 	if err != nil {
-		slog.Error("failed to create the DNS interceptor", "err", err)
+		slog.Error("failed to wrap DNS intercepted UDP handler", "err", err)
 		return nil, err
 	}
-	if c.proxy, err = ConnectRemoteDevice(ctx, sd, pl, dns); err != nil {
+	if c.proxy, err = ConnectRemoteDevice(ctx, sd, pp); err != nil {
 		slog.Error("failed to connect to the remote device", "err", err)
 		return
 	}

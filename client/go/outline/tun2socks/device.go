@@ -45,8 +45,8 @@ type ConnectRemoteDeviceResult struct {
 	Error  *perrs.PlatformError
 }
 
-func ConnectRemoteDevice(client *outline.Client, localDNSIP, dnsServer string) (res *ConnectRemoteDeviceResult) {
-	if err := client.StartSession(); err != nil {
+func ConnectRemoteDevice(cp *ClientTransportPair) (res *ConnectRemoteDeviceResult) {
+	if err := cp.client.StartSession(); err != nil {
 		return &ConnectRemoteDeviceResult{Error: &perrs.PlatformError{
 			Code:    perrs.SetupTrafficHandlerFailed,
 			Message: "failed to start backend Client session",
@@ -55,26 +55,18 @@ func ConnectRemoteDevice(client *outline.Client, localDNSIP, dnsServer string) (
 	}
 	defer func() {
 		if res.Error != nil {
-			if err := client.EndSession(); err != nil {
+			if err := cp.client.EndSession(); err != nil {
 				slog.Warn("failed to end backend Client session", "err", err)
 			}
 		}
 	}()
-	resolv, err := vpn.NewDefaultResolver(client, client, dnsServer)
-	if err != nil {
-		return &ConnectRemoteDeviceResult{Error: perrs.ToPlatformError(err)}
-	}
-	dns, err := vpn.NewDNSInterceptor(localDNSIP, resolv)
-	if err != nil {
-		return &ConnectRemoteDeviceResult{Error: perrs.ToPlatformError(err)}
-	}
-	rd, err := vpn.ConnectRemoteDevice(context.Background(), client, client, dns)
+	rd, err := vpn.ConnectRemoteDevice(context.Background(), cp.wrappedSD, cp.wrappedPP)
 	if err != nil {
 		return &ConnectRemoteDeviceResult{Error: perrs.ToPlatformError(err)}
 	}
 	return &ConnectRemoteDeviceResult{Device: &RemoteDevice{
 		rd:     rd,
-		client: client,
+		client: cp.client,
 	}}
 }
 

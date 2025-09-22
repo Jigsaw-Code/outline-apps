@@ -32,9 +32,8 @@ import (
 type RemoteDevice struct {
 	io.ReadWriteCloser
 
-	sd  transport.StreamDialer
-	pp  network.PacketProxy
-	dns *DNSInterceptor
+	sd transport.StreamDialer
+	pp network.PacketProxy
 
 	// health check fields
 	tcpMu        sync.Mutex
@@ -42,45 +41,19 @@ type RemoteDevice struct {
 	tcpErr       error
 }
 
-func ConnectRemoteDevice(
-	ctx context.Context,
-	sd transport.StreamDialer,
-	pl transport.PacketListener,
-	dns *DNSInterceptor,
-) (_ *RemoteDevice, err error) {
+func ConnectRemoteDevice(ctx context.Context, sd transport.StreamDialer, pp network.PacketProxy) (_ *RemoteDevice, err error) {
 	if sd == nil {
 		return nil, errors.New("StreamDialer must be provided")
 	}
-	if pl == nil {
-		return nil, errors.New("PacketListener must be provided")
-	}
-	if dns == nil {
-		return nil, errors.New("DNS interceptor must be provided")
+	if pp == nil {
+		return nil, errors.New("PacketProxy must be provided")
 	}
 	if ctx.Err() != nil {
 		return nil, errCancelled(ctx.Err())
 	}
 
-	dev := &RemoteDevice{dns: dns}
-
-	if dev.sd, err = dns.NewStreamDialer(sd); err != nil {
-		return nil, errSetupHandler("failed to create TCP handler", err)
-	}
-	slog.Debug("remote device TCP handler created")
-
-	pp, err := network.NewPacketProxyFromPacketListener(pl)
-	if err != nil {
-		return nil, errSetupHandler("failed to create UDP handler (internal)", err)
-	}
-	slog.Debug("remote device UDP handler (internal) created")
-
-	if dev.pp, err = dns.NewPacketProxy(pp); err != nil {
-		return nil, errSetupHandler("failed to create UDP handler", err)
-	}
-	slog.Debug("remote device UDP handler created")
-
+	dev := &RemoteDevice{sd: sd, pp: pp}
 	dev.tcpCheckDone.Go(dev.checkTCPHealthAndUpdate)
-
 	dev.ReadWriteCloser, err = lwip2transport.ConfigureDevice(dev.sd, dev.pp)
 	if err != nil {
 		return nil, errSetupHandler("remote device failed to configure network stack", err)
@@ -106,9 +79,14 @@ func (d *RemoteDevice) GetHealthStatus() error {
 }
 
 // NotifyNetworkChanged notifies the device that the underlying network has changed.
-// It will re-test the UDP connectivity and update its UDP handler accordingly.
 func (d *RemoteDevice) NotifyNetworkChanged() {
-	d.dns.OnNotifyNetworkChanged()
+	type NetworkChangeListener interface{ OnNotifyNetworkChanged() }
+	if ncl, ok := d.sd.(NetworkChangeListener); ok {
+		ncl.OnNotifyNetworkChanged()
+	}
+	if ncl, ok := d.pp.(NetworkChangeListener); ok {
+		ncl.OnNotifyNetworkChanged()
+	}
 }
 
 func (d *RemoteDevice) checkTCPHealthAndUpdate() {

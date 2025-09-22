@@ -23,53 +23,74 @@ import (
 	"log/slog"
 	"net"
 	"net/netip"
+	"sync/atomic"
 	"time"
 
 	"golang.org/x/net/dns/dnsmessage"
 
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/connectivity"
 	"github.com/Jigsaw-Code/outline-sdk/dns"
 	"github.com/Jigsaw-Code/outline-sdk/network"
 	"github.com/Jigsaw-Code/outline-sdk/network/dnstruncate"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
-type DNSInterceptor struct {
-	local  netip.AddrPort
-	resolv dns.Resolver
-}
-
-func NewDNSInterceptor(localDNSAddr string, resolver dns.Resolver) (*DNSInterceptor, error) {
-	if resolver == nil {
-		return nil, errors.New("resolver must be provided")
+func WrapDNSInterceptedStreamDialer(sd transport.StreamDialer, localDNSAddr, resolverAddr string) (transport.StreamDialer, error) {
+	if sd == nil {
+		return nil, errors.New("base StreamDialer must be provided for DNS interception")
 	}
-	addr, err := netip.ParseAddr(localDNSAddr)
+	localDNS, err := parseAddrPortWithDefaultPort(localDNSAddr, 53)
 	if err != nil {
-		return nil, fmt.Errorf("a valid local DNS address must be provided: %w", err)
+		return nil, fmt.Errorf("local DNS address to be intercepted is not valid: %w", err)
 	}
-	// We use a fixed port 53 here because dnstruncate requires port 53
-	// And Android also doesn't allow us to configure the port
-	return &DNSInterceptor{netip.AddrPortFrom(addr, 53), resolver}, nil
-}
-
-func (di *DNSInterceptor) NewStreamDialer(sd transport.StreamDialer) (transport.StreamDialer, error) {
+	resolv := dns.NewTCPResolver(sd, resolverAddr)
 	return transport.FuncStreamDialer(func(ctx context.Context, addr string) (transport.StreamConn, error) {
-		if dst, err := netip.ParseAddrPort(addr); err == nil && isEquivalentAddrPort(dst, di.local) {
-			slog.Debug("intercepting DNS request (TCP)", "addr", addr)
-			return newDNSResolverStreamConn(di.resolv), nil
+		if dst, err := netip.ParseAddrPort(addr); err == nil && isEquivalentAddrPort(dst, localDNS) {
+			return newDNSResolverStreamConn(resolv), nil
 		}
 		return sd.DialStream(ctx, addr)
 	}), nil
 }
 
-func (di *DNSInterceptor) NewPacketProxy(pp network.PacketProxy) (network.PacketProxy, error) {
-	return newDNSInterceptPacketProxy(di.local, pp)
+func WrapDNSInterceptedPacketProxy(pl transport.PacketListener, localDNSAddr, resolverAddr string) (network.PacketProxy, error) {
+	if pl == nil {
+		return nil, errors.New("base PacketProxy must be provided for DNS interception")
+	}
+	pp, err := network.NewPacketProxyFromPacketListener(pl)
+	if err != nil {
+		return nil, fmt.Errorf("failed to wrap a PacketListener into PacketProxy")
+	}
+	resolver, err := parseAddrPortWithDefaultPort(resolverAddr, 53)
+	if err != nil {
+		return nil, fmt.Errorf("TCP resolver address is not valid: %w", err)
+	}
+	localDNS, err := parseAddrPortWithDefaultPort(localDNSAddr, 53)
+	if err != nil {
+		return nil, fmt.Errorf("local DNS address to be intercepted is not valid: %w", err)
+	}
+	trunc, err := dnstruncate.NewPacketProxy()
+	if err != nil {
+		return nil, fmt.Errorf("failed to create fallback (truncated) DNS PacketProxy")
+	}
+	return &dnsInterceptPacketProxy{
+		base:           pp,
+		trunc:          trunc,
+		local:          localDNS,
+		resolv:         resolver,
+		udpHealthCheck: func() error { return connectivity.CheckUDPConnectivity(pl) },
+	}, nil
 }
 
-func (di *DNSInterceptor) OnNotifyNetworkChanged() {
-	type NetworkChangeNotifier interface{ OnNotifyNetworkChanged() }
-	if ncn, ok := di.resolv.(NetworkChangeNotifier); ok {
-		ncn.OnNotifyNetworkChanged()
+func parseAddrPortWithDefaultPort(addr string, defaultPort uint16) (netip.AddrPort, error) {
+	ap, err := netip.ParseAddrPort(addr)
+	if err == nil {
+		return ap, nil
 	}
+	ip, err := netip.ParseAddr(addr)
+	if err != nil {
+		return netip.AddrPort{}, err
+	}
+	return netip.AddrPortFrom(ip, defaultPort), nil
 }
 
 func isEquivalentAddrPort(addr1, addr2 netip.AddrPort) bool {
@@ -151,51 +172,80 @@ func (c *dnsResolverStreamConn) Serve() {
 // ----- DNS Interceptor PacketProxy -----
 
 type dnsInterceptPacketProxy struct {
-	localDNSAddr netip.AddrPort
-	def, dns     network.PacketProxy
+	base, trunc network.PacketProxy
+	useBaseDNS  atomic.Bool
+
+	local, resolv  netip.AddrPort
+	udpHealthCheck func() error
 }
 
 type dnsInterceptPacketReqSender struct {
-	localDNSAddr netip.AddrPort
-	def, dns     network.PacketRequestSender
+	pp          *dnsInterceptPacketProxy
+	base, trunc network.PacketRequestSender
+}
+
+type dnsInterceptPacketRespReceiver struct {
+	network.PacketResponseReceiver
+	pp *dnsInterceptPacketProxy
 }
 
 var _ network.PacketProxy = (*dnsInterceptPacketProxy)(nil)
 var _ network.PacketRequestSender = (*dnsInterceptPacketReqSender)(nil)
+var _ network.PacketResponseReceiver = (*dnsInterceptPacketRespReceiver)(nil)
 
-func newDNSInterceptPacketProxy(localAddr netip.AddrPort, udp network.PacketProxy) (*dnsInterceptPacketProxy, error) {
-	dns, err := dnstruncate.NewPacketProxy()
+func (pp *dnsInterceptPacketProxy) NewSession(resp network.PacketResponseReceiver) (_ network.PacketRequestSender, err error) {
+	base, err := pp.base.NewSession(&dnsInterceptPacketRespReceiver{resp, pp})
 	if err != nil {
 		return nil, err
 	}
-	return &dnsInterceptPacketProxy{localAddr, udp, dns}, nil
+	trunc, err := pp.trunc.NewSession(resp)
+	if err != nil {
+		slog.Warn("failed to create DNS truncate session, will always route DNS via base UDP", "err", err)
+	}
+	return &dnsInterceptPacketReqSender{
+		pp:    pp,
+		base:  base,
+		trunc: trunc,
+	}, nil
 }
 
-func (pp *dnsInterceptPacketProxy) NewSession(resp network.PacketResponseReceiver) (req network.PacketRequestSender, err error) {
-	sender := &dnsInterceptPacketReqSender{localDNSAddr: pp.localDNSAddr}
-	sender.def, err = pp.def.NewSession(resp)
-	if err != nil {
-		return
-	}
-	defer func() {
-		if err != nil {
-			sender.def.Close()
+func (pp *dnsInterceptPacketProxy) OnNotifyNetworkChanged() {
+	go func() {
+		slog.Debug("checking UDP connectivity...")
+		if err := pp.udpHealthCheck(); err == nil {
+			slog.Info("remote device UDP is healthy")
+			pp.useBaseDNS.Store(true)
+		} else {
+			slog.Info("remote device UDP is not healthy", "err", err)
+			pp.useBaseDNS.Store(false)
 		}
 	}()
-	sender.dns, err = pp.dns.NewSession(resp)
-	if err != nil {
-		return nil, err
-	}
-	return sender, nil
 }
 
+// WriteTo intercepts outgoing DNS request packets.
+// If a packet is destined for the local resolver, it remaps the destination to the remote resolver.
+// It will fallback to an always-truncate resolver if remote UDP is unhealthy.
 func (req *dnsInterceptPacketReqSender) WriteTo(p []byte, destination netip.AddrPort) (int, error) {
-	if isEquivalentAddrPort(destination, req.localDNSAddr) {
-		return req.dns.WriteTo(p, destination)
+	if isEquivalentAddrPort(destination, req.pp.local) {
+		if req.trunc != nil && !req.pp.useBaseDNS.Load() {
+			return req.trunc.WriteTo(p, destination)
+		}
+		destination = req.pp.resolv
 	}
-	return req.def.WriteTo(p, destination)
+	return req.base.WriteTo(p, destination)
 }
 
-func (req *dnsInterceptPacketReqSender) Close() error {
-	return errors.Join(req.def.Close(), req.dns.Close())
+func (req *dnsInterceptPacketReqSender) Close() (err error) {
+	err = req.base.Close()
+	req.trunc.Close()
+	return
+}
+
+// ReadFrom intercepts incoming DNS response packets.
+// If a packet is received from the remote resolver, it remaps the source address to be the local resolver.
+func (resp *dnsInterceptPacketRespReceiver) WriteFrom(p []byte, source net.Addr) (int, error) {
+	if addr, ok := source.(*net.UDPAddr); ok && isEquivalentAddrPort(addr.AddrPort(), resp.pp.resolv) {
+		source = net.UDPAddrFromAddrPort(resp.pp.local)
+	}
+	return resp.PacketResponseReceiver.WriteFrom(p, source)
 }

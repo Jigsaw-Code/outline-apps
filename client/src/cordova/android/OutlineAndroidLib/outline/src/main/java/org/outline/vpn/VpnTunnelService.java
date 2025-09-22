@@ -59,6 +59,7 @@ import platerrors.PlatformError;
 import tun2socks.ConnectRemoteDeviceResult;
 import tun2socks.RemoteDevice;
 import tun2socks.Tun2socks;
+import tun2socks.WrappedClientResult;
 
 /**
  * Android service responsible for managing a VPN tunnel. Clients must bind to this
@@ -72,7 +73,6 @@ public class VpnTunnelService extends VpnService {
   private static final String TUNNEL_ID_KEY = "id";
   private static final String TUNNEL_CONFIG_KEY = "config";
   private static final String TUNNEL_SERVER_NAME = "serverName";
-  private static final String LOCAL_DNS_SERVER_IP = "10.111.222.53";
   private static final String[] DNS_RESOLVER_IP_ADDRESSES = {
     // OpenDNS
     "208.67.222.222", "208.67.220.220",
@@ -242,6 +242,11 @@ public class VpnTunnelService extends VpnService {
     final outline.Client client = clientResult.getClient();
     this.tunnelConfig = config;
 
+    // Some random local IP we believe won't conflict.
+    // TODO(fortuna): dynamically select it.
+    final String TUN_DEVICE_IP = "10.111.222.1";
+    final String LOCAL_DNS_SERVER_IP = "10.111.222.53";
+
     // If the VPN is already running, we skip the set up of the VPN routing.
     // TODO(fortuna): we should probably shutdown and restart, in case the config changed.
     if (!alreadyRunning) {
@@ -253,9 +258,7 @@ public class VpnTunnelService extends VpnService {
                         // Standard MTU.
                         // TODO(fortuna): consider deriving it from the underlying MTU and selected transport.
                         .setMtu(1500)
-                        // Some random local IP we believe won't conflict.
-                        // TODO(fortuna): dynamically select it.
-                        .addAddress("10.111.222.1", 24)
+                        .addAddress(TUN_DEVICE_IP, 24)
                         .addDnsServer(LOCAL_DNS_SERVER_IP)
                         .setBlocking(true)
                         .addDisallowedApplication(this.getPackageName());
@@ -282,7 +285,13 @@ public class VpnTunnelService extends VpnService {
     }
 
     String dnsResolver = DNS_RESOLVER_IP_ADDRESSES[new Random().nextInt(DNS_RESOLVER_IP_ADDRESSES.length)];
-    final ConnectRemoteDeviceResult result = Tun2socks.connectRemoteDevice(client, LOCAL_DNS_SERVER_IP, dnsResolver);
+    final WrappedClientResult dnsInterceptResult = Tun2socks.wrapDNSInterceptedClient(client, LOCAL_DNS_SERVER_IP, dnsResolver);
+    if (dnsInterceptResult.getError() != null) {
+      tearDownActiveTunnel();
+      return dnsInterceptResult.getError();
+    }
+
+    final ConnectRemoteDeviceResult result = Tun2socks.connectRemoteDevice(dnsInterceptResult.getClient());
     if (result.getError() != null) {
       tearDownActiveTunnel();
       return result.getError();
