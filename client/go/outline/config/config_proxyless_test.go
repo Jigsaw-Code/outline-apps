@@ -16,21 +16,11 @@ package config
 
 import (
 	"context"
-	//"net"
 	"testing"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/configyaml"
-	//"github.com/Jigsaw-Code/outline-sdk/transport"
 	"github.com/stretchr/testify/require"
 )
-
-/*
-func newTestProxylessProvider() *configyaml.TypeParser[*Dialer[transport.StreamConn]] {
-	tcpDialer := &transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
-	udpDialer := &transport.UDPDialer{}
-	return NewDefaultTransportProvider(tcpDialer, udpDialer)
-}
-*/
 
 func TestParseProxyless(t *testing.T) {
 	provider := newTestTransportProvider()

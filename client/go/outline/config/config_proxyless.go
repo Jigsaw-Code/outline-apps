@@ -26,7 +26,12 @@ import (
 // ProxylessConfig is the format for a proxyless config. It specifies a single transport config
 // to create a [transport.StreamDialer].
 type ProxylessConfig struct {
-	Resolvers []configyaml.ConfigNode `yaml:"dns_resolvers"`
+	Resolvers []DNSResolver `yaml:"dns_resolvers"`
+}
+
+type DNSResolver struct {
+	//Type    string `yaml:"type"`
+	Address string `yaml:"address"`
 }
 
 func NewProxylessTransportPairSubParser() func(ctx context.Context, input map[string]any) (*TransportPair, error) {
@@ -41,7 +46,6 @@ func parseProxylessTransportPair(ctx context.Context, configMap map[string]any) 
 		return nil, fmt.Errorf("invalid config format: %w", err)
 	}
 
-	// TODO: use config.Resolvers to create a custom DNS resolver.
 	sd, err := tls.NewStreamDialer(&transport.TCPDialer{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create StreamDialer: %w", err)
