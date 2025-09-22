@@ -106,7 +106,6 @@ func NewDefaultTransportProvider(tcpDialer transport.StreamDialer, udpDialer tra
 	streamDialers.RegisterSubParser("iptable", NewIPTableStreamDialerSubParser(streamDialers.Parse))
 	streamDialers.RegisterSubParser("shadowsocks", NewShadowsocksStreamDialerSubParser(streamEndpoints.Parse))
 	streamDialers.RegisterSubParser("block", NewBlockStreamDialerSubParser())
-	streamDialers.RegisterSubParser("basic-access", NewProxylessStreamDialerSubParser())
 
 	// Packet dialers.
 	packetDialers.RegisterSubParser("shadowsocks", NewShadowsocksPacketDialerSubParser(packetEndpoints.Parse))
@@ -116,6 +115,7 @@ func NewDefaultTransportProvider(tcpDialer transport.StreamDialer, udpDialer tra
 
 	// Transport pairs.
 	transports.RegisterSubParser("tcpudp", NewTCPUDPTransportPairSubParser(streamDialers.Parse, packetListeners.Parse))
+	transports.RegisterSubParser("basic-access", NewProxylessTransportPairSubParser())
 
 	return transports
 }

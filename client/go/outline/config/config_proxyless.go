@@ -30,29 +30,33 @@ type ProxylessConfig struct {
 }
 
 type DNSResolver struct {
-	Type    string `yaml:"type"`
+	//Type    string `yaml:"type"`
 	Address string `yaml:"address"`
 }
 
-func NewProxylessStreamDialerSubParser() func(ctx context.Context, input map[string]any) (*Dialer[transport.StreamConn], error) {
-	return func(ctx context.Context, input map[string]any) (*Dialer[transport.StreamConn], error) {
-		return parseProxylessStreamDialer(ctx, input)
+func NewProxylessTransportPairSubParser() func(ctx context.Context, input map[string]any) (*TransportPair, error) {
+	return func(ctx context.Context, input map[string]any) (*TransportPair, error) {
+		return parseProxylessTransportPair(ctx, input)
 	}
 }
 
-func parseProxylessStreamDialer(ctx context.Context, configMap map[string]any) (*Dialer[transport.StreamConn], error) {
+func parseProxylessTransportPair(ctx context.Context, configMap map[string]any) (*TransportPair, error) {
 	var config ProxylessConfig
 	if err := configyaml.MapToAny(configMap, &config); err != nil {
 		return nil, fmt.Errorf("invalid config format: %w", err)
 	}
 
+	// TODO: use config.Resolvers to create a custom DNS resolver.
 	sd, err := tls.NewStreamDialer(&transport.TCPDialer{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create StreamDialer: %w", err)
 	}
 
-	return &Dialer[transport.StreamConn]{
-		ConnectionProviderInfo: ConnectionProviderInfo{ConnType: ConnTypeDirect},
-		Dial:                   sd.DialStream,
+	return &TransportPair{
+		StreamDialer: &Dialer[transport.StreamConn]{
+			ConnectionProviderInfo: ConnectionProviderInfo{ConnType: ConnTypeDirect},
+			Dial:                   sd.DialStream,
+		},
+		PacketListener: &PacketListener{ConnectionProviderInfo{ConnTypeDirect, ""}, &transport.UDPListener{}},
 	}, nil
 }

@@ -472,22 +472,6 @@ func TestParseConfig_Transport_Unsupported(t *testing.T) {
 	require.Contains(t, result.Error.Message, "unsupported config")
 }
 
-func TestParseConfig_Transport_DisallowProxylessTCP(t *testing.T) {
-	userInputConfig := `
-$type: tcpudp
-tcp: # results in direct dialer
-udp:
-    $type: shadowsocks
-    endpoint: example.com:53
-    cipher: chacha20-ietf-poly1305
-    secret: SECRET
-    prefix: "SSH-2.0\r\n"`
-	result := doParseTunnelConfig(userInputConfig)
-	require.NotNil(t, result.Error, "Expected an error for proxyless TCP")
-	require.Equal(t, platerrors.InvalidConfig, result.Error.Code)
-	require.Equal(t, "transport must tunnel TCP traffic", result.Error.Message)
-}
-
 func TestParseConfig_ClientFromJSON_Errors(t *testing.T) {
 	tests := []struct {
 		name  string

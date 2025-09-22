@@ -16,37 +16,39 @@ package config
 
 import (
 	"context"
-	"net"
+	//"net"
 	"testing"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/configyaml"
-	"github.com/Jigsaw-Code/outline-sdk/transport"
+	//"github.com/Jigsaw-Code/outline-sdk/transport"
 	"github.com/stretchr/testify/require"
 )
 
-func newTestProxylessProvider() *configyaml.TypeParser[*TransportPair] {
+/*
+func newTestProxylessProvider() *configyaml.TypeParser[*Dialer[transport.StreamConn]] {
 	tcpDialer := &transport.TCPDialer{Dialer: net.Dialer{KeepAlive: -1}}
 	udpDialer := &transport.UDPDialer{}
 	return NewDefaultTransportProvider(tcpDialer, udpDialer)
 }
+*/
 
 func TestParseProxyless(t *testing.T) {
-	provider := newTestProxylessProvider()
+	provider := newTestTransportProvider()
 
-	node, err := configyaml.ParseConfigYAML(`
-$type: basic-access
+	node, err := configyaml.ParseConfigYAML(`$type: basic-access
 dns_resolvers:
-- $type: https
-  address: https://dns.google/dns-query
-- $type: https
-  address: https://dns.quad9.net/dns-query
+  - $type: https
+    address: https://dns.google/dns-query
+  - $type: https
+    address: https://dns.quad9.net/dns-query
 `)
-
 	require.NoError(t, err)
 
 	transportPair, err := provider.Parse(context.Background(), node)
 	require.NoError(t, err)
 	require.NotNil(t, transportPair)
 	require.NotNil(t, transportPair.StreamDialer)
+	require.NotNil(t, transportPair.PacketListener)
 	require.Equal(t, ConnTypeDirect, transportPair.StreamDialer.ConnType)
+	require.Equal(t, ConnTypeDirect, transportPair.PacketListener.ConnType)
 }
