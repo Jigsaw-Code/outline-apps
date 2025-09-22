@@ -20,8 +20,10 @@ import (
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/configyaml"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
-	"github.com/Jigsaw-Code/outline-sdk/transport/tls"
+	"github.com/Jigsaw-Code/outline-sdk/transport/tlsfrag"
 )
+
+const splitLength = 5
 
 type ProxylessConfig struct {
 	// TODO: for now we simply parse the DNS resolvers and don't set them up
@@ -40,7 +42,7 @@ func parseProxylessTransportPair(ctx context.Context, configMap map[string]any) 
 		return nil, fmt.Errorf("invalid config format: %w", err)
 	}
 
-	sd, err := tls.NewStreamDialer(&transport.TCPDialer{})
+	sd, err := tlsfrag.NewFixedLenStreamDialer(&transport.TCPDialer{}, splitLength)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create StreamDialer: %w", err)
 	}
