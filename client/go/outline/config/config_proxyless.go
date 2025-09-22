@@ -23,14 +23,12 @@ import (
 	"github.com/Jigsaw-Code/outline-sdk/transport/tls"
 )
 
-// ProxylessConfig is the format for a proxyless config. It specifies a single transport config
-// to create a [transport.StreamDialer].
 type ProxylessConfig struct {
+	// TODO: for now we simply parse the DNS resolvers and don't set them up
 	Resolvers []DNSResolver `yaml:"dns_resolvers"`
 }
 
 type DNSResolver struct {
-	//Type    string `yaml:"type"`
 	Address string `yaml:"address"`
 }
 
