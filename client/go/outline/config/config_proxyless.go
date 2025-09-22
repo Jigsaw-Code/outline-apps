@@ -25,11 +25,7 @@ import (
 
 type ProxylessConfig struct {
 	// TODO: for now we simply parse the DNS resolvers and don't set them up
-	Resolvers []DNSResolver `yaml:"dns_resolvers"`
-}
-
-type DNSResolver struct {
-	Address string `yaml:"address"`
+	Resolvers []configyaml.ConfigNode `yaml:"dns_resolvers"`
 }
 
 func NewProxylessTransportPairSubParser() func(ctx context.Context, input map[string]any) (*TransportPair, error) {
