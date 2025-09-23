@@ -31,6 +31,7 @@ NSString *const kDefaultPathKey = @"defaultPath";
 
 @interface PacketTunnelProvider ()<Tun2socksTunWriter>
 @property Tun2socksRemoteDevice *remoteDevice;
+@property VPNConfig *vpnConf;
 @property (nonatomic, copy) void (^startCompletion)(NSNumber *);
 @property (nonatomic, copy) void (^stopCompletion)(NSNumber *);
 @property (nonatomic) DDFileLogger *fileLogger;
@@ -103,12 +104,13 @@ NSString *const kDefaultPathKey = @"defaultPath";
   }
   DDLogDebug(@"isRestart is %d", isRestart);
 
+  self.vpnConf = [VPNConfig create];
   PlaterrorsPlatformError *deviceErr = [self connectRemoteDevice:isOnDemand];
   if (deviceErr != nil) {
     return startDone([SwiftBridge newOutlineErrorFromPlatformError:deviceErr]);
   }
 
-  [self startRouting:[SwiftBridge getTunnelNetworkSettings]
+  [self startRouting:[SwiftBridge getTunnelNetworkSettingsWithConf:self.vpnConf]
           completion:^(NSError *_Nullable error) {
             if (error != nil) {
               return startDone([SwiftBridge newOutlineErrorFromNsError:error]);
@@ -243,7 +245,7 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
     return;
   }
   // Nothing changed. Connect the tunnel with the current settings.
-  [self startRouting:[SwiftBridge getTunnelNetworkSettings]
+  [self startRouting:[SwiftBridge getTunnelNetworkSettingsWithConf:self.vpnConf]
          completion:^(NSError *_Nullable error) {
            if (error != nil) {
              [self cancelTunnelWithError:error];
@@ -281,7 +283,12 @@ bool getIpAddressString(const struct sockaddr *sa, char *s, socklen_t maxbytes) 
   if (clientResult.error != nil) {
     return clientResult.error;
   }
-  Tun2socksConnectRemoteDeviceResult *result = Tun2socksConnectRemoteDevice(clientResult.client);
+  Tun2socksWrappedClientResult *dnsInterceptResult =
+    Tun2socksWrapDNSInterceptedClient(clientResult.client, self.vpnConf.localDnsAddress, self.vpnConf.dnsResolverAddress);
+  if (dnsInterceptResult.error != nil) {
+    return dnsInterceptResult.error;
+  }
+  Tun2socksConnectRemoteDeviceResult *result = Tun2socksConnectRemoteDevice(dnsInterceptResult.client);
   if (result.error != nil) {
     DDLogError(@"Failed to connect remote device: %@", result.error);
     return result.error;
