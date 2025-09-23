@@ -16,7 +16,7 @@
 
 import '@material/web/all.js';
 
-/** @type { import('@storybook/web-components').Preview } */
+/** @type { import('@storybook/web-components-vite').Preview } */
 const preview = {
   parameters: {
     controls: {
@@ -25,6 +25,11 @@ const preview = {
         date: /Date$/i,
       },
     },
+    darkMode: {
+      stylePreview: true,
+      darkClass: 'dark',
+      classTarget: 'html'
+    }
   },
 };
 

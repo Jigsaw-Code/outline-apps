@@ -28,8 +28,9 @@ function getAbsolutePath(value) {
 const config = {
   stories: ['../client/**/stories.ts', '../server_manager/**/stories.ts'],
   addons: [
+    '@vueless/storybook-dark-mode',
     getAbsolutePath('@storybook/addon-links'),
-    getAbsolutePath('@storybook/addon-essentials'),
+    getAbsolutePath('@storybook/addon-docs')
   ],
   framework: {
     name: getAbsolutePath('@storybook/web-components-vite'),

@@ -25,27 +25,25 @@
     "client"
   ],
   "devDependencies": {
-    "@storybook/addon-essentials": "^8.2.6",
-    "@storybook/addon-links": "^8.2.6",
-    "@storybook/blocks": "^8.2.6",
-    "@storybook/test": "^8.2.6",
-    "@storybook/web-components": "^8.2.6",
-    "@storybook/web-components-vite": "^8.2.6",
+    "@storybook/addon-docs": "^9.1.8",
+    "@storybook/addon-links": "^9.1.8",
+    "@storybook/web-components-vite": "^9.1.8",
     "@types/node-fetch": "^2.6.7",
     "@typescript-eslint/eslint-plugin": "^8.24.1",
     "@typescript-eslint/parser": "^8.24.1",
     "@typescript-eslint/typescript-estree": "^8.24.1",
+    "@vueless/storybook-dark-mode": "^9.0.8",
     "browserslist": "^4.23.3",
     "chalk": "^5.3.0",
     "electron-builder": "^24.13.3",
     "eslint-plugin-compat": "^6.0.0",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-prettier": "^5.2.1",
-    "eslint-plugin-storybook": "^0.8.0",
+    "eslint-plugin-storybook": "^9.1.8",
     "gts": "^5.3.1",
     "lit": "^3.2.1",
     "node-fetch": "^2.6.7",
-    "storybook": "^8.2.6",
+    "storybook": "^9.1.8",
     "typescript": "^5.7.3"
   }
 }
