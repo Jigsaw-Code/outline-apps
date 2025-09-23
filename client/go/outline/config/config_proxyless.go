@@ -30,8 +30,8 @@ const (
 )
 
 type ProxylessConfig struct {
-	// TODO: for now we simply parse the DNS resolvers and don't set them up
-	Resolvers []configyaml.ConfigNode `yaml:"dns_resolvers"`
+	// TODO: for now we simply parse the DNS config and don't set it up
+	DNS configyaml.ConfigNode `yaml:"dns"`
 }
 
 // Random number in the range [MIN_SPLIT, MAX_SPLIT]

@@ -521,12 +521,13 @@ func TestParseConfig_BasicAccess(t *testing.T) {
 	userInputConfig := `
 transport:
   $type: basic-access
-  dns_resolvers:
-    - $type: https
+  dns:
+    udp: &doh
+      $type: https
       address: https://dns.google/dns-query
-    - $type: https
-      address: https://dns.quad9.net/dns-query`
-
+      dialer: xxxx  # optional, value like direct or shadowsocks
+    tcp: *doh
+`
 	result := doParseTunnelConfig(userInputConfig)
 	require.Nil(t, result.Error, "doParseTunnelConfig failed: %v", result.Error)
 

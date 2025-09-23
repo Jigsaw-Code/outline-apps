@@ -26,11 +26,12 @@ func TestParseProxyless(t *testing.T) {
 	provider := newTestTransportProvider()
 
 	node, err := configyaml.ParseConfigYAML(`$type: basic-access
-dns_resolvers:
-  - $type: https
+dns:
+  udp: &doh
+    $type: https
     address: https://dns.google/dns-query
-  - $type: https
-    address: https://dns.quad9.net/dns-query
+    dialer: xxxx  # optional, value like direct or shadowsocks
+  tcp: *doh
 `)
 	require.NoError(t, err)
 
