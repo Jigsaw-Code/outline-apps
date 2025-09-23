@@ -41,13 +41,15 @@ func randomSplitLength() int {
 	return splitLength
 }
 
-func NewProxylessTransportPairSubParser() func(ctx context.Context, input map[string]any) (*TransportPair, error) {
+func NewProxylessTransportPairSubParser(parseSD configyaml.ParseFunc[*Dialer[transport.StreamConn]]) func(ctx context.Context, input map[string]any) (*TransportPair, error) {
 	return func(ctx context.Context, input map[string]any) (*TransportPair, error) {
-		return parseProxylessTransportPair(ctx, input)
+		return parseProxylessTransportPair(ctx, input, parseSD)
 	}
 }
 
-func parseProxylessTransportPair(ctx context.Context, configMap map[string]any) (*TransportPair, error) {
+func parseProxylessTransportPair(ctx context.Context, configMap map[string]any, _ configyaml.ParseFunc[*Dialer[transport.StreamConn]]) (*TransportPair, error) {
+	// TODO: use the streamDialers.Parse parser for the DNS config
+
 	var config ProxylessConfig
 	if err := configyaml.MapToAny(configMap, &config); err != nil {
 		return nil, fmt.Errorf("invalid config format: %w", err)

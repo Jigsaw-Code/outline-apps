@@ -115,7 +115,7 @@ func NewDefaultTransportProvider(tcpDialer transport.StreamDialer, udpDialer tra
 
 	// Transport pairs.
 	transports.RegisterSubParser("tcpudp", NewTCPUDPTransportPairSubParser(streamDialers.Parse, packetListeners.Parse))
-	transports.RegisterSubParser("basic-access", NewProxylessTransportPairSubParser())
+	transports.RegisterSubParser("basic-access", NewProxylessTransportPairSubParser(streamDialers.Parse))
 
 	return transports
 }
