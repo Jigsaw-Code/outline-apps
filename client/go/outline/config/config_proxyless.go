@@ -17,17 +17,28 @@ package config
 import (
 	"context"
 	"fmt"
+	"math/rand"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/configyaml"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 	"github.com/Jigsaw-Code/outline-sdk/transport/tlsfrag"
 )
 
-const splitLength = 5
+const (
+	MIN_SPLIT int = 6
+	MAX_SPLIT int = 64
+)
 
 type ProxylessConfig struct {
 	// TODO: for now we simply parse the DNS resolvers and don't set them up
 	Resolvers []configyaml.ConfigNode `yaml:"dns_resolvers"`
+}
+
+// Random number in the range [MIN_SPLIT, MAX_SPLIT]
+// splitLength includes 5 bytes of TLS header
+func randomSplitLength() int {
+	splitLength := MIN_SPLIT + rand.Intn(MAX_SPLIT+1-MIN_SPLIT)
+	return splitLength
 }
 
 func NewProxylessTransportPairSubParser() func(ctx context.Context, input map[string]any) (*TransportPair, error) {
@@ -41,6 +52,8 @@ func parseProxylessTransportPair(ctx context.Context, configMap map[string]any) 
 	if err := configyaml.MapToAny(configMap, &config); err != nil {
 		return nil, fmt.Errorf("invalid config format: %w", err)
 	}
+
+	splitLength := randomSplitLength()
 
 	sd, err := tlsfrag.NewFixedLenStreamDialer(&transport.TCPDialer{}, splitLength)
 	if err != nil {
