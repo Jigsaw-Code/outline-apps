@@ -85,7 +85,11 @@
   },
   "basic_access_title": {
     "description": "The title of a dialog box explaining what 'Basic Access' means for a server connection.",
-    "message": "Basic Access<br><span style='color:var(--outline-splash-title-color);'>A New Way to Get Online</span>"
+    "message": "Basic Access"
+  },
+  "basic_access_splash_title": {
+    "desciption": "The splash title of a dialog box explaining what 'Basic Access' means for a server connection",
+    "message": "A New Way to Get Online"
   },
   "basic_access_configure_dns": {
     "description": "The option in the basic access menu to configure DNS settings for the feature.",

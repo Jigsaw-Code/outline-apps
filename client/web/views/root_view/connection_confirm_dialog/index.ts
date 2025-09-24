@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import type {MdCheckbox} from '@material/web/checkbox/checkbox.js';
 
-import {LitElement, html, css} from 'lit';
+import {LitElement, html, css, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 import '@material/web/all.js';
@@ -29,6 +29,7 @@ class ConnectionConfirmDialog extends LitElement {
 
   @property({type: String}) headerImage: string;
   @property({type: String}) titleMessageId: string;
+  @property({type: String}) splashTitleMessageId: string;
   @property({type: String}) contentMessageId: string;
   @property({type: String}) confirmButtonMessageId: string = 'enable';
 
@@ -48,9 +49,10 @@ class ConnectionConfirmDialog extends LitElement {
     }
 
     header {
-      padding: 0;
+      padding: 0 1.5rem;
       padding-bottom: initial;
       flex-direction: column;
+      margin-bottom: var(--outline-mini-gutter);
     }
 
     img {
@@ -60,17 +62,25 @@ class ConnectionConfirmDialog extends LitElement {
       -webkit-touch-callout: none;
     }
 
-    h1 {
+    h1,
+    h2 {
+      margin: 0;
       box-sizing: border-box;
       font-size: 1.5rem;
       font-weight: 700;
       letter-spacing: 0px;
       line-height: 1.75rem;
-      margin-bottom: var(--outline-slim-gutter);
-      padding: 0 1.5rem;
       text-align: left;
       vertical-align: middle;
       width: 100%;
+    }
+
+    h1 {
+      margin-top: var(--outline-gutter);
+    }
+
+    h2 {
+      color: var(--outline-splash-title-color);
     }
 
     article {
@@ -138,7 +148,10 @@ class ConnectionConfirmDialog extends LitElement {
       <md-dialog .open=${this.open} @close=${this.close} quick>
         <header slot="headline">
           <img src="${this.headerImage}" />
-          <h1>${unsafeHTML(this.localize(this.titleMessageId))}</h1>
+          <h1>${this.localize(this.titleMessageId)}</h1>
+          ${this.splashTitleMessageId
+            ? html`<h2>${this.localize(this.splashTitleMessageId)}</h2>`
+            : nothing}
         </header>
 
         <article slot="content">
@@ -202,6 +215,7 @@ export class BasicAccessConfirmDialog extends ConnectionConfirmDialog {
         .localize=${this.localize}
         headerImage=${completeProtectionHeaderImage}
         titleMessageId="basic-access-title"
+        splashTitleMessageId="basic-access-splash-title"
         contentMessageId="basic-access-content"
         confirmButtonMessageId="next"
       ></connection-confirm-dialog>
