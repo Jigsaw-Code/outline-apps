@@ -36,8 +36,8 @@
   --outline-white: hsl(0, 0%, 100%);
 
   /* Tokens: Typography */
-  --outline-font-face-title: 'Jigsaw Sans', sans-serif;
-  --outline-font-face: Roboto, sans-serif;
+  --outline-font-family-title: 'Jigsaw Sans', sans-serif;
+  --outline-font-family: Roboto, sans-serif;
   --outline-font-size: 0.875rem;
   --outline-font-size-title: 1.5rem;
 
@@ -54,6 +54,7 @@
   /* Default Color Scheme */
   color-scheme: light;
 
+  --outline-highlight-color: var(--outline-green);
   --outline-background-color: var(--outline-white);
   --outline-card-background-color: var(--outline-white);
   --outline-card-footer-color: var(--outline-gray-light);
@@ -73,27 +74,31 @@
   /* --- */
 
   /* Material Components v2 */
-  --md-ref-typeface-brand: var(--outline-font-family-brand);
-  --md-ref-typeface-plain: var(--outline-font-family);
-
-  --md-sys-color-surface: var(--outline-card-background);
-  --md-sys-color-on-surface: var(--outline-text-color);
-  --md-sys-color-outline: var(--outline-input-border-color);
+  --md-dialog-headline-color: var(--outline-text-color);
+  --md-dialog-content-color: var(--outline-text-color);
+  --md-dialog-container-color: var(--outline-dialog-background-color);
   --md-filled-text-field-container-color: var(--outline-input-background-color);
   --md-filled-text-field-input-text-color: var(--outline-input-text-color);
   --md-outlined-text-field-input-text-color: var(--outline-input-text-color);
   --md-outlined-text-field-outline-color: var(--outline-input-border-color);
+  --md-ref-typeface-brand: var(--outline-font-family-brand);
+  --md-ref-typeface-plain: var(--outline-font-family);
+  --md-sys-color-on-surface: var(--outline-text-color);
+  --md-sys-color-outline: var(--outline-input-border-color);
+  --md-sys-color-primary: var(--outline-highlight-color);
+  --md-sys-color-surface: var(--outline-card-background);
+  --md-sys-shape-corner-extra-large: var(--outline-corner-radius);
+  --md-sys-shape-corner-full: var(--outline-corner-radius);
 
   /* Material Components v1 */
-  --mdc-typography-font-family: var(--outline-font-family);
-  --mdc-theme-primary: var(--outline-brand-color);
-
-  --mdc-theme-surface: var(--outline-card-background-color);
-  --mdc-theme-on-surface: var(--outline-text-color);
   --mdc-text-field-fill-color: var(--outline-input-background-color);
   --mdc-text-field-ink-color: var(--outline-input-text-color);
   --mdc-text-field-label-ink-color: var(--outline-label-color);
   --mdc-text-field-outlined-idle-border-color: var(--outline-input-border-color);
+  --mdc-theme-on-surface: var(--outline-text-color);
+  --mdc-theme-primary: var(--outline-brand-color);
+  --mdc-theme-surface: var(--outline-card-background-color);
+  --mdc-typography-font-family: var(--outline-font-family);
 
   /* Polymer Components */
   --iron-input-container-color: var(--outline-input-text-color);
@@ -126,6 +131,7 @@ html, body {
   margin: 0;
   color: var(--outline-text-color);
   background-color: var(--outline-background-color);
+  font-family: var(--outline-font-family);
 }
 
 /* Font definitions */
