@@ -52,8 +52,8 @@ export class DnsConfigDialog extends LitElement {
   static styles = css`
     :host {
       --md-sys-color-primary: var(--outline-primary);
-      --md-sys-shape-corner-extra-large: 2px;
-      --md-sys-shape-corner-full: 2px;
+      --md-sys-shape-corner-extra-large: var(--outline-corner);
+      --md-sys-shape-corner-full: var(--outline-corner);
 
       --md-dialog-container-color: var(
         --outline-app-dialog-primary-background-color
@@ -63,17 +63,18 @@ export class DnsConfigDialog extends LitElement {
     }
 
     header {
-      font-size: 1.5rem;
-      padding: 1.5rem;
+      font-size: var(--outline-font-size-header);
+      padding: var(--outline-large-gutter);
       padding-bottom: var(--outline-mini-gutter);
     }
 
     article {
-      font-weight: 400;
-      font-size: 0.875rem;
-      line-height: 1.25rem;
       letter-spacing: 0.5px;
-      padding: var(--outline-mini-gutter) 1.5rem;
+      font-size: var(--outline-text-size);
+      line-height: var(--outline-text-line-height);
+      letter-spacing: var(--outline-text-letter-spacing);
+      padding: var(--outline-mini-gutter) var(--outline-large-gutter);
+      color: var(--outline-text-color);
     }
 
     .description {
@@ -112,15 +113,15 @@ export class DnsConfigDialog extends LitElement {
 
     md-filled-select,
     md-filled-text-field {
-      --md-filled-field-content-size: 0.875rem;
+      --md-filled-field-content-size: var(--outline-text-size);
 
-      --md-filled-field-leading-space: 2px;
+      --md-filled-field-leading-space: var(--outline-corner);
       --md-filled-field-top-space: var(--outline-mini-gutter);
       --md-filled-field-bottom-space: var(--outline-mini-gutter);
     }
 
     .built-in-server-description {
-      font-size: 0.875rem;
+      font-size: var(--outline-text-size);
 
       margin: 0;
     }

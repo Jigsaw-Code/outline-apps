@@ -14,199 +14,121 @@
  * limitations under the License.
  */
 
-html {
-  background: #efefef;
-}
-
-body {
-  /*
-    We're not properly CSS resetting - this is to prevent
-    the browser agent from insetting the main window weirdly.
-  */
-  margin: 0;
-}
-
 :root {
-  /* tokens */
-  --min-supported-device-width: 320px;
+  /* Tokens: Colors */
+  --outline-red: hsl(4, 90%, 58%);
+  --outline-red-light: hsl(4, 90%, 62%);
 
-  --outline-primary: hsl(170, 60%, 46%);
-  --outline-primary-rgb: 47, 186, 156;
-
-  --outline-primary-medium: hsl(172, 60%, 72%);
-  --outline-primary-light: hsl(174, 58%, 91%);
-
-  /* RGB values for primary color */
-  --outline-dark-primary: hsl(200, 19%, 18%);
-  --outline-error: hsl(4, 90%, 58%);
+  --outline-green-black: hsl(203, 19%, 14%);
+  --outline-green-black-light: hsl(200, 19%, 18%);
+  --outline-green-gray-dark: hsl(203, 12%, 22%);
+  --outline-green-gray: hsl(200, 18%, 26%);
+  --outline-green: hsl(170, 60%, 46%);
+  --outline-green-light: hsl(172, 60%, 72%);
+  --outline-green-white: hsl(174, 58%, 91%);
 
   --outline-black: hsl(0, 0%, 0%);
-  --outline-off-black: hsl(0, 0%, 15%);
-  --outline-dark-gray: hsl(213, 5%, 39%);
-  --outline-medium-gray: hsl(0, 0%, 45%);
-  --outline-light-gray: hsl(0, 0%, 95%);
+  --outline-black-light: hsl(0, 0%, 15%);
+  --outline-gray-dark: hsl(213, 5%, 39%);
+  --outline-gray: hsl(0, 0%, 45%);
+  --outline-gray-light: hsl(0, 0%, 70%);
+  --outline-gray-white: hsl(0, 0%, 95%);
   --outline-white: hsl(0, 0%, 100%);
 
-  /* New dark mode colors - matching Outline Manager */
-  --outline-dark-bg: hsl(203, 19%, 14%);
-  /* Dark background from Outline Manager */
-  --outline-dark-card: hsl(203, 12%, 22%);
-  /* Card background for dark mode */
-  --outline-dark-footer: hsl(200, 19%, 18%);
-  /* Footer background for dark mode */
-  --outline-dark-border: hsl(200, 18%, 26%);
-  /* Border color for dark mode */
+  /* Tokens: Typography */
+  --outline-font-face-title: 'Jigsaw Sans', sans-serif;
+  --outline-font-face: Roboto, sans-serif;
+  --outline-font-size: 0.875rem;
+  --outline-font-size-title: 1.5rem;
 
-  --outline-font-family: Roboto, sans-serif;
+  /* Tokens: Spacing */
+  --min-supported-device-width: 320px;
 
-  --outline-corner: 0.5rem;
-
-  --outline-large-gutter: 2rem;
+  --outline-gutter-large: 1.5rem;
   --outline-gutter: 1rem;
-  --outline-slim-gutter: 0.75rem;
-  --outline-mini-gutter: 0.25rem;
+  --outline-gutter-small: 0.75rem;
+  --outline-gutter-tiny: 0.25rem;
 
-  /* theme */
-  --outline-card-background: var(--outline-white);
-  --outline-card-footer: var(--outline-light-gray);
+  --outline-corner-radius: 0.5rem;
+
+  /* Default Color Scheme */
+  color-scheme: light;
+
+  --outline-background-color: var(--outline-white);
+  --outline-card-background-color: var(--outline-white);
+  --outline-card-footer-color: var(--outline-gray-light);
+  --outline-connection-color-complete: var(--outline-green-light);
+  --outline-dialog-background-color: var(--outline-white);
+  --outline-dialog-text-color: var(--outline-gray);
+  --outline-elevation: var(--outline-black) 2px 2px 4px 0px;
+  --outline-error-color: var(--outline-red);
+  --outline-hairline: 1px solid var(--outline-gray-light);
+  --outline-icon-color: var(--outline-gray);
+  --outline-input-background-color: var(--outline-white);
+  --outline-input-border-color: var(--outline-gray);
+  --outline-input-text-color: var(--outline-black);
+  --outline-label-color: var(--outline-gray);
   --outline-text-color: var(--outline-black);
-  --outline-label-color: var(--outline-medium-gray);
-  --outline-hairline: 1px solid hsl(0, 0%, 85%);
-  --outline-elevation-color: hsla(0, 0%, 0%, 0.10);
-  --outline-elevation: var(--outline-elevation-color) 2px 2px 4px 0px;
-  --outline-icon-color:rgb(73, 69, 79);
 
-  --outline-partial-connection-color: var(--outline-primary-light);
-  --outline-complete-connection-color: var(--outline-primary-medium);
+  /* --- */
 
-  --outline-comms-dialog-primary-background-color: var(--outline-dark-primary);
-  --outline-comms-dialog-primary-text-color: hsl(0, 0%, 87%);
-  --outline-comms-dialog-secondary-text-color: rgba(255, 255, 255, 0.54);
-  --outline-app-dialog-primary-background-color: var(--outline-white);
-
-  /* Input field colors */
-  --outline-input-bg: var(--outline-white);
-  --outline-input-text: var(--outline-black);
-  --outline-input-border: var(--outline-medium-gray);
-
-  --mdc-typography-font-family: var(--outline-font-family);
-  --mdc-theme-primary: var(--outline-primary);
-
-  --md-ref-typeface-brand: 'Jigsaw Sans';
+  /* Material Components v2 */
+  --md-ref-typeface-brand: var(--outline-font-family-brand);
   --md-ref-typeface-plain: var(--outline-font-family);
 
-  /* Style Material inputs */
   --md-sys-color-surface: var(--outline-card-background);
   --md-sys-color-on-surface: var(--outline-text-color);
-  --md-sys-color-outline: var(--outline-input-border);
-  --md-filled-text-field-container-color: var(--outline-input-bg);
-  --md-filled-text-field-input-text-color: var(--outline-input-text);
-  --md-outlined-text-field-input-text-color: var(--outline-input-text);
-  --md-outlined-text-field-outline-color: var(--outline-input-border);
+  --md-sys-color-outline: var(--outline-input-border-color);
+  --md-filled-text-field-container-color: var(--outline-input-background-color);
+  --md-filled-text-field-input-text-color: var(--outline-input-text-color);
+  --md-outlined-text-field-input-text-color: var(--outline-input-text-color);
+  --md-outlined-text-field-outline-color: var(--outline-input-border-color);
 
-  /* Style older Material Web Components */
-  --mdc-theme-surface: var(--outline-card-background);
+  /* Material Components v1 */
+  --mdc-typography-font-family: var(--outline-font-family);
+  --mdc-theme-primary: var(--outline-brand-color);
+
+  --mdc-theme-surface: var(--outline-card-background-color);
   --mdc-theme-on-surface: var(--outline-text-color);
-  --mdc-text-field-fill-color: var(--outline-input-bg);
-  --mdc-text-field-ink-color: var(--outline-input-text);
+  --mdc-text-field-fill-color: var(--outline-input-background-color);
+  --mdc-text-field-ink-color: var(--outline-input-text-color);
   --mdc-text-field-label-ink-color: var(--outline-label-color);
-  --mdc-text-field-outlined-idle-border-color: var(--outline-input-border);
+  --mdc-text-field-outlined-idle-border-color: var(--outline-input-border-color);
 
-  /* default light theme */
-  --outline-background: var(--outline-white);
-  --outline-card-background: var(--outline-white);
-  --outline-card-footer: var(--outline-light-gray);
-  --outline-text-color: var(--outline-black);
-  --outline-label-color: var(--outline-medium-gray);
-  --outline-hairline: 1px solid hsl(0, 0%, 85%);
-  --outline-elevation: rgb(0 0 0 / 30%) 0px 2px 3px 2px;
-  --outline-app-dialog-primary-background-color: var(--outline-white);
-
-  /* Input field colors for light mode */
-  --outline-input-bg: var(--outline-white);
-  --outline-input-text: var(--outline-black);
-  --outline-input-border: var(--outline-medium-gray);
-
-  color-scheme: light;
+  /* Polymer Components */
+  --iron-input-container-color: var(--outline-input-text-color);
+  --paper-input-container-color: var(--outline-input-text-color);
+  --paper-input-container-focus-color: var(--outline-brand-color);
+  --paper-input-container-input-color: var(--outline-input-text-color);
+  --paper-input-container-shared-input-style_-_color: var(--outline-input-text-color);
 }
 
-/* Class-based dark mode - applied when user selects dark theme */
+/* Dark Color Scheme (Class-based) */
 html.dark {
-  --outline-error: hsl(4, 90%, 62%);
-
-  --outline-background: var(--outline-dark-bg);
-  --outline-card-background: var(--outline-dark-card);
-  --outline-card-footer: var(--outline-dark-footer);
-  --outline-text-color: var(--outline-white);
-  --outline-label-color: hsl(0, 0%, 70%);
-  --outline-hairline: 1px solid var(--outline-dark-border);
-  --outline-elevation: rgb(0 0 0 / 30%) 0px 2px 3px 2px;
-  --outline-comms-dialog-primary-background-color: var(--outline-dark-primary);
-  --outline-app-dialog-primary-background-color: var(--outline-dark-card);
-
-  /* Input field colors for dark mode */
-  --outline-input-bg: var(--outline-dark-bg);
-  --outline-input-text: var(--outline-white);
-  --outline-input-border: var(--outline-dark-border);
-  --outline-icon-color: var(--outline-label-color);
-
   color-scheme: dark;
+
+  --outline-background-color: var(--outline-green-black);
+  --outline-card-background-color: var();
+  --outline-card-footer-color: var();
+  --outline-dialog-background-color: var();
+  --outline-dialog-text-color: var();
+  --outline-error-color: var(--outline-red-light);
+  --outline-hairline: 1px solid var(--outline-green-gray);
+  --outline-icon-color: var(--outline-gray-light);
+  --outline-input-background-color: var(--outline-green-black);
+  --outline-input-border-color: var(--outline-green-gray);
+  --outline-input-text-color: var(--outline-white);
+  --outline-label-color: var(--outline-gray-light);
+  --outline-text-color: var(--outline-white);
 }
 
-/* Style paper and iron inputs from Polymer */
-paper-input,
-iron-input {
-  --paper-input-container-color: var(--outline-input-text);
-  --paper-input-container-input-color: var(--outline-input-text);
-  --paper-input-container-focus-color: var(--outline-primary);
-  --iron-input-container-color: var(--outline-input-text);
-  --paper-input-container-shared-input-style_-_color: var(--outline-input-text);
-}
-
-/* Add general input styling to ensure proper contrast */
-input,
-textarea,
-select,
-md-text-field,
-md-filled-text-field,
-md-outlined-text-field,
-md-textarea,
-md-filled-textarea,
-md-outlined-textarea,
-paper-input,
-iron-input {
-  background-color: var(--outline-input-bg);
-  color: var(--outline-input-text);
-  border: 1px solid var(--outline-input-border);
-}
-
-/* Style Material Web Components textfields */
-mwc-textfield {
-  --mdc-text-field-fill-color: var(--outline-input-bg);
-  --mdc-text-field-ink-color: var(--outline-input-text);
-  --mdc-text-field-label-ink-color: var(--outline-label-color);
-  --mdc-text-field-outlined-idle-border-color: var(--outline-input-border);
-  --mdc-theme-primary: var(--outline-primary);
-}
-
-/* Fix for language selector */
-language-view {
+html, body {
+  margin: 0;
   color: var(--outline-text-color);
-  background-color: var(--outline-background);
+  background-color: var(--outline-background-color);
 }
 
-/* Force text colors for specific elements */
-* {
-  color-scheme: normal;
-}
-
-/* Set default text color for all pages */
-html,
-body {
-  color: var(--outline-text-color);
-  background-color: var(--outline-background);
-}
-
+/* Font definitions */
 @font-face {
   font-family: 'Jigsaw Sans';
   font-style: normal;
@@ -221,36 +143,9 @@ body {
   src: url(./assets/material_icons.woff2) format('woff2');
 }
 
-/* This is specifically the icon font <md-icon> looks for. */
 @font-face {
   font-family: 'Material Symbols Outlined';
   font-style: normal;
   font-weight: normal;
   src: url(./assets/material_icons.woff2) format('woff2');
-}
-
-/* Material icons styling - consider moving to a component-specific file if only used in certain components */
-.material-icons {
-  -webkit-font-smoothing: antialiased;
-  direction: ltr;
-  display: inline-block;
-  font-family: 'Material Icons';
-  font-size: 1.5rem;
-  font-style: normal;
-  font-weight: normal;
-  letter-spacing: normal;
-  line-height: 1;
-  text-rendering: optimizeLegibility;
-  text-transform: none;
-  white-space: nowrap;
-  word-wrap: normal;
-}
-
-/* Ensure that all footer text is visible in all themes */
-footer,
-h1,
-h2,
-section,
-.zerostate-footer {
-  color: var(--outline-text-color);
 }

@@ -63,9 +63,6 @@ export class ServerCard extends LitElement implements ServerListItemElement {
     }
 
     :host {
-      --server-name-size: 1.25rem;
-      --server-metadata-size: 0.75rem;
-
       display: inline-block;
       height: 100%;
       position: relative;
@@ -224,8 +221,9 @@ export class ServerCard extends LitElement implements ServerListItemElement {
       position: relative;
     }
 
-    .card-menu-button md-icon {
-      color: var(--outline-text-color);
+    .card-menu-button md-icon,
+    .card-metadata-connection-info-button md-icon {
+      color: var(--outline-icon-color);
     }
 
     .card-footer {
@@ -426,7 +424,10 @@ export class ServerCard extends LitElement implements ServerListItemElement {
           >${connectionMessage}</span
         >
       </div>
-      <md-icon-button @click=${this.openInfo}>
+      <md-icon-button
+        class="card-metadata-connection-info-button"
+        @click=${this.openInfo}
+      >
         <md-icon>info</md-icon>
       </md-icon-button>
       ${connectionInfoDialog}

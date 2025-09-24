@@ -73,6 +73,7 @@ class ServerInfoDialog extends LitElement {
       font-size: 14px;
       line-height: 20px;
       letter-spacing: 1%;
+      color: var(--outline-text-color);
     }
 
     ul {
