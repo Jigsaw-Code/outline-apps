@@ -73,11 +73,12 @@ func NewDefaultTransportProvider(directSD transport.StreamDialer, directPD trans
 		}
 	})
 
+	directWrappedPL := &PacketListener{ConnectionProviderInfo{ConnTypeDirect, ""}, &transport.UDPListener{}}
 	packetListeners := newTypeParser(func(ctx context.Context, input configyaml.ConfigNode) (*PacketListener, error) {
 		switch input.(type) {
 		case nil:
 			// An absent config implicitly means UDP.
-			return &PacketListener{ConnectionProviderInfo{ConnTypeDirect, ""}, &transport.UDPListener{}}, nil
+			return directWrappedPL, nil
 		default:
 			return nil, errors.New("parser not specified")
 		}
@@ -121,6 +122,9 @@ func NewDefaultTransportProvider(directSD transport.StreamDialer, directPD trans
 	packetDialers.RegisterSubParser("shadowsocks", NewShadowsocksPacketDialerSubParser(packetEndpoints.Parse))
 
 	// Packet listeners.
+	packetListeners.RegisterSubParser("direct", func(ctx context.Context, input map[string]any) (*PacketListener, error) {
+		return directWrappedPL, nil
+	})
 	packetListeners.RegisterSubParser("shadowsocks", NewShadowsocksPacketListenerSubParser(packetEndpoints.Parse))
 
 	// Transport pairs.
