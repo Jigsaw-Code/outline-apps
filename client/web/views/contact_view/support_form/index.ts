@@ -65,7 +65,7 @@ export class SupportForm extends LitElement {
       mwc-textarea,
       mwc-textfield {
         display: flex;
-        margin: var(--outline-slim-gutter) 0;
+        margin: var(--outline-gutter-tiny) 0;
         --mdc-text-field-ink-color: var(--outline-text-color);
         --mdc-text-field-label-ink-color: var(--outline-label-color);
         --mdc-text-field-fill-color: var(--outline-input-bg);

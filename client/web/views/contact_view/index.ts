@@ -151,8 +151,8 @@ export class ContactView extends LitElement {
          */
         min-height: 48px;
         --mdc-menu-item-height: auto;
-        padding-bottom: var(--outline-mini-gutter);
-        padding-top: var(--outline-mini-gutter);
+        padding-bottom: var(--outline-gutter-small);
+        padding-top: var(--outline-gutter-small);
         color: var(--outline-text-color);
         --mdc-theme-text-primary-on-background: var(--outline-text-color);
         background-color: var(--outline-background);
@@ -186,12 +186,6 @@ export class ContactView extends LitElement {
         --mdc-theme-text-primary-on-background: var(--outline-text-color);
         font-weight: normal;
         padding: 8px 0;
-      }
-
-      /* Style links for better visibility in dark mode */
-      a {
-        color: var(--outline-primary);
-        text-decoration: none;
       }
     `,
   ];

@@ -52,8 +52,8 @@ export class DnsConfigDialog extends LitElement {
   static styles = css`
     header {
       font-size: var(--outline-font-size-header);
-      padding: var(--outline-large-gutter);
-      padding-bottom: var(--outline-mini-gutter);
+      padding: var(--outline-gutter-large);
+      padding-bottom: var(--outline-gutter-small);
     }
 
     article {
@@ -61,31 +61,26 @@ export class DnsConfigDialog extends LitElement {
       font-size: var(--outline-text-size);
       line-height: var(--outline-text-line-height);
       letter-spacing: var(--outline-text-letter-spacing);
-      padding: var(--outline-mini-gutter) var(--outline-large-gutter);
+      padding: var(--outline-gutter-small) var(--outline-gutter-large);
       color: var(--outline-text-color);
     }
 
     .description {
       color: var(--md-sys-color-on-surface-variant);
-      margin-bottom: var(--outline-large-gutter);
-    }
-
-    a {
-      color: var(--outline-primary);
-      text-decoration: underline;
+      margin-bottom: var(--outline-gutter-large);
     }
 
     .configuration-options {
       display: grid;
       grid-template-columns: auto 1fr;
-      gap: var(--outline-large-gutter) var(--outline-gutter);
+      gap: var(--outline-gutter-large) var(--outline-gutter);
       margin-bottom: var(--outline-gutter);
     }
 
     .configuration-option-stack {
       display: flex;
       flex-direction: column;
-      gap: var(--outline-mini-gutter);
+      gap: var(--outline-gutter-small);
     }
 
     md-filled-select {
@@ -104,8 +99,8 @@ export class DnsConfigDialog extends LitElement {
       --md-filled-field-content-size: var(--outline-text-size);
 
       --md-filled-field-leading-space: var(--outline-corner);
-      --md-filled-field-top-space: var(--outline-mini-gutter);
-      --md-filled-field-bottom-space: var(--outline-mini-gutter);
+      --md-filled-field-top-space: var(--outline-gutter-small);
+      --md-filled-field-bottom-space: var(--outline-gutter-small);
     }
 
     .built-in-server-description {

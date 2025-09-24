@@ -71,14 +71,14 @@ export class ServerCard extends LitElement implements ServerListItemElement {
 
     .card {
       --min-indicator-size: calc(
-        var(--server-name-size) + var(--outline-mini-gutter) +
+        var(--server-name-size) + var(--outline-gutter-small) +
           var(--server-metadata-size)
       );
 
       --max-indicator-size: calc(
-        var(--outline-slim-gutter) + var(--server-name-size) +
-          var(--outline-mini-gutter) + var(--server-metadata-size) +
-          var(--outline-slim-gutter)
+        var(--outline-gutter-tiny) + var(--server-name-size) +
+          var(--outline-gutter-small) + var(--server-metadata-size) +
+          var(--outline-gutter-tiny)
       );
 
       align-items: center;
@@ -104,14 +104,14 @@ export class ServerCard extends LitElement implements ServerListItemElement {
     .card-metadata {
       font-family: var(--outline-font-family);
       color: var(--outline-text-color);
-      gap: var(--outline-slim-gutter);
+      gap: var(--outline-gutter-tiny);
       grid-area: metadata;
       display: flex;
       align-items: center;
     }
 
     server-connection-indicator {
-      margin: 0 var(--outline-mini-gutter);
+      margin: 0 var(--outline-gutter-small);
       min-height: var(--min-indicator-size);
       max-height: var(--max-indicator-size);
       float: left;
@@ -125,9 +125,9 @@ export class ServerCard extends LitElement implements ServerListItemElement {
       justify-content: center;
       overflow: hidden;
       height: 100%;
-      gap: var(--outline-slim-gutter);
+      gap: var(--outline-gutter-tiny);
       box-sizing: border-box;
-      padding: var(--outline-large-gutter) 0;
+      padding: var(--outline-gutter-large) 0;
     }
 
     .card-connection-label {
@@ -153,7 +153,7 @@ export class ServerCard extends LitElement implements ServerListItemElement {
       -webkit-line-clamp: 3;
       color: var(--outline-text-color);
       font-size: var(--server-name-size);
-      margin-bottom: var(--outline-mini-gutter);
+      margin-bottom: var(--outline-gutter-small);
       /* To break the line in case a sequence of word characters is longer than the line.
         See https://github.com/Jigsaw-Code/outline-apps/issues/1372. */
       word-break: break-all;
@@ -177,7 +177,7 @@ export class ServerCard extends LitElement implements ServerListItemElement {
       align-items: center;
       display: flex;
       flex-wrap: wrap;
-      gap: var(--outline-mini-gutter);
+      gap: var(--outline-gutter-small);
       margin-top: var(--outline-gutter);
     }
 
@@ -193,7 +193,7 @@ export class ServerCard extends LitElement implements ServerListItemElement {
       display: flex;
       width: max-content;
       gap: 0.15rem;
-      padding: var(--outline-mini-gutter) var(--outline-slim-gutter);
+      padding: var(--outline-gutter-small) var(--outline-gutter-tiny);
     }
 
     .card-metadata-connection-type-message {
@@ -203,7 +203,7 @@ export class ServerCard extends LitElement implements ServerListItemElement {
 
     @container connection-message (width < 380px) {
       .card-metadata-connection-type {
-        padding: var(--outline-mini-gutter);
+        padding: var(--outline-gutter-small);
       }
 
       .card-metadata-connection-type-message {
@@ -230,13 +230,13 @@ export class ServerCard extends LitElement implements ServerListItemElement {
       background: var(--outline-card-footer);
       box-sizing: border-box;
       grid-area: footer;
-      padding: var(--outline-mini-gutter) var(--outline-gutter);
+      padding: var(--outline-gutter-small) var(--outline-gutter);
       text-align: end;
     }
 
     .card-error {
       color: var(--outline-error);
-      margin: 0 var(--outline-slim-gutter);
+      margin: 0 var(--outline-gutter-tiny);
     }
 
     .card-footer-button {
@@ -256,7 +256,7 @@ export class ServerCard extends LitElement implements ServerListItemElement {
     }
 
     .card-basic-access .card-metadata-connection-type-container {
-      margin-top: var(--outline-mini-gutter);
+      margin-top: var(--outline-gutter-small);
     }
 
     .card-basic-access footer {

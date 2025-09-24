@@ -54,10 +54,6 @@ export class ServerList extends LitElement {
         max-width: 400px;
         width: 100%;
       }
-      :host a {
-        color: var(--outline-primary);
-        text-decoration: none;
-      }
       section {
         display: flex;
         flex-direction: column;
@@ -97,9 +93,6 @@ export class ServerList extends LitElement {
       /* Moved from global CSS - specific styling for zero state footer */
       section footer {
         color: var(--outline-text-color);
-      }
-      section footer a {
-        color: var(--outline-primary);
       }
       button {
         align-items: center;

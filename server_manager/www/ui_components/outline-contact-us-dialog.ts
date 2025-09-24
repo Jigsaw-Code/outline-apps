@@ -57,10 +57,7 @@ const UNSUPPORTED_ISSUE_TYPE_HELPPAGES = new Map([
     IssueType.CANNOT_ADD_SERVER,
     'https://support.google.com/outline/answer/15331223',
   ],
-  [
-    IssueType.CONNECTION,
-    'https://support.google.com/outline/answer/15331126',
-  ],
+  [IssueType.CONNECTION, 'https://support.google.com/outline/answer/15331126'],
 ]);
 
 @customElement('outline-contact-us-dialog')
@@ -125,8 +122,8 @@ export class OutlineContactUsDialog
            */
           min-height: 48px;
           --mdc-menu-item-height: auto;
-          padding-bottom: var(--outline-mini-gutter);
-          padding-top: var(--outline-mini-gutter);
+          padding-bottom: var(--outline-gutter-small);
+          padding-top: var(--outline-gutter-small);
         }
 
         mwc-list-item span {

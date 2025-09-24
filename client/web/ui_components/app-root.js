@@ -250,11 +250,6 @@ export class AppRoot extends mixinBehaviors(
           margin-right: 10px;
         }
 
-        paper-item > a {
-          color: inherit;
-          text-decoration: none;
-        }
-
         paper-button {
           min-width: 0;
           margin: 0;

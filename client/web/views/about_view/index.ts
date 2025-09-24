@@ -75,11 +75,6 @@ export class AboutView extends LitElement {
       text-align: left;
     }
 
-    a {
-      color: var(--outline-primary);
-      text-decoration: none;
-    }
-
     footer {
       margin: 48px 0 36px 0;
       text-align: center;
