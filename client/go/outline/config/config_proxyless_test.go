@@ -27,11 +27,8 @@ func TestParseProxyless(t *testing.T) {
 
 	node, err := configyaml.ParseConfigYAML(`$type: basic-access
 dns:
-  udp: &doh
-    $type: https
-    address: https://dns.google/dns-query
-    dialer: xxxx  # optional, value like direct or shadowsocks
-  tcp: *doh
+  $type: dns-over-https
+  url: https://https://dns.google/dns-query
 `)
 	require.NoError(t, err)
 
