@@ -27,8 +27,7 @@ func TestWrapTruncatePacketProxy(t *testing.T) {
 	pp := &packetProxyWithGivenRequestSender{req: &lastDestPacketRequestSender{}}
 	resp := &lastSourcePacketResponseReceiver{}
 
-	local := netip.MustParseAddr("192.0.2.2")
-	localAddr := netip.AddrPortFrom(local, 53)
+	local := netip.MustParseAddrPort("192.0.2.2:53")
 	udpAddr := netip.MustParseAddrPort("203.0.113.10:123")
 
 	_, err := WrapTruncatePacketProxy(nil, local)
@@ -51,7 +50,7 @@ func TestWrapTruncatePacketProxy(t *testing.T) {
 	query, err := msg.Pack()
 	require.NoError(t, err)
 
-	_, err = req.WriteTo(query, localAddr)
+	_, err = req.WriteTo(query, local)
 	require.NoError(t, err)
 	require.NotNil(t, resp.lastPacket)
 

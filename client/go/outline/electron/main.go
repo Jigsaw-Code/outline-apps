@@ -15,6 +15,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -29,10 +30,8 @@ import (
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/config"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
-	"github.com/Jigsaw-Code/outline-apps/client/go/outline/tun2socks"
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/vpn"
 	_ "github.com/eycorsican/go-tun2socks/common/log/simple" // Register a simple logger.
-	"github.com/eycorsican/go-tun2socks/core"
-	"github.com/eycorsican/go-tun2socks/proxy/dnsfallback"
 	"github.com/eycorsican/go-tun2socks/tun"
 )
 
@@ -132,7 +131,7 @@ func main() {
 		}
 		clientConfig.TransportParser = config.NewDefaultTransportProvider(tcp, udp)
 	}
-	result := clientConfig.New(*args.keyID, *args.clientConfig)
+	result := clientConfig.New(*args.keyID, *args.clientConfig, "169.254.113.53:53")
 	if result.Error != nil {
 		printErrorAndExit(result.Error, exitCodeFailure)
 	}
@@ -171,31 +170,18 @@ func main() {
 			Cause:   platerrors.ToPlatformError(err),
 		}, exitCodeFailure)
 	}
-	// Output packets to TUN device
-	core.RegisterOutputFn(tunDevice.Write)
 
-	// Register TCP and UDP connection handlers
-	core.RegisterTCPConnHandler(tun2socks.NewTCPHandler(client))
-	if *args.dnsFallback {
-		// UDP connectivity not supported, fall back to DNS over TCP.
-		logger.Debug("Registering DNS fallback UDP handler")
-		core.RegisterUDPConnHandler(dnsfallback.NewUDPHandler())
-	} else {
-		core.RegisterUDPConnHandler(tun2socks.NewUDPHandler(client, udpTimeout))
+	remoteDevice, err := vpn.ConnectRemoteDevice(context.Background(), client, client)
+	if err != nil {
+		printErrorAndExit(platerrors.PlatformError{
+			Code:    platerrors.SetupSystemVPNFailed,
+			Message: "failed to connect remote device",
+			Cause:   platerrors.ToPlatformError(err),
+		}, exitCodeFailure)
 	}
 
-	// Configure LWIP stack to receive input data from the TUN device
-	lwipWriter := core.NewLWIPStack()
-	go func() {
-		_, err := io.CopyBuffer(lwipWriter, tunDevice, make([]byte, mtu))
-		if err != nil {
-			printErrorAndExit(platerrors.PlatformError{
-				Code:    platerrors.DataTransmissionFailed,
-				Message: "failed to write data to network stack",
-				Cause:   platerrors.ToPlatformError(err),
-			}, exitCodeFailure)
-		}
-	}()
+	go vpn.RelayTraffic(tunDevice, remoteDevice.ReadWriteCloser)
+	go vpn.RelayTraffic(remoteDevice.ReadWriteCloser, tunDevice)
 
 	// This message is used in TypeScript to determine whether tun2socks has been started successfully
 	logger.Info("tun2socks running...")

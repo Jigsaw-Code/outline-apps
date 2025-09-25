@@ -37,11 +37,11 @@ type truncatePacketReqSender struct {
 
 // WrapTruncatePacketProxy creates a PacketProxy to intercept UDP-based DNS packets and force a TCP retry.
 //
-// It intercepts all packets for `localIP:53` and returns an immediate truncated response,
+// It intercepts all packets to `localAddr` and returns an immediate truncated response,
 // prompting the OS to retry the query over TCP.
 //
 // All other UDP packets are passed through to the `base` PacketProxy.
-func WrapTruncatePacketProxy(base network.PacketProxy, localIP netip.Addr) (network.PacketProxy, error) {
+func WrapTruncatePacketProxy(base network.PacketProxy, localAddr netip.AddrPort) (network.PacketProxy, error) {
 	if base == nil {
 		return nil, errors.New("base PacketProxy must be provided")
 	}
@@ -52,7 +52,7 @@ func WrapTruncatePacketProxy(base network.PacketProxy, localIP netip.Addr) (netw
 	return &truncatePacketProxy{
 		PacketProxy: base,
 		trunc:       trunc,
-		local:       netip.AddrPortFrom(localIP, 53),
+		local:       localAddr,
 	}, nil
 }
 

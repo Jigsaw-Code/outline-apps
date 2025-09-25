@@ -106,8 +106,7 @@ func TestWrapForwardPacketProxy(t *testing.T) {
 	pp := &packetProxyWithGivenRequestSender{req: &lastDestPacketRequestSender{}}
 	resp := &lastSourcePacketResponseReceiver{}
 
-	local := netip.MustParseAddr("192.0.2.2")
-	localAddr := netip.AddrPortFrom(local, 53)
+	local := netip.MustParseAddrPort("192.0.2.2:53")
 	resolver := netip.MustParseAddrPort("8.8.4.4:53")
 	resolverUDPAddr := net.UDPAddrFromAddrPort(resolver)
 	nonResolver := netip.MustParseAddrPort("203.0.113.10:123")
@@ -122,7 +121,7 @@ func TestWrapForwardPacketProxy(t *testing.T) {
 	req, err := fpp.NewSession(resp)
 	require.NoError(t, err)
 
-	n, err := req.WriteTo([]byte("request"), localAddr)
+	n, err := req.WriteTo([]byte("request"), local)
 	require.NoError(t, err)
 	require.Equal(t, 7, n)
 	require.Equal(t, resolver, pp.req.lastDst)
@@ -136,7 +135,7 @@ func TestWrapForwardPacketProxy(t *testing.T) {
 	n, err = pp.resp.WriteFrom([]byte("response"), resolverUDPAddr)
 	require.NoError(t, err)
 	require.Equal(t, 8, n)
-	require.Equal(t, net.UDPAddrFromAddrPort(localAddr), resp.lastSrc)
+	require.Equal(t, net.UDPAddrFromAddrPort(local), resp.lastSrc)
 
 	n, err = pp.resp.WriteFrom([]byte("response"), nonResolverUDPAddr)
 	require.NoError(t, err)
