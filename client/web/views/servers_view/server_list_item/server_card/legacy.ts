@@ -41,8 +41,8 @@ const sharedCSS = css`
   }
 
   :host {
-    --server-name-size: 1rem;
-    --server-address-size: 0.875rem;
+    --server-name-size: var(--outline-font-size);
+    --server-address-size: var(--outline-font-size);
 
     display: inline-block;
     height: 100%;
@@ -52,12 +52,11 @@ const sharedCSS = css`
 
   .card {
     align-items: center;
-    background: var(--outline-card-background);
     border-radius: var(--outline-corner);
     box-shadow: var(--outline-elevation);
     display: grid;
-    gap: var(--outline-slim-gutter);
-    grid-gap: var(--outline-slim-gutter);
+    gap: var(--outline-gutter-tiny);
+    grid-gap: var(--outline-gutter-tiny);
     overflow: hidden;
     width: 100%;
   }
@@ -65,7 +64,7 @@ const sharedCSS = css`
   .card-metadata {
     font-family: var(--outline-font-family);
     color: var(--outline-text-color);
-    gap: var(--outline-slim-gutter);
+    gap: var(--outline-gutter-tiny);
     grid-area: metadata;
     display: flex;
     align-items: center;
@@ -92,7 +91,7 @@ const sharedCSS = css`
     -webkit-line-clamp: 3;
     color: var(--outline-text-color);
     font-size: var(--server-name-size);
-    margin-bottom: var(--outline-mini-gutter);
+    margin-bottom: var(--outline-gutter-small);
     /* To break the line in case a sequence of word characters is longer than the line.
        See https://github.com/Jigsaw-Code/outline-apps/issues/1372. */
     word-break: break-all;
@@ -106,10 +105,6 @@ const sharedCSS = css`
     word-break: break-all;
   }
 
-  .card-menu {
-    --md-menu-container-color: var(--outline-card-background);
-  }
-
   .card-menu-button {
     align-self: start;
     grid-area: menu;
@@ -121,22 +116,18 @@ const sharedCSS = css`
   }
 
   .card-footer {
-    background: var(--outline-card-footer);
     border-top: var(--outline-hairline);
     box-sizing: border-box;
     grid-area: footer;
-    padding: var(--outline-mini-gutter) var(--outline-gutter);
+    padding: var(--outline-gutter-small) var(--outline-gutter);
     text-align: end;
   }
 
   .card-error {
-    color: var(--outline-error);
-    margin: 0 var(--outline-slim-gutter);
+    margin: 0 var(--outline-gutter-tiny);
   }
 
   .card-footer-button {
-    --md-sys-color-primary: var(--outline-primary);
-
     text-transform: uppercase;
   }
 `;
@@ -289,13 +280,13 @@ export class ServerRowCard extends LitElement implements ServerListItemElement {
     css`
       .card {
         --min-indicator-size: calc(
-          var(--server-name-size) + var(--outline-mini-gutter) +
+          var(--server-name-size) + var(--outline-gutter-small) +
             var(--server-address-size)
         );
         --max-indicator-size: calc(
-          var(--outline-slim-gutter) + var(--server-name-size) +
-            var(--outline-mini-gutter) + var(--server-address-size) +
-            var(--outline-slim-gutter)
+          var(--outline-gutter-tiny) + var(--server-name-size) +
+            var(--outline-gutter-small) + var(--server-address-size) +
+            var(--outline-gutter-tiny)
         );
 
         grid-template-columns: 0 1fr auto 0;
@@ -376,9 +367,9 @@ export class ServerHeroCard
         justify-content: center;
         overflow: hidden;
         height: 100%;
-        gap: var(--outline-slim-gutter);
+        gap: var(--outline-gutter-tiny);
         box-sizing: border-box;
-        padding: var(--outline-large-gutter) 0;
+        padding: var(--outline-gutter-large) 0;
       }
 
       server-connection-indicator {

@@ -50,78 +50,48 @@ export class DnsConfigDialog extends LitElement {
   @state() private editedConfiguration: DnsConfigurationUI;
 
   static styles = css`
-    :host {
-      --md-sys-color-primary: var(--outline-primary);
-      --md-sys-shape-corner-extra-large: 2px;
-      --md-sys-shape-corner-full: 2px;
-
-      --md-dialog-container-color: var(
-        --outline-app-dialog-primary-background-color
-      );
-      --md-filled-text-field-container-color: var(--outline-input-bg);
-      --md-filled-text-field-input-text-color: var(--outline-input-text);
-    }
-
     header {
-      font-size: 1.5rem;
-      padding: 1.5rem;
-      padding-bottom: var(--outline-mini-gutter);
+      font-size: var(--outline-font-size-header);
+      padding: var(--outline-gutter-large);
+      padding-bottom: var(--outline-gutter-small);
     }
 
     article {
-      font-weight: 400;
-      font-size: 0.875rem;
-      line-height: 1.25rem;
       letter-spacing: 0.5px;
-      padding: var(--outline-mini-gutter) 1.5rem;
+      font-size: var(--outline-text-size);
+      padding: var(--outline-gutter-small) var(--outline-gutter-large);
+      color: var(--outline-text-color);
     }
 
     .description {
-      color: var(--md-sys-color-on-surface-variant);
-      margin-bottom: var(--outline-large-gutter);
-    }
-
-    a {
-      color: var(--outline-primary);
-      text-decoration: underline;
+      margin-bottom: var(--outline-gutter-large);
     }
 
     .configuration-options {
       display: grid;
       grid-template-columns: auto 1fr;
-      gap: var(--outline-large-gutter) var(--outline-gutter);
+      gap: var(--outline-gutter-large) var(--outline-gutter);
       margin-bottom: var(--outline-gutter);
     }
 
     .configuration-option-stack {
       display: flex;
       flex-direction: column;
-      gap: var(--outline-mini-gutter);
+      gap: var(--outline-gutter-small);
     }
 
     md-filled-select {
-      --md-filled-select-text-field-container-color: transparent;
-
       min-width: auto;
-    }
-
-    md-filled-select::part(menu) {
-      --md-menu-container-color: var(--outline-white);
-      --md-menu-item-selected-container-color: var(--outline-primary-light);
     }
 
     md-filled-select,
     md-filled-text-field {
-      --md-filled-field-content-size: 0.875rem;
-
-      --md-filled-field-leading-space: 2px;
-      --md-filled-field-top-space: var(--outline-mini-gutter);
-      --md-filled-field-bottom-space: var(--outline-mini-gutter);
+      --md-filled-field-leading-space: var(--outline-corner-radius);
+      --md-filled-field-top-space: var(--outline-gutter-small);
+      --md-filled-field-bottom-space: var(--outline-gutter-small);
     }
 
     .built-in-server-description {
-      font-size: 0.875rem;
-
       margin: 0;
     }
 

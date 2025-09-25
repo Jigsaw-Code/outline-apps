@@ -33,29 +33,12 @@ export class AddAccessKeyDialog extends LitElement {
 
   static styles = css`
     :host {
-      --md-sys-color-primary: var(--outline-primary);
-      --md-sys-color-error: var(--outline-error);
-      --md-sys-color-on-error: var(--outline-white);
-      --md-sys-color-on-surface: var(--outline-text-color);
-      --md-sys-color-on-surface-variant: var(--outline-text-color);
-      --md-sys-shape-corner-extra-large: 2px;
-      --md-sys-shape-corner-full: 2px;
-
       width: 100%;
       height: 100%;
     }
 
     md-dialog {
-      --md-dialog-container-color: var(
-        --outline-app-dialog-primary-background-color
-      );
-      --md-dialog-headline-color: var(--outline-text-color);
-      --md-dialog-supporting-text-color: var(--outline-text-color);
-
       min-width: 300px;
-      --md-dialog-container-color: var(--outline-card-background);
-      --md-dialog-headline-color: var(--outline-text-color);
-      --md-dialog-supporting-text-color: var(--outline-text-color);
     }
 
     section {
@@ -67,22 +50,9 @@ export class AddAccessKeyDialog extends LitElement {
       color: var(--outline-label-color);
     }
 
-    a {
-      color: var(--outline-primary);
-    }
-
     md-filled-text-field {
       --md-filled-text-field-input-text-font: 'Menlo', monospace;
-      --md-filled-text-field-container-color: rgba(0, 0, 0, 0.08);
-      --md-filled-text-field-input-text-color: var(--outline-input-text);
-      --md-filled-text-field-label-text-color: var(--outline-label-color);
-      --md-filled-text-field-focus-label-text-color: var(--outline-primary);
-      --md-filled-text-field-error-color: var(--outline-error);
-      --md-filled-text-field-error-focus-label-text-color: var(--outline-error);
-      --md-filled-text-field-error-hover-label-text-color: var(--outline-error);
-      --md-filled-text-field-error-input-text-color: var(--outline-input-text);
-      --md-filled-text-field-hover-container-color: rgba(0, 0, 0, 0.12);
-      --md-filled-text-field-focus-container-color: rgba(0, 0, 0, 0.15);
+
       width: 100%;
     }
 
@@ -91,18 +61,9 @@ export class AddAccessKeyDialog extends LitElement {
       text-transform: uppercase;
     }
 
-    md-text-button {
-      --md-text-button-label-text-color: var(--outline-primary);
-    }
-
-    md-filled-button {
-      --md-filled-button-container-color: var(--outline-primary);
-      --md-filled-button-label-text-color: var(--outline-white);
-    }
-
     /* Explicit fixing for error text */
     md-filled-text-field::part(error) {
-      color: var(--outline-error);
+      color: var(--outline-error-color);
     }
   `;
 

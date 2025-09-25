@@ -31,30 +31,12 @@ export class ServerRenameDialog extends LitElement {
   @query('md-filled-text-field') textField: MdFilledTextField;
 
   static styles = css`
-    :host {
-      --md-sys-color-primary: var(--outline-primary);
-      --md-sys-shape-corner-extra-large: 2px;
-      --md-sys-shape-corner-full: 2px;
-
-      --md-dialog-container-color: var(
-        --outline-app-dialog-primary-background-color
-      );
-      --md-filled-text-field-container-color: var(--outline-input-bg);
-      --md-filled-text-field-input-text-color: var(--outline-input-text);
-    }
-
     fieldset {
       border: none;
       text-transform: uppercase;
     }
 
     mwc-textfield {
-      --mdc-text-field-fill-color: var(--outline-input-bg);
-      --mdc-text-field-ink-color: var(--outline-input-text);
-      --mdc-text-field-label-ink-color: var(--outline-label-color);
-      --mdc-text-field-outlined-idle-border-color: var(--outline-input-border);
-      --mdc-theme-primary: var(--outline-primary);
-      color: var(--outline-input-text);
       border-radius: 4px;
       display: block;
       margin: 0 auto;

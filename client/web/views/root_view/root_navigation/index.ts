@@ -29,10 +29,6 @@ export class RootNavigation extends LitElement {
   @property({type: Boolean}) showAppearanceView: boolean = false;
 
   static styles = css`
-    :host {
-      --md-list-container-color: var(--outline-background);
-    }
-
     /* Prevent images from being selectable on iOS, which can cause a crash when trying to save them. */
     img {
       pointer-events: none;
@@ -55,7 +51,7 @@ export class RootNavigation extends LitElement {
     }
 
     nav {
-      background-color: var(--outline-background);
+      background-color: var(--outline-background-color);
       color: var(--outline-text-color);
       display: block;
       height: 100vh;
@@ -68,16 +64,7 @@ export class RootNavigation extends LitElement {
       box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
     }
 
-    md-list {
-      background-color: var(--outline-background);
-      color: var(--outline-text-color);
-      --md-list-container-color: var(--outline-background);
-    }
-
     md-list-item {
-      --md-list-item-label-text-color: var(--outline-text-color);
-      --md-list-item-headline-color: var(--outline-text-color);
-      --md-list-item-supporting-text-color: var(--outline-text-color);
       color: var(--outline-text-color);
     }
 
@@ -97,7 +84,7 @@ export class RootNavigation extends LitElement {
     }
 
     header {
-      background-color: var(--outline-dark-primary);
+      background-color: var(--outline-background-color);
       position: sticky;
       top: 0;
       display: flex;
@@ -131,12 +118,11 @@ export class RootNavigation extends LitElement {
     }
 
     .selected {
-      --md-list-item-label-text-color: var(--outline-primary);
       background-color: rgba(0, 0, 0, 0.05);
     }
 
     .selected md-icon {
-      color: var(--outline-primary);
+      color: var(--outline-highlight-color);
     }
 
     ul {
@@ -165,7 +151,7 @@ export class RootNavigation extends LitElement {
     }
 
     .backdrop {
-      background-color: var(--outline-elevation-color);
+      background-color: var(--outline-elevation);
       height: 100%;
       left: 0;
       opacity: 0;

@@ -64,7 +64,12 @@ export class ContactView extends LitElement {
   static styles = [
     css`
       :host {
-        background: var(--outline-background);
+        --contact-view-gutter: calc(
+          var(--app-toolbar-gutter) + var(--app-toolbar-button-gutter)
+        );
+        --contact-view-max-width: 400px;
+
+        background: var(--outline-background-color);
         color: var(--outline-text-color);
         font-family: var(--outline-font-family);
         padding: var(--contact-view-gutter, var(--outline-gutter));
@@ -112,14 +117,6 @@ export class ContactView extends LitElement {
         margin-top: 1rem;
         max-width: var(--contact-view-max-width);
         width: 100%;
-        --mdc-theme-primary: var(--outline-primary);
-        --mdc-select-ink-color: var(--outline-text-color);
-        --mdc-select-label-ink-color: var(--outline-label-color);
-        --mdc-select-dropdown-icon-color: var(--outline-text-color);
-        --mdc-select-hover-line-color: var(--outline-text-color);
-        --mdc-select-fill-color: rgba(0, 0, 0, 0.08);
-        --mdc-menu-surface-fill-color: var(--outline-card-background);
-        --mdc-theme-surface: var(--outline-card-background);
         border: 1px solid var(--outline-hairline);
         border-radius: 4px;
         padding: 4px 0;
@@ -132,12 +129,12 @@ export class ContactView extends LitElement {
 
       /* Style the dropdown list */
       mwc-select mwc-menu {
-        --mdc-theme-surface: var(--outline-background);
+        --mdc-theme-surface: var(--outline-background-color);
       }
 
       /* Style the list items properly for dark mode */
       mwc-select mwc-list-item {
-        background-color: var(--outline-background);
+        background-color: var(--outline-background-color);
       }
 
       mwc-list-item {
@@ -150,12 +147,10 @@ export class ContactView extends LitElement {
          * defaults to "48px" (https://www.npmjs.com/package/@material/mwc-menu#css-custom-properties).
          */
         min-height: 48px;
-        --mdc-menu-item-height: auto;
-        padding-bottom: var(--outline-mini-gutter);
-        padding-top: var(--outline-mini-gutter);
+        padding-bottom: var(--outline-gutter-small);
+        padding-top: var(--outline-gutter-small);
         color: var(--outline-text-color);
-        --mdc-theme-text-primary-on-background: var(--outline-text-color);
-        background-color: var(--outline-background);
+        background-color: var(--outline-background-color);
         padding: 8px 16px;
       }
 
@@ -166,32 +161,14 @@ export class ContactView extends LitElement {
         width: 100%;
       }
 
-      /* Fix radio buttons */
-      mwc-radio {
-        --mdc-theme-secondary: var(--outline-primary);
-        --mdc-radio-unchecked-color: var(--outline-text-color);
-        --mdc-radio-unchecked-color: var(--outline-text-color);
-        --mdc-theme-secondary: var(--outline-primary);
-        --mdc-radio-disabled-color: var(--outline-label-color);
-        border-color: var(--outline-text-color);
-      }
-
       mwc-formfield {
         color: var(--outline-text-color);
-        --mdc-theme-text-primary-on-background: var(--outline-text-color);
       }
 
       .formfield {
         color: var(--outline-text-color);
-        --mdc-theme-text-primary-on-background: var(--outline-text-color);
         font-weight: normal;
         padding: 8px 0;
-      }
-
-      /* Style links for better visibility in dark mode */
-      a {
-        color: var(--outline-primary);
-        text-decoration: none;
       }
     `,
   ];
