@@ -147,11 +147,9 @@ export class ContactView extends LitElement {
          * defaults to "48px" (https://www.npmjs.com/package/@material/mwc-menu#css-custom-properties).
          */
         min-height: 48px;
-        --mdc-menu-item-height: auto;
         padding-bottom: var(--outline-gutter-small);
         padding-top: var(--outline-gutter-small);
         color: var(--outline-text-color);
-        --mdc-theme-text-primary-on-background: var(--outline-text-color);
         background-color: var(--outline-background-color);
         padding: 8px 16px;
       }
@@ -165,12 +163,10 @@ export class ContactView extends LitElement {
 
       mwc-formfield {
         color: var(--outline-text-color);
-        --mdc-theme-text-primary-on-background: var(--outline-text-color);
       }
 
       .formfield {
         color: var(--outline-text-color);
-        --mdc-theme-text-primary-on-background: var(--outline-text-color);
         font-weight: normal;
         padding: 8px 0;
       }

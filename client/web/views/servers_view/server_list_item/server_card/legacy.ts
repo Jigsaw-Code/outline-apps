@@ -41,8 +41,8 @@ const sharedCSS = css`
   }
 
   :host {
-    --server-name-size: 1rem;
-    --server-address-size: 0.875rem;
+    --server-name-size: var(--outline-font-size);
+    --server-address-size: var(--outline-font-size);
 
     display: inline-block;
     height: 100%;
@@ -52,7 +52,6 @@ const sharedCSS = css`
 
   .card {
     align-items: center;
-    background: var(--outline-card-background-color);
     border-radius: var(--outline-corner);
     box-shadow: var(--outline-elevation);
     display: grid;
@@ -106,10 +105,6 @@ const sharedCSS = css`
     word-break: break-all;
   }
 
-  .card-menu {
-    --md-menu-container-color: var(--outline-card-background-color);
-  }
-
   .card-menu-button {
     align-self: start;
     grid-area: menu;
@@ -121,7 +116,6 @@ const sharedCSS = css`
   }
 
   .card-footer {
-    background: var(--outline-card-footer-color);
     border-top: var(--outline-hairline);
     box-sizing: border-box;
     grid-area: footer;
@@ -130,13 +124,10 @@ const sharedCSS = css`
   }
 
   .card-error {
-    color: var(--outline-error-color);
     margin: 0 var(--outline-gutter-tiny);
   }
 
   .card-footer-button {
-    --md-sys-color-primary: var(--outline-highlight-color);
-
     text-transform: uppercase;
   }
 `;

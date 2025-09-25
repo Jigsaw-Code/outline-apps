@@ -29,10 +29,6 @@ export class RootNavigation extends LitElement {
   @property({type: Boolean}) showAppearanceView: boolean = false;
 
   static styles = css`
-    :host {
-      --md-list-container-color: var(--outline-background-color);
-    }
-
     /* Prevent images from being selectable on iOS, which can cause a crash when trying to save them. */
     img {
       pointer-events: none;
@@ -68,16 +64,7 @@ export class RootNavigation extends LitElement {
       box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
     }
 
-    md-list {
-      background-color: var(--outline-background-color);
-      color: var(--outline-text-color);
-      --md-list-container-color: var(--outline-background-color);
-    }
-
     md-list-item {
-      --md-list-item-label-text-color: var(--outline-text-color);
-      --md-list-item-headline-color: var(--outline-text-color);
-      --md-list-item-supporting-text-color: var(--outline-text-color);
       color: var(--outline-text-color);
     }
 
@@ -131,7 +118,6 @@ export class RootNavigation extends LitElement {
     }
 
     .selected {
-      --md-list-item-label-text-color: var(--outline-highlight-color);
       background-color: rgba(0, 0, 0, 0.05);
     }
 

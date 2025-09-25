@@ -81,8 +81,6 @@ export class DnsConfigDialog extends LitElement {
     }
 
     md-filled-select {
-      --md-filled-select-text-field-container-color: transparent;
-
       min-width: auto;
     }
 

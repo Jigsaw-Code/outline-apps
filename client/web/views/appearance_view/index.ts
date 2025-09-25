@@ -66,7 +66,6 @@ export class AppearanceView extends LitElement {
 
     md-list {
       background-color: var(--outline-background-color);
-      --md-list-container-color: var(--outline-card-background-color);
       color: var(--outline-text-color);
       padding: 8px 0;
     }
@@ -74,9 +73,6 @@ export class AppearanceView extends LitElement {
     md-list-item {
       cursor: pointer;
       position: relative;
-      --md-list-item-label-text-color: var(--outline-text-color);
-      --md-list-item-headline-color: var(--outline-text-color);
-      --md-list-item-supporting-text-color: var(--outline-text-color);
       color: var(--outline-text-color);
       margin: 4px 0;
     }
