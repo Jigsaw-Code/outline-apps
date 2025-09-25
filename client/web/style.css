@@ -78,26 +78,46 @@
   --md-ref-typeface-plain: var(--outline-font-family);
 
   --md-sys-color-background: var(--outline-background-color);
+  --md-sys-color-on-surface-variant: var(--outline-text-color);
+  --md-sys-color-on-surface: var(--outline-text-color);
   --md-sys-color-outline: var(--outline-input-border-color);
   --md-sys-color-primary: var(--outline-highlight-color);
-  --md-sys-color-surface: var(--outline-card-background-color);
-  --md-sys-color-surface-container: var(--outline-card-background-color);
   --md-sys-color-surface-container-highest: var(--outline-card-background-color);
-  --md-sys-color-on-surface: var(--outline-text-color);
-  --md-sys-color-on-surface-variant: var(--outline-text-color);
+  --md-sys-color-surface-container: var(--outline-card-background-color);
+  --md-sys-color-surface: var(--outline-card-background-color);
   --md-sys-shape-corner-extra-large: var(--outline-corner-radius);
   --md-sys-shape-corner-large: var(--outline-corner-radius);
   --md-sys-shape-corner-medium: var(--outline-corner-radius);
 
   --md-dialog-container-color: var(--outline-dialog-background-color);
+  --md-dialog-headline-color: var(--outline-text-color);
+  --md-dialog-supporting-text-color: var(--outline-text-color);
+  --md-filled-button-container-color: var(--outline-highlight-color);
+  --md-filled-button-label-text-color: var(--outline-text-color);
+  --md-filled-text-field-container-color: var(--outline-input-background-color);
+  --md-filled-text-field-input-text-color: var(--outline-input-text-color);
+  --md-menu-container-color: var(--outline-card-background-color);
+  --md-text-button-label-text-color: var(--outline-highlight-color);
 
   /* Material Web Components v1 */
+  --mdc-menu-surface-fill-color: var(--outline-card-background-color);
+  --mdc-radio-disabled-color: var(--outline-label-color);
+  --mdc-radio-unchecked-color: var(--outline-text-color);
+  --mdc-select-dropdown-icon-color: var(--outline-text-color);
+  --mdc-select-fill-color: var(--outline-input-background-color);
+  --mdc-select-hover-line-color: var(--outline-text-color);
+  --mdc-select-ink-color: var(--outline-text-color);
+  --mdc-select-label-ink-color: var(--outline-label-color);
+  --mdc-text-field-disabled-fill-color: var(--outline-input-background-color);
+  --mdc-text-field-disabled-ink-color: var(--outline-label-color);
   --mdc-text-field-fill-color: var(--outline-input-background-color);
   --mdc-text-field-ink-color: var(--outline-input-text-color);
   --mdc-text-field-label-ink-color: var(--outline-label-color);
   --mdc-text-field-outlined-idle-border-color: var(--outline-input-border-color);
+  --mdc-theme-on-primary: var(--outline-card-background-color);
   --mdc-theme-on-surface: var(--outline-text-color);
   --mdc-theme-primary: var(--outline-highlight-color);
+  --mdc-theme-secondary: var(--outline-highlight-color);
   --mdc-theme-surface: var(--outline-card-background-color);
   --mdc-typography-font-family: var(--outline-font-family);
 }

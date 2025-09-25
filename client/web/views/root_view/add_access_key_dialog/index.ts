@@ -33,29 +33,12 @@ export class AddAccessKeyDialog extends LitElement {
 
   static styles = css`
     :host {
-      --md-sys-color-primary: var(--outline-highlight-color);
-      --md-sys-color-error: var(--outline-error-color);
-      --md-sys-color-on-error: var(--outline-white);
-      --md-sys-color-on-surface: var(--outline-text-color);
-      --md-sys-color-on-surface-variant: var(--outline-text-color);
-      --md-sys-shape-corner-extra-large: 2px;
-      --md-sys-shape-corner-full: 2px;
-
       width: 100%;
       height: 100%;
     }
 
     md-dialog {
-      --md-dialog-container-color: var(
-        --outline-app-dialog-primary-background-color
-      );
-      --md-dialog-headline-color: var(--outline-text-color);
-      --md-dialog-supporting-text-color: var(--outline-text-color);
-
       min-width: 300px;
-      --md-dialog-container-color: var(--outline-card-background-color);
-      --md-dialog-headline-color: var(--outline-text-color);
-      --md-dialog-supporting-text-color: var(--outline-text-color);
     }
 
     section {
@@ -76,15 +59,6 @@ export class AddAccessKeyDialog extends LitElement {
     fieldset {
       border: none;
       text-transform: uppercase;
-    }
-
-    md-text-button {
-      --md-text-button-label-text-color: var(--outline-highlight-color);
-    }
-
-    md-filled-button {
-      --md-filled-button-container-color: var(--outline-highlight-color);
-      --md-filled-button-label-text-color: var(--outline-white);
     }
 
     /* Explicit fixing for error text */

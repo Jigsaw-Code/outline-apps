@@ -23,16 +23,7 @@ export class AutoConnectDialog extends LitElement {
   @property({type: Boolean}) open: boolean = false;
 
   static styles = css`
-    :host {
-      --md-sys-color-primary: var(--outline-highlight-color);
-      --md-sys-shape-corner-extra-large: 2px;
-      --md-sys-shape-corner-full: 2px;
-    }
-
     md-dialog {
-      --md-dialog-container-color: var(--outline-dialog-background-color);
-      --md-dialog-supporting-text-color: var(--outline-white);
-
       text-align: center;
     }
 

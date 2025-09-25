@@ -117,14 +117,6 @@ export class ContactView extends LitElement {
         margin-top: 1rem;
         max-width: var(--contact-view-max-width);
         width: 100%;
-        --mdc-theme-primary: var(--outline-highlight-color);
-        --mdc-select-ink-color: var(--outline-text-color);
-        --mdc-select-label-ink-color: var(--outline-label-color);
-        --mdc-select-dropdown-icon-color: var(--outline-text-color);
-        --mdc-select-hover-line-color: var(--outline-text-color);
-        --mdc-select-fill-color: rgba(0, 0, 0, 0.08);
-        --mdc-menu-surface-fill-color: var(--outline-card-background-color);
-        --mdc-theme-surface: var(--outline-card-background-color);
         border: 1px solid var(--outline-hairline);
         border-radius: 4px;
         padding: 4px 0;
@@ -169,16 +161,6 @@ export class ContactView extends LitElement {
         color: var(--outline-text-color);
         display: block;
         width: 100%;
-      }
-
-      /* Fix radio buttons */
-      mwc-radio {
-        --mdc-theme-secondary: var(--outline-highlight-color);
-        --mdc-radio-unchecked-color: var(--outline-text-color);
-        --mdc-radio-unchecked-color: var(--outline-text-color);
-        --mdc-theme-secondary: var(--outline-highlight-color);
-        --mdc-radio-disabled-color: var(--outline-label-color);
-        border-color: var(--outline-text-color);
       }
 
       mwc-formfield {

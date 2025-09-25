@@ -211,10 +211,6 @@ export class ServerCard extends LitElement implements ServerListItemElement {
       }
     }
 
-    .card-menu {
-      --md-menu-container-color: var(--outline-card-background-color);
-    }
-
     .card-menu-button {
       align-self: start;
       grid-area: menu;
@@ -240,8 +236,6 @@ export class ServerCard extends LitElement implements ServerListItemElement {
     }
 
     .card-footer-button {
-      --md-sys-color-primary: var(--outline-highlight-color);
-
       text-transform: uppercase;
     }
 
