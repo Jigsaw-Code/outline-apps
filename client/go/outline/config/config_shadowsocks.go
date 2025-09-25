@@ -90,13 +90,25 @@ func parseShadowsocksTransport(ctx context.Context, config configyaml.ConfigNode
 	if err != nil {
 		return nil, fmt.Errorf("failed to create PacketListener: %w", err)
 	}
+
+	baseSD := &Dialer[transport.StreamConn]{ConnectionProviderInfo{ConnTypeTunneled, se.FirstHop}, sd.DialStream}
+	basePL := &PacketListener{ConnectionProviderInfo{ConnTypeTunneled, pe.FirstHop}, pl}
+
+	// Intercepts the default Outline DNS behavior
+	localDNS := pickOutlineLinkLocalDNSAddr()
+	remoteDNS := pickOutlineDNSResolverAddr()
+	dialer, err := wrapOutlineDNSStreamDialer(baseSD, localDNS, remoteDNS)
+	if err != nil {
+		return nil, fmt.Errorf("failed to intercept DNS for StreamDialer: %w", err)
+	}
+	pp, err := wrapOutlineDNSPacketProxy(basePL, localDNS, remoteDNS)
+	if err != nil {
+		return nil, fmt.Errorf("failed to intercept DNS for PacketProxy: %w", err)
+	}
+
 	// For the Shadowsocks transport, the prefix only applies to TCP. To use a prefix with UDP, one needs to
 	// specify it in the PacketListener config explicitly. This is to ensure backwards-compatibility.
-	return &TransportPair{
-		&Dialer[transport.StreamConn]{ConnectionProviderInfo{ConnTypeTunneled, se.FirstHop}, sd.DialStream},
-		&PacketListener{ConnectionProviderInfo{ConnTypeTunneled, pe.FirstHop}, pl},
-		OutlineDNSInterceptor,
-	}, nil
+	return &TransportPair{dialer, pp}, nil
 }
 
 func parseShadowsocksStreamDialer(ctx context.Context, config configyaml.ConfigNode, parseSE configyaml.ParseFunc[*Endpoint[transport.StreamConn]]) (*Dialer[transport.StreamConn], error) {

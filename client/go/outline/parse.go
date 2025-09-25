@@ -125,7 +125,7 @@ func doParseTunnelConfig(input string) *InvokeMethodResult {
 
 	result := (&ClientConfig{
 		DataDir: GetBackendConfig().DataDir,
-	}).New("", string(clientConfigBytes), "169.254.113.53:53")
+	}).New("", string(clientConfigBytes))
 	if result.Error != nil {
 		return &InvokeMethodResult{
 			Error: result.Error,
@@ -136,7 +136,7 @@ func doParseTunnelConfig(input string) *InvokeMethodResult {
 	}
 
 	streamFirstHop := result.Client.sd.ConnectionProviderInfo.FirstHop
-	packetFirstHop := result.Client.pl.ConnectionProviderInfo.FirstHop
+	packetFirstHop := result.Client.pp.ConnectionProviderInfo.FirstHop
 	if streamFirstHop == packetFirstHop {
 		response.FirstHop = streamFirstHop
 	}

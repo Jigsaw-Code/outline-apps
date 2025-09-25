@@ -53,9 +53,19 @@ func parseTCPUDPTransportPair(ctx context.Context, configMap map[string]any, par
 		return nil, fmt.Errorf("failed to parse PacketListener: %w", err)
 	}
 
+	// Intercepts the default Outline DNS behavior
+	localDNS := pickOutlineLinkLocalDNSAddr()
+	remoteDNS := pickOutlineDNSResolverAddr()
+	if sd, err = wrapOutlineDNSStreamDialer(sd, localDNS, remoteDNS); err != nil {
+		return nil, fmt.Errorf("failed to intercept DNS for StreamDialer: %w", err)
+	}
+	pp, err := wrapOutlineDNSPacketProxy(pl, localDNS, remoteDNS)
+	if err != nil {
+		return nil, fmt.Errorf("failed to intercept DNS for PacketProxy: %w", err)
+	}
+
 	return &TransportPair{
-		StreamDialer:   sd,
-		PacketListener: pl,
-		DNSInterceptor: OutlineDNSInterceptor,
+		StreamDialer: sd,
+		PacketProxy:  pp,
 	}, nil
 }

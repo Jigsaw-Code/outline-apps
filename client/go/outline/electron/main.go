@@ -29,6 +29,7 @@ import (
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/config"
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/connectivity"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/vpn"
 	_ "github.com/eycorsican/go-tun2socks/common/log/simple" // Register a simple logger.
@@ -131,17 +132,17 @@ func main() {
 		}
 		clientConfig.TransportParser = config.NewDefaultTransportProvider(tcp, udp)
 	}
-	result := clientConfig.New(*args.keyID, *args.clientConfig, "169.254.113.53:53")
+	result := clientConfig.New(*args.keyID, *args.clientConfig)
 	if result.Error != nil {
 		printErrorAndExit(result.Error, exitCodeFailure)
 	}
 	client := result.Client
 
 	if *args.checkConnectivity {
-		result := outline.CheckTCPAndUDPConnectivity(client)
+		// TODO: implement UDP connectivity test
+		tcpErr := connectivity.CheckTCPConnectivity(client)
 		output := CheckConnectivityResult{
-			TCPErrorJson: marshalErrorToJSON(result.TCPError),
-			UDPErrorJson: marshalErrorToJSON(result.UDPError),
+			TCPErrorJson: marshalErrorToJSON(tcpErr),
 		}
 		jsonBytes, err := json.Marshal(output)
 		if err != nil {

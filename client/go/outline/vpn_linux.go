@@ -64,7 +64,7 @@ func (api *vpnAPI) Establish(configStr string) (err error) {
 	tcp := newFWMarkProtectedTCPDialer(conf.VPN.ProtectionMark)
 	udp := newFWMarkProtectedUDPDialer(conf.VPN.ProtectionMark)
 	clientConfig.TransportParser = config.NewDefaultTransportProvider(tcp, udp)
-	result := clientConfig.New(conf.VPN.ID, conf.Client, conf.VPN.DNSLinkLocalAddr)
+	result := clientConfig.New(conf.VPN.ID, conf.Client)
 	if result.Error != nil {
 		return result.Error
 	}

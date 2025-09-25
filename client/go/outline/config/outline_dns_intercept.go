@@ -17,6 +17,7 @@ package config
 import (
 	"fmt"
 	"log/slog"
+	"math/rand/v2"
 	"net/netip"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/connectivity"
@@ -25,53 +26,68 @@ import (
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
-// OutlineDNSInterceptor is the default DNS interceptor for Outline.
-//
-// It checks for UDP connectivity to determine how to handle DNS queries.
-//   - If UDP is healthy, it forwards DNS packets to the remote resolver.
-//   - If UDP is unhealthy, it returns a truncated response to the client,
-//     prompting the OS to retry the query over TCP.
-//
-// DNS queries made over TCP are always forwarded directly.
-//
-// This behavior must be backward compatible.
-var OutlineDNSInterceptor = &TrafficInterceptor{
-	WrapStreamDialer: wrapOutlineDNSStreamDialer,
-	WrapPacketProxy:  wrapOutlineDNSPacketProxy,
+// A list of public DNS resolvers that the VPN can use.
+var outlineDNSResolvers = []string{
+	"1.1.1.1:53",                             // Cloudflare
+	"9.9.9.9:53",                             // Quad9
+	"208.67.222.222:53", "208.67.220.220:53", // OpenDNS
 }
 
-// The default DNS resolver for Outline VPN.
+// pickOutlineDNSResolverAddr randomly selects a DNS resolver for the VPN session.
+// This new behavior is consistent across all platforms.
 //
-// Previously we supported 4 resolvers: Cloudflare, Quad9, and OpenDNS
-//   - 1.1.1.1, 9.9.9.9, 208.67.222.222, 208.67.220.220
-//
-// For now, we will hardcode to the first one.
-//
-// TODO: support multiple DNS resolvers
-var defaultOutlineDNSResolver = netip.MustParseAddrPort("1.1.1.1:53")
+// Previously, each platform had a different approach:
+//   - Android: the same as this implementation.
+//   - Apple: used a fallback list of resolvers.
+//   - Linux/Windows: used a single, hard-coded resolver.
+func pickOutlineDNSResolverAddr() string {
+	return outlineDNSResolvers[rand.IntN(len(outlineDNSResolvers))]
+}
 
-func wrapOutlineDNSStreamDialer(t *TransportPair, interceptAddr string) (*Dialer[transport.StreamConn], error) {
-	localDNS, err := netip.ParseAddrPort(interceptAddr)
+// pickOutlineLinkLocalDNSAddr returns a hard-coded link-local address for DNS interception.
+//
+// TODO: make this configurable via a new VpnConfig
+func pickOutlineLinkLocalDNSAddr() string {
+	return "169.254.169.254:53"
+}
+
+// wrapOutlineDNSStreamDialer intercepts DNS over TCP at localAddr and forwards them to the resolverAddr.
+func wrapOutlineDNSStreamDialer(sd *Dialer[transport.StreamConn], localAddr, resolverAddr string) (*Dialer[transport.StreamConn], error) {
+	localDNS, err := netip.ParseAddrPort(localAddr)
 	if err != nil {
-		return nil, fmt.Errorf("invalid interceptAddr `%s`: %w", interceptAddr, err)
+		return nil, fmt.Errorf("invalid local DNS address `%s`: %w", localAddr, err)
 	}
-	redirect, err := dnsintercept.WrapForwardStreamDialer(t, localDNS, defaultOutlineDNSResolver)
+	resolverDNS, err := netip.ParseAddrPort(resolverAddr)
+	if err != nil {
+		return nil, fmt.Errorf("invalid remote DNS address `%s`: %w", resolverAddr, err)
+	}
+	redirect, err := dnsintercept.WrapForwardStreamDialer(transport.FuncStreamDialer(sd.Dial), localDNS, resolverDNS)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create DNS redirect StreamDialer: %w", err)
 	}
-	return &Dialer[transport.StreamConn]{t.StreamDialer.ConnectionProviderInfo, redirect.DialStream}, nil
+	return &Dialer[transport.StreamConn]{sd.ConnectionProviderInfo, redirect.DialStream}, nil
 }
 
-func wrapOutlineDNSPacketProxy(t *TransportPair, interceptAddr string) (*PacketProxy, error) {
-	localDNS, err := netip.ParseAddrPort(interceptAddr)
+// wrapOutlineDNSPacketProxy intercepts DNS over UDP at localAddr and forwards them to the resolverAddr.
+//
+// It also checks for UDP connectivity.
+//   - If UDP is available, it forwards DNS queries to the specified resolverAddr.
+//   - If UDP is blocked, it sends back a truncated DNS response.
+//     This forces the OS to retry the DNS query over TCP.
+func wrapOutlineDNSPacketProxy(pl *PacketListener, localAddr, resolverAddr string) (*PacketProxy, error) {
+	localDNS, err := netip.ParseAddrPort(localAddr)
 	if err != nil {
-		return nil, fmt.Errorf("invalid interceptAddr `%s`: %w", interceptAddr, err)
+		return nil, fmt.Errorf("invalid local DNS address `%s`: %w", localAddr, err)
 	}
-	base, err := network.NewPacketProxyFromPacketListener(t.PacketListener)
+	resolverDNS, err := netip.ParseAddrPort(resolverAddr)
+	if err != nil {
+		return nil, fmt.Errorf("invalid remote DNS address `%s`: %w", resolverAddr, err)
+	}
+	base, err := network.NewPacketProxyFromPacketListener(pl)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create PacketProxy: %w", err)
 	}
-	redirect, err := dnsintercept.WrapForwardPacketProxy(base, localDNS, defaultOutlineDNSResolver)
+	redirect, err := dnsintercept.WrapForwardPacketProxy(base, localDNS, resolverDNS)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create DNS redirect PacketProxy: %w", err)
 	}
@@ -85,15 +101,16 @@ func wrapOutlineDNSPacketProxy(t *TransportPair, interceptAddr string) (*PacketP
 	}
 
 	onNetworkChanged := func() {
-		if err := connectivity.CheckUDPConnectivity(t.PacketListener); err == nil {
-			slog.Info("remote device UDP is healthy")
-			main.SetProxy(redirect)
-		} else {
-			slog.Warn("remote device UDP is not healthy", "err", err)
-			main.SetProxy(trunc)
-		}
+		go func() {
+			if err := connectivity.CheckUDPConnectivity(pl); err == nil {
+				slog.Info("remote device UDP is healthy")
+				main.SetProxy(redirect)
+			} else {
+				slog.Warn("remote device UDP is not healthy", "err", err)
+				main.SetProxy(trunc)
+			}
+		}()
 	}
-	go onNetworkChanged()
 
-	return &PacketProxy{t.PacketListener.ConnectionProviderInfo, main, onNetworkChanged}, nil
+	return &PacketProxy{pl.ConnectionProviderInfo, main, onNetworkChanged}, nil
 }
