@@ -47,10 +47,12 @@ type Client struct {
 	sessionCancel context.CancelFunc
 }
 
+// DialStream implements StreamDialer.DialStream.
 func (c *Client) DialStream(ctx context.Context, address string) (transport.StreamConn, error) {
 	return c.sd.Dial(ctx, address)
 }
 
+// NewSession implements PacketProxy.NewSession.
 func (c *Client) NewSession(resp network.PacketResponseReceiver) (network.PacketRequestSender, error) {
 	return c.pp.NewSession(resp)
 }

@@ -48,7 +48,7 @@ func pickOutlineDNSResolverAddr() string {
 //
 // TODO: make this configurable via a new VpnConfig
 func pickOutlineLinkLocalDNSAddr() string {
-	return "169.254.169.254:53"
+	return "169.254.113.53:53"
 }
 
 // wrapOutlineDNSStreamDialer intercepts DNS over TCP at localAddr and forwards them to the resolverAddr.
