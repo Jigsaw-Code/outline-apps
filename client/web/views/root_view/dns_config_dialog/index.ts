@@ -59,14 +59,11 @@ export class DnsConfigDialog extends LitElement {
     article {
       letter-spacing: 0.5px;
       font-size: var(--outline-text-size);
-      line-height: var(--outline-text-line-height);
-      letter-spacing: var(--outline-text-letter-spacing);
       padding: var(--outline-gutter-small) var(--outline-gutter-large);
       color: var(--outline-text-color);
     }
 
     .description {
-      color: var(--md-sys-color-on-surface-variant);
       margin-bottom: var(--outline-gutter-large);
     }
 
@@ -89,23 +86,14 @@ export class DnsConfigDialog extends LitElement {
       min-width: auto;
     }
 
-    md-filled-select::part(menu) {
-      --md-menu-container-color: var(--outline-white);
-      --md-menu-item-selected-container-color: var(--outline-primary-light);
-    }
-
     md-filled-select,
     md-filled-text-field {
-      --md-filled-field-content-size: var(--outline-text-size);
-
-      --md-filled-field-leading-space: var(--outline-corner);
+      --md-filled-field-leading-space: var(--outline-corner-radius);
       --md-filled-field-top-space: var(--outline-gutter-small);
       --md-filled-field-bottom-space: var(--outline-gutter-small);
     }
 
     .built-in-server-description {
-      font-size: var(--outline-text-size);
-
       margin: 0;
     }
 

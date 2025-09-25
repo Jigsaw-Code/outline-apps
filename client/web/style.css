@@ -73,35 +73,23 @@
 
   /* --- */
 
-  /* Material Components v2 */
-  --md-dialog-container-color: var(--outline-dialog-background-color);
-  --md-dialog-content-color: var(--outline-text-color);
-  --md-dialog-headline-color: var(--outline-text-color);
-  --md-filled-text-field-container-color: var(--outline-input-background-color);
-  --md-filled-text-field-error-color: var(--outline-error-color);
-  --md-filled-text-field-error-focus-label-text-color: var(--outline-error-color);
-  --md-filled-text-field-error-hover-label-text-color: var(--outline-error-color);
-  --md-filled-text-field-error-input-text-color: var(--outline-input-text-color);
-  --md-filled-text-field-focus-container-color: var();
-  --md-filled-text-field-focus-label-text-color: var(--outline-highlight-color);
-  --md-filled-text-field-hover-container-color: var();
-  --md-filled-text-field-input-text-color: var(--outline-input-text-color);
-  --md-filled-text-field-label-text-color: var(--outline-label-color);
-  --md-outlined-text-field-input-text-color: var(--outline-input-text-color);
-  --md-outlined-text-field-outline-color: var(--outline-input-border-color);
-  --md-ref-typeface-brand: var(--outline-font-family-brand);
+  /* Material Web Components v2 */
+  --md-ref-typeface-brand: var(--outline-font-family-title);
   --md-ref-typeface-plain: var(--outline-font-family);
-  --md-sys-color-on-surface: var(--outline-text-color);
+
+  --md-sys-color-background: var(--outline-background-color);
   --md-sys-color-outline: var(--outline-input-border-color);
   --md-sys-color-primary: var(--outline-highlight-color);
-  --md-sys-color-surface: var(--outline-card-background);
+  --md-sys-color-surface: var(--outline-card-background-color);
+  --md-sys-color-on-surface: var(--outline-text-color);
+  --md-sys-color-on-surface-variant: var(--outline-text-color);
   --md-sys-shape-corner-extra-large: var(--outline-corner-radius);
-  --md-sys-shape-corner-full: var(--outline-corner-radius);
-  --md-menu-container-color: var(--outline-card-background-color);
+  --md-sys-shape-corner-large: var(--outline-corner-radius);
+  --md-sys-shape-corner-medium: var(--outline-corner-radius);
 
+  --md-dialog-container-color: var(--outline-dialog-background-color);
 
-
-  /* Material Components v1 */
+  /* Material Web Components v1 */
   --mdc-text-field-fill-color: var(--outline-input-background-color);
   --mdc-text-field-ink-color: var(--outline-input-text-color);
   --mdc-text-field-label-ink-color: var(--outline-label-color);
@@ -110,13 +98,6 @@
   --mdc-theme-primary: var(--outline-brand-color);
   --mdc-theme-surface: var(--outline-card-background-color);
   --mdc-typography-font-family: var(--outline-font-family);
-
-  /* Polymer Components */
-  --iron-input-container-color: var(--outline-input-text-color);
-  --paper-input-container-color: var(--outline-input-text-color);
-  --paper-input-container-focus-color: var(--outline-brand-color);
-  --paper-input-container-input-color: var(--outline-input-text-color);
-  --paper-input-container-shared-input-style_-_color: var(--outline-input-text-color);
 }
 
 /* Dark Color Scheme (Class-based) */
@@ -124,15 +105,15 @@ html.dark {
   color-scheme: dark;
 
   --outline-background-color: var(--outline-green-black);
-  --outline-card-background-color: var();
-  --outline-card-footer-color: var();
+  --outline-card-background-color: var(--outline-green-gray-dark);
+  --outline-card-footer-color: var(--outline-green-black-light);
   --outline-dialog-background-color: var(--outline-green-gray-dark);
-  --outline-dialog-text-color: var();
+  --outline-dialog-text-color: var(--outline-white);
   --outline-error-color: var(--outline-red-light);
   --outline-hairline: 1px solid var(--outline-green-gray);
   --outline-icon-color: var(--outline-gray-light);
   --outline-input-background-color: var(--outline-green-black);
-  --outline-input-border-color: var(--outline-green-gray);
+  --outline-input-border-color: var(--outline-white);
   --outline-input-text-color: var(--outline-white);
   --outline-label-color: var(--outline-gray-light);
   --outline-text-color: var(--outline-white);
@@ -140,14 +121,7 @@ html.dark {
 
 html, body {
   margin: 0;
-  color: var(--outline-text-color);
-  background-color: var(--outline-background-color);
-  font-family: var(--outline-font-family);
-}
-
-a {
-  color: var(--outline-highlight-color);
-  text-decoration: underline;
+  padding: 0;
 }
 
 /* Font definitions */
