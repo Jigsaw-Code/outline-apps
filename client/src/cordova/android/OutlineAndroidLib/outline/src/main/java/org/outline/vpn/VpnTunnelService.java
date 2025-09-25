@@ -51,7 +51,6 @@ import org.outline.log.SentryErrorReporter;
 
 import outline.ClientConfig;
 import outline.NewClientResult;
-import outline.Outline;
 import platerrors.Platerrors;
 import platerrors.PlatformError;
 import tun2socks.ConnectRemoteDeviceResult;
@@ -261,6 +260,7 @@ public class VpnTunnelService extends VpnService {
         for (Subnet subnet : reservedBypassSubnets) {
           builder.addRoute(subnet.address, subnet.prefix);
         }
+        builder.addRoute(dnsResolver, 32);
         this.tunFd = builder.establish();
       } catch (Exception e) {
         LOG.log(Level.SEVERE, "Failed to establish the VPN", e);
