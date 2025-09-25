@@ -23,23 +23,12 @@ export class PrivacyAcknowledgementDialog extends LitElement {
   @property({type: Boolean}) open: boolean = false;
 
   static styles = css`
-    md-dialog {
-      text-align: center;
-      min-width: 100svw;
-      min-width: 100vw;
-      min-height: 100svh;
-      min-height: 100vh;
-      margin: 0;
-    }
-
     article {
+      padding: var(--outline-gutter);
       display: flex;
       flex-direction: column;
       height: calc(100vh - 250px);
       margin: 24px auto;
-      max-width: 600px;
-      min-width: 300px;
-      padding: 24px 12px;
       width: 70vw;
     }
 
@@ -70,6 +59,7 @@ export class PrivacyAcknowledgementDialog extends LitElement {
     a {
       text-decoration: none;
       color: var(--outline-highlight-color);
+      font-family: var(--outline-font-family);
       cursor: pointer;
       text-transform: uppercase;
       font-weight: bold;

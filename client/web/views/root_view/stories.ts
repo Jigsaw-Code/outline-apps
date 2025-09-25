@@ -16,14 +16,13 @@
 
 import {html} from 'lit';
 
+import {RootView} from './index';
 import {ServerListItem} from '../servers_view';
 import {ServerConnectionState} from '../servers_view/server_connection_indicator';
-
 import './index';
-import { RootView } from './index';
 
 export default {
-  title: 'Root View',
+  title: 'Client/Root View',
   component: 'root-view',
   args: {
     appVersion: '1.2.3',
@@ -47,10 +46,9 @@ export default {
         connectionState: ServerConnectionState.DISCONNECTED,
         errorMessageId: 'error-feedback-submission',
       },
-    ] as ServerListItem[]
-  }
-}
+    ] as ServerListItem[],
+  },
+};
 
 export const Example = ({appVersion, servers}: RootView) =>
   html`<root-view .appVersion=${appVersion} .servers=${servers}></root-view>`;
-

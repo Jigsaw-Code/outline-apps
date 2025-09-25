@@ -63,6 +63,9 @@ export class ServerCard extends LitElement implements ServerListItemElement {
     }
 
     :host {
+      --server-name-size: var(--outline-font-size-title);
+      --server-metadata-size: var(--outline-font-size);
+
       display: inline-block;
       height: 100%;
       position: relative;
@@ -71,7 +74,7 @@ export class ServerCard extends LitElement implements ServerListItemElement {
 
     .card {
       --min-indicator-size: calc(
-        var(--server-name-size) + var(--outline-gutter-small) +
+        var(--server-name-size) + var(--outline-gutter-tiny) +
           var(--server-metadata-size)
       );
 
@@ -83,7 +86,7 @@ export class ServerCard extends LitElement implements ServerListItemElement {
 
       align-items: center;
       background: var(--outline-card-background-color);
-      border-radius: var(--outline-corner);
+      border-radius: var(--outline-corner-radius);
       box-shadow: var(--outline-elevation);
       container-type: inline-size;
       container-name: connection-message;
@@ -153,7 +156,7 @@ export class ServerCard extends LitElement implements ServerListItemElement {
       -webkit-line-clamp: 3;
       color: var(--outline-text-color);
       font-size: var(--server-name-size);
-      margin-bottom: var(--outline-gutter-small);
+      margin-bottom: var(--outline-gutter-tiny);
       /* To break the line in case a sequence of word characters is longer than the line.
         See https://github.com/Jigsaw-Code/outline-apps/issues/1372. */
       word-break: break-all;
@@ -177,7 +180,7 @@ export class ServerCard extends LitElement implements ServerListItemElement {
       align-items: center;
       display: flex;
       flex-wrap: wrap;
-      gap: var(--outline-gutter-small);
+      gap: var(--outline-gutter-tiny);
       margin-top: var(--outline-gutter);
     }
 
@@ -193,7 +196,7 @@ export class ServerCard extends LitElement implements ServerListItemElement {
       display: flex;
       width: max-content;
       gap: 0.15rem;
-      padding: var(--outline-gutter-small) var(--outline-gutter-tiny);
+      padding: var(--outline-gutter-tiny) var(--outline-gutter-small);
     }
 
     .card-metadata-connection-type-message {
@@ -226,7 +229,7 @@ export class ServerCard extends LitElement implements ServerListItemElement {
       background: var(--outline-card-footer-color);
       box-sizing: border-box;
       grid-area: footer;
-      padding: var(--outline-gutter-small) var(--outline-gutter);
+      padding: var(--outline-gutter-tiny) var(--outline-gutter-small);
       text-align: end;
     }
 

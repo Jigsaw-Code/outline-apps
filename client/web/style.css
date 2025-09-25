@@ -57,11 +57,11 @@
   --outline-highlight-color: var(--outline-green);
   --outline-background-color: var(--outline-white);
   --outline-card-background-color: var(--outline-white);
-  --outline-card-footer-color: var(--outline-gray-light);
+  --outline-card-footer-color: var(--outline-gray-white);
   --outline-connection-color-complete: var(--outline-green-light);
   --outline-dialog-background-color: var(--outline-white);
   --outline-dialog-text-color: var(--outline-gray);
-  --outline-elevation: var(--outline-black) 2px 2px 4px 0px;
+  --outline-elevation: hsla(0, 0%, 0%, 0.30) 2px 2px 4px 0px;
   --outline-error-color: var(--outline-red);
   --outline-hairline: 1px solid var(--outline-gray-light);
   --outline-icon-color: var(--outline-gray);
