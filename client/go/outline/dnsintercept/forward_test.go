@@ -72,30 +72,30 @@ func (s *lastDestPacketRequestSender) WriteTo(p []byte, destination netip.AddrPo
 
 type lastSourcePacketResponseReceiver struct {
 	network.PacketResponseReceiver
-	lastSrc net.Addr
+	lastSrc    net.Addr
+	lastPacket []byte
 }
 
 func (r *lastSourcePacketResponseReceiver) WriteFrom(p []byte, source net.Addr) (int, error) {
 	r.lastSrc = source
+	r.lastPacket = make([]byte, len(p))
+	copy(r.lastPacket, p)
 	return len(p), nil
 }
 
-type lastAddrPacketProxy struct {
+type packetProxyWithGivenRequestSender struct {
 	network.PacketProxy
 	req  *lastDestPacketRequestSender
 	resp network.PacketResponseReceiver
 }
 
-func (p *lastAddrPacketProxy) NewSession(resp network.PacketResponseReceiver) (network.PacketRequestSender, error) {
+func (p *packetProxyWithGivenRequestSender) NewSession(resp network.PacketResponseReceiver) (network.PacketRequestSender, error) {
 	p.resp = resp
-	if p.req == nil {
-		p.req = &lastDestPacketRequestSender{}
-	}
 	return p.req, nil
 }
 
 func TestWrapForwardPacketProxy(t *testing.T) {
-	pp := &lastAddrPacketProxy{req: &lastDestPacketRequestSender{}}
+	pp := &packetProxyWithGivenRequestSender{req: &lastDestPacketRequestSender{}}
 	resp := &lastSourcePacketResponseReceiver{}
 
 	local := netip.MustParseAddr("192.0.2.2")

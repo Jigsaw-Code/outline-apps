@@ -56,8 +56,6 @@ type forwardPacketRespReceiver struct {
 }
 
 var _ network.PacketProxy = (*forwardPacketProxy)(nil)
-var _ network.PacketRequestSender = (*forwardPacketReqSender)(nil)
-var _ network.PacketResponseReceiver = (*forwardPacketRespReceiver)(nil)
 
 // WrapForwardPacketProxy creates a PacketProxy to intercept and redirect UDP based DNS packets.
 // It intercepts all packets for `localIP:53` and redirecrs them to `resolverAddr` via the `base` PacketProxy.
