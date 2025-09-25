@@ -40,12 +40,22 @@ var OutlineDNSInterceptor = &TrafficInterceptor{
 	WrapPacketProxy:  wrapOutlineDNSPacketProxy,
 }
 
+// The default DNS resolver for Outline VPN.
+//
+// Previously we supported 4 resolvers: Cloudflare, Quad9, and OpenDNS
+//   - 1.1.1.1, 9.9.9.9, 208.67.222.222, 208.67.220.220
+//
+// For now, we will hardcode to the first one.
+//
+// TODO: support multiple DNS resolvers
+var defaultOutlineDNSResolver = netip.MustParseAddrPort("1.1.1.1:53")
+
 func wrapOutlineDNSStreamDialer(t *TransportPair, interceptAddr string) (*Dialer[transport.StreamConn], error) {
 	localDNS, err := netip.ParseAddrPort(interceptAddr)
 	if err != nil {
 		return nil, fmt.Errorf("invalid interceptAddr `%s`: %w", interceptAddr, err)
 	}
-	redirect, err := dnsintercept.WrapForwardStreamDialer(t, localDNS, netip.MustParseAddrPort("1.1.1.1:53"))
+	redirect, err := dnsintercept.WrapForwardStreamDialer(t, localDNS, defaultOutlineDNSResolver)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create DNS redirect StreamDialer: %w", err)
 	}
@@ -61,7 +71,7 @@ func wrapOutlineDNSPacketProxy(t *TransportPair, interceptAddr string) (*PacketP
 	if err != nil {
 		return nil, fmt.Errorf("failed to create PacketProxy: %w", err)
 	}
-	redirect, err := dnsintercept.WrapForwardPacketProxy(base, localDNS, netip.MustParseAddrPort("1.1.1.1:53"))
+	redirect, err := dnsintercept.WrapForwardPacketProxy(base, localDNS, defaultOutlineDNSResolver)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create DNS redirect PacketProxy: %w", err)
 	}

@@ -29,15 +29,14 @@ import (
 
 // Config holds the configuration to establish a system-wide [VPNConnection].
 type Config struct {
-	ID               string   `json:"id"`
-	InterfaceName    string   `json:"interfaceName"`
-	IPAddress        string   `json:"ipAddress"`
-	DNSLinkLocalAddr string   `json:"dnsLinkLocalAddress"`
-	DNSServers       []string `json:"dnsServers"`
-	ConnectionName   string   `json:"connectionName"`
-	RoutingTableId   uint32   `json:"routingTableId"`
-	RoutingPriority  uint32   `json:"routingPriority"`
-	ProtectionMark   uint32   `json:"protectionMark"`
+	ID               string `json:"id"`
+	InterfaceName    string `json:"interfaceName"`
+	IPAddress        string `json:"ipAddress"`
+	DNSLinkLocalAddr string `json:"dnsLinkLocalAddress"`
+	ConnectionName   string `json:"connectionName"`
+	RoutingTableId   uint32 `json:"routingTableId"`
+	RoutingPriority  uint32 `json:"routingPriority"`
+	ProtectionMark   uint32 `json:"protectionMark"`
 }
 
 // platformVPNConn is an interface representing an OS-specific VPN connection.
