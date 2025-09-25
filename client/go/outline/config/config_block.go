@@ -17,16 +17,15 @@ package config
 import (
 	"context"
 	"errors"
-
-	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
-func NewBlockStreamDialerSubParser() func(ctx context.Context, input map[string]any) (*Dialer[transport.StreamConn], error) {
-	return func(ctx context.Context, input map[string]any) (*Dialer[transport.StreamConn], error) {
-		return &Dialer[transport.StreamConn]{
+func NewBlockDialerSubParser[ConnType any]() func(ctx context.Context, input map[string]any) (*Dialer[ConnType], error) {
+	return func(ctx context.Context, input map[string]any) (*Dialer[ConnType], error) {
+		return &Dialer[ConnType]{
 			ConnectionProviderInfo: ConnectionProviderInfo{ConnType: ConnTypeBlocked},
-			Dial: func(ctx context.Context, address string) (transport.StreamConn, error) {
-				return nil, errors.New("blocked by config")
+			Dial: func(ctx context.Context, address string) (ConnType, error) {
+				var zero ConnType
+				return zero, errors.New("blocked by config")
 			},
 		}, nil
 	}
