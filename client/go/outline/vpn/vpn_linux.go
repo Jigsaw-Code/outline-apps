@@ -19,6 +19,7 @@ import (
 	"io"
 	"log/slog"
 	"net"
+	"net/netip"
 
 	perrs "github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	gonm "github.com/Wifx/gonetworkmanager/v2"
@@ -58,16 +59,18 @@ func newPlatformVPNConn(conf *Config) (_ platformVPNConn, err error) {
 	if c.nmOpts.TUNAddr4 == nil {
 		return nil, errInvalidConfig("must provide a valid TUN interface IP(v4)")
 	}
-	dnsIP := net.ParseIP(conf.LocalDNSIP).To4()
-	if dnsIP == nil {
+	dnsAddr, err := netip.ParseAddrPort(conf.DNSLinkLocalAddr)
+	if err != nil {
 		return nil, perrs.PlatformError{
 			Code:    perrs.InternalError,
-			Message: "must provide a valid local DNS server IP",
+			Message: "must provide a valid local DNS server address",
 			Details: map[string]any{
-				"ip": conf.LocalDNSIP,
+				"addr": conf.DNSLinkLocalAddr,
 			},
+			Cause: perrs.ToPlatformError(err),
 		}
 	}
+	dnsIP := net.ParseIP(dnsAddr.Addr().String())
 	c.nmOpts.DNSServers4 = append(c.nmOpts.DNSServers4, dnsIP)
 
 	if c.nm, err = gonm.NewNetworkManager(); err != nil {

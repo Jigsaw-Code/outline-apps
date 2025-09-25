@@ -23,20 +23,21 @@ import (
 	"time"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/callback"
+	"github.com/Jigsaw-Code/outline-sdk/network"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
 // Config holds the configuration to establish a system-wide [VPNConnection].
 type Config struct {
-	ID              string   `json:"id"`
-	InterfaceName   string   `json:"interfaceName"`
-	IPAddress       string   `json:"ipAddress"`
-	LocalDNSIP      string   `json:"localDNSIP"`
-	DNSServers      []string `json:"dnsServers"`
-	ConnectionName  string   `json:"connectionName"`
-	RoutingTableId  uint32   `json:"routingTableId"`
-	RoutingPriority uint32   `json:"routingPriority"`
-	ProtectionMark  uint32   `json:"protectionMark"`
+	ID               string   `json:"id"`
+	InterfaceName    string   `json:"interfaceName"`
+	IPAddress        string   `json:"ipAddress"`
+	DNSLinkLocalAddr string   `json:"dnsLinkLocalAddress"`
+	DNSServers       []string `json:"dnsServers"`
+	ConnectionName   string   `json:"connectionName"`
+	RoutingTableId   uint32   `json:"routingTableId"`
+	RoutingPriority  uint32   `json:"routingPriority"`
+	ProtectionMark   uint32   `json:"protectionMark"`
 }
 
 // platformVPNConn is an interface representing an OS-specific VPN connection.
@@ -105,7 +106,7 @@ func SetStateChangeListener(token callback.Token) {
 // newly created [VPNConnection] as the currently active connection.
 // It returns the new [VPNConnection], or an error if the connection fails.
 func EstablishVPN(
-	ctx context.Context, conf *Config, sd transport.StreamDialer, pl transport.PacketListener,
+	ctx context.Context, conf *Config, sd transport.StreamDialer, pp network.PacketProxy,
 ) (_ *VPNConnection, err error) {
 	if conf == nil {
 		panic("a VPN config must be provided")
@@ -113,7 +114,7 @@ func EstablishVPN(
 	if sd == nil {
 		panic("a StreamDialer must be provided")
 	}
-	if pl == nil {
+	if pp == nil {
 		panic("a PacketListener must be provided")
 	}
 
@@ -142,16 +143,6 @@ func EstablishVPN(
 		}
 	}()
 
-	sd, err = WrapDNSInterceptedStreamDialer(sd, conf.LocalDNSIP, conf.DNSServers[0])
-	if err != nil {
-		slog.Error("failed to wrap DNS intercepted TCP handler", "err", err)
-		return nil, err
-	}
-	pp, err := WrapDNSInterceptedPacketProxy(pl, conf.LocalDNSIP, conf.DNSServers[0])
-	if err != nil {
-		slog.Error("failed to wrap DNS intercepted UDP handler", "err", err)
-		return nil, err
-	}
 	if c.proxy, err = ConnectRemoteDevice(ctx, sd, pp); err != nil {
 		slog.Error("failed to connect to the remote device", "err", err)
 		return

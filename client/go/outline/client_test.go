@@ -32,9 +32,10 @@ func Test_NewTransport_SS_URL(t *testing.T) {
 	config := "transport: ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@example.com:4321/"
 	firstHop := "example.com:4321"
 
-	result := (&ClientConfig{}).New("", config)
+	result := (&ClientConfig{}).New("", config, "169.254.113.53:53")
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
+	require.Equal(t, firstHop, result.Client.pp.FirstHop)
 	require.Equal(t, firstHop, result.Client.pl.FirstHop)
 }
 
@@ -48,9 +49,10 @@ transport: {
 }`
 	firstHop := "example.com:4321"
 
-	result := (&ClientConfig{}).New("", config)
+	result := (&ClientConfig{}).New("", config, "169.254.113.53:53")
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
+	require.Equal(t, firstHop, result.Client.pp.FirstHop)
 	require.Equal(t, firstHop, result.Client.pl.FirstHop)
 }
 
@@ -65,9 +67,10 @@ transport: {
 }`
 	firstHop := "example.com:4321"
 
-	result := (&ClientConfig{}).New("", config)
+	result := (&ClientConfig{}).New("", config, "169.254.113.53:53")
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
+	require.Equal(t, firstHop, result.Client.pp.FirstHop)
 	require.Equal(t, firstHop, result.Client.pl.FirstHop)
 }
 
@@ -81,9 +84,10 @@ transport:
   password: SECRET`
 	firstHop := "example.com:4321"
 
-	result := (&ClientConfig{}).New("", config)
+	result := (&ClientConfig{}).New("", config, "169.254.113.53:53")
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
+	require.Equal(t, firstHop, result.Client.pp.FirstHop)
 	require.Equal(t, firstHop, result.Client.pl.FirstHop)
 }
 
@@ -97,9 +101,10 @@ transport:
   secret: SECRET`
 	firstHop := "example.com:4321"
 
-	result := (&ClientConfig{}).New("", config)
+	result := (&ClientConfig{}).New("", config, "169.254.113.53:53")
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
+	require.Equal(t, firstHop, result.Client.pp.FirstHop)
 	require.Equal(t, firstHop, result.Client.pl.FirstHop)
 }
 
@@ -114,9 +119,10 @@ transport:
   secret: SECRET`
 	firstHop := "entry.example.com:4321"
 
-	result := (&ClientConfig{}).New("", config)
+	result := (&ClientConfig{}).New("", config, "169.254.113.53:53")
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
+	require.Equal(t, firstHop, result.Client.pp.FirstHop)
 	require.Equal(t, firstHop, result.Client.pl.FirstHop)
 }
 
@@ -135,9 +141,10 @@ transport:
   secret: EXIT_SECRET`
 	firstHop := "entry.example.com:4321"
 
-	result := (&ClientConfig{}).New("", config)
+	result := (&ClientConfig{}).New("", config, "169.254.113.53:53")
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
+	require.Equal(t, firstHop, result.Client.pp.FirstHop)
 	require.Equal(t, firstHop, result.Client.pl.FirstHop)
 }
 
@@ -157,9 +164,10 @@ transport:
       cipher: chacha20-ietf-poly1305
       secret: SECRET`
 
-	result := (&ClientConfig{}).New("", config)
+	result := (&ClientConfig{}).New("", config, "169.254.113.53:53")
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, "example.com:80", result.Client.sd.FirstHop)
+	require.Equal(t, "example.com:53", result.Client.pp.FirstHop)
 	require.Equal(t, "example.com:53", result.Client.pl.FirstHop)
 }
 
@@ -177,9 +185,10 @@ transport:
       prefix: "POST "`
 	firstHop := "example.com:4321"
 
-	result := (&ClientConfig{}).New("", config)
+	result := (&ClientConfig{}).New("", config, "169.254.113.53:53")
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
+	require.Equal(t, firstHop, result.Client.pp.FirstHop)
 	require.Equal(t, firstHop, result.Client.pl.FirstHop)
 }
 
@@ -199,15 +208,16 @@ transport:
       endpoint: example.com:53
       <<: *cipher`
 
-	result := (&ClientConfig{}).New("", config)
+	result := (&ClientConfig{}).New("", config, "169.254.113.53:53")
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, "example.com:80", result.Client.sd.FirstHop)
+	require.Equal(t, "example.com:53", result.Client.pp.FirstHop)
 	require.Equal(t, "example.com:53", result.Client.pl.FirstHop)
 }
 
 func Test_NewTransport_Unsupported(t *testing.T) {
 	config := `transport: {$type: unsupported}`
-	result := (&ClientConfig{}).New("", config)
+	result := (&ClientConfig{}).New("", config, "169.254.113.53:53")
 	require.Error(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, "unsupported config", result.Error.Message)
 }
@@ -230,9 +240,10 @@ transport:
           url: https://entrypoint.cdn.example.com/udp`
 	firstHop := "entrypoint.cdn.example.com:443"
 
-	result := (&ClientConfig{}).New("", config)
+	result := (&ClientConfig{}).New("", config, "169.254.113.53:53")
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
+	require.Equal(t, firstHop, result.Client.pp.FirstHop)
 	require.Equal(t, firstHop, result.Client.pl.FirstHop)
 }
 
@@ -242,7 +253,7 @@ transport:
   $type: tcpudp
   tcp:
   udp:`
-	result := (&ClientConfig{}).New("", config)
+	result := (&ClientConfig{}).New("", config, "169.254.113.53:53")
 	require.Error(t, result.Error, "Got %v", result.Error)
 	perr := &platerrors.PlatformError{}
 	require.ErrorAs(t, result.Error, &perr)
@@ -302,7 +313,7 @@ func Test_NewClientFromJSON_Errors(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := (&ClientConfig{}).New("", tt.input)
+			got := (&ClientConfig{}).New("", tt.input, "169.254.113.53:53")
 			if got.Error == nil || got.Client != nil {
 				t.Errorf("NewClientFromJSON() expects an error, got = %v", got.Client)
 				return
@@ -332,9 +343,10 @@ reporter:
     url: https://your-callback-server.com/outline_callback
   interval: 24h`
 
-	result := (&ClientConfig{}).New("", config)
+	result := (&ClientConfig{}).New("", config, "169.254.113.53:53")
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, "example.com:80", result.Client.sd.FirstHop)
+	require.Equal(t, "example.com:53", result.Client.pp.FirstHop)
 	require.Equal(t, "example.com:53", result.Client.pl.FirstHop)
 	require.NotNil(t, result.Client.reporter, "Reporter is nil")
 	request, err := result.Client.reporter.(*reporting.HTTPReporter).NewRequest()

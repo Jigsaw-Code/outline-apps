@@ -78,17 +78,6 @@ func (d *RemoteDevice) GetHealthStatus() error {
 	return d.tcpErr
 }
 
-// NotifyNetworkChanged notifies the device that the underlying network has changed.
-func (d *RemoteDevice) NotifyNetworkChanged() {
-	type NetworkChangeListener interface{ OnNotifyNetworkChanged() }
-	if ncl, ok := d.sd.(NetworkChangeListener); ok {
-		ncl.OnNotifyNetworkChanged()
-	}
-	if ncl, ok := d.pp.(NetworkChangeListener); ok {
-		ncl.OnNotifyNetworkChanged()
-	}
-}
-
 func (d *RemoteDevice) checkTCPHealthAndUpdate() {
 	slog.Debug("remote device is checking TCP health status...")
 	err := connectivity.CheckTCPConnectivity(d.sd)

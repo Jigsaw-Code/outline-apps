@@ -95,6 +95,7 @@ func parseShadowsocksTransport(ctx context.Context, config configyaml.ConfigNode
 	return &TransportPair{
 		&Dialer[transport.StreamConn]{ConnectionProviderInfo{ConnTypeTunneled, se.FirstHop}, sd.DialStream},
 		&PacketListener{ConnectionProviderInfo{ConnTypeTunneled, pe.FirstHop}, pl},
+		OutlineDNSInterceptor,
 	}, nil
 }
 

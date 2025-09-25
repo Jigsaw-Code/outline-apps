@@ -27,6 +27,7 @@ import (
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/config"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/reporting"
+	"github.com/Jigsaw-Code/outline-sdk/network"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 	"github.com/goccy/go-yaml"
 )
@@ -40,8 +41,12 @@ import (
 //     to handle that.
 //   - Refactor so that StartSession returns a Client
 type Client struct {
-	sd            *config.Dialer[transport.StreamConn]
-	pl            *config.PacketListener
+	sd *config.Dialer[transport.StreamConn]
+	pp *config.PacketProxy
+
+	// TODO: remove PacketListener usages later (still used by the connectivity test API)
+	pl *config.PacketListener
+
 	reporter      reporting.Reporter
 	sessionCancel context.CancelFunc
 }
@@ -50,8 +55,11 @@ func (c *Client) DialStream(ctx context.Context, address string) (transport.Stre
 	return c.sd.Dial(ctx, address)
 }
 
-func (c *Client) ListenPacket(ctx context.Context) (net.PacketConn, error) {
-	return c.pl.ListenPacket(ctx)
+func (c *Client) NewSession(resp network.PacketResponseReceiver) (network.PacketRequestSender, error) {
+	return c.pp.NewSession(resp)
+}
+
+func (c *Client) NotifyNetworkChanged() {
 }
 
 func (c *Client) StartSession() error {
@@ -91,8 +99,8 @@ type ClientConfig struct {
 }
 
 // New creates a new session client. It's used by the native code, so it returns a NewClientResult.
-func (c *ClientConfig) New(keyID string, providerClientConfigText string) *NewClientResult {
-	client, err := c.new(keyID, providerClientConfigText)
+func (c *ClientConfig) New(keyID string, providerClientConfigText string, dnsLinkLocalAddr string) *NewClientResult {
+	client, err := c.new(keyID, providerClientConfigText, dnsLinkLocalAddr)
 	if err != nil {
 		return &NewClientResult{Error: platerrors.ToPlatformError(err)}
 	}
@@ -100,7 +108,7 @@ func (c *ClientConfig) New(keyID string, providerClientConfigText string) *NewCl
 }
 
 // new creates a new session client.
-func (c *ClientConfig) new(keyID string, providerClientConfigText string) (*Client, error) {
+func (c *ClientConfig) new(keyID string, providerClientConfigText string, dnsLinkLocalAddr string) (*Client, error) {
 	// Make a copy of the config so we can change it.
 	clientConfig := *c
 	if clientConfig.TransportParser == nil {
@@ -159,7 +167,29 @@ func (c *ClientConfig) new(keyID string, providerClientConfigText string) (*Clie
 		}
 	}
 
-	client := &Client{sd: transportPair.StreamDialer, pl: transportPair.PacketListener}
+	// Intercept DNS traffic
+	sd, err := transportPair.DNSInterceptor.WrapStreamDialer(transportPair.StreamDialer, dnsLinkLocalAddr)
+	if err != nil {
+		return nil, &platerrors.PlatformError{
+			Code:    platerrors.InvalidConfig,
+			Message: "failed to intercept DNS over TCP traffic",
+			Cause:   platerrors.ToPlatformError(err),
+		}
+	}
+	pp, err := transportPair.DNSInterceptor.WrapPacketProxy(transportPair.PacketListener, dnsLinkLocalAddr)
+	if err != nil {
+		return nil, &platerrors.PlatformError{
+			Code:    platerrors.InvalidConfig,
+			Message: "failed to intercept DNS over UDP traffic",
+			Cause:   platerrors.ToPlatformError(err),
+		}
+	}
+
+	client := &Client{
+		sd: sd,
+		pp: pp,
+		pl: transportPair.PacketListener,
+	}
 	// TODO: figure out a better way to handle parse calls.
 	if providerClientConfig.Reporter != nil {
 		// TODO(fortuna): encapsulate service storage.

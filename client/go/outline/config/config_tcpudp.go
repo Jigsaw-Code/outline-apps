@@ -56,5 +56,6 @@ func parseTCPUDPTransportPair(ctx context.Context, configMap map[string]any, par
 	return &TransportPair{
 		StreamDialer:   sd,
 		PacketListener: pl,
+		DNSInterceptor: OutlineDNSInterceptor,
 	}, nil
 }

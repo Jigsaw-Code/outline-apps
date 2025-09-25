@@ -36,7 +36,7 @@ type TCPAndUDPConnectivityResult struct {
 //
 // Deprecated: use connectivity.Check[*]Connectivity instead
 func CheckTCPAndUDPConnectivity(client *Client) *TCPAndUDPConnectivityResult {
-	tcpErr, udpErr := connectivity.CheckTCPAndUDPConnectivity(client, client)
+	tcpErr, udpErr := connectivity.CheckTCPAndUDPConnectivity(client, client.pl)
 	return &TCPAndUDPConnectivityResult{
 		TCPError: platerrors.ToPlatformError(tcpErr),
 		UDPError: platerrors.ToPlatformError(udpErr),

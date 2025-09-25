@@ -125,7 +125,7 @@ func doParseTunnelConfig(input string) *InvokeMethodResult {
 
 	result := (&ClientConfig{
 		DataDir: GetBackendConfig().DataDir,
-	}).New("", string(clientConfigBytes))
+	}).New("", string(clientConfigBytes), "169.254.113.53:53")
 	if result.Error != nil {
 		return &InvokeMethodResult{
 			Error: result.Error,

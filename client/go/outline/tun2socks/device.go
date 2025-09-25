@@ -45,8 +45,8 @@ type ConnectRemoteDeviceResult struct {
 	Error  *perrs.PlatformError
 }
 
-func ConnectRemoteDevice(cp *ClientTransportPair) (res *ConnectRemoteDeviceResult) {
-	if err := cp.client.StartSession(); err != nil {
+func ConnectRemoteDevice(client *outline.Client) (res *ConnectRemoteDeviceResult) {
+	if err := client.StartSession(); err != nil {
 		return &ConnectRemoteDeviceResult{Error: &perrs.PlatformError{
 			Code:    perrs.SetupTrafficHandlerFailed,
 			Message: "failed to start backend Client session",
@@ -55,18 +55,18 @@ func ConnectRemoteDevice(cp *ClientTransportPair) (res *ConnectRemoteDeviceResul
 	}
 	defer func() {
 		if res.Error != nil {
-			if err := cp.client.EndSession(); err != nil {
+			if err := client.EndSession(); err != nil {
 				slog.Warn("failed to end backend Client session", "err", err)
 			}
 		}
 	}()
-	rd, err := vpn.ConnectRemoteDevice(context.Background(), cp.wrappedSD, cp.wrappedPP)
+	rd, err := vpn.ConnectRemoteDevice(context.Background(), client, client)
 	if err != nil {
 		return &ConnectRemoteDeviceResult{Error: perrs.ToPlatformError(err)}
 	}
 	return &ConnectRemoteDeviceResult{Device: &RemoteDevice{
 		rd:     rd,
-		client: cp.client,
+		client: client,
 	}}
 }
 
@@ -79,7 +79,7 @@ func (d *RemoteDevice) Write(p []byte) (int, error) {
 }
 
 func (d *RemoteDevice) NotifyNetworkChanged() {
-	d.rd.NotifyNetworkChanged()
+	d.client.NotifyNetworkChanged()
 }
 
 func (d *RemoteDevice) Close() *perrs.PlatformError {

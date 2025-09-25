@@ -24,7 +24,7 @@ interface VpnConfig {
   interfaceName: string;
   connectionName: string;
   ipAddress: string;
-  localDNSIP: string;
+  dnsLinkLocalAddress: string;
   dnsServers: string[];
   routingTableId: number;
   routingPriority: number;
@@ -55,7 +55,7 @@ export async function establishVpn(tsRequest: StartRequestJson) {
       ipAddress: '10.0.85.5',
 
       // A "fake" local DNS resolver. Outline will intercept the real resolver at this address.
-      localDNSIP: '10.0.85.53',
+      dnsLinkLocalAddress: '169.254.113.53:53',
 
       // DNS server list, being compatible with old code:
       // https://github.com/Jigsaw-Code/outline-apps/blob/client/linux/v1.14.0/client/electron/linux_proxy_controller/outline_proxy_controller.h#L207
