@@ -25,7 +25,7 @@ export class RootHeader extends LitElement {
     header {
       align-items: center;
       justify-content: space-between;
-      background-color: var(--outline-dark-primary);
+      background-color: var(--outline-background-color);
       display: flex;
       height: 64px;
       padding: 0 16px;

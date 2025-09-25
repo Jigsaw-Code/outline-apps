@@ -45,9 +45,9 @@ export class SupportForm extends LitElement {
   static styles = [
     css`
       :host {
-        --md-sys-color-primary: var(--outline-primary);
+        --md-sys-color-primary: var(--outline-highlight-color);
         --md-sys-color-on-surface: var(--outline-text-color);
-        --md-sys-color-surface: var(--outline-card-background);
+        --md-sys-color-surface: var(--outline-card-background-color);
 
         font-family: var(--outline-font-family);
         width: 100%;
@@ -68,8 +68,10 @@ export class SupportForm extends LitElement {
         margin: var(--outline-gutter-tiny) 0;
         --mdc-text-field-ink-color: var(--outline-text-color);
         --mdc-text-field-label-ink-color: var(--outline-label-color);
-        --mdc-text-field-fill-color: var(--outline-input-bg);
-        --mdc-text-field-disabled-fill-color: var(--outline-input-bg);
+        --mdc-text-field-fill-color: var(--outline-input-background-color);
+        --mdc-text-field-disabled-fill-color: var(
+          --outline-input-background-color
+        );
         --mdc-text-field-disabled-ink-color: var(--outline-label-color);
       }
 
@@ -80,17 +82,17 @@ export class SupportForm extends LitElement {
       }
       label md-checkbox {
         flex-shrink: 0;
-        --md-sys-color-on-primary: var(--outline-card-background);
+        --md-sys-color-on-primary: var(--outline-card-background-color);
       }
 
       md-checkbox {
-        --md-sys-color-primary: var(--outline-primary);
+        --md-sys-color-primary: var(--outline-highlight-color);
         --md-sys-color-outline: var(--outline-text-color);
       }
 
       mwc-button {
-        --mdc-theme-primary: var(--outline-primary);
-        --mdc-theme-on-primary: var(--outline-card-background);
+        --mdc-theme-primary: var(--outline-highlight-color);
+        --mdc-theme-on-primary: var(--outline-card-background-color);
       }
 
       p {

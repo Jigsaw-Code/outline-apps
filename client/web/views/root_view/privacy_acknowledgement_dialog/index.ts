@@ -24,17 +24,17 @@ export class PrivacyAcknowledgementDialog extends LitElement {
 
   static styles = css`
     :host {
-      --md-sys-color-primary: var(--outline-primary);
+      --md-sys-color-primary: var(--outline-highlight-color);
       --md-sys-shape-corner-extra-large: 2px;
       --md-sys-shape-corner-full: 2px;
     }
 
     md-dialog {
       --md-dialog-container-color: var(
-        --outline-comms-dialog-primary-background-color
+        --outline-dialog-background-color
       );
       --md-dialog-supporting-text-color: var(
-        --outline-comms-dialog-primary-text-color
+        --outline-dialog-text-color
       );
 
       text-align: center;
@@ -77,12 +77,12 @@ export class PrivacyAcknowledgementDialog extends LitElement {
     }
 
     p {
-      color: var(--outline-comms-dialog-secondary-text-color);
+      color: var(--outline-dialog-text-color);
     }
 
     a {
       text-decoration: none;
-      color: var(--outline-primary);
+      color: var(--outline-highlight-color);
       cursor: pointer;
       text-transform: uppercase;
       font-weight: bold;

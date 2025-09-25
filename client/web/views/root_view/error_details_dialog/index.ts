@@ -27,7 +27,7 @@ export class ErrorDetailsDialog extends LitElement {
 
   static styles = css`
     :host {
-      --md-sys-color-primary: var(--outline-primary);
+      --md-sys-color-primary: var(--outline-highlight-color);
       --md-sys-shape-corner-extra-large: 2px;
       --md-sys-shape-corner-full: 2px;
 
@@ -45,14 +45,14 @@ export class ErrorDetailsDialog extends LitElement {
 
     article {
       padding: 1rem;
-      background-color: var(--outline-light-gray);
+      background-color: var(--outline-gray-light);
       overflow-x: scroll;
     }
 
     pre {
       margin: 0;
       font-size: 1rem;
-      color: var(--outline-error);
+      color: var(--outline-error-color);
     }
 
     fieldset {

@@ -82,7 +82,7 @@ export class ServerCard extends LitElement implements ServerListItemElement {
       );
 
       align-items: center;
-      background: var(--outline-card-background);
+      background: var(--outline-card-background-color);
       border-radius: var(--outline-corner);
       box-shadow: var(--outline-elevation);
       container-type: inline-size;
@@ -162,7 +162,7 @@ export class ServerCard extends LitElement implements ServerListItemElement {
     }
 
     .card-metadata-server-name-basic-access-connected {
-      color: var(--outline-primary);
+      color: var(--outline-highlight-color);
     }
 
     .card-metadata-server-address {
@@ -184,7 +184,7 @@ export class ServerCard extends LitElement implements ServerListItemElement {
     .card-metadata-connection-type-container > i {
       font-family: var(--outline-font-family);
       font-size: var(--server-metadata-size);
-      color: var(--outline-medium-gray);
+      color: var(--outline-gray);
     }
 
     .card-metadata-connection-type {
@@ -212,7 +212,7 @@ export class ServerCard extends LitElement implements ServerListItemElement {
     }
 
     .card-menu {
-      --md-menu-container-color: var(--outline-card-background);
+      --md-menu-container-color: var(--outline-card-background-color);
     }
 
     .card-menu-button {
@@ -227,7 +227,7 @@ export class ServerCard extends LitElement implements ServerListItemElement {
     }
 
     .card-footer {
-      background: var(--outline-card-footer);
+      background: var(--outline-card-footer-color);
       box-sizing: border-box;
       grid-area: footer;
       padding: var(--outline-gutter-small) var(--outline-gutter);
@@ -235,12 +235,12 @@ export class ServerCard extends LitElement implements ServerListItemElement {
     }
 
     .card-error {
-      color: var(--outline-error);
+      color: var(--outline-error-color);
       margin: 0 var(--outline-gutter-tiny);
     }
 
     .card-footer-button {
-      --md-sys-color-primary: var(--outline-primary);
+      --md-sys-color-primary: var(--outline-highlight-color);
 
       text-transform: uppercase;
     }
@@ -248,7 +248,7 @@ export class ServerCard extends LitElement implements ServerListItemElement {
     .card-basic-access {
       box-shadow: none;
       border-radius: 2rem;
-      border: 2px solid var(--outline-light-gray);
+      border: 2px solid var(--outline-gray-light);
     }
 
     .card-basic-access server-connection-indicator {
@@ -261,7 +261,7 @@ export class ServerCard extends LitElement implements ServerListItemElement {
 
     .card-basic-access footer {
       background: transparent;
-      border-top: 2px solid var(--outline-light-gray);
+      border-top: 2px solid var(--outline-gray-light);
     }
   `;
 
@@ -389,7 +389,7 @@ export class ServerCard extends LitElement implements ServerListItemElement {
         ></server-proxyless-info-dialog>`;
       // eslint-disable-next-line no-fallthrough
       case ServerConnectionType.SPLIT:
-        connectionColor = '--outline-partial-connection-color';
+        connectionColor = '--outline-connection-color-partial';
         connectionIcon = 'shield';
         connectionInfoDialog ??= html`<server-split-tunneling-info-dialog
           .open=${this.isInfoDialogOpen}
@@ -401,7 +401,7 @@ export class ServerCard extends LitElement implements ServerListItemElement {
         );
         break;
       case ServerConnectionType.COMPLETE:
-        connectionColor = '--outline-complete-connection-color';
+        connectionColor = '--outline-connection-color-complete';
         connectionIcon = 'shield_lock';
         connectionInfoDialog = html`<server-complete-protection-info-dialog
           .open=${this.isInfoDialogOpen}

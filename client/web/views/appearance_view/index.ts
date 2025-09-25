@@ -59,14 +59,14 @@ export class AppearanceView extends LitElement {
     :host {
       height: 100%;
       width: 100%;
-      background-color: var(--outline-background);
+      background-color: var(--outline-background-color);
       color: var(--outline-text-color);
       display: block;
     }
 
     md-list {
-      background-color: var(--outline-background);
-      --md-list-container-color: var(--outline-card-background);
+      background-color: var(--outline-background-color);
+      --md-list-container-color: var(--outline-card-background-color);
       color: var(--outline-text-color);
       padding: 8px 0;
     }
@@ -90,13 +90,13 @@ export class AppearanceView extends LitElement {
     }
 
     md-list-item.selected {
-      --md-list-item-label-text-color: var(--outline-primary);
-      --md-list-item-headline-color: var(--outline-primary);
+      --md-list-item-label-text-color: var(--outline-highlight-color);
+      --md-list-item-headline-color: var(--outline-highlight-color);
       background-color: rgba(var(--outline-primary-rgb, 0, 0, 0), 0.1);
     }
 
     md-list-item.selected md-icon {
-      color: var(--outline-primary);
+      color: var(--outline-highlight-color);
     }
 
     md-icon {
@@ -115,7 +115,7 @@ export class AppearanceView extends LitElement {
     }
 
     .appearance-icon-selected {
-      color: var(--outline-primary);
+      color: var(--outline-highlight-color);
     }
 
     /* Explicitly set text color for list items */
@@ -128,7 +128,7 @@ export class AppearanceView extends LitElement {
     md-list-item.selected::part(label),
     md-list-item.selected::part(supporting-text),
     md-list-item.selected::part(headline) {
-      color: var(--outline-primary);
+      color: var(--outline-highlight-color);
     }
 
     /* Override Material Web styling to ensure proper text visibility */

@@ -41,7 +41,7 @@ export class AboutView extends LitElement {
       text-align: center;
       width: 100%;
       color: var(--outline-text-color);
-      background-color: var(--outline-background);
+      background-color: var(--outline-background-color);
     }
 
     /* Prevent images from being selectable on iOS, which can cause a crash when trying to save them. */

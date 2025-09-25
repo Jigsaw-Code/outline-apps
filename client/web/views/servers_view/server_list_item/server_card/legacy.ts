@@ -52,7 +52,7 @@ const sharedCSS = css`
 
   .card {
     align-items: center;
-    background: var(--outline-card-background);
+    background: var(--outline-card-background-color);
     border-radius: var(--outline-corner);
     box-shadow: var(--outline-elevation);
     display: grid;
@@ -107,7 +107,7 @@ const sharedCSS = css`
   }
 
   .card-menu {
-    --md-menu-container-color: var(--outline-card-background);
+    --md-menu-container-color: var(--outline-card-background-color);
   }
 
   .card-menu-button {
@@ -121,7 +121,7 @@ const sharedCSS = css`
   }
 
   .card-footer {
-    background: var(--outline-card-footer);
+    background: var(--outline-card-footer-color);
     border-top: var(--outline-hairline);
     box-sizing: border-box;
     grid-area: footer;
@@ -130,12 +130,12 @@ const sharedCSS = css`
   }
 
   .card-error {
-    color: var(--outline-error);
+    color: var(--outline-error-color);
     margin: 0 var(--outline-gutter-tiny);
   }
 
   .card-footer-button {
-    --md-sys-color-primary: var(--outline-primary);
+    --md-sys-color-primary: var(--outline-highlight-color);
 
     text-transform: uppercase;
   }

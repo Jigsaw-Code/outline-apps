@@ -113,7 +113,7 @@ export class RootView extends LitElement {
     }
 
     paper-toast paper-button {
-      color: var(--light-green);
+      color: var(--outline-green-light);
       text-align: center;
       margin-left: 12px;
     }
