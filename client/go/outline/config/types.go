@@ -51,6 +51,7 @@ type PacketListener struct {
 type PacketProxy struct {
 	ConnectionProviderInfo
 	network.PacketProxy
+	NotifyNetworkChanged func()
 }
 
 // DialFunc is a generic dialing function that can return any type of connction given a context and address.
@@ -75,8 +76,8 @@ type Endpoint[ConnType any] struct {
 
 // TrafficInterceptor wraps a StreamDialer and a PacketProxy to intercept specific traffic.
 type TrafficInterceptor struct {
-	WrapStreamDialer func(sd *Dialer[transport.StreamConn], interceptAddr string) (*Dialer[transport.StreamConn], error)
-	WrapPacketProxy  func(pl *PacketListener, interceptAddr string) (*PacketProxy, error)
+	WrapStreamDialer func(t *TransportPair, interceptAddr string) (*Dialer[transport.StreamConn], error)
+	WrapPacketProxy  func(t *TransportPair, interceptAddr string) (*PacketProxy, error)
 }
 
 // TransportPair provides a StreamDialer and PacketListener, to use as the transport in a Tun2Socks VPN.

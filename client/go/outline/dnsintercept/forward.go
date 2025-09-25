@@ -26,13 +26,12 @@ import (
 
 // WrapForwardStreamDialer creates a StreamDialer to intercept and redirect TCP based DNS connections.
 // It intercepts all TCP connection for `localIP:53` and redirects them to `resolverAddr` via the `base` StreamDialer.
-func WrapForwardStreamDialer(base transport.StreamDialer, localIP netip.Addr, resolverAddr netip.AddrPort) (transport.StreamDialer, error) {
+func WrapForwardStreamDialer(base transport.StreamDialer, localAddr, resolverAddr netip.AddrPort) (transport.StreamDialer, error) {
 	if base == nil {
 		return nil, errors.New("base StreamDialer must be provided")
 	}
-	local := netip.AddrPortFrom(localIP, 53)
 	return transport.FuncStreamDialer(func(ctx context.Context, addr string) (transport.StreamConn, error) {
-		if dst, err := netip.ParseAddrPort(addr); err == nil && isEquivalentAddrPort(dst, local) {
+		if dst, err := netip.ParseAddrPort(addr); err == nil && isEquivalentAddrPort(dst, localAddr) {
 			addr = resolverAddr.String()
 		}
 		return base.DialStream(ctx, addr)

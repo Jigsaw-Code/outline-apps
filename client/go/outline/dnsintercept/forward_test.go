@@ -40,7 +40,7 @@ func (d *lastAddrStreamDialer) DialStream(ctx context.Context, addr string) (tra
 
 func TestWrapForwardStreamDialer(t *testing.T) {
 	sd := &lastAddrStreamDialer{}
-	local := netip.MustParseAddr("192.0.2.1")
+	local := netip.MustParseAddrPort("192.0.2.1:53")
 	resolver := netip.MustParseAddrPort("8.8.8.8:53")
 
 	_, err := WrapForwardStreamDialer(nil, local, resolver)

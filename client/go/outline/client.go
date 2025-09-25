@@ -60,6 +60,9 @@ func (c *Client) NewSession(resp network.PacketResponseReceiver) (network.Packet
 }
 
 func (c *Client) NotifyNetworkChanged() {
+	if c.pp.NotifyNetworkChanged != nil {
+		c.pp.NotifyNetworkChanged()
+	}
 }
 
 func (c *Client) StartSession() error {
@@ -168,7 +171,7 @@ func (c *ClientConfig) new(keyID string, providerClientConfigText string, dnsLin
 	}
 
 	// Intercept DNS traffic
-	sd, err := transportPair.DNSInterceptor.WrapStreamDialer(transportPair.StreamDialer, dnsLinkLocalAddr)
+	sd, err := transportPair.DNSInterceptor.WrapStreamDialer(transportPair, dnsLinkLocalAddr)
 	if err != nil {
 		return nil, &platerrors.PlatformError{
 			Code:    platerrors.InvalidConfig,
@@ -176,7 +179,7 @@ func (c *ClientConfig) new(keyID string, providerClientConfigText string, dnsLin
 			Cause:   platerrors.ToPlatformError(err),
 		}
 	}
-	pp, err := transportPair.DNSInterceptor.WrapPacketProxy(transportPair.PacketListener, dnsLinkLocalAddr)
+	pp, err := transportPair.DNSInterceptor.WrapPacketProxy(transportPair, dnsLinkLocalAddr)
 	if err != nil {
 		return nil, &platerrors.PlatformError{
 			Code:    platerrors.InvalidConfig,
