@@ -20,8 +20,6 @@
 		526D827B2C77B2F800BDE6EE /* Tun2socks.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5229870D2C4F2873009EE577 /* Tun2socks.xcframework */; };
 		D53BEFBA2C9CD28100CBE013 /* OutlineVPNExtensionLib in Frameworks */ = {isa = PBXBuildFile; productRef = D53BEFB92C9CD28100CBE013 /* OutlineVPNExtensionLib */; };
 		D53BEFBC2C9CD28B00CBE013 /* OutlineVPNExtensionLib in Frameworks */ = {isa = PBXBuildFile; productRef = D53BEFBB2C9CD28B00CBE013 /* OutlineVPNExtensionLib */; };
-		D590D0412E83286400E4896B /* VPNConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = D590D0402E83285600E4896B /* VPNConfig.swift */; };
-		D590D0422E83286400E4896B /* VPNConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = D590D0402E83285600E4896B /* VPNConfig.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -36,7 +34,6 @@
 		52334EAE2B0D58AD00817E56 /* NetworkExtension.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NetworkExtension.framework; path = System/Library/Frameworks/NetworkExtension.framework; sourceTree = SDKROOT; };
 		52334EB32B0D58AD00817E56 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		52334EB42B0D58AD00817E56 /* VpnExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = VpnExtension.entitlements; sourceTree = "<group>"; };
-		D590D0402E83285600E4896B /* VPNConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VPNConfig.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -69,7 +66,6 @@
 		522987022C4F26D4009EE577 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
-				D590D0402E83285600E4896B /* VPNConfig.swift */,
 				522987032C4F273E009EE577 /* PacketTunnelProvider.h */,
 				522987042C4F273E009EE577 /* PacketTunnelProvider.m */,
 				522E63D92C751A3A0010C3FA /* PacketTunnelProvider.swift */,
@@ -305,7 +301,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				522E64042C769F100010C3FA /* PacketTunnelProvider.swift in Sources */,
-				D590D0422E83286400E4896B /* VPNConfig.swift in Sources */,
 				522E63F02C768BA30010C3FA /* VpnExtensionTest.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -315,7 +310,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				522E63DA2C751A3A0010C3FA /* PacketTunnelProvider.swift in Sources */,
-				D590D0412E83286400E4896B /* VPNConfig.swift in Sources */,
 				522987052C4F273E009EE577 /* PacketTunnelProvider.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

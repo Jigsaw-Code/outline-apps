@@ -37,7 +37,7 @@ func TestWrapTruncatePacketProxy(t *testing.T) {
 	tpp, err := WrapTruncatePacketProxy(pp, local)
 	require.NoError(t, err)
 
-	reqSender, err := tpp.NewSession(resp)
+	req, err := tpp.NewSession(resp)
 	require.NoError(t, err)
 
 	msg := dnsmessage.Message{
@@ -51,7 +51,7 @@ func TestWrapTruncatePacketProxy(t *testing.T) {
 	query, err := msg.Pack()
 	require.NoError(t, err)
 
-	_, err = reqSender.WriteTo(query, localAddr)
+	_, err = req.WriteTo(query, localAddr)
 	require.NoError(t, err)
 	require.NotNil(t, resp.lastPacket)
 
@@ -61,7 +61,10 @@ func TestWrapTruncatePacketProxy(t *testing.T) {
 	require.True(t, header.Response)
 	require.True(t, header.Truncated)
 
-	_, err = reqSender.WriteTo([]byte("not-a-dns-packet"), udpAddr)
+	_, err = req.WriteTo([]byte("not-a-dns-packet"), udpAddr)
 	require.NoError(t, err)
 	require.Equal(t, udpAddr, pp.req.lastDst)
+
+	require.NoError(t, req.Close())
+	require.True(t, pp.req.closed)
 }

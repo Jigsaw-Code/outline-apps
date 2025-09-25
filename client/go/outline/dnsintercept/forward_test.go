@@ -60,9 +60,20 @@ func TestWrapForwardStreamDialer(t *testing.T) {
 
 // ----- forward PacketProxy tests -----
 
+type packetProxyWithGivenRequestSender struct {
+	network.PacketProxy
+	req  *lastDestPacketRequestSender
+	resp network.PacketResponseReceiver
+}
+
+func (p *packetProxyWithGivenRequestSender) NewSession(resp network.PacketResponseReceiver) (network.PacketRequestSender, error) {
+	p.resp = resp
+	return p.req, nil
+}
+
 type lastDestPacketRequestSender struct {
-	network.PacketRequestSender
 	lastDst netip.AddrPort
+	closed  bool
 }
 
 func (s *lastDestPacketRequestSender) WriteTo(p []byte, destination netip.AddrPort) (int, error) {
@@ -70,8 +81,12 @@ func (s *lastDestPacketRequestSender) WriteTo(p []byte, destination netip.AddrPo
 	return len(p), nil
 }
 
+func (s *lastDestPacketRequestSender) Close() error {
+	s.closed = true
+	return nil
+}
+
 type lastSourcePacketResponseReceiver struct {
-	network.PacketResponseReceiver
 	lastSrc    net.Addr
 	lastPacket []byte
 }
@@ -83,15 +98,8 @@ func (r *lastSourcePacketResponseReceiver) WriteFrom(p []byte, source net.Addr) 
 	return len(p), nil
 }
 
-type packetProxyWithGivenRequestSender struct {
-	network.PacketProxy
-	req  *lastDestPacketRequestSender
-	resp network.PacketResponseReceiver
-}
-
-func (p *packetProxyWithGivenRequestSender) NewSession(resp network.PacketResponseReceiver) (network.PacketRequestSender, error) {
-	p.resp = resp
-	return p.req, nil
+func (r *lastSourcePacketResponseReceiver) Close() error {
+	return nil
 }
 
 func TestWrapForwardPacketProxy(t *testing.T) {
@@ -134,4 +142,7 @@ func TestWrapForwardPacketProxy(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 8, n)
 	require.Equal(t, nonResolverUDPAddr, resp.lastSrc)
+
+	require.NoError(t, req.Close())
+	require.True(t, pp.req.closed)
 }

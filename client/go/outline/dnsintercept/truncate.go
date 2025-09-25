@@ -77,3 +77,10 @@ func (req *truncatePacketReqSender) WriteTo(p []byte, destination netip.AddrPort
 	}
 	return req.PacketRequestSender.WriteTo(p, destination)
 }
+
+// Close ensures all underlying PacketRequestSenders are closed properly.
+func (req *truncatePacketReqSender) Close() (err error) {
+	err = req.PacketRequestSender.Close()
+	req.trunc.Close()
+	return
+}
