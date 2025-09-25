@@ -81,6 +81,8 @@
   --md-sys-color-outline: var(--outline-input-border-color);
   --md-sys-color-primary: var(--outline-highlight-color);
   --md-sys-color-surface: var(--outline-card-background-color);
+  --md-sys-color-surface-container: var(--outline-card-background-color);
+  --md-sys-color-surface-container-highest: var(--outline-card-background-color);
   --md-sys-color-on-surface: var(--outline-text-color);
   --md-sys-color-on-surface-variant: var(--outline-text-color);
   --md-sys-shape-corner-extra-large: var(--outline-corner-radius);
@@ -95,7 +97,7 @@
   --mdc-text-field-label-ink-color: var(--outline-label-color);
   --mdc-text-field-outlined-idle-border-color: var(--outline-input-border-color);
   --mdc-theme-on-surface: var(--outline-text-color);
-  --mdc-theme-primary: var(--outline-brand-color);
+  --mdc-theme-primary: var(--outline-highlight-color);
   --mdc-theme-surface: var(--outline-card-background-color);
   --mdc-typography-font-family: var(--outline-font-family);
 }
