@@ -136,7 +136,7 @@ func doParseTunnelConfig(input string) *InvokeMethodResult {
 	}
 
 	streamFirstHop := result.Client.sd.ConnectionProviderInfo.FirstHop
-	packetFirstHop := result.Client.pl.ConnectionProviderInfo.FirstHop
+	packetFirstHop := result.Client.pp.ConnectionProviderInfo.FirstHop
 	if streamFirstHop == packetFirstHop {
 		response.FirstHop = streamFirstHop
 	}
