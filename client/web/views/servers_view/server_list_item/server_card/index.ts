@@ -268,12 +268,7 @@ export class ServerCard extends LitElement implements ServerListItemElement {
   `;
 
   get isConnectedState() {
-    if (
-      this.server.connectionState === ServerConnectionState.CONNECTED &&
-      this.server.connectionType
-    ) {
-      console.log(`Connection type: ${this.server.connectionType}`);
-    }
+    console.log(`Connection type: ${this.server.connectionType}`);
     return [
       ServerConnectionState.CONNECTING,
       ServerConnectionState.CONNECTED,
