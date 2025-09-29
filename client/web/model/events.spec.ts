@@ -22,8 +22,12 @@ import {
   ServerReconnecting,
   ServerRenamed,
 } from './events';
+import {TunnelType} from '../app/outline_server_repository/vpn';
+import {Server} from './server';
 
 describe('EventQueue', () => {
+  const mockServer = {id: 'mock-id', name: 'mock-server'} as Server;
+
   it('subscribe registers listeners to corresponding event', () => {
     let serverAddedCount = 0;
     let serverForgottenCount = 0;
@@ -46,7 +50,7 @@ describe('EventQueue', () => {
     queue.startPublishing();
 
     // Enqueue event with single listener
-    queue.enqueue(new ServerAdded(null));
+    queue.enqueue(new ServerAdded(mockServer));
     expect(serverAddedCount).toEqual(1);
     expect(serverForgottenCount).toEqual(0);
     expect(serverRenamedCount).toEqual(0);
@@ -55,7 +59,7 @@ describe('EventQueue', () => {
     expect(serverDisconnectedCount).toEqual(0);
 
     // Enqueue event with multiple listeners
-    queue.enqueue(new ServerForgotten(null));
+    queue.enqueue(new ServerForgotten(mockServer));
     expect(serverAddedCount).toEqual(1);
     expect(serverForgottenCount).toEqual(3);
     expect(serverRenamedCount).toEqual(0);
@@ -64,7 +68,7 @@ describe('EventQueue', () => {
     expect(serverDisconnectedCount).toEqual(0);
 
     // Enqueue event with no listeners
-    queue.enqueue(new ServerReconnecting(null));
+    queue.enqueue(new ServerReconnecting('test-id', TunnelType.PROXIED));
     expect(serverAddedCount).toEqual(1);
     expect(serverForgottenCount).toEqual(3);
     expect(serverRenamedCount).toEqual(0);
@@ -78,7 +82,7 @@ describe('EventQueue', () => {
     const queue = new EventQueue();
     queue.subscribe(ServerAdded, () => serverAddedCount++);
     queue.subscribe(ServerAdded, () => serverAddedCount++);
-    queue.enqueue(new ServerAdded(null));
+    queue.enqueue(new ServerAdded(mockServer));
 
     expect(serverAddedCount).toEqual(0);
     queue.startPublishing();
@@ -90,12 +94,12 @@ describe('EventQueue', () => {
     const queue = new EventQueue();
     queue.subscribe(ServerAdded, () => {
       if (serverAddedCount < 5) {
-        queue.enqueue(new ServerAdded(null));
+        queue.enqueue(new ServerAdded(mockServer));
       }
       serverAddedCount++;
     });
 
-    queue.enqueue(new ServerAdded(null));
+    queue.enqueue(new ServerAdded(mockServer));
     queue.startPublishing();
     expect(serverAddedCount).toEqual(6);
   });

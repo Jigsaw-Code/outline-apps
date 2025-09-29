@@ -29,9 +29,9 @@ import {OutlineErrorReporter} from '../shared/error_reporter';
 import {TunnelType} from './outline_server_repository/vpn';
 import {
   ServerConnectionState,
-  ServerConnectionType,
   ServerListItem,
 } from '../views/servers_view';
+import {ServerConnectionType} from '../views/servers_view/server_list_item';
 import {SERVER_CONNECTION_INDICATOR_DURATION_MS} from '../views/servers_view/server_connection_indicator';
 
 enum OUTLINE_ACCESS_KEY_SCHEME {
@@ -82,6 +82,19 @@ export function isOutlineAccessKey(url: string): boolean {
     url.startsWith(`${OUTLINE_ACCESS_KEY_SCHEME.STATIC}://`) ||
     url.startsWith(`${OUTLINE_ACCESS_KEY_SCHEME.DYNAMIC}://`)
   );
+}
+
+function toServerConnectionType(tunnelType: TunnelType): ServerConnectionType {
+  switch (tunnelType) {
+    case TunnelType.PROXIED:
+      return ServerConnectionType.COMPLETE;
+    case TunnelType.PROXYLESS:
+      return ServerConnectionType.PROXYLESS;
+    case TunnelType.SPLIT:
+      return ServerConnectionType.SPLIT;
+    default:
+      console.error(`Unknown tunnel type: ${tunnelType}`);
+  }
 }
 
 const DEFAULT_SERVER_CONNECTION_STATUS_CHANGE_TIMEOUT = 600;
@@ -687,25 +700,9 @@ export class App {
 
   private onServerConnected(event: events.ServerConnected): void {
     console.debug(`server ${event.serverId} connected`);
-
-    let connectionType: ServerConnectionType;
-    switch (event.tunnelType) {
-      case TunnelType.PROXIED:
-        connectionType = ServerConnectionType.COMPLETE;
-        break;
-      case TunnelType.PROXYLESS:
-        connectionType = ServerConnectionType.PROXYLESS;
-        break;
-      case TunnelType.SPLIT:
-        connectionType = ServerConnectionType.SPLIT;
-        break;
-      default:
-        console.error(`Unknown tunnel type: ${event.tunnelType}`);
-    }
-
     this.updateServerListItem(event.serverId, {
       connectionState: ServerConnectionState.CONNECTED,
-      connectionType,
+      connectionType: toServerConnectionType(event.tunnelType),
     });
   }
 
@@ -727,6 +724,7 @@ export class App {
     console.debug(`server ${event.serverId} disconnecting`);
     this.updateServerListItem(event.serverId, {
       connectionState: ServerConnectionState.DISCONNECTING,
+      connectionType: toServerConnectionType(event.tunnelType),
     });
   }
 
@@ -734,6 +732,7 @@ export class App {
     console.debug(`server ${event.serverId} reconnecting`);
     this.updateServerListItem(event.serverId, {
       connectionState: ServerConnectionState.RECONNECTING,
+      connectionType: toServerConnectionType(event.tunnelType),
     });
   }
 

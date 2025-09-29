@@ -31,7 +31,12 @@ export class ElectronVpnApi implements VpnApi {
     // the proxy has been automatically connected at startup (if the user was connected at shutdown)
     window.electron.methodChannel.on(
       'proxy-status',
-      (event: IpcRendererEvent, serverId: string, status: TunnelStatus) => {
+      (
+        event: IpcRendererEvent,
+        serverId: string,
+        status: TunnelStatus,
+        tunnelType: TunnelType
+      ) => {
         if (status === TunnelStatus.CONNECTED) {
           this.runningServerId = serverId;
         }
@@ -39,8 +44,12 @@ export class ElectronVpnApi implements VpnApi {
           this.runningServerId = undefined;
         }
         if (this.statusChangeListener) {
-          // FIXME: The tunnel type is not available in the legacy API.
-          this.statusChangeListener(status, TunnelType.PROXIED, serverId);
+          // The tunnel type will be undefined for the legacy VPN implementation.
+          this.statusChangeListener(
+            status,
+            tunnelType ?? TunnelType.PROXIED,
+            serverId
+          );
         } else {
           console.error(
             `${serverId} status changed to ${status} but no listener set`

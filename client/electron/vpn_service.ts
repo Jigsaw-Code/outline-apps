@@ -115,8 +115,8 @@ export async function onVpnStateChanged(
         tunnelType = TunnelType.SPLIT;
         break;
       default:
-        console.error(`Unkown tunnel type: ${conn?.type}`);
-        return;
+        console.error(`Unknown tunnel type: ${conn?.type}`);
+        tunnelType = TunnelType.PROXIED;
     }
 
     switch (conn?.status) {
@@ -133,6 +133,7 @@ export async function onVpnStateChanged(
         cb(TunnelStatus.DISCONNECTED, tunnelType, conn.id);
         break;
     }
+    return '';
   });
 
   await invokeGoMethod('SetVPNStateChangeListener', cbToken.toString());
