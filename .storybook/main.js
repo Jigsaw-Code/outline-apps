@@ -28,6 +28,7 @@ function getAbsolutePath(value) {
 const config = {
   stories: ['../client/**/stories.ts', '../server_manager/**/stories.ts'],
   addons: [
+    getAbsolutePath('storybook-dark-mode'),
     getAbsolutePath('@storybook/addon-links'),
     getAbsolutePath('@storybook/addon-essentials'),
   ],
