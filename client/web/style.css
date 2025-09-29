@@ -107,8 +107,6 @@ body {
   --md-filled-text-field-input-text-color: var(--outline-input-text);
   --md-menu-container-color: var(--outline-card-background);
   --md-outlined-text-field-input-text-color: var(--outline-input-text);
-  --md-ref-typeface-brand: var(--outline-font-family-title);
-  --md-ref-typeface-plain: var(--outline-font-family);
   --md-sys-color-background: var(--outline-background-color);
   --md-sys-color-on-surface-variant: var(--outline-text-color);
   --md-sys-color-on-surface: var(--outline-text-color);
