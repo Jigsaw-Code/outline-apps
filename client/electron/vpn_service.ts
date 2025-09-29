@@ -97,7 +97,7 @@ export async function onVpnStateChanged(
   const cbToken = await registerCallback(data => {
     const conn = JSON.parse(data) as VPNConnectionState;
     console.debug('VPN connection state changed', conn);
-    switch (conn?.status, conn?.type) {
+    switch (conn?.status) {
       case VPNConnConnected:
         cb(TunnelStatus.CONNECTED, conn.id);
         break;
@@ -113,9 +113,18 @@ export async function onVpnStateChanged(
     }
 
     switch (conn?.type) {
+      case ProxiedConnection:
+        console.debug('VPN connection type is Proxied');
+        break;
       case ProxylessConnection:
+        console.debug('VPN connection type is Proxyless');
+        break;
+      case SplitConnection:
+        console.debug('VPN connection type is Split');
+        break;
+    }
 
-    return '';
+    // TODO: Do something with the connection type
   });
 
   await invokeGoMethod('SetVPNStateChangeListener', cbToken.toString());
