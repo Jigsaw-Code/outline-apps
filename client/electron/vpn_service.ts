@@ -79,8 +79,8 @@ export async function closeVpn(): Promise<void> {
 
 export type VpnStateChangeCallback = (
   status: TunnelStatus,
-  id: string,
-  type: TunnelType
+  type: TunnelType,
+  id: string
 ) => void;
 
 /**
@@ -121,16 +121,16 @@ export async function onVpnStateChanged(
 
     switch (conn?.status) {
       case VPNConnConnected:
-        cb(TunnelStatus.CONNECTED, conn.id, tunnelType);
+        cb(TunnelStatus.CONNECTED, tunnelType, conn.id);
         break;
       case VPNConnConnecting:
-        cb(TunnelStatus.RECONNECTING, conn.id, tunnelType);
+        cb(TunnelStatus.RECONNECTING, tunnelType, conn.id);
         break;
       case VPNConnDisconnecting:
-        cb(TunnelStatus.DISCONNECTING, conn.id, tunnelType);
+        cb(TunnelStatus.DISCONNECTING, tunnelType, conn.id);
         break;
       case VPNConnDisconnected:
-        cb(TunnelStatus.DISCONNECTED, conn.id, tunnelType);
+        cb(TunnelStatus.DISCONNECTED, tunnelType, conn.id);
         break;
     }
   });

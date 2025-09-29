@@ -21,7 +21,7 @@ import * as methodChannel from '../method_channel';
 
 export class ElectronVpnApi implements VpnApi {
   private statusChangeListener:
-    | ((id: string, status: TunnelStatus, type: TunnelType) => void)
+    | ((status: TunnelStatus, type: TunnelType, id: string) => void)
     | null = null;
 
   private runningServerId: string | undefined;
@@ -40,7 +40,7 @@ export class ElectronVpnApi implements VpnApi {
         }
         if (this.statusChangeListener) {
           // FIXME: The tunnel type is not available in the legacy API.
-          this.statusChangeListener(serverId, status, TunnelType.PROXIED);
+          this.statusChangeListener(status, TunnelType.PROXIED, serverId);
         } else {
           console.error(
             `${serverId} status changed to ${status} but no listener set`
@@ -75,7 +75,7 @@ export class ElectronVpnApi implements VpnApi {
   }
 
   onStatusChange(
-    listener: (id: string, status: TunnelStatus, type: TunnelType) => void
+    listener: (status: TunnelStatus, type: TunnelType, id: string) => void
   ): void {
     this.statusChangeListener = listener;
   }

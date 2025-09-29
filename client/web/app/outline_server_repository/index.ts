@@ -89,7 +89,7 @@ export async function newOutlineServerRepository(
   await loadServers(storage, repo);
   console.debug('OutlineServerRepository loaded servers');
 
-  vpnApi.onStatusChange((id: string, status: TunnelStatus, type: TunnelType) => {
+  vpnApi.onStatusChange((status: TunnelStatus, type: TunnelType, id: string) => {
     console.debug(
       `OutlineServerRepository received status update for server ${id}: ${status}`
     );

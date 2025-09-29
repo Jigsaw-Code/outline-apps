@@ -41,18 +41,14 @@ export class CordovaVpnApi implements VpnApi {
   }
 
   onStatusChange(
-    listener: (id: string, status: TunnelStatus, type: TunnelType) => void
+    listener: (status: TunnelStatus, type: TunnelType, id: string) => void
   ): void {
     const onError = (err: unknown) => {
       console.warn('failed to execute status change listener', err);
     };
-    const callback = (data: {
-      id: string;
-      status: TunnelStatus;
-      type: TunnelType;
-    }) => {
+    const callback = (data: {id: string; status: TunnelStatus}) => {
       // FIXME: The tunnel type is not available in the legacy API.
-      listener(data.id, data.status, TunnelType.PROXIED);
+      listener(data.status, TunnelType.PROXIED, data.id);
     };
     console.debug('CordovaVpnApi: registering onStatusChange callback');
     cordova.exec(callback, onError, OUTLINE_PLUGIN_NAME, 'onStatusChange', []);

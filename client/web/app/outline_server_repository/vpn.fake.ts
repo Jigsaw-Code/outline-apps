@@ -63,7 +63,7 @@ export class FakeVpnApi implements VpnApi {
   }
 
   onStatusChange(
-    _listener: (id: string, status: TunnelStatus, type: TunnelType) => void
+    _listener: (status: TunnelStatus, type: TunnelType, id: string) => void
   ): void {
     // NOOP
   }

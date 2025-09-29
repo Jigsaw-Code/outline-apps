@@ -53,6 +53,6 @@ export interface VpnApi {
 
   /** Sets a listener, to be called when the tunnel status changes. */
   onStatusChange(
-    listener: (id: string, status: TunnelStatus, type: TunnelType) => void
+    listener: (status: TunnelStatus, type: TunnelType, id: string) => void
   ): void;
 }
