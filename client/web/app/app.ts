@@ -26,7 +26,12 @@ import * as errors from '../model/errors';
 import * as events from '../model/events';
 import {Server, ServerRepository} from '../model/server';
 import {OutlineErrorReporter} from '../shared/error_reporter';
-import {ServerConnectionState, ServerListItem} from '../views/servers_view';
+import {TunnelType} from './outline_server_repository/vpn';
+import {
+  ServerConnectionState,
+  ServerConnectionType,
+  ServerListItem,
+} from '../views/servers_view';
 import {SERVER_CONNECTION_INDICATOR_DURATION_MS} from '../views/servers_view/server_connection_indicator';
 
 enum OUTLINE_ACCESS_KEY_SCHEME {
@@ -682,8 +687,25 @@ export class App {
 
   private onServerConnected(event: events.ServerConnected): void {
     console.debug(`server ${event.serverId} connected`);
+
+    let connectionType: ServerConnectionType;
+    switch (event.tunnelType) {
+      case TunnelType.PROXIED:
+        connectionType = ServerConnectionType.COMPLETE;
+        break;
+      case TunnelType.PROXYLESS:
+        connectionType = ServerConnectionType.PROXYLESS;
+        break;
+      case TunnelType.SPLIT:
+        connectionType = ServerConnectionType.SPLIT;
+        break;
+      default:
+        console.error(`Unknown tunnel type: ${event.tunnelType}`);
+    }
+
     this.updateServerListItem(event.serverId, {
       connectionState: ServerConnectionState.CONNECTED,
+      connectionType,
     });
   }
 
@@ -692,6 +714,7 @@ export class App {
     try {
       this.updateServerListItem(event.serverId, {
         connectionState: ServerConnectionState.DISCONNECTED,
+        connectionType: undefined,
       });
     } catch {
       console.warn(
@@ -700,7 +723,7 @@ export class App {
     }
   }
 
-  private onServerDisconnecting(event: events.ServerReconnecting): void {
+  private onServerDisconnecting(event: events.ServerDisconnecting): void {
     console.debug(`server ${event.serverId} disconnecting`);
     this.updateServerListItem(event.serverId, {
       connectionState: ServerConnectionState.DISCONNECTING,
