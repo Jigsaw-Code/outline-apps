@@ -17,7 +17,7 @@ import {makeConfig, SIP002_URI} from 'ShadowsocksConfig';
 import uuidv4 from 'uuidv4';
 
 import {newOutlineServer} from './server';
-import {TunnelStatus, VpnApi} from './vpn';
+import {TunnelStatus, TunnelType, VpnApi} from './vpn';
 import * as errors from '../../model/errors';
 import * as events from '../../model/events';
 import {ServerRepository} from '../../model/server';
@@ -89,23 +89,23 @@ export async function newOutlineServerRepository(
   await loadServers(storage, repo);
   console.debug('OutlineServerRepository loaded servers');
 
-  vpnApi.onStatusChange((id: string, status: TunnelStatus) => {
+  vpnApi.onStatusChange((status: TunnelStatus, type: TunnelType, id: string) => {
     console.debug(
       `OutlineServerRepository received status update for server ${id}: ${status}`
     );
     let statusEvent: events.OutlineEvent;
     switch (status) {
       case TunnelStatus.CONNECTED:
-        statusEvent = new events.ServerConnected(id);
+        statusEvent = new events.ServerConnected(id, type);
         break;
       case TunnelStatus.DISCONNECTING:
-        statusEvent = new events.ServerDisconnecting(id);
+        statusEvent = new events.ServerDisconnecting(id, type);
         break;
       case TunnelStatus.DISCONNECTED:
-        statusEvent = new events.ServerDisconnected(id);
+        statusEvent = new events.ServerDisconnected(id, type);
         break;
       case TunnelStatus.RECONNECTING:
-        statusEvent = new events.ServerReconnecting(id);
+        statusEvent = new events.ServerReconnecting(id, type);
         break;
       default:
         console.warn(

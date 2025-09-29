@@ -63,10 +63,22 @@ const (
 	ConnectionDisconnecting ConnectionStatus = "Disconnecting"
 )
 
+// ConnectionType represents the type of a [VPNConnection].
+type ConnectionType string
+
+const (
+	ProxiedConnection ConnectionType = "Proxied"
+	// TODO: these connection types will be used for Basic Access
+	ProxylessConnection ConnectionType = "Proxyless"
+	// Connection includes both proxied and proxyless configuration
+	SplitConnection ConnectionType = "Split"
+)
+
 // VPNConnection represents a system-wide VPN connection.
 type VPNConnection struct {
 	ID     string           `json:"id"`
 	Status ConnectionStatus `json:"status"`
+	Type   ConnectionType   `json:"type"`
 
 	cancelEst     context.CancelFunc
 	wgEst, wgCopy sync.WaitGroup

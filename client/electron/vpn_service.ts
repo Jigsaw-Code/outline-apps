@@ -16,6 +16,7 @@ import {invokeGoMethod, registerCallback} from './go_plugin';
 import {
   StartRequestJson,
   TunnelStatus,
+  TunnelType,
 } from '../web/app/outline_server_repository/vpn';
 
 // TODO: Separate this config into LinuxVpnConfig and WindowsVpnConfig. Some fields may share.
@@ -76,7 +77,11 @@ export async function closeVpn(): Promise<void> {
   await invokeGoMethod('CloseVPN', '');
 }
 
-export type VpnStateChangeCallback = (status: TunnelStatus, id: string) => void;
+export type VpnStateChangeCallback = (
+  status: TunnelStatus,
+  type: TunnelType,
+  id: string
+) => void;
 
 /**
  * Registers a callback function to be invoked when the VPN state changes.
@@ -97,18 +102,35 @@ export async function onVpnStateChanged(
   const cbToken = await registerCallback(data => {
     const conn = JSON.parse(data) as VPNConnectionState;
     console.debug('VPN connection state changed', conn);
+
+    let tunnelType: TunnelType;
+    switch (conn?.type) {
+      case ProxiedConnection:
+        tunnelType = TunnelType.PROXIED;
+        break;
+      case ProxylessConnection:
+        tunnelType = TunnelType.PROXYLESS;
+        break;
+      case SplitConnection:
+        tunnelType = TunnelType.SPLIT;
+        break;
+      default:
+        console.error(`Unknown tunnel type: ${conn?.type}`);
+        tunnelType = TunnelType.PROXIED;
+    }
+
     switch (conn?.status) {
       case VPNConnConnected:
-        cb(TunnelStatus.CONNECTED, conn.id);
+        cb(TunnelStatus.CONNECTED, tunnelType, conn.id);
         break;
       case VPNConnConnecting:
-        cb(TunnelStatus.RECONNECTING, conn.id);
+        cb(TunnelStatus.RECONNECTING, tunnelType, conn.id);
         break;
       case VPNConnDisconnecting:
-        cb(TunnelStatus.DISCONNECTING, conn.id);
+        cb(TunnelStatus.DISCONNECTING, tunnelType, conn.id);
         break;
       case VPNConnDisconnected:
-        cb(TunnelStatus.DISCONNECTED, conn.id);
+        cb(TunnelStatus.DISCONNECTED, tunnelType, conn.id);
         break;
     }
     return '';
@@ -128,9 +150,16 @@ const VPNConnConnected: VPNConnStatus = 'Connected';
 const VPNConnDisconnecting: VPNConnStatus = 'Disconnecting';
 const VPNConnDisconnected: VPNConnStatus = 'Disconnected';
 
+type VPNConnType = string;
+const ProxiedConnection: VPNConnType = 'Proxied';
+const ProxylessConnection: VPNConnType = 'Proxyless';
+const SplitConnection: VPNConnType = 'Split';
+
+
 interface VPNConnectionState {
   readonly id: string;
   readonly status: VPNConnStatus;
+  readonly type: VPNConnType;
 }
 
 //#endregion type definitions of VPNConnection in Go

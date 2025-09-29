@@ -44,6 +44,7 @@ import {VpnTunnel} from './vpn_tunnel';
 import {
   StartRequestJson,
   TunnelStatus,
+  TunnelType,
 } from '../web/app/outline_server_repository/vpn';
 import * as errors from '../web/model/errors';
 
@@ -426,11 +427,15 @@ async function stopVpn() {
   await onceDisconnected;
 }
 
-function setUiTunnelStatus(status: TunnelStatus, tunnelId: string) {
+function setUiTunnelStatus(
+  status: TunnelStatus,
+  tunnelId: string,
+  tunnelType?: TunnelType
+) {
   // TODO: refactor channel name and namespace to a constant
   const event = 'outline-ipc-proxy-status';
   if (mainWindow) {
-    mainWindow.webContents.send(event, tunnelId, status);
+    mainWindow.webContents.send(event, tunnelId, status, tunnelType);
   } else {
     console.warn(`received ${event} event but no mainWindow to notify`);
   }
@@ -467,7 +472,9 @@ function main() {
     setupWindow();
 
     if (USE_MODERN_ROUTING) {
-      await onVpnStateChanged(setUiTunnelStatus);
+      await onVpnStateChanged((status, type, id) => {
+        setUiTunnelStatus(status, id, type);
+      });
     }
 
     let requestAtShutdown: StartRequestJson | undefined;
