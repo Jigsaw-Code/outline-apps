@@ -19,6 +19,12 @@ export const enum TunnelStatus {
   DISCONNECTING,
 }
 
+export const enum TunnelType {
+  PROXIED,
+  PROXYLESS,
+  SPLIT,
+}
+
 /** StartRequestJson is the serializable request to start the VPN, used for persistence and IPCs. */
 export interface StartRequestJson {
   id: string;

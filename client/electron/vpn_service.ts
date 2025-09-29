@@ -97,7 +97,7 @@ export async function onVpnStateChanged(
   const cbToken = await registerCallback(data => {
     const conn = JSON.parse(data) as VPNConnectionState;
     console.debug('VPN connection state changed', conn);
-    switch (conn?.status) {
+    switch (conn?.status, conn?.type) {
       case VPNConnConnected:
         cb(TunnelStatus.CONNECTED, conn.id);
         break;
@@ -111,6 +111,10 @@ export async function onVpnStateChanged(
         cb(TunnelStatus.DISCONNECTED, conn.id);
         break;
     }
+
+    switch (conn?.type) {
+      case ProxylessConnection:
+
     return '';
   });
 
@@ -128,9 +132,16 @@ const VPNConnConnected: VPNConnStatus = 'Connected';
 const VPNConnDisconnecting: VPNConnStatus = 'Disconnecting';
 const VPNConnDisconnected: VPNConnStatus = 'Disconnected';
 
+type VPNConnType = string;
+const ProxiedConnection: VPNConnType = 'Proxied';
+const ProxylessConnection: VPNConnType = 'Proxyless';
+const SplitConnection: VPNConnType = 'Split';
+
+
 interface VPNConnectionState {
   readonly id: string;
   readonly status: VPNConnStatus;
+  readonly type: VPNConnType;
 }
 
 //#endregion type definitions of VPNConnection in Go
