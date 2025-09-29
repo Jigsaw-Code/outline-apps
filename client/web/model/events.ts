@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import {Server} from './server';
+import {TunnelType} from '../app/outline_server_repository/vpn';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface OutlineEvent {}
@@ -36,19 +37,19 @@ export class ServerRenamed implements OutlineEvent {
 }
 
 export class ServerConnected implements OutlineEvent {
-  constructor(readonly serverId: string) {}
+  constructor(readonly serverId: string, readonly tunnelType: TunnelType) {}
 }
 
 export class ServerDisconnecting implements OutlineEvent {
-  constructor(readonly serverId: string) {}
+  constructor(readonly serverId: string, readonly tunnelType: TunnelType) {}
 }
 
 export class ServerDisconnected implements OutlineEvent {
-  constructor(readonly serverId: string) {}
+  constructor(readonly serverId: string, readonly tunnelType: TunnelType) {}
 }
 
 export class ServerReconnecting implements OutlineEvent {
-  constructor(readonly serverId: string) {}
+  constructor(readonly serverId: string, readonly tunnelType: TunnelType) {}
 }
 
 // Simple publisher-subscriber queue.

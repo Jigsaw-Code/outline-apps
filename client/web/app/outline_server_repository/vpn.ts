@@ -52,5 +52,7 @@ export interface VpnApi {
   isRunning(id: string): Promise<boolean>;
 
   /** Sets a listener, to be called when the tunnel status changes. */
-  onStatusChange(listener: (id: string, status: TunnelStatus) => void): void;
+  onStatusChange(
+    listener: (id: string, status: TunnelStatus, type: TunnelType) => void
+  ): void;
 }

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {VpnApi, TunnelStatus, StartRequestJson} from './vpn';
+import {VpnApi, TunnelStatus, StartRequestJson, TunnelType} from './vpn';
 import * as errors from '../../model/errors';
 
 export const FAKE_BROKEN_HOSTNAME = '192.0.2.1';
@@ -62,7 +62,9 @@ export class FakeVpnApi implements VpnApi {
     return this.running;
   }
 
-  onStatusChange(_listener: (id: string, status: TunnelStatus) => void): void {
+  onStatusChange(
+    _listener: (id: string, status: TunnelStatus, type: TunnelType) => void
+  ): void {
     // NOOP
   }
 }

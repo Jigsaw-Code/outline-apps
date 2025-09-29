@@ -16,6 +16,7 @@ import {invokeGoMethod, registerCallback} from './go_plugin';
 import {
   StartRequestJson,
   TunnelStatus,
+  TunnelType,
 } from '../web/app/outline_server_repository/vpn';
 
 // TODO: Separate this config into LinuxVpnConfig and WindowsVpnConfig. Some fields may share.
@@ -76,7 +77,11 @@ export async function closeVpn(): Promise<void> {
   await invokeGoMethod('CloseVPN', '');
 }
 
-export type VpnStateChangeCallback = (status: TunnelStatus, id: string) => void;
+export type VpnStateChangeCallback = (
+  status: TunnelStatus,
+  id: string,
+  type: TunnelType
+) => void;
 
 /**
  * Registers a callback function to be invoked when the VPN state changes.
@@ -97,34 +102,37 @@ export async function onVpnStateChanged(
   const cbToken = await registerCallback(data => {
     const conn = JSON.parse(data) as VPNConnectionState;
     console.debug('VPN connection state changed', conn);
-    switch (conn?.status) {
-      case VPNConnConnected:
-        cb(TunnelStatus.CONNECTED, conn.id);
-        break;
-      case VPNConnConnecting:
-        cb(TunnelStatus.RECONNECTING, conn.id);
-        break;
-      case VPNConnDisconnecting:
-        cb(TunnelStatus.DISCONNECTING, conn.id);
-        break;
-      case VPNConnDisconnected:
-        cb(TunnelStatus.DISCONNECTED, conn.id);
-        break;
-    }
 
+    let tunnelType: TunnelType;
     switch (conn?.type) {
       case ProxiedConnection:
-        console.debug('VPN connection type is Proxied');
+        tunnelType = TunnelType.PROXIED;
         break;
       case ProxylessConnection:
-        console.debug('VPN connection type is Proxyless');
+        tunnelType = TunnelType.PROXYLESS;
         break;
       case SplitConnection:
-        console.debug('VPN connection type is Split');
+        tunnelType = TunnelType.SPLIT;
         break;
+      default:
+        console.error(`Unkown tunnel type: ${conn?.type}`);
+        return;
     }
 
-    // TODO: Do something with the connection type
+    switch (conn?.status) {
+      case VPNConnConnected:
+        cb(TunnelStatus.CONNECTED, conn.id, tunnelType);
+        break;
+      case VPNConnConnecting:
+        cb(TunnelStatus.RECONNECTING, conn.id, tunnelType);
+        break;
+      case VPNConnDisconnecting:
+        cb(TunnelStatus.DISCONNECTING, conn.id, tunnelType);
+        break;
+      case VPNConnDisconnected:
+        cb(TunnelStatus.DISCONNECTED, conn.id, tunnelType);
+        break;
+    }
   });
 
   await invokeGoMethod('SetVPNStateChangeListener', cbToken.toString());
