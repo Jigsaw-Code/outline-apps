@@ -46,14 +46,32 @@ type ProviderTunnelConfig struct {
 
 // firstHopAndTunnelConfigJSON must match FirstHopAndTunnelConfigJson in config.ts.
 type firstHopAndTunnelConfigJSON struct {
-	Client         string       `json:"client"`
-	FirstHop       string       `json:"firstHop"`
+	Client         string          `json:"client"`
+	FirstHop       string          `json:"firstHop"`
 	ConnectionType config.ConnType `json:"connectionType"`
 }
 
 func hasKey[K comparable, V any](m map[K]V, key K) bool {
 	_, ok := m[key]
 	return ok
+}
+
+func combinedConnectionType(streamConnType, packetConnType config.ConnType) config.ConnType {
+	// Matching
+	if streamConnType == packetConnType {
+		return streamConnType
+		// Any split is always fully split
+	} else if streamConnType == config.ConnTypePartial || packetConnType == config.ConnTypePartial {
+		return config.ConnTypePartial
+		// Blocked is always the other connection type
+	} else if streamConnType == config.ConnTypeBlocked {
+		return packetConnType
+	} else if packetConnType == config.ConnTypeBlocked {
+		return streamConnType
+		// Any other non-match is split
+	} else {
+		return config.ConnTypePartial
+	}
 }
 
 func doParseTunnelConfig(input string) *InvokeMethodResult {
@@ -145,11 +163,8 @@ func doParseTunnelConfig(input string) *InvokeMethodResult {
 
 	streamConnType := result.Client.sd.ConnectionProviderInfo.ConnType
 	packetConnType := result.Client.pl.ConnectionProviderInfo.ConnType
-	if streamConnType == packetConnType {
-		response.ConnectionType = streamConnType
-	} else {
-		response.ConnectionType = config.ConnTypePartial
-	}
+
+	response.ConnectionType = combinedConnectionType(streamConnType, packetConnType)
 
 	responseBytes, err := json.Marshal(response)
 	if err != nil {

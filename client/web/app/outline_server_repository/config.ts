@@ -57,13 +57,11 @@ export interface TunnelConfigJson {
 }
 
 /**
- * ConnectionType specifies how the client should connect to the internet.
- * It's a string enum that mirrors the Go `ConnType` enum.
- * - `proxy`: The client should connect to the internet through the Outline proxy.
- * - `proxyless`: The client should connect directly to the internet.
- * - `split`: The client should connect to the internet through the Outline proxy for some domains, and directly for others.
+ * ConnectionType specifies how the config connects to the internet
+ * keep this type in sync with
+ * go/outline/config/types.go ConnType
  */
-export type ConnectionType = 'proxy' | 'proxyless' | 'split';
+export type ConnectionType = 'proxy' | 'proxyless' | 'split' | 'blocked';
 
 /**
  * FirstHopAndTunnelConfigJson holds the first hop information and the tunnel config for convenience.
