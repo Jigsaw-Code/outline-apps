@@ -33,7 +33,9 @@ const (
 	ConnTypeBlocked
 )
 
-// MarshalJSON implements the json.Marshaler interface.
+// This is the format used for sending ConnType between go and typescript
+// Keep this in sync with
+// client/web/app/outline_server_repository/config.ts ConnectionType
 func (c ConnType) MarshalJSON() ([]byte, error) {
 	var s string
 	switch c {
@@ -45,11 +47,6 @@ func (c ConnType) MarshalJSON() ([]byte, error) {
 		s = "split"
 	case ConnTypeBlocked:
 		s = "blocked"
-	default:
-		return nil, &json.UnsupportedValueError{
-			Str: "invalid ConnType",
-		}
-	}
 	return json.Marshal(s)
 }
 
