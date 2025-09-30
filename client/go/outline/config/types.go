@@ -16,6 +16,7 @@ package config
 
 import (
 	"context"
+	"encoding/json"
 	"net"
 
 	"github.com/Jigsaw-Code/outline-sdk/transport"
@@ -31,6 +32,26 @@ const (
 	ConnTypePartial
 	ConnTypeBlocked
 )
+
+// MarshalJSON implements the json.Marshaler interface.
+func (c ConnType) MarshalJSON() ([]byte, error) {
+	var s string
+	switch c {
+	case ConnTypeDirect:
+		s = "proxyless"
+	case ConnTypeTunneled:
+		s = "proxy"
+	case ConnTypePartial:
+		s = "split"
+	case ConnTypeBlocked:
+		s = "blocked"
+	default:
+		return nil, &json.UnsupportedValueError{
+			Str: "invalid ConnType",
+		}
+	}
+	return json.Marshal(s)
+}
 
 // ConnProviderConfig represents a dialer or endpoint that can create connections.
 type ConnectionProviderInfo struct {

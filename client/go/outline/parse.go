@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/config"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/platerrors"
 	"github.com/goccy/go-yaml"
 )
@@ -45,8 +46,9 @@ type ProviderTunnelConfig struct {
 
 // firstHopAndTunnelConfigJSON must match FirstHopAndTunnelConfigJson in config.ts.
 type firstHopAndTunnelConfigJSON struct {
-	Client   string `json:"client"`
-	FirstHop string `json:"firstHop"`
+	Client         string       `json:"client"`
+	FirstHop       string       `json:"firstHop"`
+	ConnectionType config.ConnType `json:"connectionType"`
 }
 
 func hasKey[K comparable, V any](m map[K]V, key K) bool {
@@ -140,6 +142,15 @@ func doParseTunnelConfig(input string) *InvokeMethodResult {
 	if streamFirstHop == packetFirstHop {
 		response.FirstHop = streamFirstHop
 	}
+
+	streamConnType := result.Client.sd.ConnectionProviderInfo.ConnType
+	packetConnType := result.Client.pl.ConnectionProviderInfo.ConnType
+	if streamConnType == packetConnType {
+		response.ConnectionType = streamConnType
+	} else {
+		response.ConnectionType = config.ConnTypePartial
+	}
+
 	responseBytes, err := json.Marshal(response)
 	if err != nil {
 		return &InvokeMethodResult{
