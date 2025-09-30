@@ -30,7 +30,8 @@ export class StaticServiceConfig {
   constructor(
     readonly name: string,
     readonly firstHop: string,
-    readonly client: string
+    readonly client: string,
+    readonly connectionType: ConnectionType
   ) {}
 }
 
@@ -56,10 +57,20 @@ export interface TunnelConfigJson {
 }
 
 /**
+ * ConnectionType specifies how the client should connect to the internet.
+ * It's a string enum that mirrors the Go `ConnType` enum.
+ * - `proxy`: The client should connect to the internet through the Outline proxy.
+ * - `proxyless`: The client should connect directly to the internet.
+ * - `split`: The client should connect to the internet through the Outline proxy for some domains, and directly for others.
+ */
+export type ConnectionType = 'proxy' | 'proxyless' | 'split';
+
+/**
  * FirstHopAndTunnelConfigJson holds the first hop information and the tunnel config for convenience.
  */
 export interface FirstHopAndTunnelConfigJson extends TunnelConfigJson {
   firstHop: string;
+  connectionType: ConnectionType;
 }
 
 /**
@@ -92,7 +103,12 @@ export async function parseAccessKey(
     // Static ss:// keys. It encodes the full service config.
     if (noHashAccessKey.protocol === 'ss:') {
       const parsed = await parseTunnelConfig(noHashAccessKey.toString());
-      return new StaticServiceConfig(name, parsed.firstHop, parsed.client);
+      return new StaticServiceConfig(
+        name,
+        parsed.firstHop,
+        parsed.client,
+        parsed.connectionType
+      );
     }
 
     // Dynamic ssconf:// keys. It encodes the location of the service config.
