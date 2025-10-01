@@ -17,8 +17,8 @@ package config
 import (
 	"context"
 	"encoding/json"
-	"net"
 
+	"github.com/Jigsaw-Code/outline-sdk/network"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 )
 
@@ -72,6 +72,13 @@ type PacketListener struct {
 	transport.PacketListener
 }
 
+// PacketProxy is a [network.PacketProxy] with embedded ConnectionProviderInfo.
+type PacketProxy struct {
+	ConnectionProviderInfo
+	network.PacketProxy
+	NotifyNetworkChanged func()
+}
+
 // DialFunc is a generic dialing function that can return any type of connction given a context and address.
 type DialFunc[ConnType any] func(ctx context.Context, address string) (ConnType, error)
 
@@ -94,17 +101,12 @@ type Endpoint[ConnType any] struct {
 
 // TransportPair provides a StreamDialer and PacketListener, to use as the transport in a Tun2Socks VPN.
 type TransportPair struct {
-	StreamDialer   *Dialer[transport.StreamConn]
-	PacketListener *PacketListener
+	StreamDialer *Dialer[transport.StreamConn]
+	PacketProxy  *PacketProxy
 }
 
 var _ transport.StreamDialer = (*TransportPair)(nil)
-var _ transport.PacketListener = (*TransportPair)(nil)
 
 func (t *TransportPair) DialStream(ctx context.Context, address string) (transport.StreamConn, error) {
 	return t.StreamDialer.Dial(ctx, address)
-}
-
-func (t *TransportPair) ListenPacket(ctx context.Context) (net.PacketConn, error) {
-	return t.PacketListener.ListenPacket(ctx)
 }

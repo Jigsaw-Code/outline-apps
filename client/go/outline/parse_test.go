@@ -215,7 +215,7 @@ func TestParseConfig_SS_URL(t *testing.T) {
 	require.Nil(t, clientResult.Error, "NewClient failed with parsed client config: %v", clientResult.Error)
 	require.NotNil(t, clientResult.Client)
 	require.Equal(t, expectedFirstHop, clientResult.Client.sd.FirstHop)
-	require.Equal(t, expectedFirstHop, clientResult.Client.pl.FirstHop)
+	require.Equal(t, expectedFirstHop, clientResult.Client.pp.FirstHop)
 
 	matchTransportConfig(t, userInputConfig, result.Value)
 }
@@ -239,7 +239,7 @@ func TestParseConfig_Legacy_JSON(t *testing.T) {
 	require.Nil(t, clientResult.Error, "NewClient failed with parsed client config: %v", clientResult.Error)
 	require.NotNil(t, clientResult.Client)
 	require.Equal(t, expectedFirstHop, clientResult.Client.sd.FirstHop)
-	require.Equal(t, expectedFirstHop, clientResult.Client.pl.FirstHop)
+	require.Equal(t, expectedFirstHop, clientResult.Client.pp.FirstHop)
 
 	matchTransportConfig(t, userInputConfig, result.Value)
 }
@@ -264,7 +264,7 @@ func TestParseConfig_Legacy_JSON_WithPrefix(t *testing.T) {
 	require.Nil(t, clientResult.Error, "NewClient failed with parsed client config: %v", clientResult.Error)
 	require.NotNil(t, clientResult.Client)
 	require.Equal(t, expectedFirstHop, clientResult.Client.sd.FirstHop)
-	require.Equal(t, expectedFirstHop, clientResult.Client.pl.FirstHop)
+	require.Equal(t, expectedFirstHop, clientResult.Client.pp.FirstHop)
 
 	matchTransportConfig(t, userInputConfig, result.Value)
 }
@@ -284,7 +284,7 @@ func TestParseConfig_Legacy_JSONFlow_WithPrefix(t *testing.T) {
 	require.Nil(t, clientResult.Error, "NewClient failed with parsed client config: %v", clientResult.Error)
 	require.NotNil(t, clientResult.Client)
 	require.Equal(t, expectedFirstHop, clientResult.Client.sd.FirstHop)
-	require.Equal(t, expectedFirstHop, clientResult.Client.pl.FirstHop)
+	require.Equal(t, expectedFirstHop, clientResult.Client.pp.FirstHop)
 
 	matchTransportConfig(t, userInputConfig, result.Value)
 }
@@ -309,7 +309,7 @@ func TestParseConfig_Transport_JSON_WithPrefix(t *testing.T) {
 	require.Nil(t, clientResult.Error, "NewClient failed with parsed client config: %v", clientResult.Error)
 	require.NotNil(t, clientResult.Client)
 	require.Equal(t, expectedFirstHop, clientResult.Client.sd.FirstHop)
-	require.Equal(t, expectedFirstHop, clientResult.Client.pl.FirstHop)
+	require.Equal(t, expectedFirstHop, clientResult.Client.pp.FirstHop)
 
 	matchClientConfig(t, userInputConfig, result.Value)
 }
@@ -358,7 +358,7 @@ func TestParseConfig_Flexible_JSON(t *testing.T) {
 	require.Nil(t, clientResult.Error, "NewClient failed with parsed client config: %v", clientResult.Error)
 	require.NotNil(t, clientResult.Client)
 	require.Equal(t, expectedFirstHop, clientResult.Client.sd.FirstHop)
-	require.Equal(t, expectedFirstHop, clientResult.Client.pl.FirstHop)
+	require.Equal(t, expectedFirstHop, clientResult.Client.pp.FirstHop)
 
 	matchTransportConfig(t, userInputConfig, result.Value)
 }
@@ -384,7 +384,7 @@ prefix: "SSH-2.0\r\n"`
 	require.Nil(t, clientResult.Error, "NewClient failed with parsed client config: %v", clientResult.Error)
 	require.NotNil(t, clientResult.Client)
 	require.Equal(t, expectedFirstHop, clientResult.Client.sd.FirstHop)
-	require.Equal(t, expectedFirstHop, clientResult.Client.pl.FirstHop)
+	require.Equal(t, expectedFirstHop, clientResult.Client.pp.FirstHop)
 
 	matchTransportConfig(t, userInputConfig, result.Value)
 }
@@ -409,7 +409,7 @@ prefix: "SSH-2.0\r\n"`
 	require.Nil(t, clientResult.Error, "NewClient failed with parsed client config: %v", clientResult.Error)
 	require.NotNil(t, clientResult.Client)
 	require.Equal(t, expectedFirstHop, clientResult.Client.sd.FirstHop)
-	require.Equal(t, expectedFirstHop, clientResult.Client.pl.FirstHop)
+	require.Equal(t, expectedFirstHop, clientResult.Client.pp.FirstHop)
 
 	matchTransportConfig(t, userInputConfig, result.Value)
 }
@@ -435,7 +435,7 @@ prefix: "SSH-2.0\r\n"`
 	require.Nil(t, clientResult.Error, "NewClient failed with parsed client config: %v", clientResult.Error)
 	require.NotNil(t, clientResult.Client)
 	require.Equal(t, expectedFirstHop, clientResult.Client.sd.FirstHop)
-	require.Equal(t, expectedFirstHop, clientResult.Client.pl.FirstHop)
+	require.Equal(t, expectedFirstHop, clientResult.Client.pp.FirstHop)
 
 	matchTransportConfig(t, userInputConfig, result.Value)
 }
@@ -465,7 +465,7 @@ prefix: "SSH-2.0\r\n"`
 	require.Nil(t, clientResult.Error, "NewClient failed with parsed client config: %v", clientResult.Error)
 	require.NotNil(t, clientResult.Client)
 	require.Equal(t, expectedFirstHop, clientResult.Client.sd.FirstHop)
-	require.Equal(t, expectedFirstHop, clientResult.Client.pl.FirstHop)
+	require.Equal(t, expectedFirstHop, clientResult.Client.pp.FirstHop)
 
 	matchTransportConfig(t, userInputConfig, result.Value)
 }
@@ -499,7 +499,7 @@ udp:
 	require.Nil(t, clientResult.Error, "NewClient failed with parsed client config: %v", clientResult.Error)
 	require.NotNil(t, clientResult.Client)
 	require.Equal(t, expectedSdFirstHop, clientResult.Client.sd.FirstHop)
-	require.Equal(t, expectedPlFirstHop, clientResult.Client.pl.FirstHop)
+	require.Equal(t, expectedPlFirstHop, clientResult.Client.pp.FirstHop)
 
 	matchTransportConfig(t, userInputConfig, result.Value)
 }
