@@ -69,8 +69,7 @@ export async function newOutlineServer(
 
 class OutlineServer implements Server {
   errorMessageId?: string;
-  // Extends StartRequestJson to include connectionType for internal validation.
-  private startRequest: StartRequestJson & {connectionType?: ConnectionType};
+  private startRequest: StartRequestJson;
 
   constructor(
     private vpnApi: VpnApi,
@@ -108,7 +107,7 @@ class OutlineServer implements Server {
     }
 
     // Make sure the transport is not proxyless for now.
-    // TODO remove this when proxyless is configured on the frontend
+    // TODO remove this when proxyless is supported on the frontend
     if (this.startRequest.connectionType === ConnectionType.DIRECT) {
       throw new errors.InvalidServiceConfiguration(
         'Proxyless connections are not supported'
