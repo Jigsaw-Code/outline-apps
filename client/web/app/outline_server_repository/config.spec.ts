@@ -40,7 +40,7 @@ describe('parseAccessKey', () => {
         'My Server',
         'first-hop:4321',
         clientConfig,
-        'tunneled'
+        config.ConnectionType.TUNNELED
       )
     );
   });
@@ -64,7 +64,7 @@ describe('parseAccessKey', () => {
         'My Server',
         'first-hop:4321',
         clientConfig,
-        'tunneled'
+        config.ConnectionType.TUNNELED
       )
     );
   });

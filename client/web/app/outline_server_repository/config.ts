@@ -61,7 +61,12 @@ export interface TunnelConfigJson {
  * keep this type in sync with
  * go/outline/config/types.go#ConnType
  */
-export type ConnectionType = 'tunneled' | 'direct' | 'partial' | 'blocked';
+export enum ConnectionType {
+  TUNNELED = 'tunneled',
+  DIRECT = 'direct',
+  PARTIAL = 'partial',
+  BLOCKED = 'blocked',
+}
 
 /**
  * FirstHopAndTunnelConfigJson holds the first hop information and the tunnel config for convenience.
