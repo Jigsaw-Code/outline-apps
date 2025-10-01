@@ -16,6 +16,7 @@ package config
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/Jigsaw-Code/outline-sdk/network"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
@@ -26,11 +27,36 @@ import (
 type ConnType int
 
 const (
+	// Proxyless
 	ConnTypeDirect ConnType = iota
+	// Proxy
 	ConnTypeTunneled
+	// Mixed
 	ConnTypePartial
 	ConnTypeBlocked
 )
+
+// This is the format used for sending ConnType between go and typescript
+// Keep this in sync with
+// client/web/app/outline_server_repository/config.ts#ConnectionType
+func (c ConnType) MarshalJSON() ([]byte, error) {
+	var s string
+	switch c {
+	case ConnTypeDirect:
+		s = "direct"
+	case ConnTypeTunneled:
+		s = "tunneled"
+	case ConnTypePartial:
+		s = "partial"
+	case ConnTypeBlocked:
+		s = "blocked"
+	default:
+		return nil, &json.UnsupportedValueError{
+			Str: "invalid ConnType",
+		}
+	}
+	return json.Marshal(s)
+}
 
 // ConnProviderConfig represents a dialer or endpoint that can create connections.
 type ConnectionProviderInfo struct {
