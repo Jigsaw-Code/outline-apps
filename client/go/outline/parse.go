@@ -162,7 +162,7 @@ func doParseTunnelConfig(input string) *InvokeMethodResult {
 	}
 
 	streamConnType := result.Client.sd.ConnectionProviderInfo.ConnType
-	packetConnType := result.Client.pl.ConnectionProviderInfo.ConnType
+	packetConnType := result.Client.pp.ConnectionProviderInfo.ConnType
 	response.ConnectionType = combinedConnectionType(streamConnType, packetConnType)
 
 	responseBytes, err := json.Marshal(response)
