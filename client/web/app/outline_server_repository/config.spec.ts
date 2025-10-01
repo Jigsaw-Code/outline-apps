@@ -26,7 +26,7 @@ describe('parseAccessKey', () => {
       }
       return `{"client": ${JSON.stringify(
         params
-      )}, "firstHop": "first-hop:4321", "connectionType": "proxy"}`;
+      )}, "firstHop": "first-hop:4321", "connectionType": "tunneled"}`;
     },
   });
 
@@ -40,7 +40,7 @@ describe('parseAccessKey', () => {
         'My Server',
         'first-hop:4321',
         clientConfig,
-        'proxy'
+        'tunneled'
       )
     );
   });
@@ -64,7 +64,7 @@ describe('parseAccessKey', () => {
         'My Server',
         'first-hop:4321',
         clientConfig,
-        'proxy'
+        'tunneled'
       )
     );
   });

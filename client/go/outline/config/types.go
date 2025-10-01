@@ -27,8 +27,11 @@ import (
 type ConnType int
 
 const (
+	// Proxyless
 	ConnTypeDirect ConnType = iota
+	// Proxy
 	ConnTypeTunneled
+	// Mixed
 	ConnTypePartial
 	ConnTypeBlocked
 )
@@ -40,11 +43,11 @@ func (c ConnType) MarshalJSON() ([]byte, error) {
 	var s string
 	switch c {
 	case ConnTypeDirect:
-		s = "proxyless"
+		s = "direct"
 	case ConnTypeTunneled:
-		s = "proxy"
+		s = "tunneled"
 	case ConnTypePartial:
-		s = "split"
+		s = "partial"
 	case ConnTypeBlocked:
 		s = "blocked"
 	default:

@@ -112,7 +112,7 @@ func Test_doParseTunnel_SSURL(t *testing.T) {
 	result := doParseTunnelConfig(transportConfig)
 	require.Nil(t, result.Error)
 	require.Equal(t,
-		`{"client":"{\"transport\":\"ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@example.com:4321/\"}","firstHop":"example.com:4321","connectionType":"proxy"}`,
+		`{"client":"{\"transport\":\"ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@example.com:4321/\"}","firstHop":"example.com:4321","connectionType":"tunneled"}`,
 		result.Value)
 
 	matchTransportConfig(t, transportConfig, result.Value)
@@ -123,7 +123,7 @@ func Test_doParseTunnel_SSURL_With_Comment(t *testing.T) {
 	result := doParseTunnelConfig(transportConfig)
 	require.Nil(t, result.Error)
 	require.Equal(t,
-		`{"client":"{\"transport\":\"ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@example.com:4321/\"}","firstHop":"example.com:4321","connectionType":"proxy"}`,
+		`{"client":"{\"transport\":\"ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpTRUNSRVQ@example.com:4321/\"}","firstHop":"example.com:4321","connectionType":"tunneled"}`,
 		result.Value)
 
 	matchTransportConfig(t, transportConfig, result.Value)
@@ -140,7 +140,7 @@ func Test_doParseTunnel_LegacyJSON(t *testing.T) {
 	result := doParseTunnelConfig(transportConfig)
 	require.Nil(t, result.Error)
 	require.Equal(t,
-		`{"client":"{\"transport\":{\"method\":\"chacha20-ietf-poly1305\",\"password\":\"SECRET\",\"prefix\":\"SSH-2.0\\r\\n\",\"server\":\"example.com\",\"server_port\":4321}}","firstHop":"example.com:4321","connectionType":"proxy"}`,
+		`{"client":"{\"transport\":{\"method\":\"chacha20-ietf-poly1305\",\"password\":\"SECRET\",\"prefix\":\"SSH-2.0\\r\\n\",\"server\":\"example.com\",\"server_port\":4321}}","firstHop":"example.com:4321","connectionType":"tunneled"}`,
 		result.Value)
 
 	matchTransportConfig(t, transportConfig, result.Value)
@@ -161,7 +161,7 @@ transport:
 
 	require.Nil(t, result.Error)
 	require.Equal(t,
-		`{"client":"{\"transport\":{\"$type\":\"tcpudp\",\"tcp\":{\"$type\":\"shadowsocks\",\"cipher\":\"chacha20-ietf-poly1305\",\"endpoint\":\"example.com:80\",\"secret\":\"SECRET\"},\"udp\":{\"$type\":\"shadowsocks\",\"cipher\":\"chacha20-ietf-poly1305\",\"endpoint\":\"example.com:80\",\"secret\":\"SECRET\"}}}","firstHop":"example.com:80","connectionType":"proxy"}`,
+		`{"client":"{\"transport\":{\"$type\":\"tcpudp\",\"tcp\":{\"$type\":\"shadowsocks\",\"cipher\":\"chacha20-ietf-poly1305\",\"endpoint\":\"example.com:80\",\"secret\":\"SECRET\"},\"udp\":{\"$type\":\"shadowsocks\",\"cipher\":\"chacha20-ietf-poly1305\",\"endpoint\":\"example.com:80\",\"secret\":\"SECRET\"}}}","firstHop":"example.com:80","connectionType":"tunneled"}`,
 		result.Value)
 
 	matchClientConfig(t, clientConfig, result.Value)
