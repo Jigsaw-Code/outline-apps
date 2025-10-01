@@ -521,7 +521,8 @@ udp:
     $type: shadowsocks
     endpoint: example.com:53
     cipher: chacha20-ietf-poly1305
-    secret: SECRET`
+    secret: SECRET
+    prefix: "SSH-2.0\r\n"`
 	result := doParseTunnelConfig(userInputConfig)
 	require.Nil(t, result.Error, "doParseTunnelConfig failed: %v", result.Error)
 
