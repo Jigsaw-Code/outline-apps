@@ -108,8 +108,8 @@ class OutlineServer implements Server {
     }
 
     // Make sure the transport is not proxyless for now.
+    // TODO remove this when proxyless is configured on the frontend
     if (this.startRequest.connectionType === ConnectionType.DIRECT) {
-      // TODO: consider creating a new error type.
       throw new errors.InvalidServiceConfiguration(
         'Proxyless connections are not supported'
       );
