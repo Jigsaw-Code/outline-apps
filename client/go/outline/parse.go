@@ -57,21 +57,21 @@ func hasKey[K comparable, V any](m map[K]V, key K) bool {
 }
 
 func combinedConnectionType(streamConnType, packetConnType config.ConnType) config.ConnType {
-	// Matching
+	// When one connection is blocked is always the other connection type
+	if streamConnType == config.ConnTypeBlocked {
+		return packetConnType
+	}
+	if packetConnType == config.ConnTypeBlocked {
+		return streamConnType
+	}
+
+	// Matching connection type
 	if streamConnType == packetConnType {
 		return streamConnType
-		// Any split is always fully split
-	} else if streamConnType == config.ConnTypePartial || packetConnType == config.ConnTypePartial {
-		return config.ConnTypePartial
-		// Blocked is always the other connection type
-	} else if streamConnType == config.ConnTypeBlocked {
-		return packetConnType
-	} else if packetConnType == config.ConnTypeBlocked {
-		return streamConnType
-		// Any other non-match is split
-	} else {
-		return config.ConnTypePartial
 	}
+
+	// Connections are non-matching and not blocked
+	return config.ConnTypePartial
 }
 
 func doParseTunnelConfig(input string) *InvokeMethodResult {
