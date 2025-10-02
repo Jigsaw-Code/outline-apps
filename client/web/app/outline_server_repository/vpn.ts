@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {ConnectionType} from './config';
-
 export const enum TunnelStatus {
   CONNECTED,
   DISCONNECTED,
@@ -29,8 +27,6 @@ export interface StartRequestJson {
   client: string;
   // First hop used by the legacy Electron code.
   firstHop: string;
-  // Type of connection the config will create
-  connectionType: ConnectionType;
 }
 
 /** VpnApi is how we talk to the platform-specific VPN API. */
