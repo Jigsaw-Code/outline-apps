@@ -1,1 +1,4 @@
 /output
+
+# This file is excluded from the server_manager/tsconfig.json
+server_manager/www/app.spec.ts
