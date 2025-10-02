@@ -22,6 +22,7 @@ import {
   StaticServiceConfig,
   parseAccessKey,
   ServiceConfig,
+  ConnectionType,
 } from './config';
 import {StartRequestJson, VpnApi} from './vpn';
 import * as errors from '../../model/errors';
@@ -68,7 +69,8 @@ export async function newOutlineServer(
 
 class OutlineServer implements Server {
   errorMessageId?: string;
-  private startRequest: StartRequestJson;
+  // Extends StartRequestJson to include connectionType for internal validation.
+  private startRequest: StartRequestJson & {connectionType?: ConnectionType};
 
   constructor(
     private vpnApi: VpnApi,
@@ -82,6 +84,7 @@ class OutlineServer implements Server {
         name,
         firstHop: serviceConfig.firstHop,
         client: serviceConfig.client,
+        connectionType: serviceConfig.connectionType,
       };
     }
   }
@@ -92,7 +95,7 @@ class OutlineServer implements Server {
 
   async connect() {
     if (this.serviceConfig instanceof DynamicServiceConfig) {
-      const {firstHop, client} = await fetchTunnelConfig(
+      const {firstHop, client, connectionType} = await fetchTunnelConfig(
         this.serviceConfig.transportConfigLocation
       );
       this.startRequest = {
@@ -100,7 +103,16 @@ class OutlineServer implements Server {
         name: this.name,
         firstHop,
         client,
+        connectionType,
       };
+    }
+
+    // Make sure the transport is not proxyless for now.
+    if (this.startRequest.connectionType === ConnectionType.DIRECT) {
+      // TODO: consider creating a new error type.
+      throw new errors.InvalidServiceConfiguration(
+        'Proxyless connections are not supported'
+      );
     }
 
     try {
