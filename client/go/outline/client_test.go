@@ -246,7 +246,7 @@ transport:
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.NotNil(t, result.Client)
 	require.Equal(t, config.ConnTypeDirect, result.Client.sd.ConnType)
-	require.Equal(t, config.ConnTypeDirect, result.Client.pl.ConnType)
+	require.Equal(t, config.ConnTypeDirect, result.Client.pp.ConnType)
 }
 
 func Test_NewClientFromJSON_Errors(t *testing.T) {

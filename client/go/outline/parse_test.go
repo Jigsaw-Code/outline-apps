@@ -534,7 +534,7 @@ udp:
 	require.Nil(t, clientResult.Error, "NewClient failed with parsed client config: %v", clientResult.Error)
 	require.NotNil(t, clientResult.Client)
 	require.Equal(t, config.ConnTypeDirect, clientResult.Client.sd.ConnType)
-	require.Equal(t, config.ConnTypeTunneled, clientResult.Client.pl.ConnType)
+	require.Equal(t, config.ConnTypeTunneled, clientResult.Client.pp.ConnType)
 
 	matchTransportConfig(t, userInputConfig, result.Value)
 }
