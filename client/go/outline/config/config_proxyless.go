@@ -32,7 +32,6 @@ const (
 
 type BasicAccessConfig struct {
 	// TODO: for now we do not parse any config, once DNS is implemented we will parse it.
-	DNS configyaml.ConfigNode `yaml:"dns"`
 }
 
 // Random number in the range [MIN_SPLIT, MAX_SPLIT]

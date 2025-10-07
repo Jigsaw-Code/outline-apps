@@ -25,11 +25,7 @@ import (
 func TestParseProxyless(t *testing.T) {
 	provider := newTestTransportProvider()
 
-	node, err := configyaml.ParseConfigYAML(`$type: basic-access
-dns:
-  $type: dns-over-https
-  url: https://https://dns.google/dns-query
-`)
+	node, err := configyaml.ParseConfigYAML(`$type: basic-access`)
 	require.NoError(t, err)
 
 	transportPair, err := provider.Parse(context.Background(), node)
