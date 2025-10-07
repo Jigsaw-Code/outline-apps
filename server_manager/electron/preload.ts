@@ -42,9 +42,11 @@ contextBridge.exposeInMainWorld(
     ) {
       try {
         breadcrumb.data.url = `(redacted)/${redactManagerUrl(breadcrumb.data.url)}`;
-      } catch (e) {
+      } catch (error) {
         // NOTE: cannot log this failure to console if console breadcrumbs are enabled
-        breadcrumb.data.url = '(error redacting)';
+        breadcrumb.data.url = error.message
+          ? `(error redacting: ${error.message})`
+          : '(error redacting)';
       }
     }
     return breadcrumb;
@@ -78,3 +80,7 @@ contextBridge.exposeInMainWorld('runGcpOauth', gcp_oauth.runOauth);
 contextBridge.exposeInMainWorld('bringToFront', () => {
   return ipcRenderer.send('bring-to-front');
 });
+
+contextBridge.exposeInMainWorld('fetchRecentShadowboxVersionTags', () =>
+  ipcRenderer.invoke('fetch-recent-shadowbox-version-tags')
+);
