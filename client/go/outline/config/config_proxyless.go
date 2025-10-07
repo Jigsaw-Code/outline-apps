@@ -30,8 +30,8 @@ const (
 	MAX_SPLIT int = 64
 )
 
-type ProxylessConfig struct {
-	// TODO: for now we simply parse the DNS config and don't set it up
+type BasicAccessConfig struct {
+	// TODO: for now we do not parse any config, once DNS is implemented we will parse it.
 	DNS configyaml.ConfigNode `yaml:"dns"`
 }
 
@@ -51,7 +51,7 @@ func NewProxylessTransportPairSubParser(parseSD configyaml.ParseFunc[*Dialer[tra
 func parseProxylessTransportPair(ctx context.Context, configMap map[string]any, _ configyaml.ParseFunc[*Dialer[transport.StreamConn]]) (*TransportPair, error) {
 	// TODO: use the streamDialers.Parse parser for the DNS config
 
-	var config ProxylessConfig
+	var config BasicAccessConfig
 	if err := configyaml.MapToAny(configMap, &config); err != nil {
 		return nil, fmt.Errorf("invalid config format: %w", err)
 	}
