@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/configyaml"
+	"github.com/Jigsaw-Code/outline-apps/client/go/outline/config"
 	"github.com/Jigsaw-Code/outline-apps/client/go/outline/reporting"
 	"github.com/stretchr/testify/require"
 )
@@ -233,6 +234,19 @@ transport:
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
 	require.Equal(t, firstHop, result.Client.pp.FirstHop)
+}
+
+func Test_NewTransport_AllowProxyless(t *testing.T) {
+	configText := `
+transport:
+  $type: tcpudp
+  tcp:
+  udp:`
+	result := (&ClientConfig{}).New("", configText)
+	require.Nil(t, result.Error, "Got %v", result.Error)
+	require.NotNil(t, result.Client)
+	require.Equal(t, config.ConnTypeDirect, result.Client.sd.ConnType)
+	require.Equal(t, config.ConnTypeDirect, result.Client.pp.ConnType)
 }
 
 func Test_NewClientFromJSON_Errors(t *testing.T) {
