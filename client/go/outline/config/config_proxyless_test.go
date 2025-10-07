@@ -36,7 +36,7 @@ dns:
 	require.NoError(t, err)
 	require.NotNil(t, transportPair)
 	require.NotNil(t, transportPair.StreamDialer)
-	require.NotNil(t, transportPair.PacketListener)
+	require.NotNil(t, transportPair.PacketProxy)
 	require.Equal(t, ConnTypeDirect, transportPair.StreamDialer.ConnType)
-	require.Equal(t, ConnTypeDirect, transportPair.PacketListener.ConnType)
+	require.Equal(t, ConnTypeDirect, transportPair.PacketProxy.ConnType)
 }

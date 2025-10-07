@@ -20,6 +20,7 @@ import (
 	"math/rand"
 
 	"github.com/Jigsaw-Code/outline-apps/client/go/configyaml"
+	"github.com/Jigsaw-Code/outline-sdk/network"
 	"github.com/Jigsaw-Code/outline-sdk/transport"
 	"github.com/Jigsaw-Code/outline-sdk/transport/tlsfrag"
 )
@@ -62,11 +63,17 @@ func parseProxylessTransportPair(ctx context.Context, configMap map[string]any, 
 		return nil, fmt.Errorf("failed to create StreamDialer: %w", err)
 	}
 
+	pl := &PacketListener{ConnectionProviderInfo{ConnTypeDirect, ""}, &transport.UDPListener{}}
+	pp, err := network.NewPacketProxyFromPacketListener(pl)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create PacketProxy: %w", err)
+	}
+
 	return &TransportPair{
 		StreamDialer: &Dialer[transport.StreamConn]{
 			ConnectionProviderInfo: ConnectionProviderInfo{ConnType: ConnTypeDirect},
 			Dial:                   sd.DialStream,
 		},
-		PacketListener: &PacketListener{ConnectionProviderInfo{ConnTypeDirect, ""}, &transport.UDPListener{}},
+		PacketProxy: &PacketProxy{ConnectionProviderInfo{ConnTypeDirect, ""}, pp, nil},
 	}, nil
 }
