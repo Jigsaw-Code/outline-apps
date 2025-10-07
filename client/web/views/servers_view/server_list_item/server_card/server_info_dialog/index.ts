@@ -30,18 +30,6 @@ class ServerInfoDialog extends LitElement {
   @property({type: String}) contentMessageId: string;
 
   static styles = css`
-    :host {
-      --md-sys-color-primary: var(--outline-primary);
-      --md-sys-shape-corner-extra-large: 2px;
-      --md-sys-shape-corner-full: 2px;
-
-      --md-dialog-container-color: var(
-        --outline-app-dialog-primary-background-color
-      );
-      --md-filled-text-field-container-color: var(--outline-input-bg);
-      --md-filled-text-field-input-text-color: var(--outline-input-text);
-    }
-
     /* Prevent images from being selectable on iOS, which can cause a crash when trying to save them. */
     img {
       pointer-events: none;
@@ -56,13 +44,21 @@ class ServerInfoDialog extends LitElement {
       flex-direction: column;
     }
 
+    img {
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+
     h1 {
       box-sizing: border-box;
-      font-size: 24px;
+      font-size: 1.5rem;
       font-weight: 700;
       letter-spacing: 0px;
-      line-height: 28px;
-      padding: 0 20px;
+      line-height: 1.75rem;
+      margin-bottom: 0;
+      padding: 0 1.5rem;
       text-align: left;
       vertical-align: middle;
       width: 100%;
@@ -70,9 +66,10 @@ class ServerInfoDialog extends LitElement {
 
     article {
       font-weight: 400;
-      font-size: 14px;
-      line-height: 20px;
-      letter-spacing: 1%;
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+      letter-spacing: 0.5px;
+      padding: 1.5rem;
     }
 
     ul {

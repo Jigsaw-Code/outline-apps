@@ -34,7 +34,7 @@ func Test_NewTransport_SS_URL(t *testing.T) {
 	result := (&ClientConfig{}).New("", config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
-	require.Equal(t, firstHop, result.Client.pl.FirstHop)
+	require.Equal(t, firstHop, result.Client.pp.FirstHop)
 }
 
 func Test_NewTransport_Legacy_JSON(t *testing.T) {
@@ -50,7 +50,7 @@ transport: {
 	result := (&ClientConfig{}).New("", config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
-	require.Equal(t, firstHop, result.Client.pl.FirstHop)
+	require.Equal(t, firstHop, result.Client.pp.FirstHop)
 }
 
 func Test_NewTransport_Flexible_JSON(t *testing.T) {
@@ -67,7 +67,7 @@ transport: {
 	result := (&ClientConfig{}).New("", config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
-	require.Equal(t, firstHop, result.Client.pl.FirstHop)
+	require.Equal(t, firstHop, result.Client.pp.FirstHop)
 }
 
 func Test_NewTransport_YAML(t *testing.T) {
@@ -83,7 +83,7 @@ transport:
 	result := (&ClientConfig{}).New("", config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
-	require.Equal(t, firstHop, result.Client.pl.FirstHop)
+	require.Equal(t, firstHop, result.Client.pp.FirstHop)
 }
 
 func Test_NewTransport_Explicit_endpoint(t *testing.T) {
@@ -99,7 +99,7 @@ transport:
 	result := (&ClientConfig{}).New("", config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
-	require.Equal(t, firstHop, result.Client.pl.FirstHop)
+	require.Equal(t, firstHop, result.Client.pp.FirstHop)
 }
 
 func Test_NewTransport_Multihop_URL(t *testing.T) {
@@ -116,7 +116,7 @@ transport:
 	result := (&ClientConfig{}).New("", config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
-	require.Equal(t, firstHop, result.Client.pl.FirstHop)
+	require.Equal(t, firstHop, result.Client.pp.FirstHop)
 }
 
 func Test_NewTransport_Multihop_Explicit(t *testing.T) {
@@ -137,7 +137,7 @@ transport:
 	result := (&ClientConfig{}).New("", config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
-	require.Equal(t, firstHop, result.Client.pl.FirstHop)
+	require.Equal(t, firstHop, result.Client.pp.FirstHop)
 }
 
 func Test_NewTransport_Explicit_TCPUDP(t *testing.T) {
@@ -159,7 +159,7 @@ transport:
 	result := (&ClientConfig{}).New("", config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, "example.com:80", result.Client.sd.FirstHop)
-	require.Equal(t, "example.com:53", result.Client.pl.FirstHop)
+	require.Equal(t, "example.com:53", result.Client.pp.FirstHop)
 }
 
 func Test_NewTransport_YAML_Reuse(t *testing.T) {
@@ -179,7 +179,7 @@ transport:
 	result := (&ClientConfig{}).New("", config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
-	require.Equal(t, firstHop, result.Client.pl.FirstHop)
+	require.Equal(t, firstHop, result.Client.pp.FirstHop)
 }
 
 func Test_NewTransport_YAML_Partial_Reuse(t *testing.T) {
@@ -201,7 +201,7 @@ transport:
 	result := (&ClientConfig{}).New("", config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, "example.com:80", result.Client.sd.FirstHop)
-	require.Equal(t, "example.com:53", result.Client.pl.FirstHop)
+	require.Equal(t, "example.com:53", result.Client.pp.FirstHop)
 }
 
 func Test_NewTransport_Unsupported(t *testing.T) {
@@ -232,7 +232,7 @@ transport:
 	result := (&ClientConfig{}).New("", config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, firstHop, result.Client.sd.FirstHop)
-	require.Equal(t, firstHop, result.Client.pl.FirstHop)
+	require.Equal(t, firstHop, result.Client.pp.FirstHop)
 }
 
 func Test_NewClientFromJSON_Errors(t *testing.T) {
@@ -320,7 +320,7 @@ reporter:
 	result := (&ClientConfig{}).New("", config)
 	require.Nil(t, result.Error, "Got %v", result.Error)
 	require.Equal(t, "example.com:80", result.Client.sd.FirstHop)
-	require.Equal(t, "example.com:53", result.Client.pl.FirstHop)
+	require.Equal(t, "example.com:53", result.Client.pp.FirstHop)
 	require.NotNil(t, result.Client.reporter, "Reporter is nil")
 	request, err := result.Client.reporter.(*reporting.HTTPReporter).NewRequest()
 	require.NoError(t, err)
