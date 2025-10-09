@@ -811,9 +811,9 @@
     "message": "Create a Security Group",
     "description": "This string appears in the server setup view as a sub-header of a section that provides instructions to configure the server's firewall."
   },
-  "manual_server_description": {
+    "manual_server_description": {
     "message": "These steps will help you install Outline on a $CLOUD_PROVIDER$ Linux server.",
-    "description": "This string appears in the server setup view as a header. Lets the user know that the following sections provide instructions on how to install Outline on their server.",
+    "description": "This string appears in the server setup view as a header when a specific cloud provider (AWS or GCP) is selected. The placeholder will be replaced with the cloud provider name (e.g., 'Amazon Web Services' or 'Google Cloud Platform'). Lets the user know that the following sections provide instructions on how to install Outline on their server.",
     "placeholders": {
       "CLOUD_PROVIDER": {
         "content": "{cloudProvider}",
@@ -821,6 +821,11 @@
       }
     }
   },
+  "manual_server_description_generic": {
+    "message": "These steps will help you install Outline on a Linux server.",
+    "description": "This string appears in the server setup view as a header when no specific cloud provider is selected. Lets the user know that the following sections provide instructions on how to install Outline on their server."
+  },
+
   "manual_server_firewall": {
     "message": "Configure your firewall",
     "description": "This string appears in the server setup view as the header of a section that provides instructions to configure the server's firewall."

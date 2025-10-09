@@ -199,8 +199,7 @@ Polymer({
     <outline-step-view>
       <span slot="step-title">[[localize('manual-server-title')]]</span>
       <span slot="step-description"
-        >[[localize('manual-server-description', 'cloudProvider',
-        cloudProviderName)]]</span
+        >[[serverDescription]]</span
       >
 
       <div class="card">
@@ -410,6 +409,10 @@ Polymer({
       type: String,
       computed: '_computeCloudProviderName(cloudProvider)',
     },
+    serverDescription: {
+      type: String,
+      computed: '_computeServerDescription(cloudProvider, cloudProviderName, language)',
+    },
     isCloudProviderAws: {
       type: Boolean,
       computed: '_computeIsCloudProviderAws(cloudProvider)',
@@ -478,6 +481,12 @@ Polymer({
       default:
         return '';
     }
+  },
+
+  _computeServerDescription(cloudProvider: string, cloudProviderName: string, language: string) {
+  return cloudProvider === 'generic'
+    ? this.localize('manual-server-description-generic')
+    : this.localize('manual-server-description', 'cloudProvider', cloudProviderName);
   },
 
   _computeIsCloudProviderAws(cloudProvider: string) {
