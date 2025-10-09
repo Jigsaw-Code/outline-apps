@@ -313,8 +313,8 @@ Polymer({
             <div class="section-content-instructions">
               <outline-cloud-instructions-view
                 title="[[localize('manual-server-create-group')]]"
-                thumbnail-path="images/aws-lightsail-thumbnail-1.png"
-                image-path="images/aws-lightsail-screenshot-1.png"
+                thumbnail-path="images/aws-lightsail-thumbnail.png"
+                image-path="images/aws-lightsail-setup.png"
                 localize="[[localize]]"
               >
                 <ol>
@@ -326,6 +326,8 @@ Polymer({
                   <li>[[localize('aws-lightsail-firewall-3')]]</li>
                   <li>[[localize('aws-lightsail-firewall-4')]]</li>
                   <li>[[localize('aws-lightsail-firewall-5')]]</li>
+                  <li>[[localize('aws-lightsail-firewall-6')]]</li>
+                  <li>[[localize('aws-lightsail-firewall-7')]]</li>
                 </ol>
               </outline-cloud-instructions-view>
             </div>
