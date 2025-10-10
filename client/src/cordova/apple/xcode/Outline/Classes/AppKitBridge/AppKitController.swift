@@ -44,7 +44,7 @@ class AppKitController: NSObject {
             guard let window = notification.object as? NSWindow else { return }
             
             // Check if this is the main UI window
-            if String(describing: window).contains("UINSWindow") {
+            if self?.isMainUiWindow(window) == true {
                 self?.hideDockIcon()
             }
         }
@@ -73,7 +73,7 @@ class AppKitController: NSObject {
     @objc private func appDidResignActive() {
         // Only hide Dock icon if no windows are visible
         let hasVisibleWindows = NSApp.windows.contains { window in
-            window.isVisible && String(describing: window).contains("UINSWindow")
+            window.isVisible && isMainUiWindow(window)
         }
         
         if !hasVisibleWindows {
@@ -89,6 +89,12 @@ class AppKitController: NSObject {
     private func showDockIcon() {
         // Show the Dock icon when the main window becomes active
         NSApp.setActivationPolicy(.regular)
+    }
+    
+    /// Determines if the given window is the main UI window
+    /// TODO: Decouple from the internal class name "UINSWindow" in the future
+    private func isMainUiWindow(_ window: NSWindow) -> Bool {
+        return String(describing: window).contains("UINSWindow")
     }
 
     /// Set the connection status in the app's menu in the system-wide menu bar.
