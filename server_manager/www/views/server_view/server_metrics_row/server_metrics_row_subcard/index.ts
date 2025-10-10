@@ -17,9 +17,12 @@
 import {LitElement, html, css, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 
+import '../../icon_tooltip';
+
 @customElement('server-metrics-row-subcard')
 export class ServerMetricsRowSubcard extends LitElement {
   @property({type: String}) highlight?: string;
+  @property({type: String}) highlightTooltip?: string;
   @property({type: String}) title: string;
   @property({type: String}) subtitle?: string;
   @property({type: String}) icon?: string;
@@ -62,10 +65,12 @@ export class ServerMetricsRowSubcard extends LitElement {
     }
 
     .highlight {
+      align-items: center;
       background-color: var(--server-metrics-row-subcard-highlight-color);
       border-radius: var(--server-metrics-row-subcard-border-radius);
       border: var(--server-metrics-row-subcard-highlight-border);
-      display: inline-block;
+      display: inline-flex;
+      gap: 0.25rem;
       font-size: var(--server-metrics-row-subcard-highlight-font-size);
       margin-bottom: var(--server-metrics-row-subcard-highlight-margin-bottom);
       padding: var(--server-metrics-row-subcard-highlight-padding);
@@ -81,13 +86,27 @@ export class ServerMetricsRowSubcard extends LitElement {
       font-size: var(--server-metrics-row-subcard-subtitle-font-size);
       font-weight: bold;
     }
+
+    .highlight icon-tooltip {
+      --icon-tooltip-icon-size: 0.75rem;
+      --icon-tooltip-button-size: 1rem;
+      --icon-tooltip-icon-color: hsla(0, 0%, 100%, 0.5);
+    }
   `;
 
   render() {
     return html`
       <div>
         ${this.highlight
-          ? html`<mark class="highlight">${this.highlight}</mark>`
+          ? html`<mark class="highlight">
+              ${this.highlight}
+              ${this.highlightTooltip
+                ? html`<icon-tooltip
+                    text="${this.highlightTooltip}"
+                    icon="info"
+                  ></icon-tooltip>`
+                : nothing}
+            </mark>`
           : nothing}
         ${this.title ? html`<h4 class="title">${this.title}</h4>` : nothing}
         ${this.subtitle
