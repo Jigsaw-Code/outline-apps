@@ -18,7 +18,9 @@ import {LitElement, html, css, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
 
-import {formatBytes} from '../../../../data_formatting';
+import {formatBinaryBytes, formatBytes} from '../../../../data_formatting';
+
+import '../../icon_tooltip';
 
 @customElement('access-key-usage-meter')
 export class AccessKeyUsageMeter extends LitElement {
@@ -58,8 +60,8 @@ export class AccessKeyUsageMeter extends LitElement {
       font-family: var(--access-key-usage-meter-font-family);
     }
 
-    :host([dataLimitWarning]) > label,
-    label.data-limit-warning {
+    :host([dataLimitWarning]) > .label-container > label,
+    .label-container > label.data-limit-warning {
       color: var(--access-key-usage-meter-warning-text-color);
     }
 
@@ -83,6 +85,17 @@ export class AccessKeyUsageMeter extends LitElement {
     progress.data-limit-warning[value]::-webkit-progress-value {
       background: var(--access-key-usage-meter-warning-color);
     }
+
+    .label-container {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .label-container icon-tooltip {
+      --icon-tooltip-icon-size: 0.75rem;
+      --icon-tooltip-button-size: 1rem;
+    }
   `;
 
   render() {
@@ -95,17 +108,33 @@ export class AccessKeyUsageMeter extends LitElement {
         max=${this.dataLimitBytes}
         value=${this.dataUsageBytes}
       ></progress>
-      <label
-        class=${classMap({
-          'data-limit-warning': this.dataLimitWarning,
-        })}
-        for="progress"
-      >
-        ${formatBytes(this.dataUsageBytes, this.language)} /
-        ${formatBytes(this.dataLimitBytes, this.language)}
-        ${this.dataLimitWarning
-          ? `(${this.localize('server-view-access-keys-usage-limit')})`
-          : nothing}
-      </label>`;
+      <span class="label-container">
+        <label
+          class=${classMap({
+            'data-limit-warning': this.dataLimitWarning,
+          })}
+          for="progress"
+        >
+          ${formatBytes(this.dataUsageBytes, this.language)} /
+          ${formatBytes(this.dataLimitBytes, this.language)}
+          ${this.dataLimitWarning
+            ? `(${this.localize('server-view-access-keys-usage-limit')})`
+            : nothing}
+        </label>
+        <icon-tooltip
+          text="${this.formatBinaryTooltip()}"
+          icon="info"
+        ></icon-tooltip>
+      </span>`;
+  }
+
+  /**
+   * Formats the usage and limit values with binary units for tooltip display.
+   *
+   * @returns Formatted string showing "usage / limit" in binary units (KiB, MiB, GiB)
+   */
+  private formatBinaryTooltip(): string {
+    return `${formatBinaryBytes(this.dataUsageBytes, this.language)} /
+      ${formatBinaryBytes(this.dataLimitBytes, this.language)}`;
   }
 }

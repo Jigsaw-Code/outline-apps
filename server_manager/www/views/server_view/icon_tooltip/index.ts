@@ -22,10 +22,14 @@ import '@material/mwc-icon-button';
 
 // TODO (#2384): this tooltip is implemented by javascript and not css due to api limitations in our current version of Electron.
 // Once electron is updated, we should switch to the Popover API for better style control.
+
+type TooltipPosition = 'bottom' | 'right' | 'left' | 'top';
+
 @customElement('icon-tooltip')
 export class IconTooltip extends LitElement {
   @property({type: String}) text?: string;
   @property({type: String}) icon: string = 'help';
+  @property({type: String}) position: TooltipPosition = 'bottom';
 
   @state() tooltip?: HTMLElement;
   @query('mwc-icon-button') iconElement: HTMLElement;
@@ -75,6 +79,9 @@ export class IconTooltip extends LitElement {
     this.tooltip = document.createElement('span');
     this.tooltip.innerHTML = this.text;
 
+    const rect = this.iconElement.getBoundingClientRect();
+    const positioning = this.calculatePosition(rect);
+
     // Since this element is created outside the custom element's scope,
     // we can't style it here and instead must inject the styles directly.
     // This too will be resolved by the Popover API
@@ -85,12 +92,10 @@ export class IconTooltip extends LitElement {
       color: hsl(0, 0%, 20%);
       font-family: 'Inter', system-ui;
       max-width: 320px;
-      left: ${this.iconElement.getBoundingClientRect().left}px;
-      top: ${this.iconElement.getBoundingClientRect().bottom}px;
+      ${positioning}
       padding: 0.3rem;
       position: fixed;
       white-space: pre-line;
-      transform: translateX(-50%);
       width: max-content;
       word-wrap: break-word;
       z-index: 1000;
@@ -101,6 +106,60 @@ export class IconTooltip extends LitElement {
     // TODO: sometimes the blur listener gives up when the user navigates away from the application
     // this ensures the tooltip is eventually removed - this will be solved by the Popover API
     setTimeout(this.removeTooltip, 5000);
+  }
+
+  private calculatePosition(rect: DOMRect): string {
+    const spacing = 8;
+    const tooltipMaxWidth = 320;
+    let position = this.position;
+
+    // Auto-adjust if tooltip would go off-screen
+    if (position === 'right' && rect.right + tooltipMaxWidth + spacing > window.innerWidth) {
+      position = 'left';
+    }
+
+    if (position === 'left' && rect.left - tooltipMaxWidth - spacing < 0) {
+      position = 'right';
+    }
+
+    if (position === 'bottom' && rect.bottom + 100 > window.innerHeight) {
+      position = 'top';
+    }
+
+    if (position === 'top' && rect.top - 100 < 0) {
+      position = 'bottom';
+    }
+
+    switch (position) {
+      case 'right':
+        return `
+          left: ${rect.right + spacing}px;
+          top: ${rect.top + rect.height / 2}px;
+          transform: translateY(-50%);
+        `;
+
+      case 'left':
+        return `
+          right: ${window.innerWidth - rect.left + spacing}px;
+          top: ${rect.top + rect.height / 2}px;
+          transform: translateY(-50%);
+        `;
+
+      case 'top':
+        return `
+          left: ${rect.left + rect.width / 2}px;
+          bottom: ${window.innerHeight - rect.top + spacing}px;
+          transform: translateX(-50%);
+        `;
+
+      case 'bottom':
+      default:
+        return `
+          left: ${rect.left + rect.width / 2}px;
+          top: ${rect.bottom + spacing}px;
+          transform: translateX(-50%);
+        `;
+    }
   }
 
   removeTooltip() {
