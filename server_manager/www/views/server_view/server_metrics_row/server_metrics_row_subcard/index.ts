@@ -104,6 +104,7 @@ export class ServerMetricsRowSubcard extends LitElement {
                 ? html`<icon-tooltip
                     text="${this.highlightTooltip}"
                     icon="info"
+                    position="right"
                   ></icon-tooltip>`
                 : nothing}
             </mark>`

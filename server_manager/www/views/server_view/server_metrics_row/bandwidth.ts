@@ -383,6 +383,7 @@ export class ServerMetricsBandwidthRow extends LitElement {
                           this.metrics.bandwidth.current.data.bytes
                         )}"
                         icon="info"
+                        position="right"
                       ></icon-tooltip>
                     </span>`
                   : html`<span class="current-value">-</span>`}
@@ -456,6 +457,7 @@ export class ServerMetricsBandwidthRow extends LitElement {
             this.metrics.dataTransferred.bytes
           )}"
           icon="info"
+          position="right"
         ></icon-tooltip>
       </span>`;
     }
@@ -474,6 +476,7 @@ export class ServerMetricsBandwidthRow extends LitElement {
           )}
           / ${this.formatDataAmountBinaryTooltip(this.dataLimitBytes)}"
           icon="info"
+          position="right"
         ></icon-tooltip>
       </span>
       <span class="bandwidth-progress-container">
