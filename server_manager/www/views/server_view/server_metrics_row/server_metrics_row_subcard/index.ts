@@ -65,12 +65,10 @@ export class ServerMetricsRowSubcard extends LitElement {
     }
 
     .highlight {
-      align-items: center;
       background-color: var(--server-metrics-row-subcard-highlight-color);
       border-radius: var(--server-metrics-row-subcard-border-radius);
       border: var(--server-metrics-row-subcard-highlight-border);
-      display: inline-flex;
-      gap: 0.25rem;
+      display: inline-block;
       font-size: var(--server-metrics-row-subcard-highlight-font-size);
       margin-bottom: var(--server-metrics-row-subcard-highlight-margin-bottom);
       padding: var(--server-metrics-row-subcard-highlight-padding);
@@ -86,28 +84,20 @@ export class ServerMetricsRowSubcard extends LitElement {
       font-size: var(--server-metrics-row-subcard-subtitle-font-size);
       font-weight: bold;
     }
-
-    .highlight icon-tooltip {
-      --icon-tooltip-icon-size: 0.75rem;
-      --icon-tooltip-button-size: 1rem;
-      --icon-tooltip-icon-color: hsla(0, 0%, 100%, 0.5);
-    }
   `;
 
   render() {
     return html`
       <div>
         ${this.highlight
-          ? html`<mark class="highlight">
-              ${this.highlight}
-              ${this.highlightTooltip
-                ? html`<icon-tooltip
-                    text="${this.highlightTooltip}"
-                    icon="info"
-                    position="right"
-                  ></icon-tooltip>`
-                : nothing}
-            </mark>`
+          ? this.highlightTooltip
+            ? html`<icon-tooltip
+                text="${this.highlightTooltip}"
+                position="right"
+              >
+                <mark class="highlight">${this.highlight}</mark>
+              </icon-tooltip>`
+            : html`<mark class="highlight">${this.highlight}</mark>`
           : nothing}
         ${this.title ? html`<h4 class="title">${this.title}</h4>` : nothing}
         ${this.subtitle

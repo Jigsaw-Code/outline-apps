@@ -287,18 +287,6 @@ export class ServerMetricsBandwidthRow extends LitElement {
         border: none;
       }
     }
-
-    .data-value-with-tooltip {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.25rem;
-    }
-
-    .data-value-with-tooltip icon-tooltip {
-      --icon-tooltip-icon-size: 0.75rem;
-      --icon-tooltip-button-size: 1rem;
-      --icon-tooltip-icon-color: hsla(0, 0%, 100%, 0.5);
-    }
   `;
 
   render() {
@@ -367,7 +355,12 @@ export class ServerMetricsBandwidthRow extends LitElement {
             <div class="current-container">
               <span class="current-value-and-unit">
                 ${this.metrics.bandwidth
-                  ? html`<span class="data-value-with-tooltip">
+                  ? html`<icon-tooltip
+                      text="${this.formatBandwidthBinaryTooltip(
+                        this.metrics.bandwidth.current.data.bytes
+                      )}"
+                      position="right"
+                    >
                       <span class="current-value">
                         ${this.formatBandwidthValue(
                           this.metrics.bandwidth.current.data.bytes
@@ -378,14 +371,7 @@ export class ServerMetricsBandwidthRow extends LitElement {
                           this.metrics.bandwidth.current.data.bytes
                         )}
                       </span>
-                      <icon-tooltip
-                        text="${this.formatBandwidthBinaryTooltip(
-                          this.metrics.bandwidth.current.data.bytes
-                        )}"
-                        icon="info"
-                        position="right"
-                      ></icon-tooltip>
-                    </span>`
+                    </icon-tooltip>`
                   : html`<span class="current-value">-</span>`}
               </span>
               <span class="current-title"
@@ -397,7 +383,11 @@ export class ServerMetricsBandwidthRow extends LitElement {
             <div class="peak-container">
               <span class="peak-value-and-unit">
                 ${this.metrics.bandwidth
-                  ? html`<span class="data-value-with-tooltip">
+                  ? html`<icon-tooltip
+                      text="${this.formatBandwidthBinaryTooltip(
+                        this.metrics.bandwidth.peak.data.bytes
+                      )}"
+                    >
                       <span class="peak-value">
                         ${this.formatBandwidthValue(
                           this.metrics.bandwidth.peak.data.bytes
@@ -408,13 +398,7 @@ export class ServerMetricsBandwidthRow extends LitElement {
                           this.metrics.bandwidth.peak.data.bytes
                         )}
                       </span>
-                      <icon-tooltip
-                        text="${this.formatBandwidthBinaryTooltip(
-                          this.metrics.bandwidth.peak.data.bytes
-                        )}"
-                        icon="info"
-                      ></icon-tooltip>
-                    </span>`
+                    </icon-tooltip>`
                   : html`<span class="peak-value">-</span>`}
                 ${this.metrics.bandwidth?.peak.timestamp
                   ? html`<span class="peak-timestamp"
@@ -448,37 +432,33 @@ export class ServerMetricsBandwidthRow extends LitElement {
     }
 
     if (this.dataLimitBytes === 0) {
-      return html`<span class="data-value-with-tooltip">
+      return html`<icon-tooltip
+        text="${this.formatDataAmountBinaryTooltip(
+          this.metrics.dataTransferred.bytes
+        )}"
+        position="right"
+      >
         <span class="bandwidth-percentage">
           ${formatBytes(this.metrics.dataTransferred.bytes, this.language)}
         </span>
-        <icon-tooltip
-          text="${this.formatDataAmountBinaryTooltip(
-            this.metrics.dataTransferred.bytes
-          )}"
-          icon="info"
-          position="right"
-        ></icon-tooltip>
-      </span>`;
+      </icon-tooltip>`;
     }
 
     return html`<span class="bandwidth-percentage">
         ${this.formatPercentage(this.bandwidthPercentage)}
       </span>
-      <span class="data-value-with-tooltip">
+      <icon-tooltip
+        text="${this.formatDataAmountBinaryTooltip(
+          this.metrics.dataTransferred.bytes
+        )}
+        / ${this.formatDataAmountBinaryTooltip(this.dataLimitBytes)}"
+        position="right"
+      >
         <span class="bandwidth-fraction">
           ${formatBytes(this.metrics.dataTransferred.bytes, this.language)} /
           ${formatBytes(this.dataLimitBytes, this.language)}
         </span>
-        <icon-tooltip
-          text="${this.formatDataAmountBinaryTooltip(
-            this.metrics.dataTransferred.bytes
-          )}
-          / ${this.formatDataAmountBinaryTooltip(this.dataLimitBytes)}"
-          icon="info"
-          position="right"
-        ></icon-tooltip>
-      </span>
+      </icon-tooltip>
       <span class="bandwidth-progress-container">
         <progress
           max=${this.dataLimitBytes}

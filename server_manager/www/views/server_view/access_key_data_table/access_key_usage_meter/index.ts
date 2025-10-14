@@ -60,8 +60,8 @@ export class AccessKeyUsageMeter extends LitElement {
       font-family: var(--access-key-usage-meter-font-family);
     }
 
-    :host([dataLimitWarning]) > .label-container > label,
-    .label-container > label.data-limit-warning {
+    :host([dataLimitWarning]) > label,
+    label.data-limit-warning {
       color: var(--access-key-usage-meter-warning-text-color);
     }
 
@@ -85,17 +85,6 @@ export class AccessKeyUsageMeter extends LitElement {
     progress.data-limit-warning[value]::-webkit-progress-value {
       background: var(--access-key-usage-meter-warning-color);
     }
-
-    .label-container {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.25rem;
-    }
-
-    .label-container icon-tooltip {
-      --icon-tooltip-icon-size: 0.75rem;
-      --icon-tooltip-button-size: 1rem;
-    }
   `;
 
   render() {
@@ -108,7 +97,7 @@ export class AccessKeyUsageMeter extends LitElement {
         max=${this.dataLimitBytes}
         value=${this.dataUsageBytes}
       ></progress>
-      <span class="label-container">
+      <icon-tooltip text="${this.formatDataUsageFractionBinaryTooltip()}">
         <label
           class=${classMap({
             'data-limit-warning': this.dataLimitWarning,
@@ -121,11 +110,7 @@ export class AccessKeyUsageMeter extends LitElement {
             ? `(${this.localize('server-view-access-keys-usage-limit')})`
             : nothing}
         </label>
-        <icon-tooltip
-          text="${this.formatBinaryTooltip()}"
-          icon="info"
-        ></icon-tooltip>
-      </span>`;
+      </icon-tooltip>`;
   }
 
   /**
@@ -133,7 +118,7 @@ export class AccessKeyUsageMeter extends LitElement {
    *
    * @returns Formatted string showing "usage / limit" in binary units (KiB, MiB, GiB)
    */
-  private formatBinaryTooltip(): string {
+  private formatDataUsageFractionBinaryTooltip(): string {
     return `${formatBinaryBytes(this.dataUsageBytes, this.language)} /
       ${formatBinaryBytes(this.dataLimitBytes, this.language)}`;
   }

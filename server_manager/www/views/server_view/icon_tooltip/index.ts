@@ -51,11 +51,36 @@ export class IconTooltip extends LitElement {
     mwc-icon-button {
       --mdc-icon-button-size: var(--icon-tooltip-button-size);
     }
+
+    .tooltip-trigger {
+      cursor: help;
+      text-decoration: underline dotted;
+      text-decoration-color: currentColor;
+      text-underline-offset: 2px;
+      display: inline;
+    }
   `;
 
   render() {
     if (this.text === undefined) {
       return html`<mwc-icon>${this.icon}</mwc-icon>`;
+    }
+
+    // Check if slot has content
+    const hasSlotContent = this.innerHTML.trim().length > 0;
+
+    // If slot content exists, wrap that instead of showing icon button
+    if (hasSlotContent) {
+      return html`
+        <span
+          class="tooltip-trigger"
+          @click=${this.insertTooltip}
+          @blur=${this.removeTooltip}
+          tabindex="0"
+        >
+          <slot></slot>
+        </span>
+      `;
     }
 
     return html`
@@ -114,7 +139,10 @@ export class IconTooltip extends LitElement {
     let position = this.position;
 
     // Auto-adjust if tooltip would go off-screen
-    if (position === 'right' && rect.right + tooltipMaxWidth + spacing > window.innerWidth) {
+    if (
+      position === 'right' &&
+      rect.right + tooltipMaxWidth + spacing > window.innerWidth
+    ) {
       position = 'left';
     }
 
