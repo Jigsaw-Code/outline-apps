@@ -18,6 +18,7 @@ import * as semver from 'semver';
 import * as server from '../model/server';
 
 const TIMESTAMP_TO_MS = 1000;
+const DAY_TO_MILLISECONDS = 24 * 60 * 60 * 1000;
 
 interface AccessKeyJson {
   id: string;
@@ -281,6 +282,41 @@ export class ShadowboxServer implements server.Server {
     return result;
   }
 
+  async getLatestAvailableUpdate(): Promise<server.VersionTag> {
+    const recentVersionTags = await fetchRecentShadowboxVersionTags();
+
+    const latestVersionTag = recentVersionTags.find(
+      tag =>
+        tag.name.startsWith('v') &&
+        !tag.name.includes('-rc') &&
+        !tag.endTimestamp
+    );
+
+    if (!latestVersionTag) {
+      return Promise.reject(
+        'No Shadowbox version tag returned from the repository!'
+      );
+    }
+
+    if (
+      Date.now() - latestVersionTag.startTimestamp * TIMESTAMP_TO_MS <
+      DAY_TO_MILLISECONDS
+    ) {
+      return Promise.reject(
+        'Shadowbox version returned from the repository is too recent - Watchtower may be trying to roll out an update.'
+      );
+    }
+
+    if (semver.lte(latestVersionTag.name.slice(1), this.getVersion())) {
+      return Promise.reject('This Shadowbox server is up to date.');
+    }
+
+    return {
+      name: latestVersionTag.name,
+      releaseTimestamp: latestVersionTag.startTimestamp,
+    };
+  }
+
   getName(): string {
     return this.serverConfig?.name;
   }
@@ -352,7 +388,7 @@ export class ShadowboxServer implements server.Server {
         new URL(this.api.base).hostname
       );
     } catch (e) {
-      return '';
+      return e.message;
     }
   }
 
@@ -363,6 +399,8 @@ export class ShadowboxServer implements server.Server {
       }
       return this.serverConfig.portForNewAccessKeys;
     } catch (e) {
+      console.error(e);
+
       return undefined;
     }
   }
@@ -407,7 +445,7 @@ export class ShadowboxServer implements server.Server {
 
     // re-populate the supported endpoint cache
     this._supportedExperimentalUniversalMetricsEndpointCache = null;
-    this.getSupportedExperimentalUniversalMetricsEndpoint();
+    void this.getSupportedExperimentalUniversalMetricsEndpoint();
   }
 
   getManagementApiUrl(): string {
