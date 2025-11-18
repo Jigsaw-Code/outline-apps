@@ -16,8 +16,8 @@ import {customElement, property} from 'lit/decorators.js';
 
 import outlineDarkLogo from '../../assets/brand-logo-dark.png';
 import outlineLogo from '../../assets/brand-logo.png';
-import jigsawDarkLogo from '../../assets/jigsaw-logo-dark.png';
-import jigsawLogo from '../../assets/jigsaw-logo.png';
+import foundationDarkLogo from '../../assets/foundation-logo-dark.png';
+import foundationLogo from '../../assets/foundation-logo.png';
 
 @customElement('about-view')
 export class AboutView extends LitElement {
@@ -122,8 +122,8 @@ export class AboutView extends LitElement {
         <footer>
           <a href="https://jigsaw.google.com">
             <img
-              src="${this.darkMode ? jigsawDarkLogo : jigsawLogo}"
-              alt="jigsaw logo"
+              src="${this.darkMode ? foundationDarkLogo : foundationLogo}"
+              alt="foundation logo"
             />
           </a>
         </footer>

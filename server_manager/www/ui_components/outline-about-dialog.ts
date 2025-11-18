@@ -37,7 +37,7 @@ Polymer({
         margin-top: 20px;
       }
 
-      #jigsaw-logo {
+      #foundation-logo {
         max-width: 25%;
       }
 
@@ -83,7 +83,7 @@ Polymer({
       </p>
       <p>
         <a href="https://jigsaw.google.com/">
-          <img id="jigsaw-logo" src="images/jigsaw-logo.svg" />
+          <img id="foundation-logo" src="images/foundation-logo.svg" />
         </a>
       </p>
       <div class="buttons">
