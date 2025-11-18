@@ -10,7 +10,7 @@
         "content": "<a href={gitHubUrl}>GitHub</a>"
       },
       "JIGSAW": {
-        "content": "<a href={jigsawUrl}>Jigsaw</a>"
+        "content": "<a href={jigsawUrl}>Outline Foundation</a>"
       },
       "NEW_LINE": {
         "content": "<br>"

@@ -7,7 +7,7 @@
         "content": "<a href={gitHubUrl}>GitHub</a>"
       },
       "JIGSAW": {
-        "content": "<a href={jigsawUrl}>Jigsaw</a>"
+        "content": "<a href={jigsawUrl}>Outline Foundation</a>"
       },
       "MEDIUM": {
         "content": "<a href={mediumUrl}>Medium</a>"
