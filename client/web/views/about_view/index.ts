@@ -105,14 +105,14 @@ export class AboutView extends LitElement {
           id="about-outline-content"
           .innerHTML=${this.localize(
             'about-outline',
-            'jigsawUrl',
-            'https://jigsaw.google.com',
+            'foundationUrl',
+            'https://outlinefoundation.com',
             'outlineUrl',
             'https://getoutline.org',
             'shadowsocksUrl',
             'https://shadowsocks.org',
             'gitHubUrl',
-            'https://github.com/jigsaw-Code/?q=outline',
+            'https://github.com/OutlineFoundation/?q=outline',
             'redditUrl',
             'https://www.reddit.com/r/outlinevpn'
           )}

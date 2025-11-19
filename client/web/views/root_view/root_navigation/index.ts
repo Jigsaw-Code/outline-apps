@@ -259,7 +259,7 @@ export class RootNavigation extends LitElement {
         </md-list>
         <ul>
           <li>
-            <a href="https://www.google.com/policies/privacy/">
+            <a href="https://outlinefoundation.com/privacy-policy/">
               ${this.localize('privacy')}
               <md-icon id="open-in-new-icon">open_in_new</md-icon>
             </a>

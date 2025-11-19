@@ -424,7 +424,7 @@ export class AppRoot extends polymerElementWithLocalize {
                 <outline-language-picker id="language-dropdown" selected-language="{{language}}" languages="{{supportedLanguages}}"></outline-language-picker>
               </paper-icon-item>
               <div class="legal-links" on-tap="maybeCloseDrawer">
-                <a href="https://www.google.com/policies/privacy/">
+                <a href="https://outlinefoundation.com/privacy-policy/">
                   <span>[[localize('nav-privacy')]]</span>
                   <iron-icon id="open-in-new-icon" icon="open-in-new" />
                 </a>

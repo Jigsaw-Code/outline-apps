@@ -77,6 +77,14 @@ Polymer({
       >
         &gt;
       </p>
+<<<<<<< HEAD
+=======
+      <p>
+        <a href="https://tbd.outlinefoundation.com/">
+          <img id="jigsaw-logo" src="images/jigsaw-logo.svg" />
+        </a>
+      </p>
+>>>>>>> f520b806 (remove misc mentions)
       <div class="buttons">
         <paper-button dialog-dismiss="" autofocus=""
           >[[localize('close')]]</paper-button
