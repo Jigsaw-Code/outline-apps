@@ -447,7 +447,7 @@ export class ServerView extends DirMixin(PolymerElement) {
               >
               <a
                 class="privacy-statement-link"
-                href="https://support.google.com/outline/answer/15331222"
+                href="https://s3.amazonaws.com/outline-vpn/static_downloads/Outline-Data-Collection-Policy.html"
                 >[[localize('server-view-privacy-statement-link')]]</a
               >
             </p>
@@ -499,7 +499,7 @@ export class ServerView extends DirMixin(PolymerElement) {
               >
               <a
                 class="privacy-statement-link"
-                href="https://support.google.com/outline/answer/15331222"
+                href="https://s3.amazonaws.com/outline-vpn/static_downloads/Outline-Data-Collection-Policy.html"
                 >[[localize('server-view-privacy-statement-link')]]</a
               >
             </p>

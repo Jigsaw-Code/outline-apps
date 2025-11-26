@@ -400,7 +400,7 @@ export class AppRoot extends polymerElementWithLocalize {
               </a>
             </if-messages>
             <span on-tap="maybeCloseDrawer">
-              <a href="https://support.google.com/outline/answer/15331222">
+              <a href="https://s3.amazonaws.com/outline-vpn/static_downloads/Outline-Data-Collection-Policy.html">
                 <span>[[localize('nav-data-collection')]]</span>
                 <iron-icon id="open-in-new-icon" icon="open-in-new" />
               </a>

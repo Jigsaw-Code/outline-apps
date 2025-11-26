@@ -371,7 +371,7 @@ export class AppRoot extends mixinBehaviors(
         localize="[[localize]]"
         id="drawer"
         show-quit="[[shouldShowQuitButton]]"
-        data-collection-page-url="[[_computeSupportSiteUrl(language, 'https://support.google.com/outline/answer/15331222')]]"
+        data-collection-page-url="[[_computeSupportSiteUrl(language, 'https://s3.amazonaws.com/outline-vpn/static_downloads/Outline-Data-Collection-Policy.html')]]"
         show-appearance-view="[[showAppearanceView]]"
       ></root-navigation>
 
@@ -388,7 +388,7 @@ export class AppRoot extends mixinBehaviors(
       <privacy-acknowledgement-dialog
         id="privacyView"
         localize="[[localize]]"
-        privacy-page-url="[[_computeSupportSiteUrl(language, 'https://support.google.com/outline/answer/15331222')]]"
+        privacy-page-url="[[_computeSupportSiteUrl(language, 'https://s3.amazonaws.com/outline-vpn/static_downloads/Outline-Data-Collection-Policy.html')]]"
       ></privacy-acknowledgement-dialog>
 
       <auto-connect-dialog
