@@ -810,8 +810,6 @@ export class AppRoot extends mixinBehaviors(
     return page === 'home';
   }
 
-
-
   _goBack() {
     if (this.page === 'contact') {
       this.$.contactView.reset();
