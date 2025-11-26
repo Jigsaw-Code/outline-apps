@@ -7,7 +7,7 @@
         "content": "<a href={gitHubUrl}>GitHub</a>"
       },
       "FOUNDATION": {
-        "content": "<a href={foundationUrl}>Outline Foundation</a>"
+        "content": "Outline Foundation"
       },
       "MEDIUM": {
         "content": "<a href={mediumUrl}>Medium</a>"
