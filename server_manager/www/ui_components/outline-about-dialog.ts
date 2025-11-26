@@ -73,16 +73,14 @@ Polymer({
         inner-h-t-m-l="[[localize('about-version', 'version', outlineVersion)]]"
       ></p>
       <p
-        inner-h-t-m-l="[[localize('about-outline', 'jigsawUrl', 'https://jigsaw.google.com', 'shadowsocksUrl', 'https://shadowsocks.org', 'gitHubUrl', 'https://github.com/jigsaw-Code/?q=outline', 'redditUrl', 'https://www.reddit.com/r/outlinevpn', 'mediumUrl', 'https://medium.com/jigsaw')]]"
+        inner-h-t-m-l="[[localize('about-outline', 'shadowsocksUrl', 'https://shadowsocks.org', 'gitHubUrl', 'https://github.com/jigsaw-Code/?q=outline', 'redditUrl', 'https://www.reddit.com/r/outlinevpn', 'mediumUrl', 'https://medium.com/jigsaw')]]"
       >
         &gt;
       </p>
 <<<<<<< HEAD
 =======
       <p>
-        <a href="https://tbd.outlinefoundation.com/">
-          <img id="jigsaw-logo" src="images/jigsaw-logo.svg" />
-        </a>
+        <img id="jigsaw-logo" src="images/jigsaw-logo.svg" />
       </p>
 >>>>>>> f520b806 (remove misc mentions)
       <div class="buttons">

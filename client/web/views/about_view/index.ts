@@ -105,8 +105,6 @@ export class AboutView extends LitElement {
           id="about-outline-content"
           .innerHTML=${this.localize(
             'about-outline',
-            'foundationUrl',
-            'https://outlinefoundation.com',
             'outlineUrl',
             'https://getoutline.org',
             'shadowsocksUrl',
