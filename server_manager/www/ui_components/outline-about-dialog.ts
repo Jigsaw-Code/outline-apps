@@ -37,10 +37,6 @@ Polymer({
         margin-top: 20px;
       }
 
-      #foundation-logo {
-        max-width: 25%;
-      }
-
       #version {
         font-weight: bold;
       }
@@ -81,18 +77,13 @@ Polymer({
       >
         &gt;
       </p>
-      <p>
-        <a href="https://jigsaw.google.com/">
-          <img id="foundation-logo" src="images/foundation-logo.svg" />
-        </a>
-      </p>
       <div class="buttons">
         <paper-button dialog-dismiss="" autofocus=""
           >[[localize('close')]]</paper-button
         >
       </div>
     </paper-dialog>
-  `,
+  `,,
 
   is: 'outline-about-dialog',
 
