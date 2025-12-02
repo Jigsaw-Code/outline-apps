@@ -83,7 +83,7 @@ Polymer({
         >
       </div>
     </paper-dialog>
-  `,,
+  `,
 
   is: 'outline-about-dialog',
 
