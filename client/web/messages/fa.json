@@ -1,5 +1,5 @@
 {
-  "about-outline": "Outline محصولی از <a href={jigsawUrl}>Jigsaw</a> است که به همه امکان می‌دهد VPN خودشان را ایجاد کنند، اجرا کنند، و دسترسی به آن را به‌اشتراک بگذارند. Outline برای مقاومت دربرابر مسدود شدن طراحی شده است. برای مطلع شدن از نحوه شروع به کار به <a href={outlineUrl}>getoutline.org</a> مراجعه کنید.<br><br>Outline نرم‌افزار متن‌بازی است که <a href={shadowsocksUrl}>Shadowsocks</a> آن را ارائه می‌کند. می‌توانید در <a href={gitHubUrl}>GitHub</a> در رابطه با کد همکاری کنید و در <a href={redditUrl}>Reddit</a> به مکالمه بپیوندید.",
+  "about-outline": "Outline محصولی از Outline Foundation است که به هر کسی امکان می‌دهد VPN خود را ایجاد، اجرا و دسترسی به آن را هم‌رسانی کند. Outline طوری طراحی شده است که در برابر مسدود شدن مقاوم باشد. برای آشنایی با نحوه شروع، به <a href={outlineUrl}>getoutline.org</a> سر بزنید.<br><br>Outline نرم‌افزار منبع‌بازی است که توسط <a href={shadowsocksUrl}>Shadowsocks</a> ارائه می‌شود. می‌توانید در <a href={gitHubUrl}>GitHub</a> در کد مشارکت کنید و در <a href={redditUrl}>Reddit</a> به گفتگو بپیوندید.",
   "about-page-title": "درباره",
   "add-access-key-dialog-error-text": "کلید دسترسی نامعتبر است.",
   "add-access-key-dialog-header": "افزودن کلید دسترسی به وی‌پی‌اِن",

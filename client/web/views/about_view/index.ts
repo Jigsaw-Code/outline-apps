@@ -16,8 +16,6 @@ import {customElement, property} from 'lit/decorators.js';
 
 import outlineDarkLogo from '../../assets/brand-logo-dark.png';
 import outlineLogo from '../../assets/brand-logo.png';
-import jigsawDarkLogo from '../../assets/jigsaw-logo-dark.png';
-import jigsawLogo from '../../assets/jigsaw-logo.png';
 
 @customElement('about-view')
 export class AboutView extends LitElement {
@@ -119,14 +117,6 @@ export class AboutView extends LitElement {
             'https://www.reddit.com/r/outlinevpn'
           )}
         ></section>
-        <footer>
-          <a href="https://jigsaw.google.com">
-            <img
-              src="${this.darkMode ? jigsawDarkLogo : jigsawLogo}"
-              alt="jigsaw logo"
-            />
-          </a>
-        </footer>
       </article>
     `;
   }
