@@ -110,7 +110,7 @@ export class AboutView extends LitElement {
             'shadowsocksUrl',
             'https://shadowsocks.org',
             'gitHubUrl',
-            'https://github.com/OutlineFoundation/?q=outline',
+            'https://github.com/OutlineFoundation',
             'redditUrl',
             'https://www.reddit.com/r/outlinevpn'
           )}
