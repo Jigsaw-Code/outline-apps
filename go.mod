@@ -3,8 +3,8 @@ module localhost
 go 1.25
 
 require (
-	github.com/Jigsaw-Code/outline-sdk v0.0.20
-	github.com/Jigsaw-Code/outline-sdk/x v0.0.6
+	golang.getoutline.org/sdk v0.0.20
+	golang.getoutline.org/sdk/x v0.0.6
 	github.com/Wifx/gonetworkmanager/v2 v2.1.0
 	github.com/eycorsican/go-tun2socks v1.16.11
 	github.com/goccy/go-yaml v1.18.0
