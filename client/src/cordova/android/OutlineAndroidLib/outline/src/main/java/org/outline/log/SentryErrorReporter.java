@@ -205,7 +205,6 @@ public class SentryErrorReporter {
     device.setScreenDensity(null);
     device.setScreenDpi(null);
     device.setScreenHeightPixels(null);
-    device.setScreenResolution(null);
     device.setScreenWidthPixels(null);
 
     final OperatingSystem os = contexts.getOperatingSystem();
@@ -213,7 +212,7 @@ public class SentryErrorReporter {
 
     contexts.setDevice(device);
     contexts.setOperatingSystem(os);
-    event.setContexts(contexts);
+    event.getContexts().putAll(contexts);
     event.setUser(null);
     event.removeTag("os.rooted");
     event.removeTag("user");
