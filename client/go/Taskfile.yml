@@ -21,7 +21,7 @@ vars:
   OUT_DIR: '{{joinPath .REPO_ROOT "output/client"}}'
   BIN_DIR: '{{joinPath .OUT_DIR "/bin"}}'
   MOBILE_PKG: "{{.TASKFILE_DIR}}/outline/tun2socks"
-  GOMOBILE_BIND_CMD: "env PATH=\"{{.BIN_DIR}}:${PATH}\" CGO_CFLAGS='-fstack-protector-strong' '{{.BIN_DIR}}/gomobile' bind -ldflags='-s -w'"
+  GOMOBILE_BIND_CMD: "env PATH=\"{{.BIN_DIR}}:${PATH}\" CGO_CFLAGS='-fstack-protector-strong -falign-functions=16 -falign-loops=16' CGO_LDFLAGS='-Wl,-z,max-page-size=16384 -Wl,-z,common-page-size=16384' '{{.BIN_DIR}}/gomobile' bind -ldflags='-s -w'"
 
 tasks:
   electron:
